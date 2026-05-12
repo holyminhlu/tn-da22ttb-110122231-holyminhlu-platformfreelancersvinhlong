@@ -38,6 +38,10 @@ export const apiPaths = {
     meJob: "/api/auth/me/job",
     meJobsAccept: (jobId: string) => `/api/auth/me/jobs/${jobId}/accept`,
     meService: "/api/auth/me/service",
+    meServiceById: (serviceId: string) => `/api/auth/me/service/${serviceId}`,
+    meServiceDemo: "/api/auth/me/service-demo",
+    meServiceImages: "/api/auth/me/service-images",
+    meServiceThumbnail: "/api/auth/me/service-thumbnail",
     meProfile: "/api/auth/me/profile",
     meSkills: "/api/auth/me/skills",
     mePortfolio: "/api/auth/me/portfolio",
@@ -49,5 +53,6 @@ export const apiPaths = {
   services: {
     list: "/api/services",
     detail: (serviceId: string) => `/api/services/${serviceId}`,
+    categories: "/api/services/categories",
   },
 } as const;

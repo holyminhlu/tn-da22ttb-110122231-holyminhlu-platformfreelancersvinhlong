@@ -5,6 +5,8 @@ const jwt = require("jsonwebtoken");
 const { pool } = require("../db/pool");
 const { parseExpiryToMs } = require("../utils/time");
 const { uploadJobImages } = require("../middleware/jobImagesUpload");
+const { uploadServiceImages } = require("../middleware/serviceImagesUpload");
+const { uploadServiceVideo } = require("../middleware/serviceVideoUpload");
 
 const router = express.Router();
 
@@ -79,6 +81,138 @@ function normalizeJobImageUrls(raw) {
     }
   }
   return out;
+}
+
+const ALLOWED_SERVICE_DELIVERY_DAYS = new Set([1, 3, 5, 7, 15, 30]);
+
+/** Ảnh minh hoạ dịch vụ (tối đa 12): https hoặc /uploads/services/ — loại URL video */
+function normalizeServiceImageUrls(raw) {
+  if (!Array.isArray(raw)) return [];
+  const out = [];
+  for (const item of raw) {
+    if (out.length >= 12) break;
+    const u = String(item ?? "").trim();
+    if (!u) continue;
+    if (!/^https?:\/\//i.test(u) && !u.startsWith("/uploads/services/")) continue;
+    const pathOnly = u.split("?")[0].toLowerCase();
+    if (/\.(mp4|webm|mov|ogg)(\b|$)/i.test(pathOnly)) continue;
+    out.push(u);
+  }
+  return out;
+}
+
+/** Một URL ảnh thumbnail card — cùng quy tắc với từng phần tử media_urls */
+function normalizeServiceThumbnailUrl(raw) {
+  const u = String(raw ?? "").trim().slice(0, 2000);
+  if (!u) return null;
+  if (!/^https?:\/\//i.test(u) && !u.startsWith("/uploads/services/")) return null;
+  const pathOnly = u.split("?")[0].toLowerCase();
+  if (/\.(mp4|webm|mov|ogg)(\b|$)/i.test(pathOnly)) return null;
+  return u;
+}
+
+function inferDemoKindFromUrl(url) {
+  const pathOnly = String(url || "").split("?")[0].toLowerCase();
+  if (/(\.youtube\.com\/|youtu\.be\/)/i.test(url)) return "video";
+  if (/\.(mp4|webm|ogg|mov)(\b|$)/i.test(pathOnly)) return "video";
+  return "image";
+}
+
+/** Một video demo ngắn: chỉ lưu { url, kind: 'video' } */
+function normalizeServiceDemoMedia(raw) {
+  if (!raw || typeof raw !== "object") return null;
+  const url = String(raw.url ?? "").trim().slice(0, 2000);
+  if (!url) return null;
+  if (!/^https?:\/\//i.test(url) && !url.startsWith("/uploads/")) return null;
+  let kind = String(raw.kind ?? "").trim().toLowerCase();
+  if (kind !== "image" && kind !== "video") {
+    kind = inferDemoKindFromUrl(url);
+  }
+  if (kind !== "video") return null;
+  return { url, kind: "video" };
+}
+
+/**
+ * Parse & validate body tạo/cập nhật dịch vụ.
+ * @returns {{ ok: true, values: object } | { ok: false, message: string }}
+ */
+function readServiceUpsertBody(req) {
+  const title = String(req.body?.title || "").trim();
+  const description = String(req.body?.description || "").trim();
+  const price = Number(req.body?.price);
+  let deliveryDays = null;
+  const ddRaw = req.body?.deliveryDays;
+  if (ddRaw !== undefined && ddRaw !== null && String(ddRaw).trim() !== "") {
+    deliveryDays = Number(ddRaw);
+    if (!ALLOWED_SERVICE_DELIVERY_DAYS.has(deliveryDays)) {
+      return { ok: false, message: "Thời gian bàn giao phải là 1, 3, 5, 7, 15 hoặc 30 ngày." };
+    }
+  }
+  const category = String(req.body?.category || "").trim().slice(0, 255);
+  const requirements = String(req.body?.requirements || "").trim().slice(0, 4000);
+  const supportUpsell = String(req.body?.supportUpsell || "").trim().slice(0, 255);
+  const mediaUrls = normalizeServiceImageUrls(req.body?.mediaUrls);
+  const thumbnailUrl = normalizeServiceThumbnailUrl(req.body?.thumbnailUrl);
+  const demoMedia = normalizeServiceDemoMedia(req.body?.demoMedia);
+  const techStack = Array.isArray(req.body?.techStack)
+    ? req.body.techStack.map((v) => String(v || "").trim()).filter(Boolean).slice(0, 32)
+    : [];
+  const faqs = Array.isArray(req.body?.faqs)
+    ? req.body.faqs
+        .map((row) => ({
+          q: String(row?.q || "").trim().slice(0, 300),
+          a: String(row?.a || "").trim().slice(0, 1200),
+        }))
+        .filter((row) => row.q && row.a)
+        .slice(0, 20)
+    : [];
+  const packages = Array.isArray(req.body?.packages)
+    ? req.body.packages
+        .map((pack) => ({
+          id: String(pack?.id || "").trim().toLowerCase().slice(0, 40),
+          name: String(pack?.name || "").trim().slice(0, 60),
+          price: Number(pack?.price),
+          deliveryDays: Number(pack?.deliveryDays),
+          revisions: String(pack?.revisions || "").trim().slice(0, 120),
+          features: Array.isArray(pack?.features)
+            ? pack.features.map((f) => String(f || "").trim()).filter(Boolean).slice(0, 20)
+            : [],
+        }))
+        .filter((pack) => pack.id && pack.name && Number.isFinite(pack.price) && pack.price > 0)
+        .slice(0, 3)
+    : [];
+  const responseTimeHoursRaw = req.body?.responseTimeHours;
+  const responseTimeHours =
+    responseTimeHoursRaw !== undefined && responseTimeHoursRaw !== null && responseTimeHoursRaw !== ""
+      ? Number(responseTimeHoursRaw)
+      : null;
+
+  if (!title || !Number.isFinite(price) || price <= 0) {
+    return { ok: false, message: "Tiêu đề và giá dịch vụ hợp lệ là bắt buộc." };
+  }
+  if (responseTimeHours !== null && (!Number.isFinite(responseTimeHours) || responseTimeHours <= 0)) {
+    return { ok: false, message: "Thời gian phản hồi trung bình không hợp lệ." };
+  }
+
+  return {
+    ok: true,
+    values: {
+      title,
+      description,
+      price,
+      deliveryDays,
+      category,
+      requirements,
+      supportUpsell,
+      mediaUrls,
+      thumbnailUrl,
+      demoMedia,
+      techStack,
+      faqs,
+      packages,
+      responseTimeHours,
+    },
+  };
 }
 
 function buildDefaultServicePackages(price, deliveryDays) {
@@ -599,6 +733,72 @@ router.post("/me/portfolio", async (req, res) => {
   }
 });
 
+router.post("/me/service-images", (req, res) => {
+  const payload = verifyAccessToken(req, res);
+  if (!payload) return;
+
+  if (payload.role !== "freelancer") {
+    return res.status(403).json({ message: "Chỉ freelancer được tải ảnh minh hoạ dịch vụ." });
+  }
+
+  const handler = uploadServiceImages.array("images", 12);
+  handler(req, res, (err) => {
+    if (err) {
+      return res.status(400).json({ message: err.message || "Tải ảnh thất bại." });
+    }
+    const files = req.files || [];
+    if (!files.length) {
+      return res.status(400).json({ message: "Chọn ít nhất một ảnh (tối đa 12)." });
+    }
+    const urls = files.map((f) => `/uploads/services/${f.filename}`);
+    return res.status(201).json({ urls });
+  });
+});
+
+router.post("/me/service-thumbnail", (req, res) => {
+  const payload = verifyAccessToken(req, res);
+  if (!payload) return;
+
+  if (payload.role !== "freelancer") {
+    return res.status(403).json({ message: "Chỉ freelancer được tải ảnh thumbnail dịch vụ." });
+  }
+
+  const handler = uploadServiceImages.single("file");
+  handler(req, res, (err) => {
+    if (err) {
+      return res.status(400).json({ message: err.message || "Tải ảnh thất bại." });
+    }
+    const file = req.file;
+    if (!file) {
+      return res.status(400).json({ message: "Chọn một ảnh làm thumbnail." });
+    }
+    const url = `/uploads/services/${file.filename}`;
+    return res.status(201).json({ url });
+  });
+});
+
+router.post("/me/service-demo", (req, res) => {
+  const payload = verifyAccessToken(req, res);
+  if (!payload) return;
+
+  if (payload.role !== "freelancer") {
+    return res.status(403).json({ message: "Chỉ freelancer được tải video demo (1 clip ngắn)." });
+  }
+
+  const handler = uploadServiceVideo.single("file");
+  handler(req, res, (err) => {
+    if (err) {
+      return res.status(400).json({ message: err.message || "Tải video thất bại." });
+    }
+    const file = req.file;
+    if (!file) {
+      return res.status(400).json({ message: "Chọn một file video (MP4, WebM hoặc MOV)." });
+    }
+    const url = `/uploads/services/${file.filename}`;
+    return res.status(201).json({ url, kind: "video", demoMedia: { url, kind: "video" } });
+  });
+});
+
 router.post("/me/service", async (req, res) => {
   const payload = verifyAccessToken(req, res);
   if (!payload) return;
@@ -607,80 +807,39 @@ router.post("/me/service", async (req, res) => {
     return res.status(403).json({ message: "Chỉ freelancer mới có thể tạo dịch vụ." });
   }
 
-  const title = String(req.body?.title || "").trim();
-  const description = String(req.body?.description || "").trim();
-  const price = Number(req.body?.price);
-  const deliveryDays = req.body?.deliveryDays !== undefined ? Number(req.body.deliveryDays) : null;
-  const category = String(req.body?.category || "").trim().slice(0, 255);
-  const requirements = String(req.body?.requirements || "").trim().slice(0, 4000);
-  const supportUpsell = String(req.body?.supportUpsell || "").trim().slice(0, 255);
-  const mediaUrls = Array.isArray(req.body?.mediaUrls)
-    ? req.body.mediaUrls.map((v) => String(v || "").trim()).filter(Boolean).slice(0, 16)
-    : [];
-  const techStack = Array.isArray(req.body?.techStack)
-    ? req.body.techStack.map((v) => String(v || "").trim()).filter(Boolean).slice(0, 32)
-    : [];
-  const faqs = Array.isArray(req.body?.faqs)
-    ? req.body.faqs
-        .map((row) => ({
-          q: String(row?.q || "").trim().slice(0, 300),
-          a: String(row?.a || "").trim().slice(0, 1200),
-        }))
-        .filter((row) => row.q && row.a)
-        .slice(0, 20)
-    : [];
-  const packages = Array.isArray(req.body?.packages)
-    ? req.body.packages
-        .map((pack) => ({
-          id: String(pack?.id || "").trim().toLowerCase().slice(0, 40),
-          name: String(pack?.name || "").trim().slice(0, 60),
-          price: Number(pack?.price),
-          deliveryDays: Number(pack?.deliveryDays),
-          revisions: String(pack?.revisions || "").trim().slice(0, 120),
-          features: Array.isArray(pack?.features)
-            ? pack.features.map((f) => String(f || "").trim()).filter(Boolean).slice(0, 20)
-            : [],
-        }))
-        .filter((pack) => pack.id && pack.name && Number.isFinite(pack.price) && pack.price > 0)
-        .slice(0, 3)
-    : [];
-  const responseTimeHoursRaw = req.body?.responseTimeHours;
-  const responseTimeHours =
-    responseTimeHoursRaw !== undefined && responseTimeHoursRaw !== null && responseTimeHoursRaw !== ""
-      ? Number(responseTimeHoursRaw)
-      : null;
-
-  if (!title || !Number.isFinite(price) || price <= 0) {
-    return res.status(400).json({ message: "Tiêu đề và giá dịch vụ hợp lệ là bắt buộc." });
+  const parsed = readServiceUpsertBody(req);
+  if (!parsed.ok) {
+    return res.status(400).json({ message: parsed.message });
   }
-  if (responseTimeHours !== null && (!Number.isFinite(responseTimeHours) || responseTimeHours <= 0)) {
-    return res.status(400).json({ message: "Thời gian phản hồi trung bình không hợp lệ." });
-  }
+  const v = parsed.values;
 
   const client = await pool.connect();
   try {
-    const normalizedPackages = packages.length ? packages : buildDefaultServicePackages(price, deliveryDays);
+    const normalizedPackages = v.packages.length ? v.packages : buildDefaultServicePackages(v.price, v.deliveryDays);
     const result = await client.query(
       `INSERT INTO public.services (
          freelancer_id, title, description, price, delivery_days,
-         category, media_urls, packages, tech_stack, requirements, faqs, response_time_hours, support_upsell
+         category, media_urls, packages, tech_stack, requirements, faqs, response_time_hours, support_upsell,
+         demo_media, thumbnail_url
        )
-       VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb, $8::jsonb, $9::jsonb, $10, $11::jsonb, $12, $13)
-       RETURNING id, title, description, price, delivery_days, category, media_urls, packages, tech_stack, requirements, faqs, response_time_hours, support_upsell, created_at`,
+       VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb, $8::jsonb, $9::jsonb, $10, $11::jsonb, $12, $13, $14::jsonb, $15)
+       RETURNING id, title, description, price, delivery_days, category, media_urls, packages, tech_stack, requirements, faqs, response_time_hours, support_upsell, demo_media, thumbnail_url, created_at`,
       [
         payload.sub,
-        title,
-        description || null,
-        price,
-        deliveryDays,
-        category || null,
-        JSON.stringify(mediaUrls),
+        v.title,
+        v.description || null,
+        v.price,
+        v.deliveryDays,
+        v.category || null,
+        JSON.stringify(v.mediaUrls),
         JSON.stringify(normalizedPackages),
-        JSON.stringify(techStack),
-        requirements || null,
-        JSON.stringify(faqs),
-        responseTimeHours,
-        supportUpsell || null,
+        JSON.stringify(v.techStack),
+        v.requirements || null,
+        JSON.stringify(v.faqs),
+        v.responseTimeHours,
+        v.supportUpsell || null,
+        v.demoMedia ? JSON.stringify(v.demoMedia) : null,
+        v.thumbnailUrl,
       ],
     );
 
@@ -689,10 +848,91 @@ router.post("/me/service", async (req, res) => {
     console.error("Create service failed:", error.message);
     if (error.code === "42703") {
       return res.status(503).json({
-        message: "Thiếu cột chi tiết dịch vụ. Chạy script backend/sql/services_detail_columns.sql trên PostgreSQL.",
+        message:
+          "Thiếu cột trên bảng services. Chạy backend/sql/services_detail_columns.sql, backend/sql/services_demo_media.sql và backend/sql/services_thumbnail.sql trên PostgreSQL.",
       });
     }
     return res.status(500).json({ message: "Không thể tạo dịch vụ lúc này." });
+  } finally {
+    client.release();
+  }
+});
+
+router.patch("/me/service/:serviceId", async (req, res) => {
+  const payload = verifyAccessToken(req, res);
+  if (!payload) return;
+
+  if (payload.role !== "freelancer") {
+    return res.status(403).json({ message: "Chỉ freelancer mới có thể cập nhật dịch vụ." });
+  }
+
+  const serviceId = String(req.params.serviceId || "").trim();
+  if (!serviceId) {
+    return res.status(400).json({ message: "Thiếu mã dịch vụ." });
+  }
+
+  const parsed = readServiceUpsertBody(req);
+  if (!parsed.ok) {
+    return res.status(400).json({ message: parsed.message });
+  }
+  const v = parsed.values;
+
+  const client = await pool.connect();
+  try {
+    const normalizedPackages = v.packages.length ? v.packages : buildDefaultServicePackages(v.price, v.deliveryDays);
+    const result = await client.query(
+      `UPDATE public.services SET
+         title = $1,
+         description = $2,
+         price = $3,
+         delivery_days = $4,
+         category = $5,
+         media_urls = $6::jsonb,
+         packages = $7::jsonb,
+         tech_stack = $8::jsonb,
+         requirements = $9,
+         faqs = $10::jsonb,
+         response_time_hours = $11,
+         support_upsell = $12,
+         demo_media = $13::jsonb,
+         thumbnail_url = $14,
+         updated_at = CURRENT_TIMESTAMP
+       WHERE id = $15 AND freelancer_id = $16
+       RETURNING id, title, description, price, delivery_days, category, media_urls, packages, tech_stack, requirements, faqs, response_time_hours, support_upsell, demo_media, thumbnail_url, created_at`,
+      [
+        v.title,
+        v.description || null,
+        v.price,
+        v.deliveryDays,
+        v.category || null,
+        JSON.stringify(v.mediaUrls),
+        JSON.stringify(normalizedPackages),
+        JSON.stringify(v.techStack),
+        v.requirements || null,
+        JSON.stringify(v.faqs),
+        v.responseTimeHours,
+        v.supportUpsell || null,
+        v.demoMedia ? JSON.stringify(v.demoMedia) : null,
+        v.thumbnailUrl,
+        serviceId,
+        payload.sub,
+      ],
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: "Không tìm thấy dịch vụ hoặc bạn không có quyền chỉnh sửa." });
+    }
+
+    return res.json({ message: "Đã cập nhật dịch vụ.", service: result.rows[0] });
+  } catch (error) {
+    console.error("Update service failed:", error.message);
+    if (error.code === "42703") {
+      return res.status(503).json({
+        message:
+          "Thiếu cột trên bảng services. Chạy backend/sql/services_detail_columns.sql, backend/sql/services_demo_media.sql và backend/sql/services_thumbnail.sql trên PostgreSQL.",
+      });
+    }
+    return res.status(500).json({ message: "Không thể cập nhật dịch vụ lúc này." });
   } finally {
     client.release();
   }
@@ -1276,7 +1516,7 @@ router.get("/me", async (req, res) => {
       );
 
       const servicesResult = await client.query(
-        `SELECT id, title, description, price, delivery_days, created_at
+        `SELECT id, title, description, price, delivery_days, demo_media, thumbnail_url, created_at
          FROM public.services
          WHERE freelancer_id = $1
          ORDER BY created_at DESC

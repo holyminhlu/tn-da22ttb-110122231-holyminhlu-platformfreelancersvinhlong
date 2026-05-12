@@ -6,6 +6,9 @@ import Footer from "@/components/home/Footer";
 import Header from "@/components/home/Header";
 import { authorizedFetch } from "@/lib/authSession";
 import { apiPaths, apiUrl, getApiBaseUrl } from "@/config/api.config";
+import { resolveJobImageUrl } from "@/components/jobs/jobMedia";
+
+const SERVICE_DELIVERY_OPTIONS = [1, 3, 5, 7, 15, 30] as const;
 
 type ServiceRow = {
   id: string;
@@ -17,6 +20,17 @@ type ServiceRow = {
   freelancer_id: string;
   freelancer_name: string | null;
   freelancer_title: string | null;
+  freelancer_avatar_url?: string | null;
+  media_urls?: unknown;
+  packages?: unknown;
+  category?: string | null;
+  thumbnail_url?: string | null;
+  tech_stack?: unknown;
+  requirements?: string | null;
+  faqs?: unknown;
+  demo_media?: unknown;
+  response_time_hours?: number | string | null;
+  support_upsell?: string | null;
   rating_avg: number | string;
   total_reviews: number;
 };
@@ -53,11 +67,86 @@ function formatCurrencyVnd(value: number | string | null | undefined) {
   }).format(n);
 }
 
-function deliveryLabel(days: number | null | undefined) {
-  if (days === null || days === undefined || !Number.isFinite(Number(days))) return "Thỏa thuận";
-  const d = Math.trunc(Number(days));
-  if (d <= 0) return "Thỏa thuận";
-  return `${d} ngày`;
+function parseServiceImageUrls(raw: unknown): string[] {
+  if (Array.isArray(raw)) return raw.map((v) => String(v || "").trim()).filter(Boolean);
+  if (typeof raw === "string") {
+    try {
+      const p = JSON.parse(raw) as unknown;
+      if (Array.isArray(p)) return p.map((v) => String(v || "").trim()).filter(Boolean);
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+
+function minFromPriceVnd(row: ServiceRow): number {
+  const base = typeof row.price === "string" ? Number(row.price) : Number(row.price);
+  let min = Number.isFinite(base) && base > 0 ? base : 0;
+  const packs = row.packages;
+  if (Array.isArray(packs)) {
+    for (const p of packs) {
+      const pr = Number((p as { price?: unknown })?.price);
+      if (Number.isFinite(pr) && pr > 0 && (min === 0 || pr < min)) min = pr;
+    }
+  }
+  return min;
+}
+
+type PackageSlotId = "basic" | "standard" | "premium";
+
+function faqsToText(raw: unknown): string {
+  if (!Array.isArray(raw)) return "";
+  return raw
+    .map((row) => {
+      const q = String((row as { q?: unknown }).q || "").trim();
+      const a = String((row as { a?: unknown }).a || "").trim();
+      return q && a ? `${q} | ${a}` : "";
+    })
+    .filter(Boolean)
+    .join("\n");
+}
+
+function demoUrlFromService(raw: unknown): string {
+  if (!raw || typeof raw !== "object") return "";
+  return String((raw as { url?: unknown }).url || "").trim();
+}
+
+function packagesFromApi(packages: unknown): { drafts: ServicePackageDraft[]; useCustom: boolean } {
+  const copyInitial = (): ServicePackageDraft[] => INITIAL_PACKAGE_DRAFTS.map((p) => ({ ...p }));
+  if (!Array.isArray(packages) || packages.length === 0) {
+    return { drafts: copyInitial(), useCustom: false };
+  }
+  const order: PackageSlotId[] = ["basic", "standard", "premium"];
+  const slots: Record<PackageSlotId, ServicePackageDraft> = {
+    basic: { ...INITIAL_PACKAGE_DRAFTS[0] },
+    standard: { ...INITIAL_PACKAGE_DRAFTS[1] },
+    premium: { ...INITIAL_PACKAGE_DRAFTS[2] },
+  };
+  const rows = packages.slice(0, 3);
+  for (let i = 0; i < rows.length; i++) {
+    const r = rows[i] as {
+      id?: unknown;
+      name?: unknown;
+      price?: unknown;
+      deliveryDays?: unknown;
+      revisions?: unknown;
+      features?: unknown;
+    };
+    const rawId = String(r.id || "").toLowerCase().trim();
+    const slot = (rawId === "basic" || rawId === "standard" || rawId === "premium" ? rawId : order[i]) as PackageSlotId;
+    slots[slot] = {
+      id: slot,
+      name: String(r.name || slots[slot].name).trim() || slots[slot].name,
+      price: Number.isFinite(Number(r.price)) ? String(r.price) : "",
+      deliveryDays: Number.isFinite(Number(r.deliveryDays)) ? String(r.deliveryDays) : "",
+      revisions: String(r.revisions ?? "").trim() || slots[slot].revisions,
+      featuresText: Array.isArray(r.features)
+        ? r.features.map((f) => String(f || "").trim()).filter(Boolean).join("\n")
+        : "",
+    };
+  }
+  return { drafts: order.map((id) => slots[id]), useCustom: true };
 }
 
 export default function ServicesPage() {
@@ -66,6 +155,7 @@ export default function ServicesPage() {
   const [sessionKnown, setSessionKnown] = useState(false);
   const [showGuestHero, setShowGuestHero] = useState(false);
   const [userRole, setUserRole] = useState<string>("");
+  const [sessionUserId, setSessionUserId] = useState<string>("");
 
   const [services, setServices] = useState<ServiceRow[]>([]);
   const [totalFromApi, setTotalFromApi] = useState(0);
@@ -75,11 +165,16 @@ export default function ServicesPage() {
   const [serviceTitle, setServiceTitle] = useState("");
   const [serviceDescription, setServiceDescription] = useState("");
   const [servicePrice, setServicePrice] = useState("");
-  const [serviceDeliveryDays, setServiceDeliveryDays] = useState("");
+  const [serviceDeliveryDays, setServiceDeliveryDays] = useState<string>("5");
   const [serviceCategory, setServiceCategory] = useState("");
   const [serviceTechStack, setServiceTechStack] = useState("");
   const [serviceRequirements, setServiceRequirements] = useState("");
-  const [serviceMediaUrls, setServiceMediaUrls] = useState("");
+  const [serviceGalleryUrls, setServiceGalleryUrls] = useState<string[]>([]);
+  const [galleryUploadBusy, setGalleryUploadBusy] = useState(false);
+  const [serviceThumbnailUrl, setServiceThumbnailUrl] = useState("");
+  const [thumbnailUploadBusy, setThumbnailUploadBusy] = useState(false);
+  const [serviceVideoDemoUrl, setServiceVideoDemoUrl] = useState("");
+  const [demoUploadBusy, setDemoUploadBusy] = useState(false);
   const [serviceFaqsText, setServiceFaqsText] = useState("");
   const [useCustomPackages, setUseCustomPackages] = useState(false);
   const [servicePackagesDraft, setServicePackagesDraft] = useState<ServicePackageDraft[]>(INITIAL_PACKAGE_DRAFTS);
@@ -88,6 +183,8 @@ export default function ServicesPage() {
   const [submittingService, setSubmittingService] = useState(false);
   const [formMessage, setFormMessage] = useState("");
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [categoryOptions, setCategoryOptions] = useState<string[]>([]);
+  const [editingServiceId, setEditingServiceId] = useState<string | null>(null);
 
   const isFreelancer = sessionKnown && !showGuestHero && userRole === "freelancer";
 
@@ -116,17 +213,43 @@ export default function ServicesPage() {
   }, [apiBaseUrl]);
 
   useEffect(() => {
+    let cancelled = false;
+    async function loadCats() {
+      try {
+        const res = await fetch(apiUrl(apiPaths.services.categories, apiBaseUrl));
+        const data = (await res.json()) as { categories?: Array<{ name?: string }> };
+        if (cancelled) return;
+        const names = (data.categories ?? []).map((c) => String(c.name || "").trim()).filter(Boolean);
+        setCategoryOptions(names);
+      } catch {
+        if (!cancelled) setCategoryOptions([]);
+      }
+    }
+    void loadCats();
+    return () => {
+      cancelled = true;
+    };
+  }, [apiBaseUrl]);
+
+  useEffect(() => {
     function readSession() {
       const token = window.localStorage.getItem("vlc_access_token");
       setShowGuestHero(!token);
       let role = "";
+      let uid = "";
       try {
         const raw = window.localStorage.getItem("vlc_current_user");
-        if (raw) role = String((JSON.parse(raw) as { role?: string }).role || "");
+        if (raw) {
+          const u = JSON.parse(raw) as { role?: string; id?: string };
+          role = String(u.role || "");
+          uid = String(u.id || "");
+        }
       } catch {
         role = "";
+        uid = "";
       }
       setUserRole(role);
+      setSessionUserId(uid);
       setSessionKnown(true);
     }
     readSession();
@@ -139,19 +262,77 @@ export default function ServicesPage() {
   }, []);
 
   useEffect(() => {
-    void loadServices();
+    queueMicrotask(() => {
+      void loadServices();
+    });
   }, [loadServices]);
 
   const filteredServices = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return services;
     return services.filter((s) => {
-      const blob = `${s.title} ${s.description || ""} ${s.freelancer_name || ""} ${s.freelancer_title || ""}`.toLowerCase();
+      const blob = `${s.title} ${s.description || ""} ${s.freelancer_name || ""} ${s.freelancer_title || ""} ${s.category || ""}`.toLowerCase();
       return blob.includes(q);
     });
   }, [services, query]);
 
-  async function handleCreateService(e: FormEvent) {
+  function resetServiceForm() {
+    setServiceTitle("");
+    setServiceDescription("");
+    setServicePrice("");
+    setServiceDeliveryDays("5");
+    setServiceCategory("");
+    setServiceTechStack("");
+    setServiceRequirements("");
+    setServiceGalleryUrls([]);
+    setServiceThumbnailUrl("");
+    setServiceVideoDemoUrl("");
+    setServiceFaqsText("");
+    setUseCustomPackages(false);
+    setServicePackagesDraft(INITIAL_PACKAGE_DRAFTS.map((p) => ({ ...p })));
+    setServiceSupportUpsell("");
+    setServiceResponseTimeHours("");
+  }
+
+  function beginEditService(service: ServiceRow) {
+    setFormMessage("");
+    setEditingServiceId(service.id);
+    setShowCreateForm(true);
+    setServiceTitle(service.title);
+    setServiceDescription(String(service.description || ""));
+    const p = typeof service.price === "string" ? Number(service.price) : Number(service.price);
+    setServicePrice(Number.isFinite(p) ? String(p) : "");
+    const dd = Number(service.delivery_days);
+    setServiceDeliveryDays(
+      Number.isFinite(dd) && SERVICE_DELIVERY_OPTIONS.includes(dd as (typeof SERVICE_DELIVERY_OPTIONS)[number])
+        ? String(dd)
+        : "5",
+    );
+    setServiceCategory(String(service.category || "").trim());
+    setServiceTechStack(parseServiceImageUrls(service.tech_stack).join(", "));
+    setServiceRequirements(String(service.requirements || "").trim());
+    setServiceGalleryUrls(parseServiceImageUrls(service.media_urls));
+    setServiceThumbnailUrl(String(service.thumbnail_url || "").trim());
+    setServiceVideoDemoUrl(demoUrlFromService(service.demo_media));
+    setServiceFaqsText(faqsToText(service.faqs));
+    const { drafts, useCustom } = packagesFromApi(service.packages);
+    setUseCustomPackages(useCustom);
+    setServicePackagesDraft(drafts);
+    setServiceSupportUpsell(String(service.support_upsell || "").trim());
+    const rth = service.response_time_hours;
+    setServiceResponseTimeHours(
+      rth !== null && rth !== undefined && String(rth).trim() !== "" ? String(rth) : "",
+    );
+  }
+
+  function cancelServiceEdit() {
+    setEditingServiceId(null);
+    resetServiceForm();
+    setFormMessage("");
+    setShowCreateForm(false);
+  }
+
+  async function handleSubmitService(e: FormEvent) {
     e.preventDefault();
     if (!serviceTitle.trim() || !servicePrice.trim()) {
       setFormMessage("Nhập tiêu đề và giá dịch vụ.");
@@ -160,6 +341,11 @@ export default function ServicesPage() {
     const priceNum = Number(servicePrice);
     if (!Number.isFinite(priceNum) || priceNum <= 0) {
       setFormMessage("Giá không hợp lệ.");
+      return;
+    }
+    const dNum = Number(serviceDeliveryDays);
+    if (!Number.isFinite(dNum) || !SERVICE_DELIVERY_OPTIONS.includes(dNum as (typeof SERVICE_DELIVERY_OPTIONS)[number])) {
+      setFormMessage("Chọn thời gian bàn giao: 1, 3, 5, 7, 15 hoặc 30 ngày.");
       return;
     }
     setSubmittingService(true);
@@ -198,25 +384,31 @@ export default function ServicesPage() {
       }
 
       const res = await authorizedFetch(
-        apiUrl(apiPaths.auth.meService, apiBaseUrl),
+        apiUrl(
+          editingServiceId ? apiPaths.auth.meServiceById(editingServiceId) : apiPaths.auth.meService,
+          apiBaseUrl,
+        ),
         {
-          method: "POST",
+          method: editingServiceId ? "PATCH" : "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             title: serviceTitle.trim(),
             description: serviceDescription.trim(),
             price: priceNum,
-            deliveryDays: serviceDeliveryDays.trim() ? Number(serviceDeliveryDays) : undefined,
+            deliveryDays: dNum,
             category: serviceCategory.trim() || undefined,
             techStack: serviceTechStack
               .split(",")
               .map((s) => s.trim())
               .filter(Boolean),
             requirements: serviceRequirements.trim() || undefined,
-            mediaUrls: serviceMediaUrls
-              .split("\n")
-              .map((s) => s.trim())
-              .filter(Boolean),
+            mediaUrls: serviceGalleryUrls,
+            thumbnailUrl: serviceThumbnailUrl.trim() || undefined,
+            demoMedia: (() => {
+              const url = serviceVideoDemoUrl.trim();
+              if (!url) return undefined;
+              return { url, kind: "video" as const };
+            })(),
             faqs: parsedFaqs,
             packages: parsedPackages || undefined,
             supportUpsell: serviceSupportUpsell.trim() || undefined,
@@ -227,23 +419,12 @@ export default function ServicesPage() {
       );
       const payload = (await res.json()) as { message?: string };
       if (!res.ok) {
-        setFormMessage(payload.message || "Không thể tạo dịch vụ.");
+        setFormMessage(payload.message || (editingServiceId ? "Không thể cập nhật dịch vụ." : "Không thể tạo dịch vụ."));
         return;
       }
-      setFormMessage(payload.message || "Đã đăng dịch vụ.");
-      setServiceTitle("");
-      setServiceDescription("");
-      setServicePrice("");
-      setServiceDeliveryDays("");
-      setServiceCategory("");
-      setServiceTechStack("");
-      setServiceRequirements("");
-      setServiceMediaUrls("");
-      setServiceFaqsText("");
-      setUseCustomPackages(false);
-      setServicePackagesDraft(INITIAL_PACKAGE_DRAFTS);
-      setServiceSupportUpsell("");
-      setServiceResponseTimeHours("");
+      setFormMessage(payload.message || (editingServiceId ? "Đã cập nhật dịch vụ." : "Đã đăng dịch vụ."));
+      setEditingServiceId(null);
+      resetServiceForm();
       setShowCreateForm(false);
       await loadServices();
       window.dispatchEvent(new Event("vlc-user-updated"));
@@ -294,14 +475,27 @@ export default function ServicesPage() {
             <section className={`fv-card ${sessionKnown && !showGuestHero ? "mt-2 md:mt-4" : "mt-8 md:mt-10"}`}>
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
-                  <h2 className="fv-heading">Đăng dịch vụ của bạn</h2>
+                  <h2 className="fv-heading">{editingServiceId ? "Chỉnh sửa dịch vụ" : "Đăng dịch vụ của bạn"}</h2>
                   <p className="fv-body-sm mt-2 text-[#74767E]">
-                    Dịch vụ đã duyệt sẽ hiển thị công khai tại đây. Tiêu đề và giá (VND) là bắt buộc.
+                    {editingServiceId
+                      ? "Cập nhật thông tin đã lưu; thay đổi sẽ hiển thị trên marketplace sau khi lưu."
+                      : "Dịch vụ đã duyệt sẽ hiển thị công khai tại đây. Tiêu đề và giá (VND) là bắt buộc."}
                   </p>
                 </div>
                 <button
                   type="button"
-                  onClick={() => setShowCreateForm((v) => !v)}
+                  onClick={() => {
+                    if (showCreateForm) {
+                      setShowCreateForm(false);
+                      setEditingServiceId(null);
+                      resetServiceForm();
+                      setFormMessage("");
+                    } else {
+                      setEditingServiceId(null);
+                      resetServiceForm();
+                      setShowCreateForm(true);
+                    }
+                  }}
                   className="vlc-job-post-cta fv-focus-ring shrink-0"
                   aria-expanded={showCreateForm}
                 >
@@ -328,7 +522,7 @@ export default function ServicesPage() {
               </div>
 
               {showCreateForm ? (
-                <form onSubmit={handleCreateService} className="mt-6 space-y-5">
+                <form onSubmit={handleSubmitService} className="mt-6 space-y-5">
                   <section className="fv-inset-card space-y-4 bg-[#FAFAFA]">
                     <div>
                       <p className="fv-label-caps text-[#1DBF73]">Bước 1</p>
@@ -367,14 +561,19 @@ export default function ServicesPage() {
                         />
                       </label>
                       <label className="block">
-                        <span className="fv-label-caps mb-2 block text-[#74767E]">Thời gian bàn giao (ngày)</span>
-                        <input
+                        <span className="fv-label-caps mb-2 block text-[#74767E]">Thời gian bàn giao *</span>
+                        <select
                           value={serviceDeliveryDays}
                           onChange={(e) => setServiceDeliveryDays(e.target.value)}
-                          inputMode="numeric"
                           className="fv-input fv-focus-ring w-full"
-                          placeholder="Để trống nếu thỏa thuận"
-                        />
+                          required
+                        >
+                          {SERVICE_DELIVERY_OPTIONS.map((d) => (
+                            <option key={d} value={String(d)}>
+                              {d} ngày
+                            </option>
+                          ))}
+                        </select>
                       </label>
                       <label className="block sm:col-span-2">
                         <span className="fv-label-caps mb-2 block text-[#74767E]">Danh mục</span>
@@ -382,9 +581,64 @@ export default function ServicesPage() {
                           value={serviceCategory}
                           onChange={(e) => setServiceCategory(e.target.value)}
                           className="fv-input fv-focus-ring w-full"
-                          placeholder="Ví dụ: Lập trình Web > Website Builder & CMS"
+                          list="vlc-service-category-suggestions"
+                          placeholder="Chọn gợi ý hoặc nhập danh mục tùy chỉnh"
                         />
+                        <datalist id="vlc-service-category-suggestions">
+                          {categoryOptions.map((name) => (
+                            <option key={name} value={name} />
+                          ))}
+                        </datalist>
                       </label>
+                      <div className="block space-y-3 sm:col-span-2">
+                        <span className="fv-label-caps block text-[#74767E]">Ảnh thumbnail (hiển thị trên card)</span>
+                        <p className="fv-caption text-[#74767E]">
+                          Một ảnh nổi bật cho thẻ dịch vụ. Nếu để trống, card dùng ảnh đầu tiên trong bộ minh hoạ ở bước 2.
+                        </p>
+                        <input
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp,image/gif"
+                          disabled={thumbnailUploadBusy}
+                          className="fv-body-sm block w-full max-w-md text-[#404145] file:mr-3 file:rounded-sm file:border-0 file:bg-[#1DBF73] file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            e.target.value = "";
+                            if (!file) return;
+                            setThumbnailUploadBusy(true);
+                            setFormMessage("");
+                            try {
+                              const fd = new FormData();
+                              fd.append("file", file);
+                              const res = await authorizedFetch(
+                                apiUrl(apiPaths.auth.meServiceThumbnail, apiBaseUrl),
+                                { method: "POST", body: fd },
+                                apiBaseUrl,
+                              );
+                              const payload = (await res.json()) as { url?: string; message?: string };
+                              if (!res.ok) {
+                                setFormMessage(payload.message || "Tải thumbnail thất bại.");
+                                return;
+                              }
+                              if (payload.url) setServiceThumbnailUrl(payload.url);
+                            } catch {
+                              setFormMessage("Không thể tải thumbnail.");
+                            } finally {
+                              setThumbnailUploadBusy(false);
+                            }
+                          }}
+                        />
+                        <label className="block">
+                          <span className="fv-caption mb-1 block text-[#74767E]">Hoặc dán URL ảnh (https hoặc /uploads/services/…)</span>
+                          <input
+                            value={serviceThumbnailUrl}
+                            onChange={(e) => setServiceThumbnailUrl(e.target.value)}
+                            className="fv-input fv-focus-ring w-full"
+                            placeholder="https://… hoặc /uploads/services/…"
+                            disabled={thumbnailUploadBusy}
+                          />
+                        </label>
+                        {thumbnailUploadBusy ? <p className="fv-caption text-[#74767E]">Đang tải thumbnail…</p> : null}
+                      </div>
                     </div>
                   </section>
 
@@ -413,16 +667,115 @@ export default function ServicesPage() {
                           rows={3}
                         />
                       </label>
-                      <label className="block sm:col-span-2">
-                        <span className="fv-label-caps mb-2 block text-[#74767E]">Media portfolio (mỗi dòng 1 URL)</span>
-                        <textarea
-                          value={serviceMediaUrls}
-                          onChange={(e) => setServiceMediaUrls(e.target.value)}
-                          className="fv-input fv-focus-ring min-h-[90px] w-full resize-y"
-                          placeholder="https://example.com/demo-1&#10;https://example.com/demo-2"
-                          rows={3}
+                      <div className="block space-y-3 sm:col-span-2">
+                        <span className="fv-label-caps block text-[#74767E]">Ảnh minh hoạ dịch vụ (tối đa 12 ảnh)</span>
+                        <input
+                          type="file"
+                          multiple
+                          accept="image/jpeg,image/png,image/webp,image/gif"
+                          disabled={galleryUploadBusy}
+                          className="fv-body-sm block w-full max-w-md text-[#404145] file:mr-3 file:rounded-sm file:border-0 file:bg-[#1DBF73] file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white"
+                          onChange={async (e) => {
+                            const files = Array.from(e.target.files || []);
+                            e.target.value = "";
+                            if (!files.length) return;
+                            setGalleryUploadBusy(true);
+                            setFormMessage("");
+                            try {
+                              const fd = new FormData();
+                              for (const f of files) {
+                                fd.append("images", f);
+                              }
+                              const res = await authorizedFetch(
+                                apiUrl(apiPaths.auth.meServiceImages, apiBaseUrl),
+                                { method: "POST", body: fd },
+                                apiBaseUrl,
+                              );
+                              const payload = (await res.json()) as { urls?: string[]; message?: string };
+                              if (!res.ok) {
+                                setFormMessage(payload.message || "Tải ảnh thất bại.");
+                                return;
+                              }
+                              const next = [...serviceGalleryUrls, ...(payload.urls ?? [])].slice(0, 12);
+                              setServiceGalleryUrls(next);
+                            } catch {
+                              setFormMessage("Không thể tải ảnh.");
+                            } finally {
+                              setGalleryUploadBusy(false);
+                            }
+                          }}
                         />
-                      </label>
+                        {serviceGalleryUrls.length > 0 ? (
+                          <ul className="flex flex-wrap gap-2">
+                            {serviceGalleryUrls.map((u) => (
+                              <li
+                                key={u}
+                                className="flex items-center gap-1 rounded border border-[#E8E8E8] bg-white px-2 py-1 text-xs text-[#404145]"
+                              >
+                                <span className="max-w-[180px] truncate">{u}</span>
+                                <button
+                                  type="button"
+                                  className="fv-focus-ring text-[#74767E] hover:text-[#404145]"
+                                  onClick={() => setServiceGalleryUrls((prev) => prev.filter((x) => x !== u))}
+                                  aria-label="Xóa ảnh"
+                                >
+                                  ×
+                                </button>
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <p className="fv-caption text-[#74767E]">Chưa có ảnh — thẻ dịch vụ sẽ dùng ảnh mặc định.</p>
+                        )}
+                        {galleryUploadBusy ? <p className="fv-caption text-[#74767E]">Đang tải ảnh…</p> : null}
+                      </div>
+                      <div className="block space-y-3 sm:col-span-2">
+                        <span className="fv-label-caps block text-[#74767E]">Video demo ngắn (tuỳ chọn, 1 file)</span>
+                        <p className="fv-caption text-[#74767E]">MP4 / WebM / MOV, tối đa ~25MB. Hoặc dán link YouTube.</p>
+                        <input
+                          type="file"
+                          accept="video/mp4,video/webm,video/quicktime"
+                          disabled={demoUploadBusy}
+                          className="fv-body-sm block w-full max-w-md text-[#404145] file:mr-3 file:rounded-sm file:border-0 file:bg-[#1DBF73] file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            e.target.value = "";
+                            if (!file) return;
+                            setDemoUploadBusy(true);
+                            setFormMessage("");
+                            try {
+                              const fd = new FormData();
+                              fd.append("file", file);
+                              const res = await authorizedFetch(
+                                apiUrl(apiPaths.auth.meServiceDemo, apiBaseUrl),
+                                { method: "POST", body: fd },
+                                apiBaseUrl,
+                              );
+                              const payload = (await res.json()) as { url?: string; message?: string };
+                              if (!res.ok) {
+                                setFormMessage(payload.message || "Tải video thất bại.");
+                                return;
+                              }
+                              if (payload.url) setServiceVideoDemoUrl(payload.url);
+                            } catch {
+                              setFormMessage("Không thể tải video.");
+                            } finally {
+                              setDemoUploadBusy(false);
+                            }
+                          }}
+                        />
+                        <label className="block">
+                          <span className="fv-caption mb-1 block text-[#74767E]">Hoặc URL video (YouTube / file đã upload)</span>
+                          <input
+                            value={serviceVideoDemoUrl}
+                            onChange={(e) => setServiceVideoDemoUrl(e.target.value)}
+                            className="fv-input fv-focus-ring w-full"
+                            placeholder="https://www.youtube.com/watch?v=… hoặc /uploads/services/…"
+                            disabled={demoUploadBusy}
+                          />
+                        </label>
+                        {demoUploadBusy ? <p className="fv-caption text-[#74767E]">Đang tải video…</p> : null}
+                      </div>
                       <label className="block sm:col-span-2">
                         <span className="fv-label-caps mb-2 block text-[#74767E]">FAQs (mỗi dòng: Câu hỏi | Trả lời)</span>
                         <textarea
@@ -553,8 +906,18 @@ export default function ServicesPage() {
                       disabled={submittingService}
                       className="fv-btn-primary fv-focus-ring disabled:cursor-not-allowed disabled:opacity-60"
                     >
-                      {submittingService ? "Đang đăng…" : "Đăng dịch vụ"}
+                      {submittingService ? (editingServiceId ? "Đang lưu…" : "Đang đăng…") : editingServiceId ? "Lưu thay đổi" : "Đăng dịch vụ"}
                     </button>
+                    {editingServiceId ? (
+                      <button
+                        type="button"
+                        onClick={cancelServiceEdit}
+                        disabled={submittingService}
+                        className="fv-btn-secondary fv-focus-ring disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        Hủy chỉnh sửa
+                      </button>
+                    ) : null}
                     <p className="fv-caption">Mẹo: tiêu đề rõ ràng + media thật giúp tăng tỉ lệ khách liên hệ.</p>
                   </div>
                 </form>
@@ -617,9 +980,9 @@ export default function ServicesPage() {
 
           <section className="mt-8 md:mt-10">
             {loading ? (
-              <ul className="grid list-none gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <li key={i} className="h-72 animate-pulse rounded-[8px] border border-[#E8E8E8] bg-[#F5F5F5]" />
+              <ul className="grid list-none gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 lg:gap-6">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <li key={i} className="aspect-[16/22] animate-pulse rounded-[12px] border border-[#E8E8E8] bg-[#F5F5F5]" />
                 ))}
               </ul>
             ) : filteredServices.length === 0 ? (
@@ -634,59 +997,90 @@ export default function ServicesPage() {
                 </p>
               </div>
             ) : (
-              <ul className="grid list-none gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">
+              <ul className="grid list-none gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 lg:gap-6">
                 {filteredServices.map((service) => {
                   const rating = Number(service.rating_avg) || 0;
                   const reviews = Number(service.total_reviews) || 0;
+                  const imgs = parseServiceImageUrls(service.media_urls);
+                  const thumbRaw = String(service.thumbnail_url || "").trim();
+                  const coverRaw = thumbRaw || imgs[0] || "";
+                  const cover = coverRaw ? resolveJobImageUrl(coverRaw, apiBaseUrl) : "";
+                  const coverIsDedicatedThumb = Boolean(thumbRaw);
+                  const avatarRaw = String(service.freelancer_avatar_url || "").trim();
+                  const avatar = avatarRaw ? resolveJobImageUrl(avatarRaw, apiBaseUrl) : "";
+                  const fromPrice = minFromPriceVnd(service);
+                  const initial = (service.freelancer_name || "F").trim().slice(0, 1).toUpperCase();
+                  const isOwner = Boolean(sessionUserId && service.freelancer_id === sessionUserId);
                   return (
-                    <li key={service.id}>
-                      <article className="flex h-full flex-col rounded-[8px] border border-[#E8E8E8] bg-[#FFFFFF] p-4 shadow-[0px_1px_3px_rgba(0,0,0,0.08)] transition-[box-shadow] duration-200 hover:shadow-[0px_2px_8px_rgba(0,0,0,0.12)]">
-                        <div className="flex min-h-[44px] flex-wrap items-start justify-between gap-2">
-                          <span className="fv-badge-neutral font-semibold normal-case !px-2 !py-0.5 !leading-tight">
-                            {service.freelancer_title?.trim() || "Dịch vụ"}
-                          </span>
-                          <span className="fv-caption shrink-0 tabular-nums text-[#74767E]">
-                            {deliveryLabel(service.delivery_days)}
-                          </span>
+                    <li key={service.id} className="relative h-full">
+                      {isOwner ? (
+                        <button
+                          type="button"
+                          onClick={() => beginEditService(service)}
+                          className="fv-focus-ring absolute right-2 top-2 z-20 rounded-md border border-[#E8E8E8] bg-white/95 px-2.5 py-1 text-xs font-semibold text-[#404145] shadow-sm backdrop-blur-sm hover:bg-white"
+                        >
+                          Sửa
+                        </button>
+                      ) : null}
+                      <Link href={`/dich-vu/${service.id}`} className="fv-focus-ring group flex h-full flex-col overflow-hidden rounded-[12px] border border-[#E8E8E8] bg-white shadow-[0_1px_3px_rgba(0,0,0,0.06)] transition-shadow hover:shadow-[0_8px_24px_rgba(0,0,0,0.08)]">
+                        <div className="relative aspect-[16/10] w-full shrink-0 overflow-hidden bg-[#F0F0F0]">
+                          {cover ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={cover}
+                              alt=""
+                              className={`absolute inset-0 h-full w-full transition-transform duration-300 group-hover:scale-[1.02] ${
+                                coverIsDedicatedThumb ? "object-contain object-center" : "object-cover object-center"
+                              }`}
+                              loading="lazy"
+                            />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-[#EEFDF4] to-[#F5F5F5]">
+                              <span className="text-4xl font-bold text-[#1DBF73]/40" aria-hidden>
+                                {initial}
+                              </span>
+                            </div>
+                          )}
                         </div>
-
-                        <h2 className="fv-heading mt-3 line-clamp-2 text-[#404145]">
-                          <Link href={`/dich-vu/${service.id}`} className="fv-focus-ring rounded-sm hover:underline">
-                            {service.title}
-                          </Link>
-                        </h2>
-                        <p className="fv-body-sm mt-2 line-clamp-3 flex-1 text-[#74767E]">
-                          {service.description?.trim() || "Freelancer chưa nhập mô tả chi tiết."}
-                        </p>
-
-                        <hr className="fv-divider my-4" />
-
-                        <div className="flex flex-wrap items-end justify-between gap-3">
-                          <div className="min-w-0">
-                            <p className="fv-body-sm font-bold text-[#404145]">{service.freelancer_name || "Freelancer"}</p>
-                            <p className="fv-caption mt-1">Freelancer đã xác minh tài khoản</p>
+                        <div className="flex flex-1 flex-col gap-3 p-4">
+                          <div className="flex min-w-0 items-center gap-2.5">
+                            {avatar ? (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img
+                                src={avatar}
+                                alt=""
+                                className="h-10 w-10 shrink-0 rounded-full object-cover ring-1 ring-[#E8E8E8]"
+                                loading="lazy"
+                              />
+                            ) : (
+                              <div
+                                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#1DBF73] text-sm font-bold text-white"
+                                aria-hidden
+                              >
+                                {initial}
+                              </div>
+                            )}
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate text-sm font-semibold text-[#404145]">{service.freelancer_name || "Freelancer"}</p>
+                              {service.freelancer_title?.trim() ? (
+                                <p className="truncate text-xs text-[#74767E]">{service.freelancer_title}</p>
+                              ) : null}
+                            </div>
                           </div>
-                          <p
-                            className="fv-body-sm shrink-0 tabular-nums font-bold text-[#404145]"
-                            aria-label={`Đánh giá ${rating}, ${reviews} nhận xét`}
-                          >
-                            {rating.toFixed(1)}{" "}
-                            <span className="font-normal text-[#74767E]">({reviews})</span>
-                          </p>
+                          <h2 className="line-clamp-2 min-h-[2.75rem] text-[15px] font-bold leading-snug text-[#404145]">{service.title}</h2>
+                          <div className="mt-auto flex items-end justify-between gap-2 border-t border-[#F0F0F0] pt-3">
+                            <p className="text-xs text-[#74767E]" aria-label={`Đánh giá trung bình ${rating} trên 5, ${reviews} đánh giá`}>
+                              <span className="font-semibold text-[#404145]">{rating.toFixed(1)}</span>
+                              <span className="text-[#BABABA]"> /5</span>
+                              {reviews > 0 ? <span className="tabular-nums"> ({reviews})</span> : null}
+                            </p>
+                            <p className="shrink-0 text-right">
+                              <span className="block text-[10px] font-medium uppercase tracking-wide text-[#74767E]">Từ</span>
+                              <span className="block text-sm font-bold tabular-nums text-[#1DBF73]">{formatCurrencyVnd(fromPrice)}</span>
+                            </p>
+                          </div>
                         </div>
-
-                        <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                          <p className="fv-body-sm">
-                            Giá{" "}
-                            <span className="font-bold text-[#1DBF73]" aria-label={`Giá ${formatCurrencyVnd(service.price)}`}>
-                              {formatCurrencyVnd(service.price)}
-                            </span>
-                          </p>
-                          <Link href={`/dich-vu/${service.id}`} className="vlc-btn-spotlight w-full shrink-0 sm:w-auto">
-                            Xem chi tiết
-                          </Link>
-                        </div>
-                      </article>
+                      </Link>
                     </li>
                   );
                 })}

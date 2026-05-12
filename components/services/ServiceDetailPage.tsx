@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import Footer from "@/components/home/Footer";
 import Header from "@/components/home/Header";
 import { apiPaths, apiUrl, getApiBaseUrl } from "@/config/api.config";
+import { resolveJobImageUrl } from "@/components/jobs/jobMedia";
 
 type ServiceDetail = {
   id: string;
@@ -20,6 +21,7 @@ type ServiceDetail = {
   faqs?: unknown;
   response_time_hours?: number | string | null;
   support_upsell?: string | null;
+  demo_media?: unknown;
   created_at: string;
   freelancer_id: string;
   freelancer_name: string | null;
@@ -86,6 +88,39 @@ function parseStringArray(raw: unknown): string[] {
     }
   }
   return [];
+}
+
+type DemoMedia = { url: string; kind: "image" | "video" };
+
+function parseDemoMedia(raw: unknown): DemoMedia | null {
+  if (!raw || typeof raw !== "object") return null;
+  const o = raw as { url?: unknown; kind?: unknown };
+  const url = String(o.url || "").trim();
+  if (!url) return null;
+  const k = String(o.kind || "").toLowerCase();
+  if (k === "video" || k === "image") return { url, kind: k };
+  const pathOnly = url.split("?")[0].toLowerCase();
+  if (/(\.youtube\.com\/|youtu\.be\/)/i.test(url)) return { url, kind: "video" };
+  if (/\.(mp4|webm|ogg|mov)(\b|$)/i.test(pathOnly)) return { url, kind: "video" };
+  return { url, kind: "image" };
+}
+
+function extractYoutubeEmbedSrc(url: string): string | null {
+  try {
+    const u = new URL(url);
+    if (u.hostname === "youtu.be") {
+      const id = u.pathname.replace(/^\//, "").split("/")[0];
+      return id ? `https://www.youtube.com/embed/${id}` : null;
+    }
+    if (u.hostname.includes("youtube.com")) {
+      if (u.pathname.startsWith("/embed/")) return url.split("?")[0];
+      const v = u.searchParams.get("v");
+      if (v) return `https://www.youtube.com/embed/${v}`;
+    }
+  } catch {
+    return null;
+  }
+  return null;
 }
 
 function parseServicePackages(raw: unknown): ServicePackage[] {
@@ -197,6 +232,13 @@ export default function ServiceDetailPage({ serviceId }: { serviceId: string }) 
   const languages = useMemo(() => parseStringArray(service?.freelancer_languages), [service?.freelancer_languages]);
   const freelancerSkills = useMemo(() => parseStringArray(service?.freelancer_skills), [service?.freelancer_skills]);
   const mediaUrls = useMemo(() => parseStringArray(service?.media_urls), [service?.media_urls]);
+  const demoMedia = useMemo(() => parseDemoMedia(service?.demo_media), [service?.demo_media]);
+  const demoResolved = useMemo(() => {
+    if (!demoMedia) return null;
+    const resolvedUrl = resolveJobImageUrl(demoMedia.url, apiBaseUrl);
+    const youtubeEmbed = extractYoutubeEmbedSrc(demoMedia.url);
+    return { ...demoMedia, resolvedUrl, youtubeEmbed };
+  }, [apiBaseUrl, demoMedia]);
   const faqRows = useMemo(() => parseFaqs(service?.faqs), [service?.faqs]);
   const avgRating = Number(service?.rating_avg) || 0;
   const totalReviews = Number(service?.total_reviews) || 0;
@@ -242,6 +284,48 @@ export default function ServiceDetailPage({ serviceId }: { serviceId: string }) 
                       <p className="fv-body-sm mt-1 font-semibold text-[#404145]">{service.category || "Chưa cập nhật"}</p>
                     </div>
                   </div>
+                  {demoResolved ? (
+                    <div className="mt-4 overflow-hidden rounded-[8px] border border-[#E8E8E8] bg-[#0B0B0C]">
+                      <p className="fv-label-caps border-b border-[#2B2B2D] bg-[#141414] px-4 py-2 text-[#BABABA]">Demo / giới thiệu</p>
+                      <div className="p-3 sm:p-4">
+                        {demoResolved.youtubeEmbed ? (
+                          <iframe
+                            title="Video giới thiệu dịch vụ"
+                            src={demoResolved.youtubeEmbed}
+                            className="aspect-video w-full max-h-[480px] rounded-[6px] border-0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                            allowFullScreen
+                          />
+                        ) : demoResolved.kind === "video" ? (
+                          <div className="space-y-2">
+                            <video
+                              controls
+                              playsInline
+                              className="mx-auto max-h-[min(480px,70vh)] w-full max-w-3xl rounded-[6px] bg-black"
+                              src={demoResolved.resolvedUrl}
+                            />
+                            <p className="text-center">
+                              <a
+                                href={demoResolved.resolvedUrl}
+                                className="fv-focus-ring text-sm text-[#BABABA] underline"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                Mở video trong tab mới
+                              </a>
+                            </p>
+                          </div>
+                        ) : (
+                          // eslint-disable-next-line @next/next/no-img-element -- URL ngoài / CDN, không dùng next/image
+                          <img
+                            src={demoResolved.resolvedUrl}
+                            alt={`Ảnh demo: ${service.title}`}
+                            className="mx-auto max-h-[min(480px,70vh)] w-full max-w-3xl rounded-[6px] object-contain"
+                          />
+                        )}
+                      </div>
+                    </div>
+                  ) : null}
                   <div className="mt-4 rounded-[8px] border border-[#E8E8E8] bg-[#F5F5F5] p-4">
                     {mediaUrls.length > 0 ? (
                       <div className="space-y-2">

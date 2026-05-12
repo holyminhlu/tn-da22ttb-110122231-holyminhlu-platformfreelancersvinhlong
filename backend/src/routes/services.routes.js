@@ -37,9 +37,12 @@ router.get("/", async (req, res) => {
         s.faqs,
         s.response_time_hours,
         s.support_upsell,
+        s.demo_media,
+        s.thumbnail_url,
          s.created_at,
          s.freelancer_id,
          COALESCE(up.full_name, u.email) AS freelancer_name,
+         up.avatar_url AS freelancer_avatar_url,
          fp.title AS freelancer_title,
          COALESCE(rv.rating_avg, 0)::float8 AS rating_avg,
          COALESCE(rv.total_reviews, 0)::int AS total_reviews
@@ -96,10 +99,29 @@ router.get("/", async (req, res) => {
     }
     if (error.code === "42703") {
       return res.status(503).json({
-        message: "Thiếu cột chi tiết dịch vụ. Chạy script backend/sql/services_detail_columns.sql trên PostgreSQL.",
+        message:
+          "Thiếu cột trên bảng services. Chạy backend/sql/services_detail_columns.sql, backend/sql/services_demo_media.sql và backend/sql/services_thumbnail.sql trên PostgreSQL.",
       });
     }
     return res.status(500).json({ message: "Không thể tải danh sách dịch vụ." });
+  } finally {
+    db.release();
+  }
+});
+
+router.get("/categories", async (_req, res) => {
+  const db = await pool.connect();
+  try {
+    const result = await db.query(
+      `SELECT id, name FROM public.service_categories ORDER BY sort_order ASC, name ASC`,
+    );
+    return res.json({ categories: result.rows });
+  } catch (error) {
+    console.error("List service categories failed:", error.message);
+    if (error.code === "42P01") {
+      return res.json({ categories: [] });
+    }
+    return res.status(500).json({ message: "Không thể tải danh mục dịch vụ." });
   } finally {
     db.release();
   }
@@ -128,9 +150,12 @@ router.get("/:serviceId", async (req, res) => {
          s.faqs,
          s.response_time_hours,
          s.support_upsell,
+         s.demo_media,
+         s.thumbnail_url,
          s.created_at,
          s.freelancer_id,
          COALESCE(up.full_name, u.email) AS freelancer_name,
+         up.avatar_url AS freelancer_avatar_url,
          fp.title AS freelancer_title,
         COALESCE(up.bio, '') AS freelancer_bio,
          COALESCE(sk.skills, '[]'::jsonb) AS freelancer_skills,
@@ -190,7 +215,8 @@ router.get("/:serviceId", async (req, res) => {
     }
     if (error.code === "42703") {
       return res.status(503).json({
-        message: "Thiếu cột chi tiết dịch vụ. Chạy script backend/sql/services_detail_columns.sql trên PostgreSQL.",
+        message:
+          "Thiếu cột trên bảng services. Chạy backend/sql/services_detail_columns.sql, backend/sql/services_demo_media.sql và backend/sql/services_thumbnail.sql trên PostgreSQL.",
       });
     }
     return res.status(500).json({ message: "Không thể tải chi tiết dịch vụ." });

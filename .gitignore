@@ -43,3 +43,5 @@ next-env.d.ts
 # Uploaded job images (keep folder)
 backend/uploads/jobs/*
 !backend/uploads/jobs/.gitkeep
+backend/uploads/services/*
+!backend/uploads/services/.gitkeep
