@@ -1,0 +1,73 @@
+﻿/* Dịch vụ — nút “Xem chi tiết” (hover blob, palette Fiverr / trang Dịch vụ) */
+.vlc-btn-spotlight {
+  --color: #1dbf73;
+  --color-active: #129d4a;
+  box-sizing: border-box;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 8em;
+  width: auto;
+  max-width: 100%;
+  min-height: 2.6em;
+  height: 2.6em;
+  padding: 0 1em;
+  position: relative;
+  cursor: pointer;
+  overflow: hidden;
+  border: 2px solid var(--color);
+  transition: color 0.5s;
+  z-index: 1;
+  font-size: 17px;
+  border-radius: 6px;
+  font-weight: 500;
+  color: var(--color);
+  text-decoration: none;
+  line-height: 1.2;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.vlc-btn-spotlight::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  background: var(--color);
+  height: 150px;
+  width: 200px;
+  border-radius: 50%;
+  top: 100%;
+  left: 100%;
+  transition: all 0.7s;
+}
+
+.vlc-btn-spotlight:hover {
+  color: #fff;
+}
+
+.vlc-btn-spotlight:hover::before {
+  top: -30px;
+  left: -30px;
+}
+
+.vlc-btn-spotlight:active::before {
+  background: var(--color-active);
+  transition: background 0s;
+}
+
+.vlc-btn-spotlight:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(29, 191, 115, 0.22);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vlc-btn-spotlight::before {
+    transition: none;
+  }
+
+  .vlc-btn-spotlight:hover::before {
+    top: -30px;
+    left: -30px;
+  }
+}
+

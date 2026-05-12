@@ -1,0 +1,132 @@
+﻿/* Nút “Đăng tải công việc” — hiệu ứng theo mẫu .cta (scoped tiền tố vlc-job-post-cta) */
+@keyframes vlc-job-post-cta-color-anim {
+  0% {
+    fill: #ffffff;
+  }
+  50% {
+    fill: #fbc638;
+  }
+  100% {
+    fill: #ffffff;
+  }
+}
+
+.vlc-job-post-cta {
+  display: flex;
+  align-items: center;
+  padding: 6px 18px;
+  text-decoration: none;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #ffffff;
+  background: #6225e6;
+  transition: 1s;
+  box-shadow: 4px 4px 0 #000000;
+  transform: skewX(-15deg);
+  border: none;
+  cursor: pointer;
+}
+
+.vlc-job-post-cta:focus {
+  outline: none;
+}
+
+.vlc-job-post-cta:hover {
+  transition: 0.5s;
+  box-shadow: 6px 6px 0 #fbc638;
+}
+
+.vlc-job-post-cta .vlc-job-post-cta__second {
+  transition: 0.5s;
+  margin-right: 0;
+}
+
+.vlc-job-post-cta:hover .vlc-job-post-cta__second {
+  transition: 0.5s;
+  margin-right: 26px;
+}
+
+.vlc-job-post-cta__label {
+  transform: skewX(15deg);
+}
+
+.vlc-job-post-cta__second {
+  width: 14px;
+  margin-left: 12px;
+  position: relative;
+  top: 10%;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+.vlc-job-post-cta__second svg {
+  display: block;
+  width: 36px;
+  height: 14px;
+  max-width: none;
+}
+
+.vlc-job-post-cta__path {
+  fill: #ffffff;
+}
+
+.vlc-job-post-cta__one {
+  transition: 0.4s;
+  transform: translateX(-60%);
+}
+
+.vlc-job-post-cta__two {
+  transition: 0.5s;
+  transform: translateX(-30%);
+}
+
+.vlc-job-post-cta:hover .vlc-job-post-cta__three {
+  animation: vlc-job-post-cta-color-anim 1s infinite 0.2s;
+}
+
+.vlc-job-post-cta:hover .vlc-job-post-cta__one {
+  transform: translateX(0%);
+  animation: vlc-job-post-cta-color-anim 1s infinite 0.6s;
+}
+
+.vlc-job-post-cta:hover .vlc-job-post-cta__two {
+  transform: translateX(0%);
+  animation: vlc-job-post-cta-color-anim 1s infinite 0.4s;
+}
+
+@media (max-width: 420px) {
+  .vlc-job-post-cta {
+    padding: 5px 12px;
+    font-size: 0.8125rem;
+  }
+
+  .vlc-job-post-cta__second {
+    margin-left: 8px;
+  }
+
+  .vlc-job-post-cta:hover .vlc-job-post-cta__second {
+    margin-right: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vlc-job-post-cta,
+  .vlc-job-post-cta:hover,
+  .vlc-job-post-cta .vlc-job-post-cta__second,
+  .vlc-job-post-cta:hover .vlc-job-post-cta__second {
+    transition: none;
+  }
+
+  .vlc-job-post-cta:hover .vlc-job-post-cta__one,
+  .vlc-job-post-cta:hover .vlc-job-post-cta__two,
+  .vlc-job-post-cta:hover .vlc-job-post-cta__three {
+    animation: none;
+  }
+
+  .vlc-job-post-cta__one,
+  .vlc-job-post-cta__two {
+    transform: translateX(0%);
+  }
+}
+

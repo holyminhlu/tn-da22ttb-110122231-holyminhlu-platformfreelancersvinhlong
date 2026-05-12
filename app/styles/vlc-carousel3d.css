@@ -1,0 +1,75 @@
+﻿@keyframes vlc-carousel3d-spin {
+  from {
+    transform: perspective(1200px) scaleX(1.18) rotateY(-360deg);
+  }
+  to {
+    transform: perspective(1200px) scaleX(1.18) rotateY(0deg);
+  }
+}
+
+.vlc-carousel3d-root {
+  position: relative;
+  width: 720px;
+  height: 380px;
+  transform-style: preserve-3d;
+  transform: perspective(1200px) scaleX(1.18);
+  animation: vlc-carousel3d-spin 20s linear infinite;
+  will-change: transform;
+}
+
+.vlc-carousel3d-root:hover {
+  animation-play-state: paused !important;
+}
+
+.vlc-carousel3d-face {
+  position: absolute;
+  width: 156px;
+  height: 210px;
+  top: 50%;
+  left: 50%;
+  transform-origin: center center;
+  border-radius: 0.5rem;
+  transition-duration: 200ms;
+  will-change: transform;
+}
+
+.vlc-carousel3d-face:nth-child(1) {
+  transform: translate(-50%, -50%) rotateY(0deg) translateZ(300px);
+}
+
+.vlc-carousel3d-face:nth-child(2) {
+  transform: translate(-50%, -50%) rotateY(36deg) translateZ(300px);
+}
+
+.vlc-carousel3d-face:nth-child(3) {
+  transform: translate(-50%, -50%) rotateY(72deg) translateZ(300px);
+}
+
+.vlc-carousel3d-face:nth-child(4) {
+  transform: translate(-50%, -50%) rotateY(108deg) translateZ(300px);
+}
+
+.vlc-carousel3d-face:nth-child(5) {
+  transform: translate(-50%, -50%) rotateY(144deg) translateZ(300px);
+}
+
+.vlc-carousel3d-face:nth-child(6) {
+  transform: translate(-50%, -50%) rotateY(180deg) translateZ(300px);
+}
+
+.vlc-carousel3d-face:nth-child(7) {
+  transform: translate(-50%, -50%) rotateY(216deg) translateZ(300px);
+}
+
+.vlc-carousel3d-face:nth-child(8) {
+  transform: translate(-50%, -50%) rotateY(252deg) translateZ(300px);
+}
+
+.vlc-carousel3d-face:nth-child(9) {
+  transform: translate(-50%, -50%) rotateY(288deg) translateZ(300px);
+}
+
+.vlc-carousel3d-face:nth-child(10) {
+  transform: translate(-50%, -50%) rotateY(324deg) translateZ(300px);
+}
+

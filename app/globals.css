@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+/* Chi tiết từng phần: thư mục app/styles/ */
+@import "./styles/globals-tokens.css";
+@import "./styles/vlc-carousel3d.css";
+@import "./styles/vlc-job-post-cta.css";
+@import "./styles/globals-base.css";
+@import "./styles/fv-components-ui.css";
+@import "./styles/fv-components-vlc-slide-cart.css";
+@import "./styles/fv-components-vlc-starburst.css";
+@import "./styles/fv-components-rest.css";
+@import "./styles/btn-31.css";
+@import "./styles/vlc-btn-spotlight.css";
