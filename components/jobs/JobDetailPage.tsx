@@ -20,6 +20,9 @@ type JobDetail = {
   images?: unknown;
   due_at?: string | null;
   client_name?: string | null;
+  location_label?: string | null;
+  location_lat?: number | string | null;
+  location_lng?: number | string | null;
 };
 
 function formatBudget(value: JobDetail["budget"]) {
@@ -52,6 +55,17 @@ function jobStatusBadgeClass(s: string | null | undefined) {
   return "fv-badge-neutral";
 }
 
+function jobDetailLocationSummary(job: JobDetail): string | null {
+  const lab = String(job.location_label || "").trim();
+  const lat = job.location_lat != null ? Number(job.location_lat) : NaN;
+  const lng = job.location_lng != null ? Number(job.location_lng) : NaN;
+  const hasC = Number.isFinite(lat) && Number.isFinite(lng);
+  if (lab && hasC) return `${lab}\nGPS: ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+  if (lab) return lab;
+  if (hasC) return `GPS: ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+  return null;
+}
+
 function SvgClock({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden>
@@ -67,6 +81,20 @@ function SvgMoney({ className }: { className?: string }) {
       <rect x="3.5" y="6.5" width="17" height="11" rx="2.5" stroke="currentColor" strokeWidth="1.75" />
       <circle cx="12" cy="12" r="2.5" stroke="currentColor" strokeWidth="1.75" />
       <path d="M6.5 9.5h.01M17.5 14.5h.01" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function SvgPin({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M12 21s7-4.35 7-10a7 7 0 1 0-14 0c0 5.65 7 10 7 10Z"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinejoin="round"
+      />
+      <circle cx="12" cy="11" r="2.25" fill="currentColor" />
     </svg>
   );
 }
@@ -280,7 +308,7 @@ export default function JobDetailPage({ jobId }: { jobId: string }) {
 
                 <hr className="fv-divider my-6" />
 
-                <div className="grid gap-4 sm:grid-cols-3">
+                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                   <div className="fv-inset-card flex gap-3">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[8px] border border-[#E8E8E8] bg-[#F5F5F5] text-[#404145]">
                       <SvgMoney className="h-5 w-5" aria-hidden />
@@ -288,6 +316,17 @@ export default function JobDetailPage({ jobId }: { jobId: string }) {
                     <div className="min-w-0">
                       <p className="fv-label-caps text-[#74767E]">Ngân sách</p>
                       <p className="fv-body-sm mt-1 font-semibold text-[#404145]">{formatBudget(job.budget)}</p>
+                    </div>
+                  </div>
+                  <div className="fv-inset-card flex gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[8px] border border-[#E8E8E8] bg-[#F5F5F5] text-[#404145]">
+                      <SvgPin className="h-5 w-5" aria-hidden />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="fv-label-caps text-[#74767E]">Vị trí làm việc</p>
+                      <p className="fv-body-sm mt-1 whitespace-pre-wrap font-semibold text-[#404145]">
+                        {jobDetailLocationSummary(job) || "Chưa ghi nhận"}
+                      </p>
                     </div>
                   </div>
                   <div className="fv-inset-card flex gap-3">

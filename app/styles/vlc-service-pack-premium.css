@@ -1,0 +1,63 @@
+/* Ribbon góc trái — gói Premium (chi tiết dịch vụ), theo mẫu container > .card_box > span */
+.vlc-service-pack-premium-ribbon {
+  position: absolute;
+  overflow: hidden;
+  width: 150px;
+  height: 150px;
+  top: -10px;
+  left: -10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 20;
+}
+
+.vlc-service-pack-premium-ribbon::before {
+  content: "Premium";
+  position: absolute;
+  width: 150%;
+  height: 40px;
+  background-image: linear-gradient(45deg, #ff6547 0%, #ffb144 51%, #ff7053 100%);
+  transform: rotate(-45deg) translateY(-20px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.23);
+  font-size: 0.7rem;
+}
+
+.vlc-service-pack-premium-ribbon::after {
+  content: "";
+  position: absolute;
+  width: 10px;
+  bottom: 0;
+  left: 0;
+  height: 10px;
+  z-index: -1;
+  box-shadow: 140px -140px #cc3f47;
+  background-image: linear-gradient(45deg, #ff512f 0%, #f09819 51%, #ff512f 100%);
+}
+
+/* Thẻ gói Premium: nền gradient + bóng + thu nhẹ khi hover (theo .card_box) */
+.vlc-service-pack-premium-card {
+  background: linear-gradient(170deg, rgba(58, 56, 56, 0.623) 0%, rgb(31, 31, 31) 100%);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.55);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.vlc-service-pack-premium-card:hover {
+  transform: scale(0.9);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vlc-service-pack-premium-card,
+  .vlc-service-pack-premium-card:hover {
+    transition: none;
+    transform: none;
+  }
+}

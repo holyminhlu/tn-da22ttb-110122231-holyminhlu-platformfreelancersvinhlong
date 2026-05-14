@@ -235,10 +235,11 @@ export default function Header() {
   }
 
   const menuItems = [
-    { href: "/tro-thanh-freelancer", label: "Trở thành Freelancer" },
-    { href: "/viec-lam", label: "Việc làm" },
-    { href: "/dich-vu", label: "Dịch vụ" },
-    { href: "/freelancer", label: "Freelancer" },
+    { href: "/viec-lam", label: "Tìm việc" },
+    { href: "/dich-vu", label: "Tìm dịch vụ" },
+    { href: "/freelancer", label: "Tìm Freelancer" },
+    { href: "/ve-chung-toi", label: "Về chúng tôi" },
+    { href: "/giai-phap", label: "Giải pháp" },
   ];
 
   const outlineStroke = 2.5;
@@ -268,7 +269,7 @@ export default function Header() {
           className="flex min-w-0 flex-1 flex-wrap items-center justify-end gap-2 sm:gap-3"
           aria-label="Điều hướng chính"
         >
-          <div className="vlc-home-nav relative h-[52px] w-full max-w-full min-w-0 overflow-visible sm:h-[52px] sm:max-w-xl md:max-w-2xl lg:max-w-3xl">
+          <div className="vlc-home-nav relative h-[52px] w-full max-w-full min-w-0 overflow-visible sm:h-[52px] sm:max-w-2xl md:max-w-3xl lg:max-w-4xl xl:max-w-5xl">
             <div
               ref={navEffectContainerRef}
               className="vlc-home-nav__container absolute inset-0 flex flex-row items-stretch justify-around gap-0 rounded-2xl px-1 py-1 sm:px-1.5"

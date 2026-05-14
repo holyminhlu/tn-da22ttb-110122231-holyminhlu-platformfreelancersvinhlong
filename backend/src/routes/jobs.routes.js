@@ -40,6 +40,9 @@ router.get("/", async (req, res) => {
          j.updated_at,
          j.images,
          j.due_at,
+         j.location_label,
+         j.location_lat,
+         j.location_lng,
          up.full_name AS client_name
        FROM public.jobs j
        LEFT JOIN public.user_profiles up ON up.user_id = j.client_id
@@ -62,7 +65,7 @@ router.get("/", async (req, res) => {
     if (error.code === "42703") {
       return res.status(503).json({
         message:
-          "Thiếu cột trên bảng jobs (images/due_at). Chạy backend/sql/jobs_images_due_at.sql trên PostgreSQL.",
+          "Thiếu cột trên bảng jobs (images/due_at/location). Chạy backend/sql/jobs_images_due_at.sql và backend/sql/jobs_location.sql trên PostgreSQL.",
       });
     }
     return res.status(500).json({ message: "Không thể tải danh sách việc làm." });
@@ -94,6 +97,9 @@ router.get("/:jobId", async (req, res) => {
          j.updated_at,
          j.images,
          j.due_at,
+         j.location_label,
+         j.location_lat,
+         j.location_lng,
          up.full_name AS client_name
        FROM public.jobs j
        LEFT JOIN public.user_profiles up ON up.user_id = j.client_id
@@ -135,7 +141,7 @@ router.get("/:jobId", async (req, res) => {
     if (error.code === "42703") {
       return res.status(503).json({
         message:
-          "Thiếu cột trên bảng jobs (images/due_at). Chạy backend/sql/jobs_images_due_at.sql trên PostgreSQL.",
+          "Thiếu cột trên bảng jobs (images/due_at/location). Chạy backend/sql/jobs_images_due_at.sql và backend/sql/jobs_location.sql trên PostgreSQL.",
       });
     }
     return res.status(500).json({ message: "Không thể tải chi tiết công việc." });

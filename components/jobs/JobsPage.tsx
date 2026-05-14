@@ -20,6 +20,9 @@ type JobRow = {
   client_name: string | null;
   images?: unknown;
   due_at?: string | null;
+  location_label?: string | null;
+  location_lat?: number | string | null;
+  location_lng?: number | string | null;
 };
 
 type JobsApiResponse = {
@@ -41,6 +44,17 @@ function formatPostedAt(iso: string) {
   const dt = new Date(iso);
   if (Number.isNaN(dt.getTime())) return "";
   return new Intl.DateTimeFormat("vi-VN", { dateStyle: "medium", timeStyle: "short" }).format(dt);
+}
+
+function jobLocationSummary(job: JobRow): string | null {
+  const lab = String(job.location_label || "").trim();
+  const lat = job.location_lat != null ? Number(job.location_lat) : NaN;
+  const lng = job.location_lng != null ? Number(job.location_lng) : NaN;
+  const hasC = Number.isFinite(lat) && Number.isFinite(lng);
+  if (lab && hasC) return `${lab} · GPS ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+  if (lab) return lab;
+  if (hasC) return `GPS ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+  return null;
 }
 
 function formatDueShort(iso: string | null | undefined) {
@@ -241,9 +255,7 @@ export default function JobsPage() {
               </div>
               <hr className="fv-divider my-6" />
               <div className="flex flex-wrap items-center justify-between gap-4">
-                <p className="fv-caption max-w-xl">
-                  Mẹo: ưu tiên tin có hạn gần để phản hồi kịp — tránh nhận việc khi chưa đọc kỹ mô tả và ảnh đính kèm.
-                </p>
+                
                 {isClient ? (
                   <div className="shrink-0">
                     <JobPostCtaLink />
@@ -306,6 +318,7 @@ export default function JobsPage() {
                   {jobs.map((job) => {
                     const thumbs = parseJobImages(job.images);
                     const cover = thumbs[0] ? resolveJobImageUrl(thumbs[0], apiBaseUrl) : "";
+                    const locLine = jobLocationSummary(job);
                     return (
                       <li key={job.id}>
                         <article className="flex h-full flex-col overflow-hidden rounded-[8px] border border-[#E8E8E8] bg-[#FFFFFF] shadow-[0px_1px_3px_rgba(0,0,0,0.08)] transition-[box-shadow] duration-200 hover:shadow-[0px_2px_8px_rgba(0,0,0,0.12)]">
@@ -343,6 +356,11 @@ export default function JobsPage() {
                                 " · Khách hàng"
                               )}
                             </p>
+                            {locLine ? (
+                              <p className="fv-caption mt-1.5 line-clamp-2 text-[#404145]" title={locLine}>
+                                📍 {locLine}
+                              </p>
+                            ) : null}
                             <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
                               <p className="fv-body-sm font-bold text-[#1DBF73]">{formatBudget(job.budget)}</p>
                               <p className="fv-caption shrink-0 tabular-nums">

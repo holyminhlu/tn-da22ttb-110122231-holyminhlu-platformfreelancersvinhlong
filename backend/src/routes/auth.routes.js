@@ -984,19 +984,43 @@ router.post("/me/job", async (req, res) => {
   }
 
   if (!title) {
-    return res.status(400).json({ message: "Ti�u ?? c�ng vi?c l� b?t bu?c." });
+    return res.status(400).json({ message: "Tiêu đề công việc là bắt buộc." });
   }
   if (budget !== null && (!Number.isFinite(budget) || budget < 0)) {
-    return res.status(400).json({ message: "Ng�n s�ch kh�ng h?p l?." });
+    return res.status(400).json({ message: "Ngân sách không hợp lệ." });
   }
+
+  const locationLabel = String(req.body?.location_label || "").trim() || null;
+  let locationLat = null;
+  let locationLng = null;
+  if (req.body?.location_lat !== undefined && req.body?.location_lat !== null && String(req.body.location_lat).trim() !== "") {
+    locationLat = Number(req.body.location_lat);
+  }
+  if (req.body?.location_lng !== undefined && req.body?.location_lng !== null && String(req.body.location_lng).trim() !== "") {
+    locationLng = Number(req.body.location_lng);
+  }
+  const hasCoords = locationLat !== null && locationLng !== null && Number.isFinite(locationLat) && Number.isFinite(locationLng);
+  if (!hasCoords) {
+    locationLat = null;
+    locationLng = null;
+  } else if (locationLat < -90 || locationLat > 90 || locationLng < -180 || locationLng > 180) {
+    return res.status(400).json({ message: "Tọa độ vị trí không hợp lệ." });
+  }
+  const hasLocationText = Boolean(locationLabel);
+  if (!hasLocationText && !hasCoords) {
+    return res.status(400).json({
+      message: "Vui lòng nhập vị trí làm việc hoặc gửi tọa độ GPS (cả hai cũng được).",
+    });
+  }
+
 
   const client = await pool.connect();
   try {
     const result = await client.query(
-      `INSERT INTO public.jobs (client_id, title, description, budget, status, images, due_at)
-       VALUES ($1, $2, $3, $4, 'open', $5::jsonb, $6)
-       RETURNING id, title, description, budget, status, images, due_at, created_at`,
-      [payload.sub, title, description || null, budget, JSON.stringify(images), dueAt],
+      `INSERT INTO public.jobs (client_id, title, description, budget, status, images, due_at, location_label, location_lat, location_lng)
+       VALUES ($1, $2, $3, $4, 'open', $5::jsonb, $6, $7, $8, $9)
+       RETURNING id, title, description, budget, status, images, due_at, location_label, location_lat, location_lng, created_at`,
+      [payload.sub, title, description || null, budget, JSON.stringify(images), dueAt, locationLabel, locationLat, locationLng],
     );
 
     return res.status(201).json({ message: "??ng c�ng vi?c th�nh c�ng.", job: result.rows[0] });
@@ -1005,7 +1029,7 @@ router.post("/me/job", async (req, res) => {
     if (error.code === "42703") {
       return res.status(503).json({
         message:
-          "Thiếu cột jobs.images hoặc jobs.due_at. Chạy backend/sql/jobs_images_due_at.sql trên PostgreSQL.",
+          "Thiếu cột trên bảng jobs. Chạy backend/sql/jobs_images_due_at.sql và backend/sql/jobs_location.sql trên PostgreSQL.",
       });
     }
     return res.status(500).json({ message: "Kh�ng th? ??ng c�ng vi?c l�c n�y." });

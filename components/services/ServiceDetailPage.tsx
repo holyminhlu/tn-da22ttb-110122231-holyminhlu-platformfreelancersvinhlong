@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Footer from "@/components/home/Footer";
 import Header from "@/components/home/Header";
 import { apiPaths, apiUrl, getApiBaseUrl } from "@/config/api.config";
 import { resolveJobImageUrl } from "@/components/jobs/jobMedia";
+import { ServiceFormattedBody } from "@/components/services/serviceDescriptionRich";
 
 type ServiceDetail = {
   id: string;
@@ -123,6 +124,95 @@ function extractYoutubeEmbedSrc(url: string): string | null {
   return null;
 }
 
+/** Chuẩn hóa URL để tránh trùng slide khi demo trùng một ảnh trong gallery. */
+function slideDedupeKey(url: string, apiBaseUrl: string): string {
+  const resolved = resolveJobImageUrl(url, apiBaseUrl).trim();
+  return resolved.split("?")[0].toLowerCase();
+}
+
+type ResolvedIntroSlide = {
+  id: string;
+  kind: "image" | "video";
+  sourceUrl: string;
+  resolvedUrl: string;
+  youtubeEmbed: string | null;
+};
+
+function buildIntroSlides(demo: DemoMedia | null, galleryUrls: string[], apiBaseUrl: string): ResolvedIntroSlide[] {
+  const out: ResolvedIntroSlide[] = [];
+  const seen = new Set<string>();
+
+  const push = (dm: DemoMedia) => {
+    const key = slideDedupeKey(dm.url, apiBaseUrl);
+    if (!key || seen.has(key)) return;
+    seen.add(key);
+    const resolvedUrl = resolveJobImageUrl(dm.url, apiBaseUrl);
+    out.push({
+      id: `slide-${out.length}-${key.slice(-48)}`,
+      kind: dm.kind,
+      sourceUrl: dm.url,
+      resolvedUrl,
+      youtubeEmbed: extractYoutubeEmbedSrc(dm.url),
+    });
+  };
+
+  if (demo) push(demo);
+  for (const raw of galleryUrls) {
+    const dm = parseDemoMedia({ url: raw });
+    if (dm) push(dm);
+  }
+  return out;
+}
+
+function ServiceIntroSlideView({ slide, title }: { slide: ResolvedIntroSlide; title: string }) {
+  if (slide.youtubeEmbed) {
+    return (
+      <iframe
+        title={`Video giới thiệu: ${title}`}
+        src={slide.youtubeEmbed}
+        className="absolute inset-0 h-full w-full rounded-[6px] border-0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowFullScreen
+      />
+    );
+  }
+  if (slide.kind === "video") {
+    return (
+      <>
+        <video
+          key={slide.resolvedUrl}
+          controls
+          playsInline
+          className="absolute inset-0 z-0 h-full w-full object-contain"
+          src={slide.resolvedUrl}
+        />
+        <p className="pointer-events-none absolute bottom-2 left-0 right-0 z-10 text-center">
+          <a
+            href={slide.resolvedUrl}
+            className="fv-focus-ring pointer-events-auto text-xs text-[#BABABA] underline sm:text-sm"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Mở video trong tab mới
+          </a>
+        </p>
+      </>
+    );
+  }
+  return (
+    // eslint-disable-next-line @next/next/no-img-element -- URL ngoài / CDN, không dùng next/image
+    <img
+      src={slide.resolvedUrl}
+      alt={`Ảnh giới thiệu: ${title}`}
+      className="absolute inset-0 h-full w-full object-contain"
+    />
+  );
+}
+
+function isPremiumServicePackName(name: string): boolean {
+  return name.trim().toLowerCase() === "premium";
+}
+
 function parseServicePackages(raw: unknown): ServicePackage[] {
   if (!Array.isArray(raw)) return [];
   return raw
@@ -193,12 +283,135 @@ function PackageCheckIcon() {
   );
 }
 
+function ServiceIntroMediaCarousel({ slides, title }: { slides: ResolvedIntroSlide[]; title: string }) {
+  const [slideIdx, setSlideIdx] = useState(0);
+  const n = slides.length;
+  const safeIdx = n ? Math.min(Math.max(0, slideIdx), n - 1) : 0;
+  const activeSlide = slides[safeIdx] ?? null;
+
+  const goPrev = useCallback(() => {
+    setSlideIdx((i) => {
+      if (!n) return 0;
+      const cur = Math.min(Math.max(0, i), n - 1);
+      return (cur - 1 + n) % n;
+    });
+  }, [n]);
+
+  const goNext = useCallback(() => {
+    setSlideIdx((i) => {
+      if (!n) return 0;
+      const cur = Math.min(Math.max(0, i), n - 1);
+      return (cur + 1) % n;
+    });
+  }, [n]);
+
+  return (
+    <div className="mt-4 overflow-hidden rounded-[8px] border border-[#E8E8E8] bg-[#0B0B0C]">
+      <p className="fv-label-caps border-b border-[#2B2B2D] bg-[#141414] px-4 py-2 text-[#BABABA]">Ảnh &amp; video giới thiệu</p>
+      <div className="p-3 sm:p-4">
+        {activeSlide ? (
+          <div
+            role="region"
+            aria-roledescription="carousel"
+            aria-label="Ảnh và video giới thiệu dịch vụ"
+            aria-live="polite"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (n <= 1) return;
+              if (e.key === "ArrowLeft") {
+                e.preventDefault();
+                goPrev();
+              }
+              if (e.key === "ArrowRight") {
+                e.preventDefault();
+                goNext();
+              }
+            }}
+            className="relative mx-auto w-full max-w-[720px] rounded-[6px] outline-none focus-visible:ring-2 focus-visible:ring-[#1DBF73] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0B0B0C]"
+          >
+            <div key={activeSlide.id} className="relative aspect-video w-full overflow-hidden rounded-[6px] bg-black">
+              <ServiceIntroSlideView slide={activeSlide} title={title} />
+              {n > 1 ? (
+                <>
+                  <button
+                    type="button"
+                    aria-label="Media trước"
+                    className="fv-focus-ring absolute left-1 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/15 bg-black/55 text-lg font-semibold text-white shadow-md backdrop-blur-sm transition hover:bg-black/75 sm:left-2 sm:h-11 sm:w-11"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      goPrev();
+                    }}
+                  >
+                    <span aria-hidden>&lt;</span>
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Media sau"
+                    className="fv-focus-ring absolute right-1 top-1/2 z-20 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/15 bg-black/55 text-lg font-semibold text-white shadow-md backdrop-blur-sm transition hover:bg-black/75 sm:right-2 sm:h-11 sm:w-11"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      goNext();
+                    }}
+                  >
+                    <span aria-hidden>&gt;</span>
+                  </button>
+                </>
+              ) : null}
+            </div>
+            {n > 1 ? (
+              <p className="mt-3 text-center text-xs text-[#BABABA]">
+                {safeIdx + 1} / {n} · Phím ← → khi đang chọn vùng này
+              </p>
+            ) : null}
+          </div>
+        ) : (
+          <p className="fv-body-sm text-center text-[#9A9A9C]">Freelancer chưa cập nhật ảnh hoặc video giới thiệu.</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function ServiceDetailPage({ serviceId }: { serviceId: string }) {
   const apiBaseUrl = getApiBaseUrl();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [service, setService] = useState<ServiceDetail | null>(null);
   const [reviews, setReviews] = useState<ReviewRow[]>([]);
+  const [sessionKnown, setSessionKnown] = useState(false);
+  const [showGuestHero, setShowGuestHero] = useState(false);
+  const [userRole, setUserRole] = useState("");
+  const [sessionUserId, setSessionUserId] = useState("");
+
+  useEffect(() => {
+    function readSession() {
+      const token = window.localStorage.getItem("vlc_access_token");
+      setShowGuestHero(!token);
+      let role = "";
+      let uid = "";
+      try {
+        const raw = window.localStorage.getItem("vlc_current_user");
+        if (raw) {
+          const u = JSON.parse(raw) as { role?: string; id?: string };
+          role = String(u.role || "");
+          uid = String(u.id || "");
+        }
+      } catch {
+        role = "";
+        uid = "";
+      }
+      setUserRole(role);
+      setSessionUserId(uid);
+      setSessionKnown(true);
+    }
+    readSession();
+    window.addEventListener("storage", readSession);
+    window.addEventListener("vlc-user-updated", readSession as EventListener);
+    return () => {
+      window.removeEventListener("storage", readSession);
+      window.removeEventListener("vlc-user-updated", readSession as EventListener);
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -233,15 +446,20 @@ export default function ServiceDetailPage({ serviceId }: { serviceId: string }) 
   const freelancerSkills = useMemo(() => parseStringArray(service?.freelancer_skills), [service?.freelancer_skills]);
   const mediaUrls = useMemo(() => parseStringArray(service?.media_urls), [service?.media_urls]);
   const demoMedia = useMemo(() => parseDemoMedia(service?.demo_media), [service?.demo_media]);
-  const demoResolved = useMemo(() => {
-    if (!demoMedia) return null;
-    const resolvedUrl = resolveJobImageUrl(demoMedia.url, apiBaseUrl);
-    const youtubeEmbed = extractYoutubeEmbedSrc(demoMedia.url);
-    return { ...demoMedia, resolvedUrl, youtubeEmbed };
-  }, [apiBaseUrl, demoMedia]);
+  const introSlides = useMemo(() => buildIntroSlides(demoMedia, mediaUrls, apiBaseUrl), [apiBaseUrl, demoMedia, mediaUrls]);
+
   const faqRows = useMemo(() => parseFaqs(service?.faqs), [service?.faqs]);
   const avgRating = Number(service?.rating_avg) || 0;
   const totalReviews = Number(service?.total_reviews) || 0;
+
+  const isLoggedIn = sessionKnown && !showGuestHero;
+  const isOwnerFreelancer = Boolean(
+    service &&
+      isLoggedIn &&
+      userRole === "freelancer" &&
+      sessionUserId &&
+      String(service.freelancer_id) === sessionUserId,
+  );
 
   return (
     <>
@@ -284,77 +502,15 @@ export default function ServiceDetailPage({ serviceId }: { serviceId: string }) 
                       <p className="fv-body-sm mt-1 font-semibold text-[#404145]">{service.category || "Chưa cập nhật"}</p>
                     </div>
                   </div>
-                  {demoResolved ? (
-                    <div className="mt-4 overflow-hidden rounded-[8px] border border-[#E8E8E8] bg-[#0B0B0C]">
-                      <p className="fv-label-caps border-b border-[#2B2B2D] bg-[#141414] px-4 py-2 text-[#BABABA]">Demo / giới thiệu</p>
-                      <div className="p-3 sm:p-4">
-                        {demoResolved.youtubeEmbed ? (
-                          <iframe
-                            title="Video giới thiệu dịch vụ"
-                            src={demoResolved.youtubeEmbed}
-                            className="aspect-video w-full max-h-[480px] rounded-[6px] border-0"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                            allowFullScreen
-                          />
-                        ) : demoResolved.kind === "video" ? (
-                          <div className="space-y-2">
-                            <video
-                              controls
-                              playsInline
-                              className="mx-auto max-h-[min(480px,70vh)] w-full max-w-3xl rounded-[6px] bg-black"
-                              src={demoResolved.resolvedUrl}
-                            />
-                            <p className="text-center">
-                              <a
-                                href={demoResolved.resolvedUrl}
-                                className="fv-focus-ring text-sm text-[#BABABA] underline"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                              >
-                                Mở video trong tab mới
-                              </a>
-                            </p>
-                          </div>
-                        ) : (
-                          // eslint-disable-next-line @next/next/no-img-element -- URL ngoài / CDN, không dùng next/image
-                          <img
-                            src={demoResolved.resolvedUrl}
-                            alt={`Ảnh demo: ${service.title}`}
-                            className="mx-auto max-h-[min(480px,70vh)] w-full max-w-3xl rounded-[6px] object-contain"
-                          />
-                        )}
-                      </div>
-                    </div>
-                  ) : null}
-                  <div className="mt-4 rounded-[8px] border border-[#E8E8E8] bg-[#F5F5F5] p-4">
-                    {mediaUrls.length > 0 ? (
-                      <div className="space-y-2">
-                        <p className="fv-label-caps text-[#74767E]">Portfolio media</p>
-                        <div className="flex flex-wrap gap-2">
-                          {mediaUrls.map((url) => (
-                            <a
-                              key={url}
-                              href={url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="fv-badge-neutral fv-focus-ring"
-                            >
-                              Mở media
-                            </a>
-                          ))}
-                        </div>
-                      </div>
-                    ) : (
-                      <p className="fv-body-sm text-[#74767E]">Freelancer chưa cập nhật media portfolio.</p>
-                    )}
-                  </div>
+                  <ServiceIntroMediaCarousel key={serviceId} slides={introSlides} title={service.title} />
                 </section>
 
-                <section className="fv-card">
+                <section id="goi-dich-vu" className="fv-card">
                   <h2 className="fv-heading">Các gói dịch vụ &amp; Giá cả</h2>
                   {pricingPacks.length > 0 ? (
                     <div className="mt-4 flex flex-wrap justify-center gap-6 lg:justify-start">
                       {pricingPacks.map((pack) => {
+                        const isPremium = isPremiumServicePackName(pack.name);
                         const listLines = [
                           ...pack.features,
                           `Thời gian giao: ${deliveryLabel(pack.deliveryDays)}`,
@@ -363,36 +519,45 @@ export default function ServiceDetailPage({ serviceId }: { serviceId: string }) 
                         return (
                           <div
                             key={pack.id}
-                            className="flex w-full max-w-[320px] flex-col rounded-3xl bg-black p-6 shadow-[0_0_25px_rgba(0,0,0,0.3)]"
+                            className={`relative flex w-full max-w-[320px] flex-col overflow-visible rounded-3xl p-6 ${
+                              isPremium
+                                ? "vlc-service-pack-premium-card"
+                                : "bg-black shadow-[0_0_25px_rgba(0,0,0,0.3)]"
+                            }`}
                           >
-                            <p className="text-center text-xs font-semibold uppercase tracking-wide text-white/70">
-                              {pack.name}
-                            </p>
-                            <p className="mt-2 text-center text-3xl font-semibold leading-none text-white sm:text-[3rem]">
-                              {formatCurrencyVnd(pack.price)}
-                            </p>
-                            <ul className="mt-10 flex flex-col gap-3 text-sm leading-5 text-white">
-                              {listLines.map((line) => (
-                                <li key={`${pack.id}-${line}`} className="flex items-start">
-                                  <span className="mt-0.5">
-                                    <PackageCheckIcon />
+                            {isPremium ? (
+                              <span className="vlc-service-pack-premium-ribbon" aria-hidden />
+                            ) : null}
+                            <div className={isPremium ? "relative pt-14 sm:pt-12" : "relative"}>
+                              <p className="text-center text-xs font-semibold uppercase tracking-wide text-white/70">
+                                {pack.name}
+                              </p>
+                              <p className="mt-2 text-center text-3xl font-semibold leading-none text-white sm:text-[3rem]">
+                                {formatCurrencyVnd(pack.price)}
+                              </p>
+                              <ul className="mt-10 flex flex-col gap-3 text-sm leading-5 text-white">
+                                {listLines.map((line) => (
+                                  <li key={`${pack.id}-${line}`} className="flex items-start">
+                                    <span className="mt-0.5">
+                                      <PackageCheckIcon />
+                                    </span>
+                                    <span className="ml-4">{line}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                              <button
+                                type="button"
+                                className="vlc-slide-cart-btn"
+                                data-tooltip={`Giá: ${formatCurrencyVnd(pack.price)}`}
+                              >
+                                <span className="vlc-slide-cart-btn__wrapper">
+                                  <span className="vlc-slide-cart-btn__text">Đặt hàng ngay</span>
+                                  <span className="vlc-slide-cart-btn__icon">
+                                    <Cart2Icon />
                                   </span>
-                                  <span className="ml-4">{line}</span>
-                                </li>
-                              ))}
-                            </ul>
-                            <button
-                              type="button"
-                              className="vlc-slide-cart-btn"
-                              data-tooltip={`Giá: ${formatCurrencyVnd(pack.price)}`}
-                            >
-                              <span className="vlc-slide-cart-btn__wrapper">
-                                <span className="vlc-slide-cart-btn__text">Đặt hàng ngay</span>
-                                <span className="vlc-slide-cart-btn__icon">
-                                  <Cart2Icon />
                                 </span>
-                              </span>
-                            </button>
+                              </button>
+                            </div>
                           </div>
                         );
                       })}
@@ -402,15 +567,26 @@ export default function ServiceDetailPage({ serviceId }: { serviceId: string }) 
                   )}
                 </section>
 
-                <section className="fv-card">
-                  <h2 className="fv-heading">Nội dung chi tiết</h2>
-                  <h3 className="fv-label-caps mt-4 text-[#74767E]">Mô tả dịch vụ</h3>
-                  <p className="fv-body-sm mt-2 whitespace-pre-wrap text-[#404145]">
-                    {service.description?.trim() || "Freelancer chưa cập nhật mô tả dịch vụ."}
-                  </p>
-                  <h3 className="fv-label-caps mt-5 text-[#74767E]">Tech Stack</h3>
+                <section className="fv-card text-[17px] leading-[1.65] text-[#404145] sm:text-[18px] sm:leading-[1.7]">
+                  <h2 className="fv-heading text-[#18191b]">Nội dung chi tiết</h2>
+                  <h3 className="fv-label-caps mt-5 text-[13px] font-semibold tracking-wide text-[#74767E] sm:mt-6 sm:text-sm">
+                    Mô tả dịch vụ
+                  </h3>
+                  {service.description?.trim() ? (
+                    <ServiceFormattedBody
+                      text={service.description}
+                      className="mt-3 text-[17px] leading-[1.65] text-[#404145] sm:text-[18px] sm:leading-[1.7]"
+                    />
+                  ) : (
+                    <p className="mt-3 text-[17px] leading-relaxed text-[#74767E] sm:text-[18px]">
+                      Freelancer chưa cập nhật mô tả dịch vụ.
+                    </p>
+                  )}
+                  <h3 className="fv-label-caps mt-6 text-[13px] font-semibold tracking-wide text-[#74767E] sm:mt-7 sm:text-sm">
+                    Tech Stack
+                  </h3>
                   {techStack.length > 0 ? (
-                    <div className="mt-2 flex flex-wrap gap-2">
+                    <div className="mt-3 flex flex-wrap gap-2">
                       {techStack.map((t) => (
                         <span key={t} className="fv-badge-neutral">
                           {t}
@@ -418,12 +594,21 @@ export default function ServiceDetailPage({ serviceId }: { serviceId: string }) 
                       ))}
                     </div>
                   ) : (
-                    <p className="fv-caption mt-2">Chưa có tech stack.</p>
+                    <p className="fv-caption mt-3 text-[#74767E]">Chưa có tech stack.</p>
                   )}
-                  <h3 className="fv-label-caps mt-5 text-[#74767E]">Yêu cầu đối với khách hàng</h3>
-                  <p className="fv-body-sm mt-2 whitespace-pre-wrap text-[#404145]">
-                    {service.requirements?.trim() || "Freelancer chưa cập nhật yêu cầu đầu vào."}
-                  </p>
+                  <h3 className="fv-label-caps mt-6 text-[13px] font-semibold tracking-wide text-[#74767E] sm:mt-7 sm:text-sm">
+                    Yêu cầu đối với khách hàng
+                  </h3>
+                  {service.requirements?.trim() ? (
+                    <ServiceFormattedBody
+                      text={service.requirements}
+                      className="mt-3 text-[17px] leading-[1.65] text-[#404145] sm:text-[18px] sm:leading-[1.7]"
+                    />
+                  ) : (
+                    <p className="mt-3 text-[17px] leading-relaxed text-[#74767E] sm:text-[18px]">
+                      Freelancer chưa cập nhật yêu cầu đầu vào.
+                    </p>
+                  )}
                 </section>
 
                 <section className="fv-card">
@@ -497,10 +682,34 @@ export default function ServiceDetailPage({ serviceId }: { serviceId: string }) 
                       <span className="vlc-starburst-btn__label">Liên hệ tư vấn</span>
                       <StarBurstStars />
                     </button>
-                    <Link href="/dang-nhap" className="vlc-starburst-btn fv-focus-ring">
-                      <span className="vlc-starburst-btn__label">Đăng nhập để đặt dịch vụ</span>
-                      <StarBurstStars />
-                    </Link>
+                    {!sessionKnown ? (
+                      <div
+                        className="min-h-[48px] rounded-xl border border-[#E8E8E8] bg-[#F5F5F5] animate-pulse"
+                        aria-busy
+                        aria-label="Đang kiểm tra phiên đăng nhập"
+                      />
+                    ) : showGuestHero ? (
+                      <Link href="/dang-nhap" className="vlc-starburst-btn fv-focus-ring">
+                        <span className="vlc-starburst-btn__label">Đăng nhập để đặt dịch vụ</span>
+                        <StarBurstStars />
+                      </Link>
+                    ) : isOwnerFreelancer ? (
+                      <Link href="/dich-vu" className="vlc-starburst-btn fv-focus-ring">
+                        <span className="vlc-starburst-btn__label">Quản lý dịch vụ</span>
+                        <StarBurstStars />
+                      </Link>
+                    ) : (
+                      <button
+                        type="button"
+                        className="vlc-starburst-btn fv-focus-ring"
+                        onClick={() =>
+                          document.getElementById("goi-dich-vu")?.scrollIntoView({ behavior: "smooth", block: "start" })
+                        }
+                      >
+                        <span className="vlc-starburst-btn__label">Chọn gói và đặt dịch vụ</span>
+                        <StarBurstStars />
+                      </button>
+                    )}
                   </div>
                 </section>
               </aside>

@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { type FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { type FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Footer from "@/components/home/Footer";
 import Header from "@/components/home/Header";
 import { authorizedFetch } from "@/lib/authSession";
 import { apiPaths, apiUrl, getApiBaseUrl } from "@/config/api.config";
 import { resolveJobImageUrl } from "@/components/jobs/jobMedia";
+import { insertIntoTextarea, wrapSelectionInTextarea } from "@/components/services/serviceDescriptionRich";
 
 const SERVICE_DELIVERY_OPTIONS = [1, 3, 5, 7, 15, 30] as const;
 
@@ -185,6 +186,8 @@ export default function ServicesPage() {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [categoryOptions, setCategoryOptions] = useState<string[]>([]);
   const [editingServiceId, setEditingServiceId] = useState<string | null>(null);
+
+  const serviceDescriptionRef = useRef<HTMLTextAreaElement | null>(null);
 
   const isFreelancer = sessionKnown && !showGuestHero && userRole === "freelancer";
 
@@ -540,14 +543,84 @@ export default function ServicesPage() {
                         />
                       </label>
                       <label className="block sm:col-span-2">
-                        <span className="fv-label-caps mb-2 block text-[#74767E]">Mô tả dịch vụ</span>
+                        <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                          <span className="fv-label-caps text-[#74767E]">Mô tả dịch vụ</span>
+                          <div className="flex flex-wrap gap-1.5">
+                            <button
+                              type="button"
+                              className="fv-focus-ring rounded-md border border-[#E8E8E8] bg-white px-2.5 py-1 text-xs font-semibold text-[#404145] transition hover:border-[#1DBF73]/50 hover:bg-[#f6fffb]"
+                              onClick={() =>
+                                wrapSelectionInTextarea(
+                                  serviceDescriptionRef.current,
+                                  serviceDescription,
+                                  setServiceDescription,
+                                  "**",
+                                  "**",
+                                )
+                              }
+                            >
+                              **Đậm**
+                            </button>
+                            <button
+                              type="button"
+                              className="fv-focus-ring rounded-md border border-[#E8E8E8] bg-white px-2.5 py-1 text-xs font-semibold text-[#404145] transition hover:border-[#1DBF73]/50 hover:bg-[#f6fffb]"
+                              onClick={() =>
+                                insertIntoTextarea(serviceDescriptionRef.current, serviceDescription, setServiceDescription, "\n")
+                              }
+                            >
+                              Xuống dòng
+                            </button>
+                            <button
+                              type="button"
+                              className="fv-focus-ring rounded-md border border-[#E8E8E8] bg-white px-2.5 py-1 text-xs font-semibold text-[#404145] transition hover:border-[#1DBF73]/50 hover:bg-[#f6fffb]"
+                              onClick={() =>
+                                insertIntoTextarea(
+                                  serviceDescriptionRef.current,
+                                  serviceDescription,
+                                  setServiceDescription,
+                                  "\n\n",
+                                )
+                              }
+                            >
+                              Đoạn mới
+                            </button>
+                            <button
+                              type="button"
+                              className="fv-focus-ring rounded-md border border-[#E8E8E8] bg-white px-2.5 py-1 text-xs font-semibold text-[#404145] transition hover:border-[#1DBF73]/50 hover:bg-[#f6fffb]"
+                              onClick={() =>
+                                insertIntoTextarea(
+                                  serviceDescriptionRef.current,
+                                  serviceDescription,
+                                  setServiceDescription,
+                                  "\n- ",
+                                )
+                              }
+                            >
+                              Gạch đầu dòng
+                            </button>
+                          </div>
+                        </div>
                         <textarea
+                          ref={serviceDescriptionRef}
                           value={serviceDescription}
                           onChange={(e) => setServiceDescription(e.target.value)}
-                          className="fv-input fv-focus-ring min-h-[110px] w-full resize-y"
-                          placeholder="Mô tả phạm vi công việc, quy trình và kết quả bàn giao..."
-                          rows={4}
+                          className="fv-input fv-focus-ring min-h-[min(360px,52vh)] w-full resize-y py-3 text-[15px] leading-relaxed sm:min-h-[400px] sm:text-base"
+                          placeholder={`Mô tả phạm vi công việc, quy trình và kết quả bàn giao…
+
+Ví dụ định dạng:
+**Phần quan trọng** in đậm.
+
+- Mục một
+- Mục hai`}
+                          rows={18}
+                          spellCheck
                         />
+                        <p className="fv-caption mt-2 max-w-3xl text-[#74767E]">
+                          Gõ <code className="rounded bg-[#F0F0F0] px-1 py-0.5 text-[11px]">**văn bản**</code> để in đậm;
+                          Enter để xuống dòng; hai lần Enter để tách đoạn; các dòng bắt đầu bằng{" "}
+                          <code className="rounded bg-[#F0F0F0] px-1 py-0.5 text-[11px]">- </code> (trong một đoạn) hiển thị
+                          thành danh sách trên trang chi tiết.
+                        </p>
                       </label>
                       <label className="block">
                         <span className="fv-label-caps mb-2 block text-[#74767E]">Giá khởi điểm (VND) *</span>

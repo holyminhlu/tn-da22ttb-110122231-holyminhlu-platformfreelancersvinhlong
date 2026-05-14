@@ -55,6 +55,11 @@ export default function PostJobPage() {
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [dueUrgent, setDueUrgent] = useState(false);
   const [dueAtLocal, setDueAtLocal] = useState("");
+  const [locationLabel, setLocationLabel] = useState("");
+  const [locationLat, setLocationLat] = useState<number | null>(null);
+  const [locationLng, setLocationLng] = useState<number | null>(null);
+  const [gpsBusy, setGpsBusy] = useState(false);
+  const [gpsHint, setGpsHint] = useState("");
 
   function onImagePick(e: ChangeEvent<HTMLInputElement>) {
     const picked = Array.from(e.target.files || []);
@@ -104,10 +109,50 @@ export default function PostJobPage() {
     };
   }, [router, apiBaseUrl]);
 
+  function requestGpsPosition() {
+    if (typeof window === "undefined" || !navigator.geolocation) {
+      setGpsHint("Trình duyệt không hỗ trợ định vị (GPS). Vui lòng nhập địa điểm bằng tay.");
+      return;
+    }
+    setGpsBusy(true);
+    setGpsHint("");
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setLocationLat(pos.coords.latitude);
+        setLocationLng(pos.coords.longitude);
+        setGpsBusy(false);
+        const acc = pos.coords.accuracy != null ? Math.round(pos.coords.accuracy) : null;
+        setGpsHint(
+          acc != null
+            ? `Đã lấy tọa độ GPS (độ chính xác khoảng ±${acc} m). Bạn có thể bổ sung mô tả địa điểm ở ô bên trên.`
+            : "Đã lấy tọa độ GPS. Bạn có thể bổ sung mô tả địa điểm ở ô bên trên.",
+        );
+      },
+      (err) => {
+        setGpsBusy(false);
+        const code = err?.code;
+        const byCode: Record<number, string> = {
+          1: "Bạn đã từ chối quyền truy cập vị trí. Hãy nhập địa điểm thủ công hoặc cấp quyền trong cài đặt trình duyệt.",
+          2: "Không xác định được vị trí (thiết bị / mạng).",
+          3: "Hết thời gian chờ vị trí. Thử lại hoặc nhập địa điểm thủ công.",
+        };
+        setGpsHint(byCode[code] || "Không thể lấy vị trí. Thử lại hoặc nhập địa điểm thủ công.");
+      },
+      { enableHighAccuracy: true, timeout: 18_000, maximumAge: 0 },
+    );
+  }
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     if (!title.trim()) {
       setError("Vui lòng nhập tiêu đề công việc.");
+      return;
+    }
+
+    const hasLocationText = locationLabel.trim().length > 0;
+    const hasCoords = locationLat !== null && locationLng !== null && Number.isFinite(locationLat) && Number.isFinite(locationLng);
+    if (!hasLocationText && !hasCoords) {
+      setError("Vui lòng nhập vị trí làm việc hoặc dùng nút Lấy vị trí GPS.");
       return;
     }
 
@@ -172,6 +217,9 @@ export default function PostJobPage() {
             images: imageUrls,
             due_at:
               dueUrgent && dueAtLocal.trim() ? new Date(dueAtLocal).toISOString() : undefined,
+            location_label: locationLabel.trim() || undefined,
+            location_lat: hasCoords ? locationLat : undefined,
+            location_lng: hasCoords ? locationLng : undefined,
           }),
         },
         apiBaseUrl,
@@ -306,6 +354,72 @@ export default function PostJobPage() {
                       2
                     </span>
                     <div>
+                      <h2 className="fv-heading">Vị trí làm việc</h2>
+                      <p className="fv-caption mt-1">Nhập địa điểm hoặc bật GPS — freelancer biết khu vực cần đến</p>
+                    </div>
+                  </div>
+                  <div className="space-y-4 pt-4">
+                    <div>
+                      <label htmlFor="job-location-label" className="fv-label-caps text-[#74767E]">
+                        Địa điểm (tùy chọn nếu đã dùng GPS)
+                      </label>
+                      <input
+                        id="job-location-label"
+                        value={locationLabel}
+                        onChange={(e) => setLocationLabel(e.target.value)}
+                        placeholder="Ví dụ: TP. Vĩnh Long — phường 1, đường Trần Đại Nghĩa"
+                        className="fv-input fv-focus-ring mt-2 w-full"
+                        autoComplete="street-address"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+                      <button
+                        type="button"
+                        disabled={gpsBusy}
+                        onClick={() => void requestGpsPosition()}
+                        className="fv-btn-secondary fv-focus-ring inline-flex min-h-[44px] items-center justify-center px-5 disabled:opacity-60"
+                      >
+                        {gpsBusy ? (
+                          <span className="flex items-center gap-2">
+                            <span className="h-4 w-4 animate-spin rounded-full border-2 border-[#404145] border-t-transparent" aria-hidden />
+                            Đang lấy vị trí…
+                          </span>
+                        ) : (
+                          "Lấy vị trí GPS"
+                        )}
+                      </button>
+                      {locationLat !== null && locationLng !== null ? (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setLocationLat(null);
+                            setLocationLng(null);
+                            setGpsHint("Đã xóa tọa độ GPS.");
+                          }}
+                          className="fv-btn-ghost fv-focus-ring min-h-[44px] px-4"
+                        >
+                          Xóa tọa độ GPS
+                        </button>
+                      ) : null}
+                    </div>
+                    {locationLat !== null && locationLng !== null ? (
+                      <p className="fv-caption text-[#404145]">
+                        Tọa độ:{" "}
+                        <span className="font-mono tabular-nums">
+                          {locationLat.toFixed(5)}, {locationLng.toFixed(5)}
+                        </span>
+                      </p>
+                    ) : null}
+                    {gpsHint ? <p className="fv-body-sm text-[#404145]">{gpsHint}</p> : null}
+                  </div>
+                </section>
+
+                <section className="fv-inset-card">
+                  <div className="flex items-start gap-3 border-b border-[#E8E8E8] pb-4">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[8px] border border-[#E8E8E8] bg-[#FFFFFF] text-sm font-bold text-[#404145]">
+                      3
+                    </span>
+                    <div>
                       <h2 className="fv-heading">Ngân sách gợi ý</h2>
                       <p className="fv-caption mt-1">VND — có thể để trống và thỏa thuận sau</p>
                     </div>
@@ -333,7 +447,7 @@ export default function PostJobPage() {
                 <section className="fv-inset-card">
                   <div className="flex items-start gap-3 border-b border-[#E8E8E8] pb-4">
                     <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[8px] border border-[#E8E8E8] bg-[#FFFFFF] text-sm font-bold text-[#404145]">
-                      3
+                      4
                     </span>
                     <div>
                       <h2 className="fv-heading">Mô tả chi tiết</h2>
@@ -358,7 +472,7 @@ export default function PostJobPage() {
                 <section className="fv-inset-card">
                   <div className="flex items-start gap-3 border-b border-[#E8E8E8] pb-4">
                     <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[8px] border border-[#E8E8E8] bg-[#FFFFFF] text-sm font-bold text-[#404145]">
-                      4
+                      5
                     </span>
                     <div>
                       <h2 className="fv-heading">Ảnh minh họa (tùy chọn)</h2>
@@ -411,7 +525,7 @@ export default function PostJobPage() {
                 <section className="fv-inset-card">
                   <div className="flex items-start gap-3 border-b border-[#E8E8E8] pb-4">
                     <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[8px] border border-[#E8E8E8] bg-[#FFFFFF] text-sm font-bold text-[#404145]">
-                      5
+                      6
                     </span>
                     <div>
                       <h2 className="fv-heading">Hạn hoàn thành mong muốn</h2>
@@ -482,6 +596,10 @@ export default function PostJobPage() {
                     <h3 className="fv-heading">Gợi ý</h3>
                   </div>
                   <ul className="fv-body-sm mt-4 space-y-3 text-[#74767E]">
+                    <li className="flex gap-2">
+                      <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#1DBF73]" aria-hidden />
+                      Nhập địa điểm làm việc hoặc bật GPS để freelancer nắm khu vực thực tế.
+                    </li>
                     <li className="flex gap-2">
                       <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#1DBF73]" aria-hidden />
                       Viết tiêu đề có thể hành động: làm gì, cho ai, thời gian gợi ý.
