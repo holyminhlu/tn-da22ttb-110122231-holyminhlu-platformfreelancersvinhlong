@@ -1,0 +1,343 @@
+.my-profile-page {
+  background-color: #f7f7f7;
+}
+
+.my-profile-page .mp-header {
+  border-bottom: 1px solid #e5e7eb;
+  background: #fff;
+  padding: 0.75rem 0;
+}
+
+.my-profile-page .mp-header__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  max-width: none;
+  margin: 0 auto;
+  padding: 0 clamp(0.75rem, 2vw, 1.5rem);
+}
+
+.my-profile-page .mp-header__left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.my-profile-page .mp-back {
+  color: #6b7280;
+  font-size: 1rem;
+}
+
+.my-profile-page .mp-back:hover {
+  color: #374151;
+}
+
+.my-profile-page .mp-header__title {
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: #1f2937;
+}
+
+.my-profile-page .mp-header__right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.my-profile-page .mp-header__hint {
+  max-width: 24rem;
+  font-size: 0.65rem;
+  line-height: 1.35;
+  text-align: right;
+  color: #6b7280;
+}
+
+.my-profile-page .mp-visibility {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.my-profile-page .mp-toggle-off {
+  position: relative;
+  width: 2.5rem;
+  height: 1.25rem;
+  border-radius: 9999px;
+  background: #e5e7eb;
+}
+
+.my-profile-page .mp-toggle-off::after {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.15);
+}
+
+.my-profile-page .mp-body {
+  max-width: none;
+  padding: 0;
+}
+
+/* Cột phải: avatar + ảnh bìa + các section chỉnh sửa */
+.my-profile-page .mp-content {
+  min-width: 0;
+}
+
+.my-profile-page .mp-content > * + * {
+  margin-top: 0;
+}
+
+.my-profile-page .mp-profile-card {
+  margin-bottom: 1.5rem;
+  max-width: 16rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  background: #fff;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.my-profile-page .mp-avatar-wrap {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 1rem;
+}
+
+.my-profile-page .mp-avatar {
+  width: 8rem;
+  height: 8rem;
+  border-radius: 2px;
+  object-fit: cover;
+  background: #e5e7eb;
+}
+
+.my-profile-page .mp-avatar-edit {
+  position: absolute;
+  right: -0.5rem;
+  bottom: -0.5rem;
+  display: flex;
+  width: 2rem;
+  height: 2rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  color: #2563eb;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
+}
+
+.my-profile-page .mp-name {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: #1f2937;
+}
+
+.my-profile-page .mp-location {
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.my-profile-page .mp-social-row {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.my-profile-page .mp-social-btn {
+  position: relative;
+  display: flex;
+  width: 2rem;
+  height: 2rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid #d1d5db;
+  color: #9ca3af;
+  font-size: 0.875rem;
+}
+
+.my-profile-page .mp-social-plus {
+  position: absolute;
+  top: -0.25rem;
+  right: -0.25rem;
+  display: flex;
+  width: 0.875rem;
+  height: 0.875rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #2563eb;
+  color: #fff;
+  font-size: 0.5rem;
+}
+
+.my-profile-page .mp-card-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+}
+
+.my-profile-page .mp-card-actions button,
+.my-profile-page .mp-card-actions a {
+  flex: 1;
+  border: 1px solid #d1d5db;
+  border-radius: 0.25rem;
+  padding: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #4b5563;
+}
+
+.my-profile-page .mp-card-actions button:hover,
+.my-profile-page .mp-card-actions a:hover {
+  background: #f9fafb;
+}
+
+.my-profile-page .mp-cover {
+  position: relative;
+  display: flex;
+  height: 10rem;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 0.25rem;
+  margin-bottom: 1.5rem;
+  background: linear-gradient(rgb(0 0 0 / 0.45), rgb(0 0 0 / 0.45)),
+    url("/hoso/image-1.png") center / cover no-repeat;
+  background-color: #1e293b;
+}
+
+.my-profile-page .mp-cover-btn {
+  border: 1px solid #fff;
+  border-radius: 0.25rem;
+  padding: 0.375rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #fff;
+}
+
+.my-profile-page .mp-cover-btn:hover {
+  background: rgb(255 255 255 / 0.1);
+}
+
+.my-profile-page .mp-section {
+  margin-bottom: 1.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  background: #fff;
+}
+
+.my-profile-page .mp-section__head {
+  border-bottom: 1px solid #f3f4f6;
+  padding: 1rem;
+}
+
+.my-profile-page .mp-section__head-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.my-profile-page .mp-section__title {
+  font-size: 1.125rem;
+  color: #1f2937;
+}
+
+.my-profile-page .mp-section__add {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  color: #2563eb;
+  font-size: 0.75rem;
+}
+
+.my-profile-page .mp-section__add:hover {
+  background: #eff6ff;
+}
+
+.my-profile-page .mp-section__body {
+  padding: 1rem;
+}
+
+.my-profile-page .mp-section__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+  background: #fcfcfc;
+  text-align: center;
+}
+
+.my-profile-page .mp-section__empty p {
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.my-profile-page .mp-section__cta {
+  border: 1px solid #2563eb;
+  border-radius: 0.25rem;
+  padding: 0.375rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #2563eb;
+}
+
+.my-profile-page .mp-section__cta:hover {
+  background: #eff6ff;
+}
+
+.my-profile-page .mp-skill-list,
+.my-profile-page .mp-portfolio-list,
+.my-profile-page .mp-service-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.my-profile-page .mp-list-item {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.my-profile-page .mp-list-item:last-child {
+  border-bottom: none;
+}
+
+.my-profile-page .mp-list-item__title {
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.my-profile-page .mp-list-item__meta {
+  font-size: 0.8125rem;
+  color: #6b7280;
+}
+
+.my-profile-page .mp-about-text {
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: #374151;
+  white-space: pre-wrap;
+}

@@ -1,0 +1,630 @@
+.find-work-page {
+  background-color: #f4f7f9;
+}
+
+.find-work-page .fw-guru-blue {
+  color: #0073b1;
+}
+
+.find-work-page .fw-subnav {
+  border-bottom: 1px solid #e5e7eb;
+  background: #fff;
+}
+
+.find-work-page .fw-subnav__inner {
+  display: flex;
+  gap: 2rem;
+  overflow-x: auto;
+  padding: 0.5rem clamp(0.75rem, 2vw, 1.5rem);
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.find-work-page .fw-subnav__link {
+  white-space: nowrap;
+  padding-bottom: 0.25rem;
+}
+
+.find-work-page .fw-subnav__link--active {
+  font-weight: 600;
+  color: #0073b1;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 8px;
+}
+
+.find-work-page .fw-main {
+  width: 100%;
+  max-width: none;
+  padding: 2rem clamp(0.75rem, 2vw, 1.5rem) 2.5rem;
+  box-sizing: border-box;
+}
+
+.find-work-page .fw-card-shadow {
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
+}
+
+.find-work-page .fw-card-shadow:hover {
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.08);
+}
+
+/* —— Job card: nội dung trái, nút hành động cố định phải, ảnh giữa hàng dưới —— */
+.find-work-page .fw-card__body {
+  display: grid;
+  gap: 1rem 1.25rem;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: auto;
+  align-items: start;
+}
+
+.find-work-page .fw-card__main {
+  grid-column: 1;
+  grid-row: 1;
+  min-width: 0;
+}
+
+.find-work-page .fw-card__aside {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: end;
+  align-self: start;
+  width: 12rem;
+  max-width: 100%;
+  flex-shrink: 0;
+}
+
+/* Có ảnh: hàng 2 — ảnh căn giữa toàn bộ chiều ngang thẻ */
+.find-work-page .fw-card__body--with-media {
+  grid-template-rows: auto auto;
+}
+
+.find-work-page .fw-card__body--with-media .fw-card__media {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  justify-self: center;
+}
+
+@media (min-width: 1024px) {
+  .find-work-page .fw-card__body--with-media {
+    grid-template-columns: minmax(0, 1fr) minmax(200px, 280px) auto;
+    grid-template-rows: auto;
+    align-items: start;
+  }
+
+  .find-work-page .fw-card__body--with-media .fw-card__main {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .find-work-page .fw-card__body--with-media .fw-card__media {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: center;
+  }
+
+  .find-work-page .fw-card__body--with-media .fw-card__aside {
+    grid-column: 3;
+    grid-row: 1;
+  }
+}
+
+.find-work-page .fw-card__media {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 280px;
+  margin-inline: auto;
+}
+
+.find-work-page .fw-card__media-frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  background: #f3f4f6;
+  cursor: zoom-in;
+  padding: 0;
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.find-work-page .fw-card__media-frame:hover,
+.find-work-page .fw-card__media-frame:focus-visible {
+  border-color: #0073b1;
+  box-shadow: 0 8px 24px rgb(0 115 177 / 0.2);
+}
+
+.find-work-page .fw-card__media-frame:hover .fw-card__media-img,
+.find-work-page .fw-card__media-frame:focus-visible .fw-card__media-img {
+  transform: scale(1.14);
+}
+
+.find-work-page .fw-card__media-frame:hover .fw-card__media-hint,
+.find-work-page .fw-card__media-frame:focus-visible .fw-card__media-hint {
+  opacity: 1;
+}
+
+.find-work-page .fw-card__media-img {
+  object-fit: cover;
+  transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.find-work-page .fw-card__media-hint {
+  position: absolute;
+  inset: auto 0 0;
+  padding: 0.35rem 0.5rem;
+  background: linear-gradient(transparent, rgb(0 0 0 / 0.55));
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #fff;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  pointer-events: none;
+}
+
+.find-work-page .fw-card__media-count {
+  margin-top: 0.35rem;
+  font-size: 0.65rem;
+  color: #9ca3af;
+}
+
+/* Lightbox phóng to khi click */
+.find-work-page .fw-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: rgb(0 0 0 / 0.88);
+  animation: fw-lightbox-in 0.2s ease;
+}
+
+@keyframes fw-lightbox-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.find-work-page .fw-lightbox__close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 2;
+  display: flex;
+  width: 2.5rem;
+  height: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: none;
+  background: rgb(255 255 255 / 0.15);
+  color: #fff;
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.find-work-page .fw-lightbox__close:hover {
+  background: rgb(255 255 255 / 0.28);
+}
+
+.find-work-page .fw-lightbox__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: min(92vw, 960px);
+  max-height: 90vh;
+}
+
+.find-work-page .fw-lightbox__img-wrap {
+  overflow: hidden;
+  border-radius: 0.5rem;
+  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.5);
+  animation: fw-lightbox-zoom 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+@keyframes fw-lightbox-zoom {
+  from {
+    transform: scale(0.92);
+    opacity: 0.6;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.find-work-page .fw-lightbox__img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: min(92vw, 960px);
+  max-height: calc(90vh - 4rem);
+  object-fit: contain;
+}
+
+.find-work-page .fw-lightbox__nav {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+  color: #fff;
+}
+
+.find-work-page .fw-lightbox__nav-btn {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  border: 1px solid rgb(255 255 255 / 0.35);
+  background: rgb(255 255 255 / 0.1);
+  color: #fff;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.find-work-page .fw-lightbox__nav-btn:hover {
+  background: rgb(255 255 255 / 0.22);
+}
+
+.find-work-page .fw-lightbox__nav-label {
+  font-size: 0.875rem;
+  opacity: 0.9;
+}
+
+/* —— Toolbar: danh mục, tìm kiếm, chỉ tiêu, bộ lọc —— */
+.find-work-page .fw-toolbar__row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+@media (min-width: 1024px) {
+  .find-work-page .fw-toolbar__row {
+    flex-direction: row;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+}
+
+.find-work-page .fw-toolbar__search {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  border-radius: 0.25rem;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+}
+
+.find-work-page .fw-toolbar__search-field {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+}
+
+.find-work-page .fw-toolbar__input {
+  min-width: 0;
+  flex: 1;
+  border: none;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  outline: none;
+}
+
+.find-work-page .fw-toolbar__input:focus {
+  box-shadow: inset 0 0 0 1px #0073b1;
+}
+
+.find-work-page .fw-toolbar__search-btn {
+  flex-shrink: 0;
+  border-left: 1px solid #e5e7eb;
+  padding: 0.5rem 1rem;
+  color: #9ca3af;
+  background: #fff;
+  transition: background 0.15s, color 0.15s;
+}
+
+.find-work-page .fw-toolbar__search-btn:hover {
+  background: #f9fafb;
+  color: #0073b1;
+}
+
+.find-work-page .fw-toolbar__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.find-work-page .fw-toolbar__action-btn {
+  display: flex;
+  align-items: center;
+  border-radius: 0.25rem;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  color: #374151;
+  white-space: nowrap;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.find-work-page .fw-toolbar__action-btn:hover,
+.find-work-page .fw-toolbar__action-btn--active {
+  background: #f9fafb;
+  border-color: #0073b1;
+}
+
+.find-work-page .fw-toolbar__action-label {
+  max-width: 11rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.find-work-page .fw-toolbar__badge {
+  margin-left: 0.35rem;
+  display: inline-flex;
+  min-width: 1.125rem;
+  height: 1.125rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: #0073b1;
+  padding: 0 0.3rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.find-work-page .fw-toolbar__meta {
+  margin-top: 0.75rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.find-work-page .fw-sort-trigger {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.find-work-page .fw-sort-trigger:hover {
+  color: #0073b1;
+}
+
+/* Dropdown */
+.find-work-page .fw-dropdown {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.find-work-page .fw-dropdown--inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.find-work-page .fw-dropdown__trigger {
+  display: flex;
+  max-width: 12rem;
+  align-items: center;
+  border: none;
+  border-right: 1px solid #e5e7eb;
+  background: #f9fafb;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  color: #4b5563;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+
+.find-work-page .fw-dropdown__trigger:hover {
+  background: #f3f4f6;
+}
+
+.find-work-page .fw-dropdown__trigger-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.find-work-page .fw-dropdown__chevron {
+  margin-left: 0.5rem;
+  flex-shrink: 0;
+  font-size: 0.65rem;
+  opacity: 0.7;
+}
+
+.find-work-page .fw-dropdown__menu {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 0;
+  z-index: 40;
+  min-width: 14rem;
+  max-height: 16rem;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0.25rem 0;
+  list-style: none;
+  border-radius: 0.25rem;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+}
+
+.find-work-page .fw-dropdown__menu--right {
+  left: auto;
+  right: 0;
+  min-width: 16rem;
+}
+
+.find-work-page .fw-dropdown__menu--sort {
+  right: 0;
+  left: auto;
+  min-width: 13rem;
+}
+
+.find-work-page .fw-dropdown__item {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  border: none;
+  background: transparent;
+  padding: 0.5rem 1rem;
+  text-align: left;
+  font-size: 0.8125rem;
+  color: #374151;
+  cursor: pointer;
+}
+
+.find-work-page .fw-dropdown__item:hover {
+  background: #f3f4f6;
+}
+
+.find-work-page .fw-dropdown__item--active {
+  background: #eff6ff;
+  color: #0073b1;
+  font-weight: 600;
+}
+
+.find-work-page .fw-dropdown__count {
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  color: #9ca3af;
+}
+
+/* Bộ lọc mở rộng */
+.find-work-page .fw-filters-panel {
+  margin-top: 0.75rem;
+  border-radius: 0.25rem;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  padding: 1rem 1.25rem;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
+}
+
+.find-work-page .fw-filters-panel__grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .find-work-page .fw-filters-panel__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .find-work-page .fw-filters-panel__grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.find-work-page .fw-filters-panel__label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.find-work-page .fw-filters-panel__input {
+  width: 100%;
+  border-radius: 0.25rem;
+  border: 1px solid #d1d5db;
+  padding: 0.45rem 0.65rem;
+  font-size: 0.875rem;
+  outline: none;
+}
+
+.find-work-page .fw-filters-panel__input:focus {
+  border-color: #0073b1;
+  box-shadow: 0 0 0 1px #0073b1;
+}
+
+.find-work-page .fw-filters-panel__checks {
+  display: flex;
+  align-items: flex-end;
+}
+
+.find-work-page .fw-filters-panel__check {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #374151;
+  cursor: pointer;
+}
+
+.find-work-page .fw-filters-panel__footer {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #f3f4f6;
+}
+
+.find-work-page .fw-filters-panel__clear {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #0073b1;
+}
+
+.find-work-page .fw-filters-panel__clear:hover {
+  text-decoration: underline;
+}
+
+/* Chip bộ lọc đang áp dụng */
+.find-work-page .fw-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.find-work-page .fw-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: 9999px;
+  border: 1px solid #bfdbfe;
+  background: #eff6ff;
+  padding: 0.25rem 0.65rem;
+  font-size: 0.75rem;
+  color: #1d4ed8;
+  transition: background 0.15s;
+}
+
+.find-work-page .fw-chip:hover {
+  background: #dbeafe;
+}
+
+.find-work-page .fw-chip__x {
+  font-size: 0.6rem;
+  opacity: 0.8;
+}
+
+.find-work-page .fw-chip--clear {
+  border-color: transparent;
+  background: transparent;
+  color: #6b7280;
+  font-weight: 600;
+}
+
+.find-work-page .fw-chip--clear:hover {
+  background: transparent;
+  color: #0073b1;
+  text-decoration: underline;
+}

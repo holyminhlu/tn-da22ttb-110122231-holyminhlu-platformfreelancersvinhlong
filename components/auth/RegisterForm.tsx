@@ -4,10 +4,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import styles from "./auth.module.css";
-import { apiPaths, apiUrl, getApiBaseUrl } from "@/config/api.config";
+import { register } from "@/lib/api/auth";
 
 type Role = "client" | "freelancer";
-type RegisterResponse = { message: string };
 
 export default function RegisterForm() {
   const router = useRouter();
@@ -19,8 +18,6 @@ export default function RegisterForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-
-  const apiBaseUrl = getApiBaseUrl();
 
   const checks = {
     minLength: password.length >= 8,
@@ -65,19 +62,11 @@ export default function RegisterForm() {
 
     setLoading(true);
     try {
-      const response = await fetch(apiUrl(apiPaths.auth.register, apiBaseUrl), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ role, fullName, email, password }),
-      });
-      const data = (await response.json()) as RegisterResponse;
-      if (!response.ok) {
-        setError(data.message || "Đăng ký thất bại.");
-        return;
-      }
+      const data = await register({ role, fullName, email, password });
       setSuccess(data.message || "Đăng ký thành công.");
-    } catch {
-      setError("Không thể kết nối máy chủ.");
+    } catch (err) {
+      const message = err && typeof err === "object" && "message" in err ? String((err as { message: string }).message) : "";
+      setError(message || "Không thể kết nối máy chủ.");
     } finally {
       setLoading(false);
     }

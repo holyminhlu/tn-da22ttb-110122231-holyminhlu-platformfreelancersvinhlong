@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Guru Help Center</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/react@18.0.0/umd/react.development.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/react-dom@18.0.0/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
+<style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .hero-bg {
+            background: linear-gradient(135deg, #1a2a3a 0%, #2c3e50 100%);
+            clip-path: polygon(0 0, 100% 0, 100% 85%, 0% 100%);
+        }
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+        }
+        .category-item {
+            border-bottom: 1px solid #f0f0f0;
+            border-right: 1px solid #f0f0f0;
+            padding: 2rem;
+        }
+        .category-item:nth-child(3n) { border-right: none; }
+        .category-item:nth-last-child(-n+3) { border-bottom: none; }
+    </style>
+</head>
+<body class="bg-white text-gray-800">
+<div id="root"></div>
+<script type="text/babel">
+        const { useState } = React;
+
+        const Navbar = () => (
+            <nav class="flex items-center justify-between px-8 py-4 border-b border-gray-100 bg-white sticky top-0 z-50">
+                <div class="flex items-center space-x-8">
+                    <div class="text-2xl font-bold flex items-center">
+                         <span class="text-black">guru</span>
+                    </div>
+                    <div class="hidden md:flex space-x-6 text-sm font-medium text-gray-600">
+                        <a href="#" class="hover:text-blue-600">Find Freelancers</a>
+                        <a href="#" class="hover:text-blue-600">Find Jobs</a>
+                        <a href="#" class="hover:text-blue-600 flex items-center">About <i class="fas fa-chevron-down ml-1 text-[10px]"></i></a>
+                        <a href="#" class="hover:text-blue-600 flex items-center">Solutions <i class="fas fa-chevron-down ml-1 text-[10px]"></i></a>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-6">
+                    <button class="bg-[#1b75bb] text-white px-5 py-2 rounded text-sm font-semibold hover:bg-blue-700 transition">Post a Job</button>
+                    <a href="#" class="text-sm font-semibold text-gray-700 flex items-center"><i class="far fa-edit mr-2"></i> Sign Up</a>
+                    <a href="#" class="text-sm font-semibold text-gray-700 flex items-center"><i class="fas fa-sign-in-alt mr-2"></i> Log In</a>
+                </div>
+            </nav>
+        );
+
+        const Hero = () => (
+            <div class="hero-bg text-white pt-20 pb-32 flex flex-col items-center justify-center relative">
+                <h1 class="text-5xl font-semibold mb-10">How Can We Help You?</h1>
+                <div class="w-full max-w-2xl px-4 flex">
+                    <div class="relative flex-grow">
+                        <input 
+                            type="text" 
+                            placeholder="I want to know about..." 
+                            class="w-full py-3 px-5 pr-12 rounded-l text-gray-800 focus:outline-none text-lg"
+                        />
+                        <div class="absolute right-0 top-0 h-full w-12 bg-[#1b75bb] flex items-center justify-center rounded-r cursor-pointer hover:bg-blue-700">
+                            <i class="fas fa-search"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+
+        const CategorySection = () => {
+            const [activeTab, setActiveTab] = useState('Employer');
+            
+            const categories = [
+                { title: "About Guru", desc: "How it Works, Cost, Security" },
+                { title: "Your Account", desc: "Create an Account, Manage Account, Payment Methods, Building a Team" },
+                { title: "ID Verification", desc: "About ID Verification, Submitting your Documents, Review and Verification, Account Limits" },
+                { title: "Post a Job", desc: "How to Post a Job, Featured Jobs, Job Status, Edit/Repost Job, Stop Receiving Quotes, Unsupported Jobs" },
+                { title: "Hire Freelancer", desc: "About Hire Freelancer, Find Freelancers, Review Quotes, Communicating with Freelancers, Hiring a Freelancer" },
+                { title: "Agreements", desc: "About Agreements, Payment Terms, Additional Features, Edit Agreement, Stop Agreement" },
+                { title: "Managing Your Job", desc: "WorkRoom, Status Update, Agreements, SafePay, WorkRoom Tools, Messages, Manage Your Team, End Your Job" },
+                { title: "Payments", desc: "Payment Methods, Cash Account, Invoices, Reporting" },
+                { title: "Feedback", desc: "About Feedback, Manage Feedback" },
+                { title: "SafePay", desc: "About SafePay, Add Funds in SafePay, Release Funds from SafePay" },
+                { title: "Arbitration", desc: "About Arbitration, Requesting for Arbitration, Providing Additional Evidence, The Ruling, Cost of Arbitration" },
+                { title: null, desc: null }
+            ];
+
+            return (
+                <div class="max-w-6xl mx-auto px-4 -mt-12 mb-20">
+                    <div class="flex justify-between items-center bg-white border-b border-gray-200 px-6 rounded-t-lg">
+                        <div class="flex">
+                            <button 
+                                onClick={() => setActiveTab('Employer')}
+                                class={`py-4 px-6 font-medium text-sm transition-all border-b-2 ${activeTab === 'Employer' ? 'border-[#1b75bb] text-[#1b75bb]' : 'border-transparent text-gray-500'}`}
+                            >
+                                Employer
+                            </button>
+                            <button 
+                                onClick={() => setActiveTab('Freelancer')}
+                                class={`py-4 px-6 font-medium text-sm transition-all border-b-2 ${activeTab === 'Freelancer' ? 'border-[#1b75bb] text-[#1b75bb]' : 'border-transparent text-gray-500'}`}
+                            >
+                                Freelancer
+                            </button>
+                        </div>
+                        <a href="#" class="text-[#1b75bb] text-sm font-medium hover:underline">Go to Guru.com &gt;</a>
+                    </div>
+                    
+                    <div class="bg-white shadow-sm border border-gray-100 rounded-b-lg">
+                        <div class="p-8">
+                            <h2 class="text-2xl font-bold text-gray-800 mb-2">Select a Category</h2>
+                            <div class="w-10 h-1 bg-[#1b75bb] mb-8"></div>
+                            
+                            <div class="category-grid border border-gray-100">
+                                {categories.map((cat, idx) => (
+                                    <div key={idx} class="category-item min-h-[140px]">
+                                        {cat.title && (
+                                            <React.Fragment>
+                                                <h3 class="text-[#1b75bb] font-semibold text-lg mb-2 cursor-pointer hover:underline">{cat.title}</h3>
+                                                <p class="text-gray-500 text-sm leading-relaxed">{cat.desc}</p>
+                                            </React.Fragment>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-center space-x-20 mt-20 text-center">
+                        <div>
+                            <p class="text-gray-900 font-semibold mb-4">Want to get work done by experts?</p>
+                            <button class="border border-[#1b75bb] text-[#1b75bb] px-6 py-2 rounded font-medium hover:bg-blue-50 transition">Post a Job Now</button>
+                        </div>
+                        <div>
+                            <p class="text-gray-900 font-semibold mb-4">Can't find the information you are looking for?</p>
+                            <button class="border border-[#1b75bb] text-[#1b75bb] px-6 py-2 rounded font-medium hover:bg-blue-50 transition">Contact Us</button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const Footer = () => (
+            <footer class="bg-[#2c3e50] text-gray-300 pt-16 pb-8">
+                <div class="max-w-7xl mx-auto px-8 grid grid-cols-1 md:grid-cols-5 gap-12 mb-12">
+                    <div>
+                        <h4 class="text-white font-bold mb-6 text-lg">Navigate</h4>
+                        <ul class="space-y-3 text-sm">
+                            <li><a href="#" class="hover:text-white">Home</a></li>
+                            <li><a href="#" class="hover:text-white">Post a Job</a></li>
+                            <li><a href="#" class="hover:text-white">Find a Freelancer</a></li>
+                            <li><a href="#" class="hover:text-white">Find a Job</a></li>
+                            <li><a href="#" class="hover:text-white">Enterprise Solutions</a></li>
+                            <li><a href="#" class="hover:text-white">Agency Solutions</a></li>
+                            <li><a href="#" class="hover:text-white">PO Solutions</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-white font-bold mb-6 text-lg">Company Info</h4>
+                        <ul class="space-y-3 text-sm">
+                            <li><a href="#" class="hover:text-white">About Guru</a></li>
+                            <li><a href="#" class="hover:text-white">How Guru Works</a></li>
+                            <li><a href="#" class="hover:text-white">Why Guru</a></li>
+                            <li><a href="#" class="hover:text-white">Pricing</a></li>
+                            <li><a href="#" class="hover:text-white">Blog</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-white font-bold mb-6 text-lg">Resources</h4>
+                        <ul class="space-y-3 text-sm">
+                            <li><a href="#" class="hover:text-white">Help & FAQ</a></li>
+                            <li><a href="#" class="hover:text-white">Blog</a></li>
+                            <li><a href="#" class="hover:text-white">Contact Us</a></li>
+                            <li><a href="#" class="hover:text-white">APIs</a></li>
+                            <li><a href="#" class="hover:text-white">Sitemap</a></li>
+                            <li><a href="#" class="hover:text-white">Cookie Settings</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-white font-bold mb-6 text-lg">Policies</h4>
+                        <ul class="space-y-3 text-sm">
+                            <li><a href="#" class="hover:text-white">IP Policy</a></li>
+                            <li><a href="#" class="hover:text-white">Privacy Policy</a></li>
+                            <li><a href="#" class="hover:text-white">Terms of Service</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="text-white font-bold mb-6 text-lg">Connect with Us</h4>
+                        <div class="flex space-x-4">
+                            <a href="#" class="bg-blue-600 w-8 h-8 flex items-center justify-center rounded-full text-white hover:opacity-80"><i class="fab fa-facebook-f text-xs"></i></a>
+                            <a href="#" class="bg-black w-8 h-8 flex items-center justify-center rounded-full text-white hover:opacity-80"><i class="fab fa-twitter text-xs"></i></a>
+                            <a href="#" class="bg-[#0077b5] w-8 h-8 flex items-center justify-center rounded-full text-white hover:opacity-80"><i class="fab fa-linkedin-in text-xs"></i></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="max-w-7xl mx-auto px-8 pt-8 border-t border-gray-700 flex justify-between items-center text-xs text-gray-400">
+                    <div class="flex items-center space-x-4">
+                         <span class="text-white font-bold text-lg">guru</span>
+                         <span class="border-l border-gray-600 pl-4">Get Work Done</span>
+                    </div>
+                    <p>Copyright © 2026, Guru.com</p>
+                </div>
+            </footer>
+        );
+
+        const App = () => (
+            <div class="min-h-screen flex flex-col">
+                <Navbar />
+                <main class="flex-grow">
+                    <Hero />
+                    <CategorySection />
+                </main>
+                <Footer />
+            </div>
+        );
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

@@ -1,15 +1,27 @@
-const path = require("path");
 const express = require("express");
 const cors = require("cors");
 
-require("dotenv").config({
-  path: path.resolve(__dirname, "..", "..", ".env"),
-});
+const path = require("path");
+require("dotenv").config({ path: path.join(__dirname, "..", "..", ".env") });
+
+if (!process.env.JWT_ACCESS_SECRET || !process.env.JWT_REFRESH_SECRET) {
+  console.warn(
+    "[auth] Thiếu JWT_ACCESS_SECRET hoặc JWT_REFRESH_SECRET trong .env — token sẽ không hợp lệ.",
+  );
+}
 
 const { pool, query } = require("./db/pool");
 const authRoutes = require("./routes/auth.routes");
+const usersRoutes = require("./routes/users.routes");
+const contractsRoutes = require("./routes/contracts.routes");
+const contractsLegacyRoutes = require("./routes/contracts.legacy.routes");
+const freelancersRoutes = require("./routes/freelancers.routes");
 const jobsRoutes = require("./routes/jobs.routes");
+const jobsMeRoutes = require("./routes/jobs.me.routes");
+const jobsLegacyRoutes = require("./routes/jobs.legacy.routes");
 const servicesRoutes = require("./routes/services.routes");
+const servicesMeRoutes = require("./routes/services.me.routes");
+const servicesLegacyRoutes = require("./routes/services.legacy.routes");
 
 const app = express();
 const PORT = Number(process.env.PORT) || 5000;
@@ -23,9 +35,22 @@ app.use(
 );
 app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));
 app.use(express.json({ limit: "6mb" }));
+
 app.use("/api/auth", authRoutes);
+app.use("/api/users", usersRoutes);
+app.use("/api/contracts", contractsRoutes);
+app.use("/api/freelancers", freelancersRoutes);
 app.use("/api/jobs", jobsRoutes);
+app.use("/api/jobs/me", jobsMeRoutes);
 app.use("/api/services", servicesRoutes);
+app.use("/api/services/me", servicesMeRoutes);
+
+/** Legacy: /api/auth/me/*, /api/auth/freelancers, … */
+app.use("/api/auth", usersRoutes);
+app.use("/api/auth", contractsLegacyRoutes);
+app.use("/api/auth/freelancers", freelancersRoutes);
+app.use("/api/auth", jobsLegacyRoutes);
+app.use("/api/auth", servicesLegacyRoutes);
 
 app.get("/health", async (_req, res) => {
   try {

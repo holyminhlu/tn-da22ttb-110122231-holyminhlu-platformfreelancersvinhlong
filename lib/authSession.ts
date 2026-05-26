@@ -1,73 +1,84 @@
-/** Client-side auth helpers: access tokens expire quickly; refresh prolongs the session. */
+import { apiUrl, getApiBaseUrl } from "@/config/api.config";
+import type { AuthUser } from "@/lib/api/auth";
 
-import { apiPaths, apiUrl, getApiBaseUrl } from "@/config/api.config";
+export const VLC_USER_STORAGE_KEY = "vlc_current_user";
+export const VLC_USER_UPDATED_EVENT = "vlc-user-updated";
 
-export { getApiBaseUrl };
-
-export function clearVlcAuth() {
-  if (typeof window === "undefined") return;
-  window.localStorage.removeItem("vlc_current_user");
-  window.localStorage.removeItem("vlc_access_token");
-  window.localStorage.removeItem("vlc_refresh_token");
-}
-
-type RefreshResponse = {
-  message?: string;
-  tokens?: { accessToken?: string; refreshToken?: string };
+export type StoredUser = {
+  id: string;
+  email: string;
+  role: string;
+  fullName?: string;
+  avatarUrl?: string;
 };
 
-/**
- * POST /api/auth/refresh — updates vlc_access_token (and refresh if server rotates it).
- */
-export async function refreshAccessToken(apiBaseUrl = getApiBaseUrl()): Promise<string | null> {
-  if (typeof window === "undefined") return null;
-  const refreshToken = window.localStorage.getItem("vlc_refresh_token");
-  if (!refreshToken) return null;
+export function toStoredUser(user: AuthUser): StoredUser {
+  return {
+    id: user.id,
+    email: user.email,
+    role: user.role,
+    fullName: user.fullName || "",
+    avatarUrl: user.avatarUrl || "",
+  };
+}
 
+export function getStoredUser(): StoredUser | null {
+  if (typeof window === "undefined") return null;
+  const raw = window.localStorage.getItem(VLC_USER_STORAGE_KEY);
+  if (!raw) return null;
   try {
-    const res = await fetch(apiUrl(apiPaths.auth.refresh, apiBaseUrl), {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ refreshToken }),
-    });
-    const data = (await res.json()) as RefreshResponse;
-    if (!res.ok || !data.tokens?.accessToken) return null;
-    window.localStorage.setItem("vlc_access_token", data.tokens.accessToken);
-    if (data.tokens.refreshToken) {
-      window.localStorage.setItem("vlc_refresh_token", data.tokens.refreshToken);
-    }
-    return data.tokens.accessToken;
+    const parsed = JSON.parse(raw) as StoredUser;
+    if (!parsed?.id || !parsed?.email) return null;
+    return parsed;
   } catch {
     return null;
   }
 }
 
-/**
- * Adds Bearer token; if missing tries refresh. On 401, refreshes once and retries the same request.
- */
-export async function authorizedFetch(input: RequestInfo | URL, init: RequestInit = {}, apiBaseUrl = getApiBaseUrl()): Promise<Response> {
-  if (typeof window === "undefined") {
-    return fetch(input, init);
-  }
+export function persistStoredUser(user: StoredUser): void {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(VLC_USER_STORAGE_KEY, JSON.stringify(user));
+  window.dispatchEvent(new Event(VLC_USER_UPDATED_EVENT));
+}
 
-  const headers = new Headers(init.headers ?? undefined);
-  let token = window.localStorage.getItem("vlc_access_token");
-  if (!token) {
-    token = await refreshAccessToken(apiBaseUrl);
+export function persistAuthTokens(tokens: {
+  accessToken?: string | null;
+  refreshToken?: string | null;
+}): void {
+  if (typeof window === "undefined") return;
+  if (tokens.accessToken) {
+    window.localStorage.setItem("vlc_access_token", tokens.accessToken);
   }
-  if (token) {
-    headers.set("Authorization", `Bearer ${token}`);
+  if (tokens.refreshToken) {
+    window.localStorage.setItem("vlc_refresh_token", tokens.refreshToken);
   }
+}
 
-  let response = await fetch(input, { ...init, headers });
+export function clearStoredSession(): void {
+  if (typeof window === "undefined") return;
+  window.localStorage.removeItem(VLC_USER_STORAGE_KEY);
+  window.localStorage.removeItem("vlc_access_token");
+  window.localStorage.removeItem("vlc_refresh_token");
+  window.dispatchEvent(new Event(VLC_USER_UPDATED_EVENT));
+}
 
-  if (response.status === 401) {
-    const next = await refreshAccessToken(apiBaseUrl);
-    if (next) {
-      headers.set("Authorization", `Bearer ${next}`);
-      response = await fetch(input, { ...init, headers });
+export function resolveAvatarSrc(url?: string | null): string | undefined {
+  const trimmed = String(url || "").trim();
+  if (!trimmed) return undefined;
+  if (/^https?:\/\//i.test(trimmed) || trimmed.startsWith("data:")) return trimmed;
+  const path = trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
+  return apiUrl(path, getApiBaseUrl());
+}
+
+export function getUserInitials(fullName?: string, email?: string): string {
+  const name = String(fullName || "").trim();
+  if (name) {
+    const parts = name.split(/\s+/).filter(Boolean);
+    if (parts.length >= 2) {
+      return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
     }
+    return name.slice(0, 2).toUpperCase();
   }
-
-  return response;
+  const mail = String(email || "").trim();
+  return mail ? mail.slice(0, 2).toUpperCase() : "?";
 }

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Guru - How Can We Help You?</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/react@18.0.0/umd/react.development.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/react-dom@18.0.0/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<style>
+        body {
+            font-family: 'Open Sans', sans-serif;
+        }
+        .hero-bg {
+            background: linear-gradient(135deg, #2d364a 0%, #3e485d 100%);
+            clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);
+        }
+        .account-card:hover {
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+<div id="root"></div>
+<script type="text/babel">
+        const { useState } = React;
+
+        const Navbar = () => (
+            <nav class="bg-white border-b border-gray-100 px-4 py-3 flex items-center justify-between sticky top-0 z-50">
+                <div class="flex items-center space-x-8">
+                    <img src="https://www.guru.com/images/guru-logo.svg" alt="Guru Logo" class="h-8" onerror="this.src='https://placehold.co/100x40?text=Guru'"/>
+                    <div class="hidden md:flex space-x-6 text-gray-700 font-medium text-sm">
+                        <a href="#" class="hover:text-blue-600">Find Freelancers</a>
+                        <a href="#" class="hover:text-blue-600">Find Jobs</a>
+                        <div class="relative group cursor-pointer flex items-center">
+                            <span>About</span>
+                            <i class="fas fa-chevron-down ml-1 text-[10px]"></i>
+                        </div>
+                        <div class="relative group cursor-pointer flex items-center">
+                            <span>Solutions</span>
+                            <i class="fas fa-chevron-down ml-1 text-[10px]"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-6 text-sm font-medium">
+                    <button class="bg-[#2d76c1] text-white px-4 py-2 rounded font-semibold hover:bg-blue-700 transition">Post a Job</button>
+                    <a href="#" class="text-gray-700 flex items-center hover:text-blue-600">
+                        <i class="far fa-edit mr-1"></i> Sign Up
+                    </a>
+                    <a href="#" class="text-gray-700 flex items-center hover:text-blue-600">
+                        <i class="fas fa-sign-in-alt mr-1"></i> Log In
+                    </a>
+                </div>
+            </nav>
+        );
+
+        const Footer = () => (
+            <footer class="bg-[#2d364a] text-white pt-16 pb-8">
+                <div class="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-5 gap-8 mb-12">
+                    <div>
+                        <h4 class="font-bold text-lg mb-6">Navigate</h4>
+                        <ul class="space-y-3 text-sm text-gray-300">
+                            <li><a href="#" class="hover:text-white">Home</a></li>
+                            <li><a href="#" class="hover:text-white">Post a Job</a></li>
+                            <li><a href="#" class="hover:text-white">Find a Freelancer</a></li>
+                            <li><a href="#" class="hover:text-white">Find a Job</a></li>
+                            <li><a href="#" class="hover:text-white">Enterprise Solutions</a></li>
+                            <li><a href="#" class="hover:text-white">Agency Solutions</a></li>
+                            <li><a href="#" class="hover:text-white">PO Solutions</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-lg mb-6">Company Info</h4>
+                        <ul class="space-y-3 text-sm text-gray-300">
+                            <li><a href="#" class="hover:text-white">About Guru</a></li>
+                            <li><a href="#" class="hover:text-white">How Guru Works</a></li>
+                            <li><a href="#" class="hover:text-white">Why Guru</a></li>
+                            <li><a href="#" class="hover:text-white">Pricing</a></li>
+                            <li><a href="#" class="hover:text-white">Blog</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-lg mb-6">Resources</h4>
+                        <ul class="space-y-3 text-sm text-gray-300">
+                            <li><a href="#" class="hover:text-white">Help & FAQ</a></li>
+                            <li><a href="#" class="hover:text-white">Blog</a></li>
+                            <li><a href="#" class="hover:text-white">Contact Us</a></li>
+                            <li><a href="#" class="hover:text-white">APIs</a></li>
+                            <li><a href="#" class="hover:text-white">Sitemap</a></li>
+                            <li><a href="#" class="hover:text-white">Cookie Settings</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-lg mb-6">Policies</h4>
+                        <ul class="space-y-3 text-sm text-gray-300">
+                            <li><a href="#" class="hover:text-white">IP Policy</a></li>
+                            <li><a href="#" class="hover:text-white">Privacy Policy</a></li>
+                            <li><a href="#" class="hover:text-white">Terms of Service</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-lg mb-6">Connect with Us</h4>
+                        <div class="flex space-x-3">
+                            <a href="#" class="w-10 h-10 bg-[#3b5998] rounded-full flex items-center justify-center hover:opacity-80 transition"><i class="fab fa-facebook-f"></i></a>
+                            <a href="#" class="w-10 h-10 bg-black rounded-full flex items-center justify-center hover:opacity-80 transition"><i class="fab fa-twitter"></i></a>
+                            <a href="#" class="w-10 h-10 bg-[#0077b5] rounded-full flex items-center justify-center hover:opacity-80 transition"><i class="fab fa-linkedin-in"></i></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="max-w-7xl mx-auto px-6 pt-8 border-t border-gray-600 flex flex-col md:flex-row justify-between items-center text-xs text-gray-400">
+                    <div class="flex items-center mb-4 md:mb-0">
+                        <img src="https://www.guru.com/images/guru-logo-white.svg" alt="Guru Logo" class="h-6 mr-3 opacity-70" onerror="this.src='https://placehold.co/80x25/white/gray?text=Guru'"/>
+                        <span>| Get Work Done</span>
+                    </div>
+                    <div>Copyright © 2026, Guru.com</div>
+                </div>
+            </footer>
+        );
+
+        const App = () => {
+            return (
+                <div class="min-h-screen flex flex-col">
+                    <Navbar />
+                    
+                    <main class="flex-grow">
+                        {/* Hero Section */}
+                        <div class="hero-bg text-white pt-24 pb-48 text-center relative px-4">
+                            <h1 class="text-5xl font-bold mb-4">How Can We Help You?</h1>
+                            <p class="text-xl font-medium opacity-90">Select an account type</p>
+                        </div>
+
+                        {/* Card Section */}
+                        <div class="max-w-2xl mx-auto -mt-32 relative z-10 px-4">
+                            <div class="bg-white rounded-xl shadow-xl overflow-hidden">
+                                <button class="w-full flex items-center justify-between p-8 border-b border-gray-100 hover:bg-gray-50 transition account-card text-left">
+                                    <div class="flex items-center">
+                                        <div class="w-16 h-16 rounded-full border-2 border-blue-100 flex items-center justify-center mr-6">
+                                            <svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                            </svg>
+                                        </div>
+                                        <span class="text-xl font-semibold text-gray-800">I’m an Employer</span>
+                                    </div>
+                                    <i class="fas fa-chevron-right text-blue-500 text-xl"></i>
+                                </button>
+                                <button class="w-full flex items-center justify-between p-8 hover:bg-gray-50 transition account-card text-left">
+                                    <div class="flex items-center">
+                                        <div class="w-16 h-16 rounded-full border-2 border-blue-100 flex items-center justify-center mr-6">
+                                            <svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                            </svg>
+                                        </div>
+                                        <span class="text-xl font-semibold text-gray-800">I’m a Freelancer</span>
+                                    </div>
+                                    <i class="fas fa-chevron-right text-blue-500 text-xl"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Quick Links Section */}
+                        <div class="max-w-5xl mx-auto py-24 px-4 flex flex-col md:flex-row justify-center items-center gap-12 text-center">
+                            <div class="flex-1 max-w-sm">
+                                <h3 class="text-lg font-bold text-gray-800 mb-6">Looking for experts with a specific skill?</h3>
+                                <button class="border-2 border-blue-500 text-blue-500 font-bold px-8 py-2 rounded hover:bg-blue-50 transition">
+                                    Find Freelancers Now
+                                </button>
+                            </div>
+                            <div class="w-px h-32 bg-gray-200 hidden md:block"></div>
+                            <div class="flex-1 max-w-sm">
+                                <h3 class="text-lg font-bold text-gray-800 mb-6">Looking for jobs that match your skills?</h3>
+                                <button class="border-2 border-blue-500 text-blue-500 font-bold px-8 py-2 rounded hover:bg-blue-50 transition">
+                                    Find Jobs Now
+                                </button>
+                            </div>
+                        </div>
+                    </main>
+
+                    <Footer />
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

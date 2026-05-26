@@ -1,0 +1,35 @@
+export function formatVnd(amount: string | number | null | undefined): string {
+  const n = Number(amount);
+  if (!Number.isFinite(n)) return "—";
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+    maximumFractionDigits: 0,
+  }).format(n);
+}
+
+export function formatDate(value: string | null | undefined): string {
+  if (!value) return "—";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "—";
+  return d.toLocaleDateString("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+}
+
+export function parseJsonArray(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value.map((v) => String(v)).filter(Boolean);
+  }
+  if (typeof value === "string") {
+    try {
+      const parsed = JSON.parse(value) as unknown;
+      if (Array.isArray(parsed)) return parsed.map((v) => String(v)).filter(Boolean);
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}

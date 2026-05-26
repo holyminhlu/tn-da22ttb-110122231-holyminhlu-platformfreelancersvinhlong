@@ -6,7 +6,7 @@ export const DEFAULT_API_BASE_URL = "http://localhost:5000";
 
 export function getApiBaseUrl(): string {
   const raw = process.env.NEXT_PUBLIC_API_URL;
-  return (typeof raw === "string" && raw.trim() !== "" ? raw.trim() : DEFAULT_API_BASE_URL);
+  return typeof raw === "string" && raw.trim() !== "" ? raw.trim() : DEFAULT_API_BASE_URL;
 }
 
 export function normalizeApiBase(base: string): string {
@@ -19,7 +19,7 @@ export function apiUrl(path: string, base: string = getApiBaseUrl()): string {
   return `${normalizeApiBase(base)}${normalizedPath}`;
 }
 
-/** Đường dẫn tương đối (prefix `/api/...`) — ghép với base qua `apiUrl`. */
+/** Đường dẫn tương đối (prefix `/api/...`) — ghép với base qua `apiUrl` hoặc `fetchApi`. */
 export const apiPaths = {
   auth: {
     google: "/api/auth/google",
@@ -27,32 +27,61 @@ export const apiPaths = {
     register: "/api/auth/register",
     logout: "/api/auth/logout",
     refresh: "/api/auth/refresh",
-    freelancers: "/api/auth/freelancers",
-    me: "/api/auth/me",
-    meAvatar: "/api/auth/me/avatar",
-    meContracts: "/api/auth/me/contracts",
-    meContract: (contractId: string) => `/api/auth/me/contracts/${contractId}`,
-    meContractReview: (contractId: string) => `/api/auth/me/contracts/${contractId}/review`,
-    meMyWork: "/api/auth/me/my-work",
-    meJobImages: "/api/auth/me/job-images",
-    meJob: "/api/auth/me/job",
-    meJobsAccept: (jobId: string) => `/api/auth/me/jobs/${jobId}/accept`,
-    meService: "/api/auth/me/service",
-    meServiceById: (serviceId: string) => `/api/auth/me/service/${serviceId}`,
-    meServiceDemo: "/api/auth/me/service-demo",
-    meServiceImages: "/api/auth/me/service-images",
-    meServiceThumbnail: "/api/auth/me/service-thumbnail",
-    meProfile: "/api/auth/me/profile",
-    meSkills: "/api/auth/me/skills",
-    mePortfolio: "/api/auth/me/portfolio",
+  },
+  users: {
+    me: "/api/users/me",
+    feedback: "/api/users/me/feedback",
+    profileStats: "/api/users/me/profile-stats",
+    identityVerification: "/api/users/me/identity-verification",
+    identitySelfie: "/api/users/me/identity-verification/selfie",
+    identityIdFront: "/api/users/me/identity-verification/id-front",
+    identityIdBack: "/api/users/me/identity-verification/id-back",
+    identityAddressProof: "/api/users/me/identity-verification/address-proof",
+    identityCard: "/api/users/me/identity-verification/card",
+    identityCardVerifyCharge: "/api/users/me/identity-verification/card/verify-charge",
+    profile: "/api/users/me/profile",
+    changeEmail: "/api/users/me/email",
+    changePassword: "/api/users/me/password",
+    avatar: "/api/users/me/avatar",
+    skills: "/api/users/me/skills",
+    portfolio: "/api/users/me/portfolio",
+  },
+  contracts: {
+    list: "/api/contracts",
+    myWork: "/api/contracts/my-work",
+    review: (contractId: string) => `/api/contracts/${contractId}/review`,
+    patch: (contractId: string) => `/api/contracts/${contractId}`,
+  },
+  freelancers: {
+    list: "/api/freelancers",
+    detail: (id: string) => `/api/freelancers/${id}`,
+    /** Legacy — tương thích client cũ */
+    listLegacy: "/api/auth/freelancers",
+    detailLegacy: (id: string) => `/api/auth/freelancers/${id}`,
   },
   jobs: {
     list: "/api/jobs",
-    detail: (jobId: string) => `/api/jobs/${jobId}`,
+    categories: "/api/jobs/categories",
+    detail: (id: string) => `/api/jobs/${id}`,
+    create: "/api/jobs/me/job",
+    images: "/api/jobs/me/job-images",
+    accept: (jobId: string) => `/api/jobs/me/jobs/${jobId}/accept`,
+    /** Legacy */
+    createLegacy: "/api/auth/me/job",
+    imagesLegacy: "/api/auth/me/job-images",
+    acceptLegacy: (jobId: string) => `/api/auth/me/jobs/${jobId}/accept`,
   },
   services: {
     list: "/api/services",
-    detail: (serviceId: string) => `/api/services/${serviceId}`,
     categories: "/api/services/categories",
+    detail: (id: string) => `/api/services/${id}`,
+    create: "/api/services/me/service",
+    update: (id: string) => `/api/services/me/service/${id}`,
+    images: "/api/services/me/service-images",
+    thumbnail: "/api/services/me/service-thumbnail",
+    demo: "/api/services/me/service-demo",
+    /** Legacy */
+    createLegacy: "/api/auth/me/service",
+    updateLegacy: (id: string) => `/api/auth/me/service/${id}`,
   },
 } as const;

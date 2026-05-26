@@ -4,14 +4,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import GoogleButton from "./GoogleButton";
-import { apiPaths, apiUrl, getApiBaseUrl } from "@/config/api.config";
+import { login } from "@/lib/api/auth";
+import { isFreelancerRole } from "@/hooks/useStoredUser";
+import { persistAuthTokens, persistStoredUser, toStoredUser } from "@/lib/authSession";
 import styles from "./auth.module.css";
-
-type LoginResponse = {
-  message: string;
-  user?: { id: string; email: string; role: string; fullName?: string | null; avatarUrl?: string | null };
-  tokens?: { accessToken: string; refreshToken: string };
-};
 
 export default function LoginForm() {
   const router = useRouter();
@@ -20,8 +16,6 @@ export default function LoginForm() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
-
-  const apiBaseUrl = getApiBaseUrl();
 
   useEffect(() => {
     if (!error) return;
@@ -36,42 +30,23 @@ export default function LoginForm() {
     setLoading(true);
 
     try {
-      const response = await fetch(apiUrl(apiPaths.auth.login, apiBaseUrl), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-      const data = (await response.json()) as LoginResponse;
-
-      if (!response.ok) {
-        setError(data.message || "Đăng nhập thất bại.");
-        return;
-      }
+      const data = await login({ email, password });
 
       if (typeof window !== "undefined" && data.user) {
-        window.localStorage.setItem(
-          "vlc_current_user",
-          JSON.stringify({
-            id: data.user.id,
-            email: data.user.email,
-            role: data.user.role,
-            fullName: data.user.fullName || "",
-            avatarUrl: data.user.avatarUrl || "",
-          }),
-        );
-        if (data.tokens?.accessToken) {
-          window.localStorage.setItem("vlc_access_token", data.tokens.accessToken);
-        }
-        if (data.tokens?.refreshToken) {
-          window.localStorage.setItem("vlc_refresh_token", data.tokens.refreshToken);
-        }
+        persistAuthTokens({
+          accessToken: data.tokens?.accessToken,
+          refreshToken: data.tokens?.refreshToken,
+        });
+        persistStoredUser(toStoredUser(data.user));
       }
 
       setSuccess(`${data.message} (${data.user?.role ?? "user"})`);
-      router.push("/");
+      const destination = isFreelancerRole(data.user?.role) ? "/dashboard" : "/";
+      router.push(destination);
       router.refresh();
-    } catch {
-      setError("Không thể kết nối máy chủ.");
+    } catch (err) {
+      const message = err && typeof err === "object" && "message" in err ? String((err as { message: string }).message) : "";
+      setError(message || "Không thể kết nối máy chủ.");
     } finally {
       setLoading(false);
     }

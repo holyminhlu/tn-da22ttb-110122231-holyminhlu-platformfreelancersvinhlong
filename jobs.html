@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+
+<html lang="vi">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Guru - Việc làm</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/react@18.0.0/umd/react.development.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/react-dom@18.0.0/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&amp;display=swap" rel="stylesheet"/>
+<style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f7f7f7;
+        }
+        .nav-shadow {
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .active-tab {
+            border-bottom: 3px solid #3b82f6;
+            color: #111827;
+        }
+        .custom-dropdown-shadow {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+<body>
+<div id="app"></div>
+<script type="text/babel">
+        const { useState } = React;
+
+        const Header = () => (
+            <header className="bg-white border-b border-gray-200">
+                <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+                    <div className="flex items-center space-x-8">
+                        <div className="flex items-center">
+                            <i className="fas fa-user-friends text-2xl text-gray-800 mr-2"></i>
+                            <span className="text-2xl font-bold text-gray-800">guru</span>
+                        </div>
+                        <div className="relative">
+                            <input 
+                                type="text" 
+                                placeholder="Tìm việc làm" 
+                                className="border border-gray-300 rounded px-3 py-1.5 w-72 focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm"
+                            />
+                            <button className="absolute right-2 top-2 text-gray-400">
+                                <i className="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div className="flex items-center space-x-6 text-gray-600">
+                        <div className="relative group cursor-pointer">
+                            <i className="far fa-comment-alt text-lg"></i>
+                            <i className="fas fa-caret-down text-[10px] ml-1"></i>
+                        </div>
+                        <div className="relative group cursor-pointer">
+                            <i className="far fa-bell text-lg"></i>
+                            <i className="fas fa-caret-down text-[10px] ml-1"></i>
+                        </div>
+                        <div className="flex items-center cursor-pointer border-l pl-4 border-gray-200">
+                            <img src="https://placehold.co/32x32" alt="Profile" className="w-8 h-8 rounded-sm bg-blue-100" />
+                            <i className="fas fa-caret-down text-[10px] ml-1"></i>
+                        </div>
+                    </div>
+                </div>
+                <nav className="bg-white border-b border-gray-200">
+                    <div className="max-w-6xl mx-auto px-4">
+                        <div className="flex space-x-0">
+                            <a href="#" className="px-6 py-3 text-sm font-medium text-gray-600 hover:text-black">Bảng điều khiển</a>
+                            <a href="#" className="px-6 py-3 text-sm font-medium text-gray-600 hover:text-black">Tìm việc làm</a>
+                            <a href="#" className="px-6 py-3 text-sm font-medium border-b-2 border-blue-500 text-black bg-gray-50">Việc làm</a>
+                            <a href="#" className="px-6 py-3 text-sm font-medium text-gray-600 hover:text-black">Thanh toán</a>
+                        </div>
+                    </div>
+                </nav>
+            </header>
+        );
+
+        const Footer = () => (
+            <footer className="bg-[#fcfcfc] border-t border-gray-200 pt-12 pb-8 mt-20">
+                <div className="max-w-6xl mx-auto px-4 grid grid-cols-1 md:grid-cols-5 gap-8 mb-12">
+                    <div>
+                        <h4 className="font-bold text-gray-800 mb-4 text-sm">Điều hướng</h4>
+                        <ul className="text-sm text-gray-600 space-y-2">
+                            <li>Bảng điều khiển</li>
+                            <li>Tìm việc làm</li>
+                            <li>Việc làm</li>
+                            <li>Thanh toán</li>
+                            <li>Giải pháp đại lý</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 className="font-bold text-gray-800 mb-4 text-sm">Thông tin công ty</h4>
+                        <ul className="text-sm text-gray-600 space-y-2">
+                            <li>Giới thiệu về Guru</li>
+                            <li>Cách thức hoạt động của Guru</li>
+                            <li>Tại sao lại là Guru</li>
+                            <li>Thỏa thuận lao động</li>
+                            <li>SafePay</li>
+                            <li>Giá cả</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 className="font-bold text-gray-800 mb-4 text-sm">Tài nguyên</h4>
+                        <ul className="text-sm text-gray-600 space-y-2">
+                            <li>Trợ giúp & Câu hỏi thường gặp</li>
+                            <li>Blog</li>
+                            <li>Liên hệ với chúng tôi</li>
+                            <li>Ứng dụng di động</li>
+                            <li>API</li>
+                            <li>Cài đặt cookie</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 className="font-bold text-gray-800 mb-4 text-sm">Chính sách</h4>
+                        <ul className="text-sm text-gray-600 space-y-2">
+                            <li>Chính sách IP</li>
+                            <li>Chính sách bảo mật</li>
+                            <li>Điều khoản dịch vụ</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 className="font-bold text-gray-800 mb-4 text-sm">Hãy ứng tuyển ngay hôm nay!</h4>
+                        <div className="relative mb-6">
+                            <input 
+                                type="text" 
+                                placeholder="Tìm việc làm" 
+                                className="w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none"
+                            />
+                            <button className="absolute right-2 top-2 text-gray-400">
+                                <i className="fas fa-search text-xs"></i>
+                            </button>
+                        </div>
+                        <h4 className="font-bold text-gray-800 mb-4 text-sm">Kết nối với chúng tôi</h4>
+                        <div className="flex space-x-3 mb-6">
+                            <div className="w-8 h-8 rounded-full bg-[#3b5998] flex items-center justify-center text-white"><i className="fab fa-facebook-f text-xs"></i></div>
+                            <div className="w-8 h-8 rounded-full bg-[#000000] flex items-center justify-center text-white"><i className="fab fa-twitter text-xs"></i></div>
+                            <div className="w-8 h-8 rounded-full bg-[#0077b5] flex items-center justify-center text-white"><i className="fab fa-linkedin-in text-xs"></i></div>
+                        </div>
+                        <h4 className="font-bold text-gray-800 mb-4 text-sm">Tải ứng dụng Guru</h4>
+                        <div className="flex space-x-3">
+                            <div className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center text-gray-800"><i className="fab fa-apple text-lg"></i></div>
+                            <div className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center text-gray-800"><i className="fab fa-android text-lg"></i></div>
+                        </div>
+                    </div>
+                </div>
+                <div className="max-w-6xl mx-auto px-4 border-t border-gray-200 pt-6 flex justify-between items-center text-gray-500 text-xs">
+                    <div className="flex items-center space-x-2">
+                         <div className="flex items-center font-bold text-gray-800 text-base mr-1">
+                            <i className="fas fa-user-friends text-lg mr-1"></i>
+                            <span>guru</span>
+                        </div>
+                        <span>| Hoàn thành công việc</span>
+                    </div>
+                    <div>Bản quyền © 2026, Guru.com</div>
+                </div>
+            </footer>
+        );
+
+        const App = () => {
+            const [selectedFilter, setSelectedFilter] = useState('Tất cả các công việc');
+
+            return (
+                <div className="min-h-screen flex flex-col">
+                    <Header />
+                    
+                    <main className="flex-grow max-w-6xl mx-auto px-4 py-8 w-full">
+                        <h1 className="text-2xl font-normal text-gray-800 mb-8">Việc làm</h1>
+                        
+                        <div className="flex justify-between items-start">
+                            <div className="flex-grow max-w-2xl">
+                                <div className="relative">
+                                    <input 
+                                        type="text" 
+                                        placeholder="Nhập chức danh hoặc mã số công việc" 
+                                        className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                    />
+                                    <button className="absolute right-3 top-3 text-gray-400">
+                                        <i className="fas fa-search"></i>
+                                    </button>
+                                </div>
+                                
+                                <div className="mt-20 text-center">
+                                    <p className="text-gray-500 text-sm">Bạn chưa được nhận vào bất kỳ công việc nào.</p>
+                                    <p className="text-gray-500 text-sm">
+                                        Hãy <a href="#" className="text-blue-600 hover:underline">tìm việc</a> và nộp đơn hoặc <a href="#" className="text-blue-600 hover:underline">theo dõi</a> những công việc bạn thích.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="ml-8 w-80 relative">
+                                <div className="flex items-center justify-between mb-2">
+                                    <div className="flex-grow">
+                                        <div className="border border-gray-300 rounded px-3 py-1.5 flex justify-between items-center cursor-pointer text-sm bg-white">
+                                            <span>Lọc theo: {selectedFilter}</span>
+                                            <i className="fas fa-caret-down text-gray-400"></i>
+                                        </div>
+                                    </div>
+                                    <div className="ml-4 flex items-center text-gray-600 text-xs cursor-pointer">
+                                        Hoạt động gần đây <i className="fas fa-bars ml-1 rotate-90 scale-x-[-1]"></i>
+                                    </div>
+                                </div>
+
+                                {/* Floating Filter Popup as seen in screenshot */}
+                                <div className="absolute top-10 right-0 w-full bg-[#f0f0f0] border border-gray-200 custom-dropdown-shadow z-10 rounded">
+                                    <div className="bg-white p-4 space-y-3">
+                                        <label className="flex items-center space-x-3 cursor-pointer">
+                                            <input type="radio" name="filter" checked className="form-radio text-blue-600" onChange={() => {}} />
+                                            <span className="text-sm text-gray-700 font-medium">Tất cả các công việc</span>
+                                        </label>
+                                        <label className="flex items-center space-x-3 cursor-pointer">
+                                            <div className="w-4 h-4 rounded-full border border-gray-300"></div>
+                                            <span className="text-sm text-gray-600">Công việc đã hoàn thành</span>
+                                        </label>
+                                        <label className="flex items-center space-x-3 cursor-pointer">
+                                            <div className="w-4 h-4 rounded-full border border-gray-300"></div>
+                                            <span className="text-sm text-gray-600">Việc làm đã lưu trữ</span>
+                                        </label>
+                                        <label className="flex items-center space-x-3 cursor-pointer">
+                                            <div className="w-4 h-4 rounded-full border border-gray-300"></div>
+                                            <span className="text-sm text-gray-600">Việc làm có quỹ SafePay</span>
+                                        </label>
+                                        <label className="flex items-center space-x-3 cursor-pointer">
+                                            <div className="w-4 h-4 rounded-full border border-gray-300"></div>
+                                            <span className="text-sm text-gray-600">Các công việc đã lưu trữ có sử dụng quỹ SafePay</span>
+                                        </label>
+                                    </div>
+                                    <div className="p-4 bg-[#f0f0f0]">
+                                        <button className="bg-[#4a81c4] hover:bg-[#3a6ba3] text-white px-6 py-2 rounded text-sm font-medium transition-colors">
+                                            Áp dụng
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </main>
+
+                    <Footer />
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('app'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

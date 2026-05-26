@@ -1,0 +1,384 @@
+.edit-account-page {
+  background-color: #f3f4f6;
+  color: #333;
+}
+
+.edit-account-page .ea-main {
+  width: 100%;
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: 2rem clamp(0.75rem, 2vw, 1rem);
+  box-sizing: border-box;
+}
+
+.edit-account-page .ea-title {
+  margin-bottom: 2rem;
+  font-size: 1.5rem;
+  font-weight: 400;
+  color: #1f2937;
+}
+
+.edit-account-page .ea-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
+@media (min-width: 768px) {
+  .edit-account-page .ea-layout {
+    flex-direction: row;
+    gap: 3rem;
+  }
+}
+
+.edit-account-page .ea-sidebar {
+  width: 100%;
+  flex-shrink: 0;
+}
+
+@media (min-width: 768px) {
+  .edit-account-page .ea-sidebar {
+    width: 14rem;
+  }
+}
+
+.edit-account-page .ea-sidebar-group {
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #9ca3af;
+}
+
+.edit-account-page .ea-sidebar-group:first-child {
+  margin-top: 0;
+}
+
+.edit-account-page .ea-sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+  font-size: 0.875rem;
+  color: #4b5563;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.edit-account-page .ea-sidebar-item:hover:not(:disabled) {
+  color: #2563eb;
+}
+
+.edit-account-page .ea-sidebar-item--active {
+  font-weight: 600;
+  color: #2563eb;
+}
+
+.edit-account-page .ea-sidebar-item:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.edit-account-page .ea-sidebar-icon {
+  width: 1rem;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.edit-account-page .ea-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.edit-account-page .ea-content > * + * {
+  margin-top: 1.5rem;
+}
+
+.edit-account-page .ea-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+  padding: 1.5rem;
+}
+
+.edit-account-page .ea-section-title {
+  margin-bottom: 1rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.edit-account-page .ea-field {
+  margin-bottom: 1rem;
+}
+
+.edit-account-page .ea-field-label {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+.edit-account-page .ea-field-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.25rem;
+  background: #f9fafb;
+  padding: 0.625rem 0.75rem;
+}
+
+.edit-account-page .ea-field-value {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #374151;
+}
+
+.edit-account-page .ea-field-value span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.edit-account-page .ea-edit-btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #2563eb;
+}
+
+.edit-account-page .ea-edit-btn:hover {
+  text-decoration: underline;
+}
+
+.edit-account-page .ea-verified {
+  color: #3b82f6;
+  font-size: 0.75rem;
+}
+
+.edit-account-page .ea-whatsapp {
+  color: #22c55e;
+  font-size: 1.125rem;
+}
+
+.edit-account-page .ea-toggle-row {
+  margin-top: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.edit-account-page .ea-toggle-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.35;
+  color: #374151;
+}
+
+.edit-account-page .ea-toggle {
+  position: relative;
+  display: inline-block;
+  width: 2.5rem;
+  height: 1.25rem;
+  flex-shrink: 0;
+}
+
+.edit-account-page .ea-toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.edit-account-page .ea-toggle-slider {
+  position: absolute;
+  inset: 0;
+  cursor: pointer;
+  border-radius: 9999px;
+  background: #d1d5db;
+  transition: background 0.2s;
+}
+
+.edit-account-page .ea-toggle-slider::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  bottom: 2px;
+  height: 1rem;
+  width: 1rem;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.2s;
+}
+
+.edit-account-page .ea-toggle input:checked + .ea-toggle-slider {
+  background: #2563eb;
+}
+
+.edit-account-page .ea-toggle input:checked + .ea-toggle-slider::before {
+  transform: translateX(1.25rem);
+}
+
+.edit-account-page .ea-address-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.edit-account-page .ea-address-grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 768px) {
+  .edit-account-page .ea-address-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .edit-account-page .ea-address-span-full {
+    grid-column: 1 / -1;
+  }
+}
+
+.edit-account-page .ea-address-value {
+  font-size: 0.875rem;
+  color: #1f2937;
+}
+
+.edit-account-page .ea-loading,
+.edit-account-page .ea-error {
+  padding: 2rem;
+  text-align: center;
+  font-size: 0.875rem;
+}
+
+.edit-account-page .ea-error {
+  color: #b91c1c;
+}
+
+.edit-account-page .ea-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(0 0 0 / 0.4);
+  padding: 1rem;
+}
+
+.edit-account-page .ea-dialog {
+  width: 100%;
+  max-width: 24rem;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  padding: 1.25rem;
+  box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+}
+
+.edit-account-page .ea-dialog h3 {
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.edit-account-page .ea-dialog-input {
+  width: 100%;
+  margin-bottom: 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.25rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  outline: none;
+}
+
+.edit-account-page .ea-dialog-input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 1px #2563eb;
+}
+
+.edit-account-page .ea-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.edit-account-page .ea-dialog-btn {
+  border-radius: 0.25rem;
+  padding: 0.4rem 0.85rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.edit-account-page .ea-dialog-btn--ghost {
+  border: 1px solid #e5e7eb;
+  color: #4b5563;
+}
+
+.edit-account-page .ea-dialog-btn--primary {
+  background: #2563eb;
+  color: #fff;
+}
+
+.edit-account-page .ea-dialog-btn--primary:disabled {
+  opacity: 0.6;
+}
+
+/* Layout dùng chung: menu cố định trái + nội dung phải (mọi trang con tài khoản) */
+.edit-account-page .ea-shell {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: none;
+  padding: 2rem clamp(0.75rem, 2vw, 1.5rem) 2.5rem;
+  box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+  .edit-account-page .ea-shell {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 3rem;
+  }
+}
+
+.edit-account-page .ea-shell__sidebar {
+  flex-shrink: 0;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .edit-account-page .ea-shell__sidebar {
+    width: 14rem;
+    position: sticky;
+    top: 5.5rem;
+    align-self: flex-start;
+    max-height: calc(100vh - 6rem);
+    overflow-y: auto;
+  }
+}
+
+.edit-account-page .ea-shell__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.edit-account-page .ea-shell__content > .ea-main {
+  padding: 0;
+}

@@ -1,6 +1,15 @@
 import type { Metadata } from "next";
-import { Be_Vietnam_Pro } from "next/font/google";
+import { Be_Vietnam_Pro, Geist, Inter } from "next/font/google";
 import "./globals.css";
+import { cn } from "@/lib/utils";
+
+const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
 
 const beVietnam = Be_Vietnam_Pro({
   subsets: ["latin", "vietnamese"],
@@ -21,11 +30,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="vi" className={`${beVietnam.variable} scroll-smooth`}>
-      <body className={`${beVietnam.className} flex min-h-screen flex-col bg-white text-zinc-900 antialiased`}>
+    <html
+      lang="vi"
+      className={cn("scroll-smooth", beVietnam.variable, inter.variable, "font-sans", geist.variable)}
+    >
+      <body className={`${beVietnam.className} flex min-h-screen flex-col bg-background text-foreground antialiased`}>
         <a
           href="#main-content"
-          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-brand-navy focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-brand-green"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-semibold text-zinc-900 focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-emerald-600"
         >
           Bỏ qua đến nội dung chính
         </a>

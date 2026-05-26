@@ -1,0 +1,288 @@
+.edit-account-page .ps-page {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.edit-account-page .ps-heading {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.edit-account-page .ps-section {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+  padding: 1.25rem 1.5rem;
+}
+
+.edit-account-page .ps-section__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.edit-account-page .ps-section__title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.edit-account-page .ps-period {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.edit-account-page .ps-period__btn {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.25rem;
+  background: #fff;
+  padding: 0.3rem 0.65rem;
+  font-size: 0.75rem;
+  color: #4b5563;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.edit-account-page .ps-period__btn:hover {
+  border-color: #93c5fd;
+  color: #2563eb;
+}
+
+.edit-account-page .ps-period__btn--active {
+  border-color: #2563eb;
+  background: #eff6ff;
+  font-weight: 600;
+  color: #2563eb;
+}
+
+.edit-account-page .ps-chart-wrap {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.edit-account-page .ps-chart-y {
+  display: flex;
+  flex-direction: column-reverse;
+  justify-content: space-between;
+  min-height: 8rem;
+  padding-bottom: 1.25rem;
+  font-size: 0.65rem;
+  color: #9ca3af;
+  text-align: right;
+}
+
+.edit-account-page .ps-chart {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  min-height: 8rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.edit-account-page .ps-chart__bar-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+  height: 100%;
+}
+
+.edit-account-page .ps-chart__bar {
+  width: 100%;
+  max-width: 1.25rem;
+  min-height: 2px;
+  border-radius: 2px 2px 0 0;
+  background: #4a81c4;
+  transition: height 0.2s ease;
+}
+
+.edit-account-page .ps-chart__label {
+  margin-top: 0.25rem;
+  font-size: 0.55rem;
+  color: #9ca3af;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  max-height: 2.5rem;
+  overflow: hidden;
+}
+
+.edit-account-page .ps-summary {
+  margin: 0.75rem 0 0;
+  font-size: 0.8125rem;
+  color: #6b7280;
+}
+
+.edit-account-page .ps-metrics {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .edit-account-page .ps-metrics {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.edit-account-page .ps-metric {
+  border: 1px solid #f3f4f6;
+  border-radius: 6px;
+  background: #fafafa;
+  padding: 1rem 1.25rem;
+}
+
+.edit-account-page .ps-metric__label {
+  margin: 0 0 0.35rem;
+  font-size: 0.8125rem;
+  color: #6b7280;
+}
+
+.edit-account-page .ps-metric__value {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.edit-account-page .ps-table-wrap {
+  overflow-x: auto;
+}
+
+.edit-account-page .ps-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+}
+
+.edit-account-page .ps-table th,
+.edit-account-page .ps-table td {
+  border-bottom: 1px solid #f3f4f6;
+  padding: 0.65rem 0.75rem;
+  text-align: left;
+}
+
+.edit-account-page .ps-table th {
+  font-weight: 600;
+  color: #6b7280;
+  background: #fafafa;
+}
+
+.edit-account-page .ps-table td {
+  color: #374151;
+}
+
+.edit-account-page .ps-table__empty {
+  text-align: center;
+  color: #9ca3af;
+  font-style: italic;
+}
+
+.edit-account-page .ps-marketing {
+  display: grid;
+  gap: 1.25rem;
+}
+
+@media (min-width: 768px) {
+  .edit-account-page .ps-marketing {
+    grid-template-columns: 1fr 2fr;
+    align-items: start;
+  }
+}
+
+.edit-account-page .ps-tms {
+  text-align: center;
+  padding: 1rem;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%);
+}
+
+.edit-account-page .ps-tms__score {
+  margin: 0;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #2563eb;
+}
+
+.edit-account-page .ps-tms__label {
+  margin: 0.25rem 0 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #4b5563;
+}
+
+.edit-account-page .ps-tms__sub {
+  margin: 0.15rem 0 0;
+  font-size: 0.65rem;
+  color: #9ca3af;
+}
+
+.edit-account-page .ps-scores {
+  display: grid;
+  gap: 0.65rem;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.edit-account-page .ps-score-item {
+  text-align: center;
+  padding: 0.65rem 0.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: #fafafa;
+}
+
+.edit-account-page .ps-score-item__val {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.edit-account-page .ps-score-item__key {
+  margin: 0.15rem 0 0;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.edit-account-page .ps-marketing__desc {
+  margin: 0.75rem 0 0;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: #6b7280;
+}
+
+.edit-account-page .ps-marketing__link {
+  display: inline-block;
+  margin-top: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.edit-account-page .ps-marketing__link:hover {
+  text-decoration: underline;
+}
+
+.edit-account-page .ps-loading,
+.edit-account-page .ps-error {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.edit-account-page .ps-error {
+  color: #b91c1c;
+}

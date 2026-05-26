@@ -1,0 +1,155 @@
+.edit-account-page .fb-panel {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+  padding: 1.5rem 1.75rem;
+}
+
+.edit-account-page .fb-heading {
+  margin: 0 0 0.5rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.edit-account-page .fb-desc {
+  margin: 0 0 1.25rem;
+  font-size: 0.875rem;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+.edit-account-page .fb-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.edit-account-page .fb-tab {
+  position: relative;
+  border: none;
+  background: transparent;
+  padding: 0.65rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #6b7280;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.edit-account-page .fb-tab:hover {
+  color: #2563eb;
+}
+
+.edit-account-page .fb-tab--active {
+  color: #2563eb;
+}
+
+.edit-account-page .fb-tab--active::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  background: #2563eb;
+}
+
+.edit-account-page .fb-tab-sep {
+  align-self: center;
+  color: #d1d5db;
+  font-size: 0.75rem;
+  user-select: none;
+}
+
+.edit-account-page .fb-empty {
+  padding: 3rem 1rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.edit-account-page .fb-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.edit-account-page .fb-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 1rem 1.25rem;
+  background: #fafafa;
+}
+
+.edit-account-page .fb-card__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  margin-bottom: 0.65rem;
+}
+
+.edit-account-page .fb-card__job {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.edit-account-page .fb-card__job:hover {
+  text-decoration: underline;
+}
+
+.edit-account-page .fb-card__date {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+.edit-account-page .fb-stars {
+  display: flex;
+  gap: 0.15rem;
+  margin-bottom: 0.5rem;
+}
+
+.edit-account-page .fb-star {
+  font-size: 0.875rem;
+  color: #d1d5db;
+}
+
+.edit-account-page .fb-star--on {
+  color: #f59e0b;
+}
+
+.edit-account-page .fb-card__reviewer {
+  margin: 0 0 0.5rem;
+  font-size: 0.8125rem;
+  color: #4b5563;
+}
+
+.edit-account-page .fb-card__comment {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: #374151;
+  white-space: pre-wrap;
+}
+
+.edit-account-page .fb-card__no-comment {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-style: italic;
+  color: #9ca3af;
+}
+
+.edit-account-page .fb-loading,
+.edit-account-page .fb-error {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.edit-account-page .fb-error {
+  color: #b91c1c;
+}

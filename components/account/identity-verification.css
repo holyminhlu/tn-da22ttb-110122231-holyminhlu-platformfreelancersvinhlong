@@ -1,0 +1,888 @@
+﻿.edit-account-page .idv-page {
+  width: 100%;
+  max-width: none;
+}
+
+.edit-account-page .idv-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+@media (min-width: 768px) {
+  .edit-account-page .idv-steps {
+    flex-direction: row;
+  }
+}
+
+.edit-account-page .idv-step {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  min-height: 5rem;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.edit-account-page .idv-step--active {
+  border-color: #3b82f6;
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
+}
+
+.edit-account-page .idv-step--inactive {
+  background: #f3f4f6;
+  color: #9ca3af;
+}
+
+.edit-account-page .idv-step__num {
+  display: flex;
+  width: 2rem;
+  height: 2rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  margin-right: 1rem;
+  border-radius: 50%;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.edit-account-page .idv-step--active .idv-step__num {
+  background: #2563eb;
+  color: #fff;
+}
+
+.edit-account-page .idv-step--inactive .idv-step__num {
+  background: #d1d5db;
+  color: #fff;
+}
+
+.edit-account-page .idv-step__title {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.edit-account-page .idv-step--active .idv-step__title {
+  color: #374151;
+}
+
+.edit-account-page .idv-panel {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  background: #fff;
+  padding: 2rem;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
+  overflow: visible;
+}
+
+.edit-account-page .idv-panel__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.edit-account-page .idv-panel__title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.edit-account-page .idv-progress {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #4b5563;
+}
+
+.edit-account-page .idv-progress__ring {
+  width: 1.25rem;
+  height: 1.25rem;
+  transform: rotate(-90deg);
+}
+
+.edit-account-page .idv-progress__track {
+  fill: transparent;
+  stroke: #e2e8f0;
+  stroke-width: 4;
+}
+
+.edit-account-page .idv-progress__fill {
+  fill: transparent;
+  stroke: #3b82f6;
+  stroke-width: 4;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.3s ease;
+}
+
+.edit-account-page .idv-intro {
+  margin: 0 0 2rem;
+  font-size: 0.9375rem;
+  color: #4b5563;
+}
+
+.edit-account-page .idv-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr;
+  margin-bottom: 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .edit-account-page .idv-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .edit-account-page .idv-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+.edit-account-page .idv-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding: 1.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  background: #fff;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.edit-account-page .idv-card:hover {
+  border-color: #93c5fd;
+}
+
+.edit-account-page .idv-card--selected {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 1px #3b82f6;
+}
+
+.edit-account-page .idv-card--done {
+  border-color: #bbf7d0;
+}
+
+.edit-account-page .idv-card__icon {
+  margin-bottom: 1rem;
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.edit-account-page .idv-card__icon--done {
+  color: #111827;
+  font-size: 1rem;
+}
+
+.edit-account-page .idv-card__icon--active {
+  color: #2563eb;
+}
+
+.edit-account-page .idv-card__icon--muted {
+  color: #d1d5db;
+}
+
+.edit-account-page .idv-card__title {
+  margin: 0 0 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.edit-account-page .idv-card--selected .idv-card__title {
+  color: #111827;
+}
+
+.edit-account-page .idv-card__desc {
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: #6b7280;
+}
+
+.edit-account-page .idv-card__badge {
+  position: absolute;
+  top: 0.65rem;
+  right: 0.65rem;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: #15803d;
+}
+
+.edit-account-page .idv-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e5e7eb;
+  clear: both;
+}
+
+@media (min-width: 768px) {
+  .edit-account-page .idv-footer {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.edit-account-page .idv-start,
+.edit-account-page .idv-btn--primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: auto;
+  max-width: 100%;
+  white-space: nowrap;
+}
+
+.edit-account-page .idv-start {
+  border: none;
+  border-radius: 0.375rem;
+  background: #2563eb;
+  padding: 0.625rem 2rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.edit-account-page .idv-start:hover {
+  background: #1d4ed8;
+}
+
+.edit-account-page .idv-start--secondary {
+  background: #fff;
+  border: 1px solid #d1d5db;
+  color: #374151;
+}
+
+.edit-account-page .idv-start--secondary:hover {
+  background: #f9fafb;
+  border-color: #93c5fd;
+  color: #2563eb;
+}
+
+.edit-account-page .idv-start:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.edit-account-page .idv-detail__actions .idv-msg {
+  margin: 0;
+  width: 100%;
+}
+
+.edit-account-page .idv-footer__hint {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: #4b5563;
+  flex: 1;
+  min-width: 0;
+}
+
+.edit-account-page .idv-footer__hint a {
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.edit-account-page .idv-footer__hint a:hover {
+  text-decoration: underline;
+}
+
+.edit-account-page .idv-loading,
+.edit-account-page .idv-error {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.edit-account-page .idv-error {
+  color: #b91c1c;
+}
+
+.edit-account-page .idv-detail-wrap {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e5e7eb;
+  overflow: visible;
+}
+
+.edit-account-page .idv-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding-bottom: 0.5rem;
+}
+
+.edit-account-page .idv-detail__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid #f3f4f6;
+}
+
+@media (min-width: 480px) {
+  .edit-account-page .idv-detail__actions--row {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+}
+
+.edit-account-page .idv-detail__title {
+  margin: 0 0 0.5rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.edit-account-page .idv-detail__subtitle {
+  margin: 1.25rem 0 0.35rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.edit-account-page .idv-detail__lead {
+  margin: 0 0 1rem;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: #6b7280;
+}
+
+.edit-account-page .idv-field {
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.edit-account-page .idv-field__label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #4b5563;
+}
+
+.edit-account-page .idv-field__input {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 0.25rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.edit-account-page .idv-field__input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 1px #3b82f6;
+}
+
+.edit-account-page .idv-fieldset {
+  margin: 0 0 1rem;
+  padding: 0;
+  border: none;
+}
+
+.edit-account-page .idv-radio {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  color: #374151;
+  cursor: pointer;
+}
+
+.edit-account-page .idv-form-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr 1fr;
+}
+
+@media (max-width: 640px) {
+  .edit-account-page .idv-form-grid,
+  .edit-account-page .idv-form-grid--4 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.edit-account-page .idv-form-grid--4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.edit-account-page .idv-check {
+  display: flex;
+  gap: 0.65rem;
+  align-items: flex-start;
+  margin: 1rem 0;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: #374151;
+  cursor: pointer;
+}
+
+.edit-account-page .idv-check input {
+  margin-top: 0.2rem;
+  flex-shrink: 0;
+}
+
+.edit-account-page .idv-note {
+  margin: 0 0 1rem;
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+.edit-account-page .idv-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.375rem;
+  padding: 0.5rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.edit-account-page .idv-btn--primary {
+  border: none;
+  background: #2563eb;
+  color: #fff;
+}
+
+.edit-account-page .idv-btn--primary:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+
+.edit-account-page .idv-btn--ghost {
+  border: 1px solid #d1d5db;
+  background: #fff;
+  color: #374151;
+}
+
+.edit-account-page .idv-btn--ghost:hover:not(:disabled) {
+  border-color: #93c5fd;
+  color: #2563eb;
+}
+
+.edit-account-page .idv-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.edit-account-page .idv-msg {
+  margin: 0 0 1rem;
+  font-size: 0.8125rem;
+  color: #4b5563;
+}
+
+.edit-account-page .idv-msg--ok {
+  color: #15803d;
+}
+
+.edit-account-page .idv-photo-layout {
+  display: grid;
+  gap: 1.5rem;
+}
+
+@media (min-width: 900px) {
+  .edit-account-page .idv-photo-layout {
+    grid-template-columns: 220px 1fr;
+  }
+}
+
+.edit-account-page .idv-photo-preview {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  background: #f9fafb;
+  overflow: hidden;
+}
+
+.edit-account-page .idv-photo-preview img {
+  display: block;
+  width: 100%;
+  min-height: 200px;
+  object-fit: cover;
+  transition: transform 0.2s;
+}
+
+.edit-account-page .idv-photo-preview__empty {
+  padding: 4rem 1rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: #9ca3af;
+}
+
+.edit-account-page .idv-photo-tools {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.edit-account-page .idv-photo-tools button {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.25rem;
+  background: #fff;
+  padding: 0.35rem 0.5rem;
+  color: #6b7280;
+  cursor: pointer;
+}
+
+.edit-account-page .idv-guide-cols {
+  display: grid;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .edit-account-page .idv-guide-cols {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.edit-account-page .idv-guide__ok {
+  margin: 0 0 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #15803d;
+}
+
+.edit-account-page .idv-guide__bad {
+  margin: 0 0 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #b45309;
+}
+
+.edit-account-page .idv-list {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.8125rem;
+  color: #4b5563;
+}
+
+.edit-account-page .idv-list--bad {
+  color: #9ca3af;
+}
+
+.edit-account-page .idv-upload {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  width: 100%;
+  max-width: 100%;
+}
+
+.edit-account-page .idv-upload__actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+@media (min-width: 480px) {
+  .edit-account-page .idv-upload__actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+}
+
+.edit-account-page .idv-upload__filename {
+  font-size: 0.8125rem;
+  color: #6b7280;
+  word-break: break-all;
+}
+
+.edit-account-page .idv-file-hidden {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.edit-account-page .idv-upload__label {
+  margin: 0 0 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.edit-account-page .idv-upload__preview {
+  margin-bottom: 0.75rem;
+  max-width: 280px;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.35rem;
+  overflow: hidden;
+}
+
+.edit-account-page .idv-upload__preview img {
+  display: block;
+  width: 100%;
+  max-height: 160px;
+  object-fit: contain;
+  background: #f3f4f6;
+}
+
+.edit-account-page .idv-upload__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.25rem;
+  background: #fff;
+  padding: 0.45rem 0.85rem;
+  font-size: 0.8125rem;
+  color: #374151;
+  cursor: pointer;
+}
+
+.edit-account-page .idv-upload__btn:hover:not(:disabled) {
+  border-color: #3b82f6;
+  color: #2563eb;
+}
+
+.edit-account-page .idv-upload__hint {
+  margin: 0.5rem 0 0;
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+.edit-account-page .idv-detail__actions .idv-upload-row {
+  width: 100%;
+}
+
+.edit-account-page .idv-upload-row {
+  display: grid;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+@media (min-width: 768px) {
+  .edit-account-page .idv-upload-row {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.edit-account-page .idv-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.edit-account-page .idv-chip {
+  border: 1px solid #e5e7eb;
+  border-radius: 9999px;
+  background: #fff;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.75rem;
+  color: #4b5563;
+  cursor: pointer;
+}
+
+.edit-account-page .idv-chip--active {
+  border-color: #3b82f6;
+  background: #eff6ff;
+  color: #2563eb;
+  font-weight: 600;
+}
+
+.edit-account-page .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* â€”â€” XÃ¡c minh tháº» tÃ­n dá»¥ng (bÆ°á»›c 2) â€”â€” */
+.edit-account-page .idv-cc-actions {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr;
+  margin-bottom: 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .edit-account-page .idv-cc-actions {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.edit-account-page .idv-cc-action-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  padding: 1.25rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  background: #fff;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.edit-account-page .idv-cc-action-card:hover:not(:disabled) {
+  border-color: #93c5fd;
+  box-shadow: 0 0 0 1px #93c5fd;
+}
+
+.edit-account-page .idv-cc-action-card:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.edit-account-page .idv-cc-action-card__icon {
+  margin-bottom: 0.75rem;
+  font-size: 1.5rem;
+  color: #2563eb;
+}
+
+.edit-account-page .idv-cc-action-card__title {
+  margin: 0 0 0.35rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.edit-account-page .idv-cc-action-card__desc {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: #6b7280;
+}
+
+.edit-account-page .idv-cc-privacy {
+  margin: 0 0 1rem;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  color: #6b7280;
+}
+
+.edit-account-page .idv-cc-privacy a {
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.edit-account-page .idv-cc-privacy a:hover {
+  text-decoration: underline;
+}
+
+.edit-account-page .idv-cc-wizard-nav {
+  display: flex;
+  gap: 0;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.edit-account-page .idv-cc-wizard-nav__item {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #6b7280;
+  cursor: pointer;
+  margin-bottom: -1px;
+}
+
+.edit-account-page .idv-cc-wizard-nav__item--active {
+  color: #2563eb;
+  border-bottom-color: #2563eb;
+}
+
+.edit-account-page .idv-cc-wizard-nav__item:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.edit-account-page .idv-cc-card-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.edit-account-page .idv-cc-card-row .idv-field__input {
+  flex: 1;
+}
+
+.edit-account-page .idv-cc-brands {
+  display: flex;
+  gap: 0.35rem;
+  flex-shrink: 0;
+}
+
+.edit-account-page .idv-cc-brand {
+  font-size: 0.6rem;
+  font-weight: 700;
+  padding: 0.2rem 0.35rem;
+  border-radius: 0.2rem;
+  letter-spacing: 0.02em;
+}
+
+.edit-account-page .idv-cc-brand--visa {
+  background: #1a1f71;
+  color: #fff;
+}
+
+.edit-account-page .idv-cc-brand--mc {
+  background: #eb001b;
+  color: #fff;
+}
+
+.edit-account-page .idv-cc-charge-note {
+  margin: 0 0 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.375rem;
+  background: #f9fafb;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: #4b5563;
+}
+
+.edit-account-page .idv-cc-charge-note a {
+  color: #2563eb;
+  text-decoration: none;
+}
+
+.edit-account-page .idv-cc-charge-note a:hover {
+  text-decoration: underline;
+}
