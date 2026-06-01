@@ -13,6 +13,8 @@ export type IdentityVerificationRecord = {
   address_state: string | null;
   address_city: string | null;
   address_postal: string | null;
+  address_lat: number | null;
+  address_lng: number | null;
   contact_confirmed: boolean;
   contact_confirmed_at: string | null;
   selfie_url: string | null;
@@ -84,6 +86,8 @@ export type PatchIdentityPayload = {
   addressState?: string;
   addressCity?: string;
   addressPostal?: string;
+  addressLat?: number | null;
+  addressLng?: number | null;
   contactConfirmed?: boolean;
   syncProfile?: boolean;
   phone?: string;

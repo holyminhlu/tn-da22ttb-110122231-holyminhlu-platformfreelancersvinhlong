@@ -14,6 +14,10 @@ export function isFreelancerRole(role?: string | null): boolean {
   return String(role || "").toLowerCase() === "freelancer";
 }
 
+export function isClientRole(role?: string | null): boolean {
+  return String(role || "").toLowerCase() === "client";
+}
+
 export function useStoredUser(options?: { refreshFromApi?: boolean }) {
   const refreshFromApi = options?.refreshFromApi ?? true;
   const [user, setUser] = useState<StoredUser | null>(null);
@@ -63,5 +67,10 @@ export function useStoredUser(options?: { refreshFromApi?: boolean }) {
     };
   }, [refreshFromApi, syncFromStorage]);
 
-  return { user, ready, isFreelancer: isFreelancerRole(user?.role) };
+  return {
+    user,
+    ready,
+    isFreelancer: isFreelancerRole(user?.role),
+    isClient: isClientRole(user?.role),
+  };
 }

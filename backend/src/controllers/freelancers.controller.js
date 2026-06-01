@@ -8,6 +8,7 @@ async function listFreelancers(req, res) {
   const q = String(req.query.q || "").trim();
   const skill = String(req.query.skill || "").trim();
   const district = String(req.query.district || "").trim();
+  const category = String(req.query.category || "").trim();
   const qPattern = q ? `%${q}%` : null;
 
   const dbClient = await pool.connect();
@@ -49,9 +50,24 @@ async function listFreelancers(req, res) {
     }
 
     if (district && district !== "Tất cả") {
-      filterParams.push(district);
+      filterParams.push(`%${district}%`);
       const slot = filterParams.length;
-      whereParts.push(`COALESCE(up.district_city, '') ILIKE $${slot}`);
+      whereParts.push(`(
+        COALESCE(up.district_city, '') ILIKE $${slot}
+        OR COALESCE(up.city, '') ILIKE $${slot}
+        OR COALESCE(up.state_province, '') ILIKE $${slot}
+        OR COALESCE(up.country, '') ILIKE $${slot}
+      )`);
+    }
+
+    if (category && category !== "Tất cả") {
+      filterParams.push(category);
+      const slot = filterParams.length;
+      whereParts.push(`EXISTS (
+        SELECT 1 FROM public.services s_cat
+        WHERE s_cat.freelancer_id = fp.user_id
+          AND COALESCE(s_cat.category, '') ILIKE $${slot}
+      )`);
     }
 
     const whereSql = whereParts.length ? `WHERE ${whereParts.join(" AND ")}` : "";
@@ -68,13 +84,42 @@ async function listFreelancers(req, res) {
          COALESCE(up.bio, '') AS bio,
          up.avatar_url,
          COALESCE(up.district_city, '') AS district_city,
+         COALESCE(up.city, '') AS city,
+         COALESCE(up.state_province, '') AS state_province,
+         COALESCE(up.country, '') AS country,
+         TRIM(BOTH ',' FROM COALESCE(
+           NULLIF(
+             CONCAT_WS(
+               ', ',
+               NULLIF(TRIM(up.city), ''),
+               NULLIF(TRIM(up.state_province), ''),
+               NULLIF(TRIM(up.country), '')
+             ),
+             ''
+           ),
+           NULLIF(TRIM(up.district_city), ''),
+           ''
+         )) AS location_label,
          fp.hourly_rate,
+         fp.total_earnings,
          fp.experience_years,
          fp.avg_response_minutes,
+         fp.job_success_score,
+         COALESCE(fp.profile_badges, '[]'::jsonb) AS profile_badges,
          COALESCE(rv.rating_avg, 0)::float8 AS rating_avg,
          COALESCE(rv.total_reviews, 0)::int AS total_reviews,
          COALESCE(ct.completed_jobs, 0)::int AS completed_jobs,
-         COALESCE(sk.skill_names, ARRAY[]::text[]) AS skills
+         COALESCE(sk.skill_names, ARRAY[]::text[]) AS skills,
+         COALESCE(svc.services_count, 0)::int AS services_count,
+         COALESCE(pf.portfolio_count, 0)::int AS portfolio_count,
+         feat.service_id AS featured_service_id,
+         feat.service_title AS featured_service_title,
+         feat.service_description AS featured_service_description,
+         feat.service_category AS featured_service_category,
+         feat.service_price AS featured_service_price,
+         feat.service_min_package AS featured_service_min_package,
+         feat.service_thumbnail AS featured_service_thumbnail,
+         COALESCE(feat.has_demo_video, false) AS has_demo_video
        FROM public.freelancer_profiles fp
        INNER JOIN public.users u ON u.id = fp.user_id
        LEFT JOIN public.user_profiles up ON up.user_id = fp.user_id
@@ -95,6 +140,41 @@ async function listFreelancers(req, res) {
          JOIN public.skills s ON s.id = us.skill_id
          GROUP BY us.user_id
        ) sk ON sk.user_id = fp.user_id
+       LEFT JOIN (
+         SELECT freelancer_id, COUNT(*)::int AS services_count
+         FROM public.services
+         GROUP BY freelancer_id
+       ) svc ON svc.freelancer_id = fp.user_id
+       LEFT JOIN (
+         SELECT freelancer_id, COUNT(*)::int AS portfolio_count
+         FROM public.freelancer_portfolios
+         WHERE deleted_at IS NULL
+         GROUP BY freelancer_id
+       ) pf ON pf.freelancer_id = fp.user_id
+       LEFT JOIN LATERAL (
+         SELECT
+           s.id AS service_id,
+           s.title AS service_title,
+           s.description AS service_description,
+           s.category AS service_category,
+           s.price AS service_price,
+           s.thumbnail_url AS service_thumbnail,
+           COALESCE(
+             (
+               SELECT MIN(NULLIF((elem->>'price')::numeric, 0))
+               FROM jsonb_array_elements(
+                 CASE WHEN jsonb_typeof(s.packages) = 'array' THEN s.packages ELSE '[]'::jsonb END
+               ) AS elem
+               WHERE elem ? 'price'
+             ),
+             s.price
+           ) AS service_min_package,
+           COALESCE(s.demo_media->>'kind', '') = 'video' AS has_demo_video
+         FROM public.services s
+         WHERE s.freelancer_id = fp.user_id
+         ORDER BY s.created_at DESC
+         LIMIT 1
+       ) feat ON true
        ${whereSql}
        ORDER BY rv.rating_avg DESC NULLS LAST, rv.total_reviews DESC, fp.created_at DESC
        LIMIT $${limitSlot} OFFSET $${offsetSlot}`,
@@ -119,11 +199,36 @@ async function listFreelancers(req, res) {
     );
 
     const districtsFacet = await dbClient.query(
-      `SELECT DISTINCT TRIM(up.district_city) AS name
-       FROM public.user_profiles up
-       INNER JOIN public.users u ON u.id = up.user_id AND u.role = 'freelancer' AND u.deleted_at IS NULL AND u.status = 'active'
-       WHERE up.district_city IS NOT NULL AND TRIM(up.district_city) <> ''
+      `SELECT DISTINCT label AS name
+       FROM (
+         SELECT TRIM(up.district_city) AS label
+         FROM public.user_profiles up
+         INNER JOIN public.users u ON u.id = up.user_id AND u.role = 'freelancer' AND u.deleted_at IS NULL AND u.status = 'active'
+         WHERE up.district_city IS NOT NULL AND TRIM(up.district_city) <> ''
+         UNION
+         SELECT TRIM(up.city) FROM public.user_profiles up
+         INNER JOIN public.users u ON u.id = up.user_id AND u.role = 'freelancer' AND u.deleted_at IS NULL AND u.status = 'active'
+         WHERE up.city IS NOT NULL AND TRIM(up.city) <> ''
+         UNION
+         SELECT TRIM(up.country) FROM public.user_profiles up
+         INNER JOIN public.users u ON u.id = up.user_id AND u.role = 'freelancer' AND u.deleted_at IS NULL AND u.status = 'active'
+         WHERE up.country IS NOT NULL AND TRIM(up.country) <> ''
+       ) loc
+       WHERE label IS NOT NULL AND label <> ''
        ORDER BY name ASC`,
+    );
+
+    const categoriesFacet = await dbClient.query(
+      `SELECT DISTINCT TRIM(s.category) AS name
+       FROM public.services s
+       INNER JOIN public.users u ON u.id = s.freelancer_id AND u.role = 'freelancer' AND u.deleted_at IS NULL AND u.status = 'active'
+       WHERE s.category IS NOT NULL AND TRIM(s.category) <> ''
+       ORDER BY name ASC`,
+    );
+
+    const servicesTotalResult = await dbClient.query(
+      `SELECT COUNT(*)::int AS total FROM public.services s
+       INNER JOIN public.users u ON u.id = s.freelancer_id AND u.role = 'freelancer' AND u.deleted_at IS NULL`,
     );
 
     return res.json({
@@ -131,9 +236,11 @@ async function listFreelancers(req, res) {
       total: countResult.rows[0]?.total ?? 0,
       limit,
       offset,
+      servicesTotal: servicesTotalResult.rows[0]?.total ?? 0,
       filters: {
         skills: skillsFacet.rows.map((row) => row.name).filter(Boolean),
         districts: districtsFacet.rows.map((row) => row.name).filter(Boolean),
+        categories: categoriesFacet.rows.map((row) => row.name).filter(Boolean),
       },
     });
   } catch (error) {
@@ -146,7 +253,7 @@ async function listFreelancers(req, res) {
     if (error.code === "42703") {
       return res.status(503).json({
         message:
-          "Thiếu cột trên user_profiles hoặc freelancer_profiles. Chạy backend/sql/profile_landing_columns.sql trên PostgreSQL.",
+          "Thiếu cột trên user_profiles hoặc freelancer_profiles. Chạy backend/sql/profile_landing_columns.sql và backend/sql/freelancer_search_listing.sql trên PostgreSQL.",
       });
     }
     return res.status(500).json({ message: "Không thể tải danh sách freelancer." });
@@ -175,7 +282,24 @@ async function getFreelancer(req, res) {
          COALESCE(up.bio, '') AS bio,
          COALESCE(up.tagline, '') AS tagline,
          COALESCE(up.district_city, '') AS district_city,
+         COALESCE(up.city, '') AS city,
+         COALESCE(up.state_province, '') AS state_province,
+         COALESCE(up.country, '') AS country,
+         TRIM(BOTH ',' FROM COALESCE(
+           NULLIF(
+             CONCAT_WS(
+               ', ',
+               NULLIF(TRIM(up.city), ''),
+               NULLIF(TRIM(up.state_province), ''),
+               NULLIF(TRIM(up.country), '')
+             ),
+             ''
+           ),
+           NULLIF(TRIM(up.district_city), ''),
+           ''
+         )) AS location_label,
          fp.hourly_rate,
+         fp.total_earnings,
          fp.experience_years,
          fp.avg_response_minutes,
          fp.job_success_score,
@@ -277,9 +401,12 @@ async function getFreelancer(req, res) {
       services: servicesResult.rows.map((row) => ({
         id: row.id,
         title: row.title,
+        description: row.description,
         price: row.price,
         delivery_days: row.delivery_days,
         category: row.category,
+        thumbnail_url: row.thumbnail_url,
+        response_time_hours: row.response_time_hours,
       })),
       portfolio: portfolioResult.rows,
       reviews: reviewsResult.rows,
@@ -294,7 +421,7 @@ async function getFreelancer(req, res) {
     if (error.code === "42703") {
       return res.status(503).json({
         message:
-          "Thiếu cột trên user_profiles hoặc freelancer_profiles. Chạy backend/sql/profile_landing_columns.sql trên PostgreSQL.",
+          "Thiếu cột trên user_profiles hoặc freelancer_profiles. Chạy backend/sql/profile_landing_columns.sql và backend/sql/freelancer_search_listing.sql trên PostgreSQL.",
       });
     }
     return res.status(500).json({ message: "Không thể tải hồ sơ freelancer." });

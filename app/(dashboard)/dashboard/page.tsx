@@ -1,11 +1,10 @@
-import { freelancerPageMetadata } from "@/components/layout/FreelancerPlaceholderPage";
-import FreelancerDashboard from "@/components/dashboard/FreelancerDashboard";
+import DashboardRouter from "@/components/dashboard/DashboardRouter";
 
-export const metadata = freelancerPageMetadata(
-  "Dashboard",
-  "Tổng quan hồ sơ, dịch vụ, đánh giá và hợp đồng của freelancer.",
-);
+export const metadata = {
+  title: "Dashboard — Vĩnh Long Connected",
+  description: "Tổng quan tài khoản client hoặc freelancer.",
+};
 
 export default function DashboardPage() {
-  return <FreelancerDashboard />;
+  return <DashboardRouter />;
 }

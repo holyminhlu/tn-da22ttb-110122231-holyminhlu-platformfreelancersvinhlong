@@ -6,13 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { logout } from "@/lib/api/auth";
 import { clearStoredSession, getUserInitials, resolveAvatarSrc } from "@/lib/authSession";
 import type { StoredUser } from "@/lib/authSession";
-
-const MENU_ITEMS = [
-  { id: "edit-account", label: "Edit Account", enabled: true, href: "/edit-account" },
-  { id: "edit-profile", label: "Edit Profile", enabled: true, href: "/ho-so" },
-  { id: "help", label: "Help", enabled: true, href: "/help" },
-  { id: "logout", label: "Log Out", enabled: true },
-] as const;
+import { getUserMenuItems, type UserMenuEntry } from "./userMenuItems";
 
 type UserAvatarMenuProps = {
   user: StoredUser;
@@ -25,6 +19,7 @@ export default function UserAvatarMenu({ user }: UserAvatarMenuProps) {
   const [open, setOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
 
+  const menuItems = getUserMenuItems(user.role);
   const avatarSrc = resolveAvatarSrc(user.avatarUrl);
   const label = user.fullName?.trim() || user.email;
 
@@ -73,15 +68,14 @@ export default function UserAvatarMenu({ user }: UserAvatarMenuProps) {
     }
   }
 
-  function onMenuItemClick(item: (typeof MENU_ITEMS)[number]) {
-    if (item.id === "logout") {
+  function onMenuItemClick(item: UserMenuEntry) {
+    if (item.type === "logout") {
       void handleLogout();
       return;
     }
+    if (item.type !== "item") return;
     closeMenu();
-    if ("href" in item && item.href) {
-      router.push(item.href);
-    }
+    router.push(item.href);
   }
 
   return (
@@ -109,24 +103,38 @@ export default function UserAvatarMenu({ user }: UserAvatarMenuProps) {
           id={menuId}
           role="menu"
           aria-label="User menu"
-          className="absolute right-0 top-[calc(100%+0.5rem)] z-[60] min-w-[11rem] overflow-hidden rounded-md border border-gray-200 bg-white py-1 shadow-lg"
+          className="absolute right-0 top-[calc(100%+0.5rem)] z-[60] min-w-[14rem] overflow-hidden rounded-md border border-gray-200 bg-white py-1 shadow-lg"
         >
-          {MENU_ITEMS.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              role="menuitem"
-              disabled={!item.enabled || (item.id === "logout" && loggingOut)}
-              className={`home-navbar__user-menu-item block w-full px-4 py-2.5 text-left text-sm ${
-                item.enabled
-                  ? "text-gray-800 hover:bg-gray-50"
-                  : "cursor-default text-gray-400"
-              } ${item.id === "logout" ? "border-t border-gray-100 text-[#0066cc] font-medium" : ""}`}
-              onClick={() => onMenuItemClick(item)}
-            >
-              {item.id === "logout" && loggingOut ? "Logging out..." : item.label}
-            </button>
-          ))}
+          {menuItems.map((item, index) => {
+            if (item.type === "header") {
+              return (
+                <p
+                  key={`header-${index}`}
+                  className="px-4 pb-1 pt-2.5 text-[10px] font-bold tracking-wide text-gray-500"
+                >
+                  {item.label}
+                </p>
+              );
+            }
+
+            const isLogout = item.type === "logout";
+            const disabled = isLogout && loggingOut;
+
+            return (
+              <button
+                key={item.id}
+                type="button"
+                role="menuitem"
+                disabled={disabled}
+                className={`home-navbar__user-menu-item block w-full px-4 py-2.5 text-left text-sm text-gray-800 hover:bg-gray-50 ${
+                  isLogout ? "border-t border-gray-100 font-medium text-[#0066cc]" : ""
+                }`}
+                onClick={() => onMenuItemClick(item)}
+              >
+                {isLogout && loggingOut ? "Đang đăng xuất..." : item.label}
+              </button>
+            );
+          })}
         </div>
       ) : null}
     </div>

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import GoogleButton from "./GoogleButton";
 import { login } from "@/lib/api/auth";
-import { isFreelancerRole } from "@/hooks/useStoredUser";
+import { isClientRole, isFreelancerRole } from "@/hooks/useStoredUser";
 import { persistAuthTokens, persistStoredUser, toStoredUser } from "@/lib/authSession";
 import styles from "./auth.module.css";
 
@@ -41,7 +41,9 @@ export default function LoginForm() {
       }
 
       setSuccess(`${data.message} (${data.user?.role ?? "user"})`);
-      const destination = isFreelancerRole(data.user?.role) ? "/dashboard" : "/";
+      const role = data.user?.role;
+      const destination =
+        isFreelancerRole(role) || isClientRole(role) ? "/dashboard" : "/";
       router.push(destination);
       router.refresh();
     } catch (err) {

@@ -12,16 +12,24 @@ export type JobsListItem = {
   budget: string | number | null;
   activityAt: string;
   hasSafepay: boolean;
+  serviceId?: string | null;
+  workflowStage?: string | null;
+  escrowStatus?: string | null;
+  proposalText?: string | null;
 };
 
 function normalizeStatus(s: string) {
   return String(s || "").toLowerCase();
 }
 
-function isArchived(contractStatus: string, jobStatus: string) {
+export function isWorkspaceArchived(contractStatus: string, jobStatus: string) {
   const cs = normalizeStatus(contractStatus);
   const js = normalizeStatus(jobStatus);
   return cs === "cancelled" || js === "closed";
+}
+
+function isArchived(contractStatus: string, jobStatus: string) {
+  return isWorkspaceArchived(contractStatus, jobStatus);
 }
 
 function isCompleted(contractStatus: string) {
@@ -55,6 +63,10 @@ export function clientJobToListItem(row: MyWorkClientJob): JobsListItem {
     budget: row.budget,
     activityAt: row.delivered_at || row.contract_created_at || row.job_updated_at || row.job_created_at,
     hasSafepay: false,
+    serviceId: row.service_id ?? null,
+    workflowStage: row.workflow_stage ?? null,
+    escrowStatus: row.escrow_status ?? null,
+    proposalText: row.proposal_text ?? null,
   };
 }
 

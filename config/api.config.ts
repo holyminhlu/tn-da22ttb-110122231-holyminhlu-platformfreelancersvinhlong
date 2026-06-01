@@ -49,6 +49,9 @@ export const apiPaths = {
   contracts: {
     list: "/api/contracts",
     myWork: "/api/contracts/my-work",
+    serviceOrders: "/api/contracts/service-orders",
+    fromServiceQuote: "/api/contracts/from-service-quote",
+    workflow: (contractId: string) => `/api/contracts/${contractId}/workflow`,
     review: (contractId: string) => `/api/contracts/${contractId}/review`,
     patch: (contractId: string) => `/api/contracts/${contractId}`,
   },
@@ -63,7 +66,10 @@ export const apiPaths = {
     list: "/api/jobs",
     categories: "/api/jobs/categories",
     detail: (id: string) => `/api/jobs/${id}`,
+    myList: "/api/jobs/me/jobs",
     create: "/api/jobs/me/job",
+    update: (jobId: string) => `/api/jobs/me/jobs/${jobId}`,
+    delete: (jobId: string) => `/api/jobs/me/jobs/${jobId}`,
     images: "/api/jobs/me/job-images",
     accept: (jobId: string) => `/api/jobs/me/jobs/${jobId}/accept`,
     /** Legacy */

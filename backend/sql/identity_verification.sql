@@ -15,6 +15,8 @@ CREATE TABLE IF NOT EXISTS public.identity_verifications (
   address_state character varying(100),
   address_city character varying(100),
   address_postal character varying(20),
+  address_lat double precision,
+  address_lng double precision,
   contact_confirmed boolean NOT NULL DEFAULT false,
   contact_confirmed_at timestamp without time zone,
   selfie_url character varying(500),

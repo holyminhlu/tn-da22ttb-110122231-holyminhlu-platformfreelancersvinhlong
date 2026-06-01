@@ -56,6 +56,8 @@ function mapRow(row) {
     address_state: row.address_state,
     address_city: row.address_city,
     address_postal: row.address_postal,
+    address_lat: row.address_lat != null ? Number(row.address_lat) : null,
+    address_lng: row.address_lng != null ? Number(row.address_lng) : null,
     contact_confirmed: Boolean(row.contact_confirmed),
     contact_confirmed_at: row.contact_confirmed_at,
     selfie_url: row.selfie_url,
@@ -85,6 +87,14 @@ function mapRow(row) {
     card_added_at: row.card_added_at,
     card_verified_at: row.card_verified_at,
   };
+}
+
+function parseOptionalCoord(raw) {
+  if (raw === undefined) return undefined;
+  if (raw === null || String(raw).trim() === "") return null;
+  const n = Number(raw);
+  if (!Number.isFinite(n)) return NaN;
+  return n;
 }
 
 async function ensureRow(db, userId) {
@@ -138,6 +148,12 @@ async function getIdentityVerification(req, res) {
     if (error.code === "42P01") {
       return res.status(503).json({
         message: "Thiếu bảng identity_verifications. Chạy backend/sql/identity_verification.sql.",
+      });
+    }
+    if (error.code === "42703") {
+      return res.status(503).json({
+        message:
+          "Thiếu cột địa chỉ GPS. Chạy backend/sql/identity_verification_address_geo.sql trên PostgreSQL.",
       });
     }
     return res.status(500).json({ message: "Không thể tải xác minh danh tính." });
@@ -199,6 +215,28 @@ async function patchIdentityVerification(req, res) {
       sets.push(`contact_confirmed = true`, `contact_confirmed_at = CURRENT_TIMESTAMP`);
     }
 
+    const addressLat = parseOptionalCoord(body.addressLat);
+    if (addressLat !== undefined) {
+      if (Number.isNaN(addressLat) || addressLat < -90 || addressLat > 90) {
+        await db.query("ROLLBACK");
+        return res.status(400).json({ message: "Vĩ độ địa chỉ không hợp lệ." });
+      }
+      sets.push(`address_lat = $${idx}`);
+      params.push(addressLat);
+      idx += 1;
+    }
+
+    const addressLng = parseOptionalCoord(body.addressLng);
+    if (addressLng !== undefined) {
+      if (Number.isNaN(addressLng) || addressLng < -180 || addressLng > 180) {
+        await db.query("ROLLBACK");
+        return res.status(400).json({ message: "Kinh độ địa chỉ không hợp lệ." });
+      }
+      sets.push(`address_lng = $${idx}`);
+      params.push(addressLng);
+      idx += 1;
+    }
+
     if (body.phone !== undefined) {
       const phone = String(body.phone).trim().slice(0, 40);
       await db.query(
@@ -230,16 +268,19 @@ async function patchIdentityVerification(req, res) {
       );
       const row = idv.rows[0] || {};
       const fullName = [row.legal_first_name, row.legal_last_name].filter(Boolean).join(" ").trim();
-      const districtCity = [row.address_city, row.address_state].filter(Boolean).join(", ").trim();
+      const districtCity =
+        row.address_city?.trim() ||
+        row.address_state?.trim() ||
+        [row.address_city, row.address_state].filter(Boolean).join(", ").trim() ||
+        null;
       if (fullName) {
         await db.query(
           `UPDATE public.user_profiles
            SET full_name = $2,
-               bio = COALESCE(NULLIF($3, ''), bio),
-               district_city = COALESCE(NULLIF($4, ''), district_city),
+               district_city = COALESCE(NULLIF($3, ''), district_city),
                updated_at = NOW()
            WHERE user_id = $1`,
-          [userId, fullName, row.address_street || null, districtCity || null],
+          [userId, fullName, districtCity],
         );
       }
     }
@@ -257,6 +298,12 @@ async function patchIdentityVerification(req, res) {
     if (error.code === "42P01") {
       return res.status(503).json({
         message: "Thiếu bảng identity_verifications. Chạy backend/sql/identity_verification.sql.",
+      });
+    }
+    if (error.code === "42703") {
+      return res.status(503).json({
+        message:
+          "Thiếu cột địa chỉ GPS. Chạy backend/sql/identity_verification_address_geo.sql trên PostgreSQL.",
       });
     }
     return res.status(500).json({ message: "Không thể lưu xác minh danh tính." });

@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict BCDxThd3NHdyhnC48CkE8duw52b99nNe57PJi9Metk7uVU1kYfEFhf6mefZwr0P
+\restrict LvJA9UTBnAi7Ab7LpPRts0CJUPwW1gyrRV15X5h4oqBZwCVepmaJ690QDhYs4ia
 
 -- Dumped from database version 18.3
 -- Dumped by pg_dump version 18.3
@@ -275,6 +275,108 @@ COMMENT ON COLUMN public.freelancer_profiles.profile_badges IS 'Mảng chuỗi h
 
 
 --
+-- Name: identity_verifications; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.identity_verifications (
+    user_id uuid NOT NULL,
+    account_type character varying(20) DEFAULT 'personal'::character varying NOT NULL,
+    use_existing_account_info boolean DEFAULT true NOT NULL,
+    legal_first_name character varying(100),
+    legal_last_name character varying(100),
+    address_search character varying(255),
+    address_street character varying(255),
+    address_country character varying(100) DEFAULT 'Việt Nam'::character varying,
+    address_state character varying(100),
+    address_city character varying(100),
+    address_postal character varying(20),
+    contact_confirmed boolean DEFAULT false NOT NULL,
+    contact_confirmed_at timestamp without time zone,
+    selfie_url character varying(500),
+    id_doc_type character varying(50),
+    id_front_url character varying(500),
+    id_back_url character varying(500),
+    address_proof_type character varying(50),
+    address_proof_url character varying(500),
+    phone_submitted_at timestamp without time zone,
+    photo_submitted_at timestamp without time zone,
+    id_submitted_at timestamp without time zone,
+    address_proof_submitted_at timestamp without time zone,
+    submitted_for_review_at timestamp without time zone,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    card_last4 character varying(4),
+    card_brand character varying(20),
+    card_expiry character varying(7),
+    cardholder_name character varying(120),
+    is_business_card boolean DEFAULT false NOT NULL,
+    billing_street character varying(255),
+    billing_country character varying(100),
+    billing_state character varying(100),
+    billing_city character varying(100),
+    billing_postal character varying(20),
+    billing_phone character varying(40),
+    billing_currency character varying(40) DEFAULT 'VND'::character varying,
+    card_charge_cents integer,
+    card_added_at timestamp without time zone,
+    card_verified_at timestamp without time zone,
+    address_lat double precision,
+    address_lng double precision,
+    CONSTRAINT identity_verifications_account_type_check CHECK (((account_type)::text = ANY ((ARRAY['personal'::character varying, 'company'::character varying])::text[])))
+);
+
+
+ALTER TABLE public.identity_verifications OWNER TO postgres;
+
+--
+-- Name: TABLE identity_verifications; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON TABLE public.identity_verifications IS 'Hồ sơ xác minh danh tính freelancer (KYC).';
+
+
+--
+-- Name: COLUMN identity_verifications.card_charge_cents; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.identity_verifications.card_charge_cents IS 'Số tiền tạm trừ xác minh (cent USD), người dùng nhập lại để xác nhận.';
+
+
+--
+-- Name: COLUMN identity_verifications.address_lat; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.identity_verifications.address_lat IS 'Vĩ độ từ GPS hoặc chọn trên bản đồ (Nominatim).';
+
+
+--
+-- Name: COLUMN identity_verifications.address_lng; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.identity_verifications.address_lng IS 'Kinh độ từ GPS hoặc chọn trên bản đồ (Nominatim).';
+
+
+--
+-- Name: job_quotes; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.job_quotes (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    job_id uuid NOT NULL,
+    freelancer_id uuid NOT NULL,
+    amount numeric(12,2),
+    currency character(3) DEFAULT 'USD'::bpchar NOT NULL,
+    message text,
+    status character varying(20) DEFAULT 'pending'::character varying NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    CONSTRAINT job_quotes_status_check CHECK (((status)::text = ANY ((ARRAY['pending'::character varying, 'accepted'::character varying, 'declined'::character varying, 'withdrawn'::character varying])::text[])))
+);
+
+
+ALTER TABLE public.job_quotes OWNER TO postgres;
+
+--
 -- Name: jobs; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -292,6 +394,12 @@ CREATE TABLE public.jobs (
     location_label text,
     location_lat double precision,
     location_lng double precision,
+    category character varying(255),
+    tags jsonb DEFAULT '[]'::jsonb NOT NULL,
+    budget_type character varying(20) DEFAULT 'fixed'::character varying NOT NULL,
+    budget_max numeric(12,2),
+    deleted_at timestamp without time zone,
+    CONSTRAINT jobs_budget_type_check CHECK (((budget_type)::text = ANY ((ARRAY['fixed'::character varying, 'hourly'::character varying])::text[]))),
     CONSTRAINT jobs_status_check CHECK (((status)::text = ANY ((ARRAY['open'::character varying, 'in_progress'::character varying, 'closed'::character varying, 'cancelled'::character varying])::text[])))
 );
 
@@ -331,6 +439,41 @@ COMMENT ON COLUMN public.jobs.location_lat IS 'Vĩ độ khi client dùng GPS l�
 --
 
 COMMENT ON COLUMN public.jobs.location_lng IS 'Kinh độ khi client dùng GPS lúc đăng tin (tùy chọn)';
+
+
+--
+-- Name: COLUMN jobs.category; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.jobs.category IS 'Danh mục việc (hiển thị trên card Find Work)';
+
+
+--
+-- Name: COLUMN jobs.tags; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.jobs.tags IS 'Thẻ kỹ năng / từ khóa (mảng chuỗi JSON)';
+
+
+--
+-- Name: COLUMN jobs.budget_type; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.jobs.budget_type IS 'fixed = trọn gói, hourly = theo giờ (budget = mức giờ hoặc ngân sách chính).';
+
+
+--
+-- Name: COLUMN jobs.budget_max; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.jobs.budget_max IS 'Ngân sách tối đa / trần dự án (hiển thị khoảng $1k–$2.5k).';
+
+
+--
+-- Name: COLUMN jobs.deleted_at; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.jobs.deleted_at IS 'Client xóa mềm tin — không hiển thị trong quản lý / danh sách của client';
 
 
 --
@@ -397,6 +540,31 @@ CREATE TABLE public.password_reset_tokens (
 
 
 ALTER TABLE public.password_reset_tokens OWNER TO postgres;
+
+--
+-- Name: profile_analytics_events; Type: TABLE; Schema: public; Owner: postgres
+--
+
+CREATE TABLE public.profile_analytics_events (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    freelancer_id uuid NOT NULL,
+    event_type character varying(40) NOT NULL,
+    service_id uuid,
+    portfolio_id uuid,
+    metadata jsonb DEFAULT '{}'::jsonb NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    CONSTRAINT profile_analytics_events_type_check CHECK (((event_type)::text = ANY ((ARRAY['profile_view'::character varying, 'website_click'::character varying, 'work_invitation'::character varying, 'service_view'::character varying, 'service_conversion'::character varying, 'portfolio_view'::character varying])::text[])))
+);
+
+
+ALTER TABLE public.profile_analytics_events OWNER TO postgres;
+
+--
+-- Name: TABLE profile_analytics_events; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON TABLE public.profile_analytics_events IS 'Sự kiện analytics hồ sơ freelancer (xem hồ sơ, nhấp web, xem/chuyển đổi dịch vụ, portfolio).';
+
 
 --
 -- Name: refresh_tokens; Type: TABLE; Schema: public; Owner: postgres
@@ -652,7 +820,11 @@ CREATE TABLE public.user_profiles (
     updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
     location public.geography(Point,4326),
     tagline character varying(220),
-    district_city character varying(180)
+    district_city character varying(180),
+    city character varying(120),
+    state_province character varying(120),
+    country character varying(120),
+    client_satisfaction_score smallint
 );
 
 
@@ -670,6 +842,34 @@ COMMENT ON COLUMN public.user_profiles.tagline IS 'Dòng định vị ngắn hi�
 --
 
 COMMENT ON COLUMN public.user_profiles.district_city IS 'Địa danh hiển thị cấp quận/huyện/thị xã/thành phố (hyper-local).';
+
+
+--
+-- Name: COLUMN user_profiles.city; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.user_profiles.city IS 'Thành phố / đô thị (hiển thị tìm kiếm freelancer).';
+
+
+--
+-- Name: COLUMN user_profiles.state_province; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.user_profiles.state_province IS 'Bang / tỉnh / vùng.';
+
+
+--
+-- Name: COLUMN user_profiles.country; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.user_profiles.country IS 'Quốc gia hiển thị trên card employer (job list).';
+
+
+--
+-- Name: COLUMN user_profiles.client_satisfaction_score; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN public.user_profiles.client_satisfaction_score IS 'Điểm hài lòng employer 0–100 (tùy chọn, hiển thị trên card).';
 
 
 --
@@ -794,6 +994,22 @@ ALTER TABLE ONLY public.freelancer_profiles
 
 
 --
+-- Name: identity_verifications identity_verifications_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.identity_verifications
+    ADD CONSTRAINT identity_verifications_pkey PRIMARY KEY (user_id);
+
+
+--
+-- Name: job_quotes job_quotes_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.job_quotes
+    ADD CONSTRAINT job_quotes_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: jobs jobs_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -823,6 +1039,14 @@ ALTER TABLE ONLY public.login_attempts
 
 ALTER TABLE ONLY public.oauth_accounts
     ADD CONSTRAINT oauth_accounts_pkey PRIMARY KEY (provider, provider_user_id);
+
+
+--
+-- Name: profile_analytics_events profile_analytics_events_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.profile_analytics_events
+    ADD CONSTRAINT profile_analytics_events_pkey PRIMARY KEY (id);
 
 
 --
@@ -998,6 +1222,27 @@ CREATE INDEX idx_freelancer_rating ON public.freelancer_profiles USING btree (ra
 
 
 --
+-- Name: idx_job_quotes_job_freelancer_active; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE UNIQUE INDEX idx_job_quotes_job_freelancer_active ON public.job_quotes USING btree (job_id, freelancer_id) WHERE ((status)::text <> ALL ((ARRAY['withdrawn'::character varying, 'declined'::character varying])::text[]));
+
+
+--
+-- Name: idx_job_quotes_job_id; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_job_quotes_job_id ON public.job_quotes USING btree (job_id, created_at DESC);
+
+
+--
+-- Name: idx_jobs_client_not_deleted; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_jobs_client_not_deleted ON public.jobs USING btree (client_id, created_at DESC) WHERE (deleted_at IS NULL);
+
+
+--
 -- Name: idx_login_attempts_attempted_at; Type: INDEX; Schema: public; Owner: postgres
 --
 
@@ -1016,6 +1261,34 @@ CREATE INDEX idx_login_attempts_email ON public.login_attempts USING btree (emai
 --
 
 CREATE INDEX idx_login_attempts_ip ON public.login_attempts USING btree (ip_address);
+
+
+--
+-- Name: idx_profile_analytics_freelancer_created; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_profile_analytics_freelancer_created ON public.profile_analytics_events USING btree (freelancer_id, created_at DESC);
+
+
+--
+-- Name: idx_profile_analytics_freelancer_type_created; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_profile_analytics_freelancer_type_created ON public.profile_analytics_events USING btree (freelancer_id, event_type, created_at DESC);
+
+
+--
+-- Name: idx_profile_analytics_portfolio; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_profile_analytics_portfolio ON public.profile_analytics_events USING btree (portfolio_id) WHERE (portfolio_id IS NOT NULL);
+
+
+--
+-- Name: idx_profile_analytics_service; Type: INDEX; Schema: public; Owner: postgres
+--
+
+CREATE INDEX idx_profile_analytics_service ON public.profile_analytics_events USING btree (service_id) WHERE (service_id IS NOT NULL);
 
 
 --
@@ -1242,6 +1515,30 @@ ALTER TABLE ONLY public.freelancer_profiles
 
 
 --
+-- Name: identity_verifications identity_verifications_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.identity_verifications
+    ADD CONSTRAINT identity_verifications_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: job_quotes job_quotes_freelancer_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.job_quotes
+    ADD CONSTRAINT job_quotes_freelancer_id_fkey FOREIGN KEY (freelancer_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: job_quotes job_quotes_job_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.job_quotes
+    ADD CONSTRAINT job_quotes_job_id_fkey FOREIGN KEY (job_id) REFERENCES public.jobs(id) ON DELETE CASCADE;
+
+
+--
 -- Name: jobs jobs_client_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -1279,6 +1576,30 @@ ALTER TABLE ONLY public.oauth_accounts
 
 ALTER TABLE ONLY public.password_reset_tokens
     ADD CONSTRAINT password_reset_tokens_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id);
+
+
+--
+-- Name: profile_analytics_events profile_analytics_events_freelancer_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.profile_analytics_events
+    ADD CONSTRAINT profile_analytics_events_freelancer_id_fkey FOREIGN KEY (freelancer_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: profile_analytics_events profile_analytics_events_portfolio_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.profile_analytics_events
+    ADD CONSTRAINT profile_analytics_events_portfolio_id_fkey FOREIGN KEY (portfolio_id) REFERENCES public.freelancer_portfolios(id) ON DELETE SET NULL;
+
+
+--
+-- Name: profile_analytics_events profile_analytics_events_service_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.profile_analytics_events
+    ADD CONSTRAINT profile_analytics_events_service_id_fkey FOREIGN KEY (service_id) REFERENCES public.services(id) ON DELETE SET NULL;
 
 
 --
@@ -1365,5 +1686,5 @@ ALTER TABLE ONLY public.user_skills
 -- PostgreSQL database dump complete
 --
 
-\unrestrict BCDxThd3NHdyhnC48CkE8duw52b99nNe57PJi9Metk7uVU1kYfEFhf6mefZwr0P
+\unrestrict LvJA9UTBnAi7Ab7LpPRts0CJUPwW1gyrRV15X5h4oqBZwCVepmaJ690QDhYs4ia
 

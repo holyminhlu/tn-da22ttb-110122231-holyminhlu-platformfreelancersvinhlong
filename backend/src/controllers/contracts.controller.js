@@ -84,6 +84,11 @@ async function getMyWork(req, res) {
            c.created_at AS contract_created_at,
            c.progress_note,
            c.delivered_at,
+           c.service_id,
+           c.workflow_stage,
+           c.escrow_status,
+           c.proposal_text,
+           c.proposal_submitted_at,
            c.freelancer_id,
            cr.id AS review_id,
            cr.rating AS review_rating,
@@ -96,7 +101,7 @@ async function getMyWork(req, res) {
          LEFT JOIN public.contract_reviews cr ON cr.contract_id = c.id AND cr.client_id = j.client_id
          LEFT JOIN public.user_profiles fup ON fup.user_id = c.freelancer_id
          LEFT JOIN public.users fu ON fu.id = c.freelancer_id AND fu.deleted_at IS NULL
-         WHERE j.client_id = $1
+         WHERE j.client_id = $1 AND j.deleted_at IS NULL
          ORDER BY j.created_at DESC`,
         [userId],
       );
@@ -146,7 +151,7 @@ async function getMyWork(req, res) {
     if (error.code === "42703") {
       return res.status(503).json({
         message:
-          "Thiếu cột DB (contracts.progress_note/delivered_at, jobs.images/due_at hoặc contract_reviews). Chạy backend/sql/contracts_workflow_columns.sql, backend/sql/jobs_images_due_at.sql và backend/sql/contracts_reviews.sql.",
+          "Thiếu cột DB. Chạy backend/sql/service_order_workflow.sql (đơn dịch vụ), contracts_workflow_columns.sql, jobs_images_due_at.sql và contracts_reviews.sql.",
       });
     }
     return res.status(500).json({ message: "Không thể tải công việc của bạn." });

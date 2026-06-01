@@ -4,8 +4,8 @@ import Link from "next/link";
 import { useStoredUser } from "@/hooks/useStoredUser";
 
 export default function HomeNavbarLogo() {
-  const { user, ready, isFreelancer } = useStoredUser({ refreshFromApi: false });
-  const href = ready && user && isFreelancer ? "/dashboard" : "/";
+  const { user, ready, isFreelancer, isClient } = useStoredUser({ refreshFromApi: false });
+  const href = ready && user && (isFreelancer || isClient) ? "/dashboard" : "/";
 
   return (
     <Link href={href} className="flex items-center">

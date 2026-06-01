@@ -3,9 +3,9 @@
 import { useStoredUser } from "@/hooks/useStoredUser";
 
 export default function HomeNavbarCta() {
-  const { user, ready, isFreelancer } = useStoredUser({ refreshFromApi: false });
+  const { user, ready } = useStoredUser({ refreshFromApi: false });
 
-  if (!ready || (user && isFreelancer)) {
+  if (!ready || user) {
     return null;
   }
 

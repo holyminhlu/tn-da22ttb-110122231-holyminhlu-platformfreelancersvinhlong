@@ -1,0 +1,17 @@
+export type HireFavoriteSource = "worked" | "favorite";
+
+export type HireFavoriteEntry = {
+  id: string;
+  name: string;
+  email: string | null;
+  title: string | null;
+  avatarUrl: string | null;
+  districtCity: string | null;
+  hourlyRate: string | number | null;
+  ratingAvg: number | null;
+  totalReviews: number | null;
+  skills: string[];
+  lastJobTitle: string | null;
+  lastWorkedAt: string | null;
+  sources: HireFavoriteSource[];
+};

@@ -1,0 +1,125 @@
+.fw-orders__head {
+  margin-bottom: 1.5rem;
+}
+
+.fw-orders__title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.fw-orders__lead {
+  margin: 0.35rem 0 0;
+  font-size: 0.875rem;
+  color: #6b7280;
+  max-width: 40rem;
+}
+
+.fw-orders__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.fw-orders__filter {
+  border: 1px solid #e5e7eb;
+  border-radius: 9999px;
+  padding: 0.35rem 0.85rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #4b5563;
+  background: #fff;
+  cursor: pointer;
+}
+
+.fw-orders__filter--active {
+  border-color: #0073b1;
+  background: #e8f4fc;
+  color: #0073b1;
+}
+
+.fw-orders__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fw-orders__card {
+  display: block;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.35rem;
+  padding: 1rem 1.15rem;
+  background: #fff;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.fw-orders__card:hover {
+  border-color: #93c5fd;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.06);
+}
+
+.fw-orders__card--urgent {
+  border-left: 3px solid #f59e0b;
+}
+
+.fw-orders__card-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.fw-orders__card-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.fw-orders__card-badge {
+  border-radius: 9999px;
+  padding: 0.15rem 0.55rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.fw-orders__card-badge--stage {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.fw-orders__card-meta {
+  margin: 0.5rem 0 0;
+  font-size: 0.8125rem;
+  color: #6b7280;
+}
+
+.fw-orders__card-foot {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 0.65rem;
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+.fw-orders__empty {
+  padding: 3rem 1.5rem;
+  text-align: center;
+  border: 1px dashed #e5e7eb;
+  border-radius: 0.35rem;
+  background: #fff;
+  color: #6b7280;
+  font-size: 0.875rem;
+}

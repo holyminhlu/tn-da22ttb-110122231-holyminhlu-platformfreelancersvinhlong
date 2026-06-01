@@ -12,11 +12,30 @@ const FREELANCER_NAV = [
   { href: "/payments", label: "Payments" },
 ] as const;
 
+const CLIENT_NAV = [
+  { href: "/dashboard", label: "Dashboard" },
+  { href: "/hire/quotes", label: "Hire" },
+  { href: "/manage", label: "Manage" },
+  { href: "/payments", label: "Payments" },
+] as const;
+
 export default function HomeNavbarNav() {
-  const { user, ready, isFreelancer } = useStoredUser({ refreshFromApi: false });
+  const { user, ready, isFreelancer, isClient } = useStoredUser({ refreshFromApi: false });
 
   if (!ready) {
     return <div className="hidden h-5 w-48 md:block" aria-hidden />;
+  }
+
+  if (user && isClient) {
+    return (
+      <div className="hidden space-x-6 font-medium text-gray-700 md:flex">
+        {CLIENT_NAV.map((item) => (
+          <Link key={item.href} href={item.href} className="hover:text-blue-600">
+            {item.label}
+          </Link>
+        ))}
+      </div>
+    );
   }
 
   if (user && isFreelancer) {

@@ -7,6 +7,8 @@ export type JobListing = {
   title: string;
   description: string | null;
   budget: string | number | null;
+  budget_type?: string;
+  budget_max?: string | number | null;
   status: string;
   created_at: string;
   updated_at: string;
@@ -20,8 +22,12 @@ export type JobListing = {
   client_name: string | null;
   client_avatar_url: string | null;
   client_district_city: string | null;
+  client_country?: string | null;
+  client_total_spent?: number;
+  client_satisfaction_score?: number | null;
   client_email_verified: boolean;
   proposal_count: number;
+  quote_count?: number;
 };
 
 export type JobSort =
@@ -80,6 +86,25 @@ function appendListJobsParams(search: URLSearchParams, params?: ListJobsParams) 
   if (params?.sort) search.set("sort", params.sort);
 }
 
+export type ListMyJobsParams = {
+  limit?: number;
+  offset?: number;
+  q?: string;
+  status?: string;
+};
+
+export async function listMyJobs(params?: ListMyJobsParams) {
+  const search = new URLSearchParams();
+  if (params?.limit != null) search.set("limit", String(params.limit));
+  if (params?.offset != null) search.set("offset", String(params.offset));
+  if (params?.q?.trim()) search.set("q", params.q.trim());
+  if (params?.status?.trim()) search.set("status", params.status.trim());
+  const qs = search.toString();
+  const path = qs ? `${apiPaths.jobs.myList}?${qs}` : apiPaths.jobs.myList;
+  const { data } = await fetchApi<ListJobsResponse>(path, { auth: true });
+  return data;
+}
+
 export async function listJobs(params?: ListJobsParams) {
   const search = new URLSearchParams();
   appendListJobsParams(search, params);
@@ -106,5 +131,74 @@ export async function acceptJob(jobId: string) {
     apiPaths.jobs.accept(jobId),
     { method: "POST", auth: true },
   );
+  return data;
+}
+
+export type CreateJobPayload = {
+  title: string;
+  description: string;
+  budget?: number | null;
+  budget_type?: "fixed" | "hourly";
+  budget_max?: number | null;
+  due_at?: string | null;
+  location_label: string;
+  location_lat?: number | null;
+  location_lng?: number | null;
+  category?: string | null;
+  tags?: string[];
+  images?: string[];
+};
+
+export type CreatedJob = {
+  id: string;
+  title: string;
+  status: string;
+  created_at: string;
+};
+
+export async function uploadJobImages(files: File[]) {
+  const form = new FormData();
+  for (const file of files) {
+    form.append("images", file);
+  }
+  const { data } = await fetchApi<{ urls: string[] }>(apiPaths.jobs.images, {
+    method: "POST",
+    auth: true,
+    body: form,
+  });
+  return data.urls ?? [];
+}
+
+export async function createJob(payload: CreateJobPayload) {
+  const { data } = await fetchApi<{ message?: string; job: CreatedJob }>(apiPaths.jobs.create, {
+    method: "POST",
+    auth: true,
+    body: payload,
+  });
+  return data;
+}
+
+export type UpdateJobPayload = Partial<CreateJobPayload> & {
+  status?: "closed";
+};
+
+export async function updateMyJob(jobId: string, payload: UpdateJobPayload) {
+  const { data } = await fetchApi<{ message?: string; job: CreatedJob }>(apiPaths.jobs.update(jobId), {
+    method: "PATCH",
+    auth: true,
+    body: payload,
+  });
+  return data;
+}
+
+export async function closeMyJob(jobId: string) {
+  return updateMyJob(jobId, { status: "closed" });
+}
+
+export async function deleteMyJob(jobId: string) {
+  const { data } = await fetchApi<{ message?: string }>(apiPaths.jobs.delete(jobId), {
+    method: "DELETE",
+    auth: true,
+  });
   return data;
 }

@@ -1,17 +1,10 @@
-import FreelancerPlaceholderPage, {
-  freelancerPageMetadata,
-} from "@/components/layout/FreelancerPlaceholderPage";
+import PaymentsRouter from "@/components/payments/PaymentsRouter";
 
-export const metadata = freelancerPageMetadata(
-  "Payments",
-  "Ví, giao dịch và rút tiền.",
-);
+export const metadata = {
+  title: "Payments — Vĩnh Long Connected",
+  description: "Tài khoản tiền mặt và thanh toán.",
+};
 
 export default function PaymentsPage() {
-  return (
-    <FreelancerPlaceholderPage
-      title="Payments"
-      description="Thanh toán và số dư tài khoản — sẽ kết nối accounts / transactions sau."
-    />
-  );
+  return <PaymentsRouter />;
 }
