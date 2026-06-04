@@ -2,13 +2,13 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { FaDollarSign, FaListUl, FaThumbsUp } from "react-icons/fa";
+import { FaListUl, FaMoneyBillWave, FaThumbsUp } from "react-icons/fa";
 import type { JobListing } from "@/lib/api/jobs";
 import { getUserInitials, resolveAvatarSrc } from "@/lib/authSession";
 import {
   clientDisplayName,
   clientLocationLabel,
-  formatCompactUsd,
+  formatCompactVnd,
   formatJobBudgetLine,
   parseJobTags,
   quotesCountLabel,
@@ -28,7 +28,7 @@ export default function HireJoblistCard({ job, selected, onSelect }: HireJoblist
   const avatarSrc = resolveAvatarSrc(job.client_avatar_url);
   const employerName = clientDisplayName(job.client_name);
   const employerLocation = clientLocationLabel(job);
-  const spent = formatCompactUsd(job.client_total_spent ?? 0);
+  const spent = formatCompactVnd(job.client_total_spent ?? 0);
   const satisfaction = job.client_satisfaction_score;
   const budgetLine = formatJobBudgetLine(job);
 
@@ -100,8 +100,8 @@ export default function HireJoblistCard({ job, selected, onSelect }: HireJoblist
         <div className="hire-joblist__employer-stats">
           {spent ? (
             <span className="hire-joblist__spent">
-              <FaDollarSign aria-hidden />
-              {spent} Spent
+              <FaMoneyBillWave aria-hidden />
+              Đã chi {spent}
             </span>
           ) : null}
           {satisfaction != null && satisfaction > 0 ? (
@@ -114,8 +114,11 @@ export default function HireJoblistCard({ job, selected, onSelect }: HireJoblist
       </div>
 
       <div className="hire-joblist__card-actions">
-        <Link href={`/hire/quotes`} className="hire-joblist__link-btn">
-          Xem báo giá
+        <Link href={`/hire/joblist/${job.id}`} className="hire-joblist__link-btn">
+          Quản lý tuyển dụng
+        </Link>
+        <Link href="/hire/quotes" className="hire-joblist__link-btn">
+          Tất cả báo giá
         </Link>
         <Link href={`/work/detail/${job.id}`} className="hire-joblist__link-btn hire-joblist__link-btn--muted">
           Chi tiết

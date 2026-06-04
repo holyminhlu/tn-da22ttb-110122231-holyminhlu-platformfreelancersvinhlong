@@ -2,34 +2,49 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
-const TABS = [
-  { href: "/findwork", label: "Tìm việc làm", exact: true },
-  { href: "/findwork/orders", label: "Đơn dịch vụ", exact: false },
-] as const;
+import { useStoredUser } from "@/hooks/useStoredUser";
+import { FINDWORK_NAV } from "./findworkNav";
 
 export default function FindWorkSubNav() {
   const pathname = usePathname();
+  const { user, ready } = useStoredUser({ refreshFromApi: false });
+  const isGuest = ready && !user;
+
+  const tabs = isGuest
+    ? FINDWORK_NAV.filter((tab) => tab.id === "find")
+    : FINDWORK_NAV;
 
   return (
-    <nav className="fw-subnav" aria-label="Find work sections">
-      <div className="fw-subnav__inner">
-        {TABS.map((tab) => {
+    <nav className="hire-subnav" aria-label="Tìm việc">
+      <div className="hire-subnav__inner">
+        {tabs.map((tab) => {
+          if ("disabled" in tab && tab.disabled) {
+            return (
+              <span
+                key={tab.id}
+                className="hire-subnav__link hire-subnav__link--disabled"
+                aria-disabled="true"
+              >
+                {tab.label}
+              </span>
+            );
+          }
+
           const active = tab.exact
             ? pathname === tab.href
             : pathname === tab.href || pathname.startsWith(`${tab.href}/`);
+
           return (
             <Link
-              key={tab.href}
+              key={tab.id}
               href={tab.href}
-              className={`fw-subnav__link${active ? " fw-subnav__link--active" : ""}`}
+              className={`hire-subnav__link${active ? " hire-subnav__link--active" : ""}`}
+              aria-current={active ? "page" : undefined}
             >
               {tab.label}
             </Link>
           );
         })}
-        <span className="fw-subnav__link opacity-60">Khách hàng tiềm năng</span>
-        <span className="fw-subnav__link opacity-60">Báo giá job</span>
       </div>
     </nav>
   );

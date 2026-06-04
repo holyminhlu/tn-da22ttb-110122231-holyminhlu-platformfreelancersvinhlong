@@ -1,5 +1,5 @@
 import { apiUrl, getApiBaseUrl } from "@/config/api.config";
-import { parseJsonArray } from "@/lib/format";
+import { formatCompactVnd, parseJsonArray } from "@/lib/format";
 
 export function relativePosted(iso: string): string {
   const d = new Date(iso);
@@ -37,6 +37,26 @@ export function proposalCountLabel(count: number): string {
   return `${count} đơn ứng tuyển`;
 }
 
+export type JobStatusTone = "open" | "progress" | "closed" | "cancelled" | "default";
+
+export function jobStatusLabel(status: string): string {
+  const s = String(status || "").toLowerCase();
+  if (s === "open") return "Đang tuyển";
+  if (s === "in_progress") return "Đang thực hiện";
+  if (s === "closed") return "Đã đóng";
+  if (s === "cancelled") return "Đã hủy";
+  return status || "—";
+}
+
+export function jobStatusTone(status: string): JobStatusTone {
+  const s = String(status || "").toLowerCase();
+  if (s === "open") return "open";
+  if (s === "in_progress") return "progress";
+  if (s === "closed") return "closed";
+  if (s === "cancelled") return "cancelled";
+  return "default";
+}
+
 export function relativePostedEn(iso: string): string {
   const d = new Date(iso);
   const diff = Date.now() - d.getTime();
@@ -55,13 +75,10 @@ export function quotesCountLabel(count: number): string {
   return count === 1 ? "1 Quote Received" : `${count} Quotes Received`;
 }
 
-export function formatCompactUsd(amount: string | number | null | undefined): string | null {
-  const n = Number(amount);
-  if (!Number.isFinite(n) || n <= 0) return null;
-  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`;
-  if (n >= 1000) return `$${(n / 1000).toFixed(n >= 10_000 ? 0 : 1).replace(/\.0$/, "")}k`;
-  return `$${Math.round(n).toLocaleString("en-US")}`;
-}
+export { formatCompactVnd } from "@/lib/format";
+
+/** @deprecated Dùng formatCompactVnd */
+export const formatCompactUsd = formatCompactVnd;
 
 export function formatJobBudgetLine(job: {
   budget_type?: string | null;
@@ -69,21 +86,21 @@ export function formatJobBudgetLine(job: {
   budget_max?: string | number | null;
 }): string {
   const type = String(job.budget_type || "").trim().toLowerCase();
-  const min = formatCompactUsd(job.budget);
-  const max = formatCompactUsd(job.budget_max);
+  const min = formatCompactVnd(job.budget);
+  const max = formatCompactVnd(job.budget_max);
   const hasAmount = Boolean(min || max);
 
-  if (!type && !hasAmount) return "Budget not specified";
+  if (!type && !hasAmount) return "Chưa có ngân sách";
 
   if (type === "hourly") {
-    return min ? `Hourly | ${min}/hr` : "Hourly";
+    return min ? `Theo giờ | ${min}/giờ` : "Theo giờ";
   }
 
   if (min && max && Number(job.budget_max) > Number(job.budget)) {
-    return `Fixed Price | ${min}-${max}`;
+    return `Trọn gói | ${min} – ${max}`;
   }
-  if (min) return `Fixed Price | ${min}`;
-  return "Fixed Price";
+  if (min) return `Trọn gói | ${min}`;
+  return "Trọn gói";
 }
 
 export function clientDisplayName(fullName?: string | null): string {

@@ -93,14 +93,16 @@ async function createMyService(req, res) {
   const client = await pool.connect();
   try {
     const normalizedPackages = v.packages.length ? v.packages : buildDefaultServicePackages(v.price, v.deliveryDays);
+    const listingStatus = v.listingStatus || "pending";
+    const publishedAt = listingStatus === "active" ? "CURRENT_TIMESTAMP" : "NULL";
     const result = await client.query(
       `INSERT INTO public.services (
          freelancer_id, title, description, price, delivery_days,
          category, media_urls, packages, tech_stack, requirements, faqs, response_time_hours, support_upsell,
-         demo_media, thumbnail_url
+         demo_media, thumbnail_url, listing_status, published_at
        )
-       VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb, $8::jsonb, $9::jsonb, $10, $11::jsonb, $12, $13, $14::jsonb, $15)
-       RETURNING id, title, description, price, delivery_days, category, media_urls, packages, tech_stack, requirements, faqs, response_time_hours, support_upsell, demo_media, thumbnail_url, created_at`,
+       VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb, $8::jsonb, $9::jsonb, $10, $11::jsonb, $12, $13, $14::jsonb, $15, $16, ${publishedAt === "NULL" ? "NULL" : "CURRENT_TIMESTAMP"})
+       RETURNING id, title, description, price, delivery_days, category, media_urls, packages, tech_stack, requirements, faqs, response_time_hours, support_upsell, demo_media, thumbnail_url, listing_status, admin_note, published_at, created_at, updated_at`,
       [
         payload.sub,
         v.title,
@@ -117,10 +119,17 @@ async function createMyService(req, res) {
         v.supportUpsell || null,
         v.demoMedia ? JSON.stringify(v.demoMedia) : null,
         v.thumbnailUrl,
+        listingStatus,
       ],
     );
 
-    return res.status(201).json({ message: "Tạo dịch vụ thành công.", service: result.rows[0] });
+    const msg =
+      listingStatus === "draft"
+        ? "Đã lưu nháp dịch vụ."
+        : listingStatus === "pending"
+          ? "Đã gửi dịch vụ chờ duyệt."
+          : "Tạo dịch vụ thành công.";
+    return res.status(201).json({ message: msg, service: mapMyServiceRow(result.rows[0]) });
   } catch (error) {
     console.error("Create service failed:", error.message);
     if (error.code === "42703") {
@@ -176,7 +185,7 @@ async function updateMyService(req, res) {
          thumbnail_url = $14,
          updated_at = CURRENT_TIMESTAMP
        WHERE id = $15 AND freelancer_id = $16
-       RETURNING id, title, description, price, delivery_days, category, media_urls, packages, tech_stack, requirements, faqs, response_time_hours, support_upsell, demo_media, thumbnail_url, created_at`,
+       RETURNING id, title, description, price, delivery_days, category, media_urls, packages, tech_stack, requirements, faqs, response_time_hours, support_upsell, demo_media, thumbnail_url, listing_status, admin_note, published_at, created_at, updated_at`,
       [
         v.title,
         v.description || null,
@@ -201,7 +210,7 @@ async function updateMyService(req, res) {
       return res.status(404).json({ message: "Không tìm thấy dịch vụ hoặc bạn không có quyền chỉnh sửa." });
     }
 
-    return res.json({ message: "Đã cập nhật dịch vụ.", service: result.rows[0] });
+    return res.json({ message: "Đã cập nhật dịch vụ.", service: mapMyServiceRow(result.rows[0]) });
   } catch (error) {
     console.error("Update service failed:", error.message);
     if (error.code === "42703") {
@@ -255,7 +264,7 @@ async function listServices(req, res) {
          FROM public.contract_reviews
          GROUP BY freelancer_id
        ) rv ON rv.freelancer_id = s.freelancer_id
-       WHERE 1=1
+       WHERE COALESCE(s.listing_status, 'active') = 'active'
        ${searchClause}
        ORDER BY s.created_at DESC
        LIMIT $1 OFFSET $2`,
@@ -279,7 +288,7 @@ async function listServices(req, res) {
        INNER JOIN public.users u ON u.id = s.freelancer_id AND u.deleted_at IS NULL AND u.role = 'freelancer'
        LEFT JOIN public.user_profiles up ON up.user_id = s.freelancer_id
        LEFT JOIN public.freelancer_profiles fp ON fp.user_id = s.freelancer_id
-       WHERE 1=1
+       WHERE COALESCE(s.listing_status, 'active') = 'active'
        ${countSearch}`,
       countParams,
     );
@@ -404,6 +413,289 @@ async function getService(req, res) {
   }
 }
 
+function mapMyServiceRow(row) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    title: row.title,
+    description: row.description,
+    price: row.price,
+    delivery_days: row.delivery_days,
+    category: row.category,
+    media_urls: row.media_urls ?? [],
+    packages: row.packages ?? [],
+    tech_stack: row.tech_stack ?? [],
+    requirements: row.requirements,
+    faqs: row.faqs ?? [],
+    response_time_hours: row.response_time_hours,
+    support_upsell: row.support_upsell,
+    demo_media: row.demo_media,
+    thumbnail_url: row.thumbnail_url,
+    listing_status: row.listing_status || "active",
+    admin_note: row.admin_note || null,
+    published_at: row.published_at,
+    created_at: row.created_at,
+    updated_at: row.updated_at,
+    rating_avg: row.rating_avg != null ? Number(row.rating_avg) : null,
+    total_reviews: row.total_reviews != null ? Number(row.total_reviews) : 0,
+  };
+}
+
+async function listMyServices(req, res) {
+  const payload = verifyAccessToken(req, res);
+  if (!payload) return;
+  if (payload.role !== "freelancer") {
+    return res.status(403).json({ message: "Chỉ freelancer được quản lý dịch vụ." });
+  }
+
+  const db = await pool.connect();
+  try {
+    const result = await db.query(
+      `SELECT
+         s.*,
+         COALESCE(rv.rating_avg, 0)::float8 AS rating_avg,
+         COALESCE(rv.total_reviews, 0)::int AS total_reviews
+       FROM public.services s
+       LEFT JOIN (
+         SELECT c.service_id, ROUND(AVG(cr.rating)::numeric, 2) AS rating_avg, COUNT(*)::int AS total_reviews
+         FROM public.contract_reviews cr
+         INNER JOIN public.contracts c ON c.id = cr.contract_id AND c.service_id IS NOT NULL
+         GROUP BY c.service_id
+       ) rv ON rv.service_id = s.id
+       WHERE s.freelancer_id = $1
+       ORDER BY s.updated_at DESC NULLS LAST, s.created_at DESC`,
+      [payload.sub],
+    );
+    return res.json({ services: result.rows.map(mapMyServiceRow) });
+  } catch (error) {
+    console.error("listMyServices failed:", error.message);
+    if (error.code === "42703") {
+      return res.status(503).json({
+        message: "Chạy backend/sql/services_listing_status.sql trên PostgreSQL.",
+      });
+    }
+    return res.status(500).json({ message: "Không thể tải dịch vụ của bạn." });
+  } finally {
+    db.release();
+  }
+}
+
+async function getMyService(req, res) {
+  const payload = verifyAccessToken(req, res);
+  if (!payload) return;
+  if (payload.role !== "freelancer") {
+    return res.status(403).json({ message: "Chỉ freelancer được xem dịch vụ của mình." });
+  }
+
+  const serviceId = String(req.params.serviceId || "").trim();
+  if (!serviceId) {
+    return res.status(400).json({ message: "Thiếu mã dịch vụ." });
+  }
+
+  const db = await pool.connect();
+  try {
+    const result = await db.query(
+      `SELECT
+         s.*,
+         COALESCE(rv.rating_avg, 0)::float8 AS rating_avg,
+         COALESCE(rv.total_reviews, 0)::int AS total_reviews
+       FROM public.services s
+       LEFT JOIN (
+         SELECT c.service_id, ROUND(AVG(cr.rating)::numeric, 2) AS rating_avg, COUNT(*)::int AS total_reviews
+         FROM public.contract_reviews cr
+         INNER JOIN public.contracts c ON c.id = cr.contract_id AND c.service_id IS NOT NULL
+         GROUP BY c.service_id
+       ) rv ON rv.service_id = s.id
+       WHERE s.id = $1 AND s.freelancer_id = $2
+       LIMIT 1`,
+      [serviceId, payload.sub],
+    );
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: "Không tìm thấy dịch vụ." });
+    }
+    return res.json({ service: mapMyServiceRow(result.rows[0]) });
+  } catch (error) {
+    console.error("getMyService failed:", error.message);
+    if (error.code === "42703") {
+      return res.status(503).json({
+        message: "Chạy backend/sql/services_listing_status.sql trên PostgreSQL.",
+      });
+    }
+    return res.status(500).json({ message: "Không thể tải chi tiết dịch vụ." });
+  } finally {
+    db.release();
+  }
+}
+
+async function patchMyServiceStatus(req, res) {
+  const payload = verifyAccessToken(req, res);
+  if (!payload) return;
+  if (payload.role !== "freelancer") {
+    return res.status(403).json({ message: "Chỉ freelancer được cập nhật trạng thái dịch vụ." });
+  }
+
+  const serviceId = String(req.params.serviceId || "").trim();
+  const nextStatus = String(req.body?.status || req.body?.listingStatus || "").trim().toLowerCase();
+  const allowed = ["draft", "pending", "active", "paused", "denied"];
+  if (!serviceId || !allowed.includes(nextStatus)) {
+    return res.status(400).json({ message: "status không hợp lệ." });
+  }
+
+  const db = await pool.connect();
+  try {
+    const cur = await db.query(
+      `SELECT id, listing_status FROM public.services WHERE id = $1 AND freelancer_id = $2`,
+      [serviceId, payload.sub],
+    );
+    if (cur.rowCount === 0) {
+      return res.status(404).json({ message: "Không tìm thấy dịch vụ." });
+    }
+    const current = String(cur.rows[0].listing_status || "").toLowerCase();
+
+    if (nextStatus === "active" && !["paused", "pending"].includes(current)) {
+      return res.status(409).json({ message: "Chỉ kích hoạt từ trạng thái chờ duyệt hoặc tạm dừng." });
+    }
+    if (nextStatus === "paused" && current !== "active") {
+      return res.status(409).json({ message: "Chỉ tạm dừng dịch vụ đang hoạt động." });
+    }
+    if (nextStatus === "pending" && !["draft", "denied", "paused"].includes(current)) {
+      return res.status(409).json({ message: "Chỉ gửi duyệt từ nháp hoặc sau khi chỉnh sửa." });
+    }
+
+    const publishClause =
+      nextStatus === "active"
+        ? ", published_at = COALESCE(published_at, CURRENT_TIMESTAMP)"
+        : nextStatus === "pending"
+          ? ", published_at = NULL"
+          : "";
+
+    const result = await db.query(
+      `UPDATE public.services
+       SET listing_status = $1, updated_at = CURRENT_TIMESTAMP${publishClause}
+       WHERE id = $2 AND freelancer_id = $3
+       RETURNING *`,
+      [nextStatus, serviceId, payload.sub],
+    );
+
+    const labels = {
+      draft: "Đã chuyển sang nháp.",
+      pending: "Đã gửi chờ duyệt.",
+      active: "Dịch vụ đang hiển thị.",
+      paused: "Đã tạm dừng dịch vụ.",
+      denied: "Đã đánh dấu cần chỉnh sửa.",
+    };
+
+    return res.json({
+      message: labels[nextStatus] || "Đã cập nhật.",
+      service: mapMyServiceRow(result.rows[0]),
+    });
+  } catch (error) {
+    console.error("patchMyServiceStatus failed:", error.message);
+    return res.status(500).json({ message: "Không thể cập nhật trạng thái." });
+  } finally {
+    db.release();
+  }
+}
+
+async function listMyServiceReviews(req, res) {
+  const payload = verifyAccessToken(req, res);
+  if (!payload) return;
+  if (payload.role !== "freelancer") {
+    return res.status(403).json({ message: "Chỉ freelancer được xem đánh giá." });
+  }
+
+  const db = await pool.connect();
+  try {
+    const result = await db.query(
+      `SELECT
+         cr.id,
+         cr.rating,
+         cr.comment,
+         cr.created_at,
+         cr.freelancer_reply,
+         cr.freelancer_reply_at,
+         c.id AS contract_id,
+         c.service_id,
+         s.title AS service_title,
+         cup.full_name AS client_name,
+         up.avatar_url AS client_avatar_url
+       FROM public.contract_reviews cr
+       INNER JOIN public.contracts c ON c.id = cr.contract_id AND c.deleted_at IS NULL
+       LEFT JOIN public.services s ON s.id = c.service_id
+       LEFT JOIN public.user_profiles cup ON cup.user_id = cr.client_id
+       LEFT JOIN public.user_profiles up ON up.user_id = cr.client_id
+       WHERE cr.freelancer_id = $1
+       ORDER BY cr.created_at DESC
+       LIMIT 200`,
+      [payload.sub],
+    );
+    return res.json({
+      reviews: result.rows.map((row) => ({
+        id: row.id,
+        rating: Number(row.rating),
+        comment: row.comment,
+        createdAt: row.created_at,
+        freelancerReply: row.freelancer_reply,
+        freelancerReplyAt: row.freelancer_reply_at,
+        contractId: row.contract_id,
+        serviceId: row.service_id,
+        serviceTitle: row.service_title,
+        clientName: row.client_name,
+        clientAvatarUrl: row.client_avatar_url,
+      })),
+    });
+  } catch (error) {
+    console.error("listMyServiceReviews failed:", error.message);
+    if (error.code === "42703") {
+      return res.status(503).json({
+        message: "Chạy backend/sql/services_listing_status.sql trên PostgreSQL.",
+      });
+    }
+    return res.status(500).json({ message: "Không thể tải đánh giá." });
+  } finally {
+    db.release();
+  }
+}
+
+async function replyServiceReview(req, res) {
+  const payload = verifyAccessToken(req, res);
+  if (!payload) return;
+  if (payload.role !== "freelancer") {
+    return res.status(403).json({ message: "Chỉ freelancer được phản hồi đánh giá." });
+  }
+
+  const reviewId = String(req.params.reviewId || "").trim();
+  const reply = String(req.body?.reply || "").trim().slice(0, 2000);
+  if (!reviewId || !reply) {
+    return res.status(400).json({ message: "Nội dung phản hồi là bắt buộc." });
+  }
+
+  const db = await pool.connect();
+  try {
+    const result = await db.query(
+      `UPDATE public.contract_reviews
+       SET freelancer_reply = $1, freelancer_reply_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+       WHERE id = $2 AND freelancer_id = $3
+       RETURNING id, freelancer_reply, freelancer_reply_at`,
+      [reply, reviewId, payload.sub],
+    );
+    if (result.rowCount === 0) {
+      return res.status(404).json({ message: "Không tìm thấy đánh giá." });
+    }
+    return res.json({ message: "Đã gửi phản hồi.", review: result.rows[0] });
+  } catch (error) {
+    console.error("replyServiceReview failed:", error.message);
+    if (error.code === "42703") {
+      return res.status(503).json({
+        message: "Chạy backend/sql/services_listing_status.sql trên PostgreSQL.",
+      });
+    }
+    return res.status(500).json({ message: "Không thể lưu phản hồi." });
+  } finally {
+    db.release();
+  }
+}
+
 module.exports = {
   listServices,
   listCategories,
@@ -413,4 +705,9 @@ module.exports = {
   uploadServiceDemo,
   createMyService,
   updateMyService,
+  listMyServices,
+  getMyService,
+  patchMyServiceStatus,
+  listMyServiceReviews,
+  replyServiceReview,
 };

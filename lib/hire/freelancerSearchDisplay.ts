@@ -1,4 +1,5 @@
 import type { FreelancerSearchRow } from "@/lib/api/freelancers";
+import { formatVnd } from "@/lib/format";
 import { resolveJobImageSrc } from "@/lib/jobsDisplay";
 
 export function parseProfileBadges(raw: unknown): string[] {
@@ -22,40 +23,21 @@ export function displayMembershipBadges(badges: string[]): string[] {
 }
 
 export function formatYearlyEarnings(amount: string | number | null | undefined): string {
-  const n = Number(amount);
-  if (!Number.isFinite(n) || n <= 0) return "—";
-  return (
-    new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      maximumFractionDigits: 0,
-    }).format(n) + " /yr"
-  );
+  const formatted = formatVnd(amount);
+  if (formatted === "—") return "—";
+  return `${formatted} /năm`;
 }
 
 export function formatHourlyRate(amount: string | number | null | undefined): string | null {
-  const n = Number(amount);
-  if (!Number.isFinite(n) || n <= 0) return null;
-  return (
-    new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      maximumFractionDigits: 0,
-    }).format(n) + "/hr"
-  );
+  const formatted = formatVnd(amount);
+  if (formatted === "—") return null;
+  return `${formatted}/giờ`;
 }
 
 export function formatStartingPrice(amount: string | number | null | undefined): string | null {
-  const n = Number(amount);
-  if (!Number.isFinite(n) || n <= 0) return null;
-  return (
-    "Starting at " +
-    new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      maximumFractionDigits: 0,
-    }).format(n)
-  );
+  const formatted = formatVnd(amount);
+  if (formatted === "—") return null;
+  return `Từ ${formatted}`;
 }
 
 export function satisfactionPercent(row: FreelancerSearchRow): number {

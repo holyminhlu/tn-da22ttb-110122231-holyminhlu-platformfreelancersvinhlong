@@ -4,7 +4,10 @@
   "private": true,
   "scripts": {
     "start": "node --env-file=../.env src/index.js",
-    "start:dev": "nodemon --env-file=../.env src/index.js"
+    "start:dev": "nodemon --env-file=../.env src/index.js",
+    "workflow:sla": "node --env-file=../.env scripts/workflow-sla-tick.js",
+    "workflow:backdate": "node --env-file=../.env scripts/workflow-sla-backdate.js",
+    "workflow:resolve-dispute": "node --env-file=../.env scripts/resolve-dispute.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

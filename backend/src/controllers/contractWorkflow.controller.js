@@ -6,8 +6,43 @@ const {
   isClientIdentityVerified: checkClientIdentityVerified,
   IDV_VERIFY_SELECT,
 } = require("../utils/clientIdentityVerified");
+const {
+  SLA_DAYS,
+  addDays,
+  isTerminalContract,
+  isPreFunded,
+  logWorkflowEvent,
+  setStageDeadline,
+  clearStageDeadlines,
+  setEscrowDeadlines,
+  markContractCancelled,
+  closeJobIfAny,
+  refundEscrowToClient,
+  releasePaymentToFreelancer,
+  acceptDeliveryInternal,
+  loadPendingCancelRequest,
+  loadOpenDispute,
+} = require("../utils/workflowSla");
 
 const WORKFLOW_STAGES = ["selection", "escrow", "execution", "delivery", "completion"];
+
+function terminalResponse(res) {
+  return res.status(409).json({ message: "Đơn đã hủy, hết hạn hoặc đã kết thúc — không thể thực hiện thao tác này." });
+}
+
+function dbSchemaMigrationHint(error) {
+  const msg = String(error?.message || "").toLowerCase();
+  if (msg.includes("accounts") && msg.includes("updated_at")) {
+    return "Chạy backend/sql/client_billing_payments.sql trên PostgreSQL.";
+  }
+  if (msg.includes("contract_milestones") || msg.includes("workflow_stage") || msg.includes("escrow_status")) {
+    return "Chạy backend/sql/service_order_workflow.sql trên PostgreSQL.";
+  }
+  if (msg.includes("stage_deadline_at") || msg.includes("contract_cancel_requests")) {
+    return "Chạy backend/sql/workflow_sla.sql trên PostgreSQL.";
+  }
+  return "Chạy backend/sql/service_order_workflow.sql, client_billing_payments.sql và workflow_sla.sql trên PostgreSQL.";
+}
 
 async function isClientIdentityVerified(db, userId) {
   const result = await db.query(
@@ -179,6 +214,9 @@ async function createFromServiceQuote(req, res) {
       );
     }
 
+    await setStageDeadline(db, contractId, SLA_DAYS.AWAIT_PROPOSAL);
+    await logWorkflowEvent(db, contractId, "order_created", { slaDays: SLA_DAYS.AWAIT_PROPOSAL }, payload.sub);
+
     await db.query("COMMIT");
     return res.status(201).json({
       message: "Đã gửi yêu cầu báo giá. Freelancer sẽ phản hồi đề xuất.",
@@ -189,9 +227,7 @@ async function createFromServiceQuote(req, res) {
     await db.query("ROLLBACK").catch(() => {});
     console.error("createFromServiceQuote failed:", error.message);
     if (error.code === "42703" || error.code === "42P01") {
-      return res.status(503).json({
-        message: "Chạy backend/sql/service_order_workflow.sql trên PostgreSQL.",
-      });
+      return res.status(503).json({ message: dbSchemaMigrationHint(error) });
     }
     return res.status(500).json({ message: "Không thể tạo yêu cầu báo giá." });
   } finally {
@@ -264,19 +300,22 @@ async function getContractWorkflow(req, res) {
           ? "freelancer"
           : null;
 
+    const cancelRequest = await loadPendingCancelRequest(db, contractId);
+    const dispute = await loadOpenDispute(db, contractId);
+
     return res.json({
       contract,
       milestones: milestones.rows,
       review,
       role,
       stages: WORKFLOW_STAGES,
+      cancelRequest,
+      dispute,
     });
   } catch (error) {
     console.error("getContractWorkflow failed:", error.message);
     if (error.code === "42703" || error.code === "42P01") {
-      return res.status(503).json({
-        message: "Chạy backend/sql/service_order_workflow.sql trên PostgreSQL.",
-      });
+      return res.status(503).json({ message: dbSchemaMigrationHint(error) });
     }
     return res.status(500).json({ message: "Không thể tải tiến trình đơn hàng." });
   } finally {
@@ -308,6 +347,14 @@ async function patchContractWorkflow(req, res) {
     const isFreelancer = contract.freelancer_id === payload.sub;
     const stage = String(contract.workflow_stage || "selection").toLowerCase();
 
+    const skipTerminalCheck = new Set([
+      "respond_cancel_request",
+    ]);
+    if (!skipTerminalCheck.has(action) && isTerminalContract(contract)) {
+      await db.query("ROLLBACK");
+      return terminalResponse(res);
+    }
+
     if (action === "submit_proposal") {
       if (!isFreelancer) {
         await db.query("ROLLBACK");
@@ -332,8 +379,75 @@ async function patchContractWorkflow(req, res) {
          WHERE id = $3`,
         [proposalText, proposalBudget, contractId],
       );
+      await setStageDeadline(db, contractId, SLA_DAYS.AWAIT_ACCEPT);
+      await logWorkflowEvent(db, contractId, "proposal_submitted", {}, payload.sub);
       await db.query("COMMIT");
       return res.json({ message: "Đã gửi đề xuất cho Client." });
+    }
+
+    if (action === "withdraw_proposal") {
+      if (!isFreelancer) {
+        await db.query("ROLLBACK");
+        return res.status(403).json({ message: "Chỉ freelancer rút đề xuất." });
+      }
+      if (stage !== "selection" || !contract.proposal_text) {
+        await db.query("ROLLBACK");
+        return res.status(409).json({ message: "Không có đề xuất để rút." });
+      }
+      await db.query(
+        `UPDATE public.contracts
+         SET proposal_text = NULL, proposal_budget = NULL, proposal_submitted_at = NULL, updated_at = CURRENT_TIMESTAMP
+         WHERE id = $1`,
+        [contractId],
+      );
+      await setStageDeadline(db, contractId, SLA_DAYS.AWAIT_PROPOSAL);
+      await logWorkflowEvent(db, contractId, "proposal_withdrawn", {}, payload.sub);
+      await db.query("COMMIT");
+      return res.json({ message: "Đã rút đề xuất. Bạn có thể gửi lại." });
+    }
+
+    if (action === "reject_proposal") {
+      if (!isClient) {
+        await db.query("ROLLBACK");
+        return res.status(403).json({ message: "Chỉ client từ chối đề xuất." });
+      }
+      if (stage !== "selection" || !contract.proposal_text) {
+        await db.query("ROLLBACK");
+        return res.status(409).json({ message: "Không có đề xuất để từ chối." });
+      }
+      const note = String(req.body?.reason || "").trim().slice(0, 2000);
+      await db.query(
+        `UPDATE public.contracts
+         SET proposal_text = NULL, proposal_budget = NULL, proposal_submitted_at = NULL, updated_at = CURRENT_TIMESTAMP
+         WHERE id = $1`,
+        [contractId],
+      );
+      await setStageDeadline(db, contractId, SLA_DAYS.AWAIT_PROPOSAL);
+      await logWorkflowEvent(db, contractId, "proposal_rejected", { note }, payload.sub);
+      await db.query("COMMIT");
+      return res.json({ message: "Đã từ chối đề xuất. Freelancer có thể gửi đề xuất mới." });
+    }
+
+    if (action === "cancel_order") {
+      if (!isPreFunded(contract)) {
+        await db.query("ROLLBACK");
+        return res.status(409).json({ message: "Không thể hủy — ký quỹ đã được nạp." });
+      }
+      if (stage !== "selection" && stage !== "escrow") {
+        await db.query("ROLLBACK");
+        return res.status(409).json({ message: "Chỉ hủy được ở giai đoạn chốt thỏa thuận hoặc ký quỹ (chưa nạp)." });
+      }
+      const reason = String(req.body?.reason || "").trim().slice(0, 2000);
+      const cancelType = isClient ? "rejected" : "withdrawn";
+      await markContractCancelled(db, contractId, {
+        by: payload.sub,
+        type: cancelType,
+        reason: reason || "Hủy đơn trước khi nạp ký quỹ",
+      });
+      await closeJobIfAny(db, contract.job_id);
+      await logWorkflowEvent(db, contractId, "order_cancelled", { cancelType, reason }, payload.sub);
+      await db.query("COMMIT");
+      return res.json({ message: "Đã hủy đơn. Không ảnh hưởng uy tín (chưa nạp ký quỹ)." });
     }
 
     if (action === "accept_proposal") {
@@ -347,10 +461,12 @@ async function patchContractWorkflow(req, res) {
       }
       await db.query(
         `UPDATE public.contracts
-         SET workflow_stage = 'escrow', agreed_price = COALESCE(proposal_budget, agreed_price), updated_at = CURRENT_TIMESTAMP
+         SET agreed_price = COALESCE(proposal_budget, agreed_price), updated_at = CURRENT_TIMESTAMP
          WHERE id = $1`,
         [contractId],
       );
+      await setEscrowDeadlines(db, contractId);
+      await logWorkflowEvent(db, contractId, "proposal_accepted", {}, payload.sub);
       await db.query("COMMIT");
       return res.json({ message: "Đã chấp nhận đề xuất. Tiếp theo: nạp ký quỹ (Escrow)." });
     }
@@ -388,11 +504,13 @@ async function patchContractWorkflow(req, res) {
          WHERE id = $1`,
         [contractId],
       );
+      await clearStageDeadlines(db, contractId);
       await db.query(
         `UPDATE public.contract_milestones SET status = 'funded', updated_at = CURRENT_TIMESTAMP
          WHERE contract_id = $1 AND status = 'pending'`,
         [contractId],
       );
+      await logWorkflowEvent(db, contractId, "escrow_funded", { amount }, payload.sub);
       await db.query("COMMIT");
       return res.json({ message: "Đã nạp ký quỹ. Freelancer có thể bắt đầu làm việc." });
     }
@@ -431,16 +549,20 @@ async function patchContractWorkflow(req, res) {
         return res.status(409).json({ message: "Đã hết lượt chỉnh sửa trong gói." });
       }
       const note = String(req.body?.revisionNote || "").trim().slice(0, 2000);
+      const reviewDeadline = addDays(new Date(), SLA_DAYS.DELIVERY_REVIEW);
       await db.query(
         `UPDATE public.contracts
          SET revisions_used = revisions_used + 1,
              progress_note = COALESCE($1, progress_note),
+             revision_requested_at = CURRENT_TIMESTAMP,
+             delivery_review_deadline_at = NULL,
              updated_at = CURRENT_TIMESTAMP
          WHERE id = $2`,
         [note || null, contractId],
       );
+      await logWorkflowEvent(db, contractId, "revision_requested", { note }, payload.sub);
       await db.query("COMMIT");
-      return res.json({ message: "Đã gửi yêu cầu chỉnh sửa." });
+      return res.json({ message: "Đã gửi yêu cầu chỉnh sửa. Đồng hồ tự nghiệm thu tạm dừng." });
     }
 
     if (action === "mark_delivered") {
@@ -448,17 +570,24 @@ async function patchContractWorkflow(req, res) {
         await db.query("ROLLBACK");
         return res.status(403).json({ message: "Chỉ freelancer bàn giao." });
       }
+      const deliveredAt = contract.delivered_at ? new Date(contract.delivered_at) : new Date();
+      const reviewDeadline = addDays(deliveredAt, SLA_DAYS.DELIVERY_REVIEW);
       await db.query(
         `UPDATE public.contracts
-         SET workflow_stage = 'delivery', delivered_at = COALESCE(delivered_at, CURRENT_TIMESTAMP), updated_at = CURRENT_TIMESTAMP
+         SET workflow_stage = 'delivery',
+             delivered_at = COALESCE(delivered_at, CURRENT_TIMESTAMP),
+             delivery_review_deadline_at = $2,
+             revision_requested_at = NULL,
+             updated_at = CURRENT_TIMESTAMP
          WHERE id = $1`,
-        [contractId],
+        [contractId, reviewDeadline],
       );
       await db.query(
         `UPDATE public.contract_milestones SET status = 'submitted', updated_at = CURRENT_TIMESTAMP
          WHERE contract_id = $1 AND status IN ('funded', 'in_progress')`,
         [contractId],
       );
+      await logWorkflowEvent(db, contractId, "marked_delivered", { reviewDeadline }, payload.sub);
       await db.query("COMMIT");
       return res.json({ message: "Đã gửi bàn giao cho Client nghiệm thu." });
     }
@@ -468,24 +597,106 @@ async function patchContractWorkflow(req, res) {
         await db.query("ROLLBACK");
         return res.status(403).json({ message: "Chỉ client nghiệm thu." });
       }
-      await db.query(
-        `UPDATE public.contracts
-         SET workflow_stage = 'completion', accepted_at = CURRENT_TIMESTAMP, status = 'completed', updated_at = CURRENT_TIMESTAMP
-         WHERE id = $1`,
-        [contractId],
-      );
-      await db.query(
-        `UPDATE public.contract_milestones SET status = 'approved', updated_at = CURRENT_TIMESTAMP
-         WHERE contract_id = $1`,
-        [contractId],
-      );
-      if (contract.job_id) {
-        await db.query(`UPDATE public.jobs SET status = 'closed', updated_at = CURRENT_TIMESTAMP WHERE id = $1`, [
-          contract.job_id,
-        ]);
-      }
+      await acceptDeliveryInternal(db, contract, payload.sub, false);
       await db.query("COMMIT");
       return res.json({ message: "Đã nghiệm thu. Bạn có thể giải ngân và đánh giá." });
+    }
+
+    if (action === "request_cancel_refund") {
+      if (!isClient) {
+        await db.query("ROLLBACK");
+        return res.status(403).json({ message: "Chỉ client yêu cầu hủy và hoàn tiền." });
+      }
+      if (String(contract.escrow_status) !== "funded") {
+        await db.query("ROLLBACK");
+        return res.status(409).json({ message: "Chỉ áp dụng khi đã nạp ký quỹ." });
+      }
+      if (stage !== "execution" && stage !== "delivery") {
+        await db.query("ROLLBACK");
+        return res.status(409).json({ message: "Không thể yêu cầu hoàn tiền ở giai đoạn này." });
+      }
+      const existing = await loadPendingCancelRequest(db, contractId);
+      if (existing) {
+        await db.query("ROLLBACK");
+        return res.status(409).json({ message: "Đã có yêu cầu hủy đang chờ xử lý." });
+      }
+      const reason = String(req.body?.reason || "").trim().slice(0, 2000);
+      if (!reason) {
+        await db.query("ROLLBACK");
+        return res.status(400).json({ message: "Vui lòng nêu lý do hủy." });
+      }
+      const respondBy = addDays(new Date(), SLA_DAYS.CANCEL_RESPONSE);
+      await db.query(
+        `INSERT INTO public.contract_cancel_requests (contract_id, requested_by, reason, respond_by_at)
+         VALUES ($1, $2, $3, $4)`,
+        [contractId, payload.sub, reason, respondBy],
+      );
+      await logWorkflowEvent(db, contractId, "cancel_refund_requested", { reason, respondBy }, payload.sub);
+      await db.query("COMMIT");
+      return res.json({
+        message: `Đã gửi yêu cầu hủy. Freelancer có ${SLA_DAYS.CANCEL_RESPONSE} ngày để phản hồi.`,
+      });
+    }
+
+    if (action === "respond_cancel_request") {
+      if (!isFreelancer) {
+        await db.query("ROLLBACK");
+        return res.status(403).json({ message: "Chỉ freelancer phản hồi yêu cầu hủy." });
+      }
+      const pending = await loadPendingCancelRequest(db, contractId);
+      if (!pending) {
+        await db.query("ROLLBACK");
+        return res.status(404).json({ message: "Không có yêu cầu hủy đang chờ." });
+      }
+      const agree = Boolean(req.body?.agree);
+      const responseNote = String(req.body?.responseNote || "").trim().slice(0, 2000);
+      if (agree) {
+        await db.query(
+          `UPDATE public.contract_cancel_requests
+           SET status = 'approved', freelancer_response = $1, resolved_at = CURRENT_TIMESTAMP
+           WHERE id = $2`,
+          [responseNote || "Đồng ý hủy", pending.id],
+        );
+        await refundEscrowToClient(db, contract, pending.reason, payload.sub);
+      } else {
+        await db.query(
+          `UPDATE public.contract_cancel_requests
+           SET status = 'rejected', freelancer_response = $1, resolved_at = CURRENT_TIMESTAMP
+           WHERE id = $2`,
+          [responseNote || "Phản đối yêu cầu hủy", pending.id],
+        );
+        await logWorkflowEvent(db, contractId, "cancel_refund_rejected", { responseNote }, payload.sub);
+      }
+      await db.query("COMMIT");
+      return res.json({
+        message: agree ? "Đã đồng ý hủy và hoàn tiền cho Client." : "Đã phản đối yêu cầu hủy.",
+      });
+    }
+
+    if (action === "open_dispute") {
+      const reason = String(req.body?.reason || "").trim().slice(0, 4000);
+      if (!reason) {
+        await db.query("ROLLBACK");
+        return res.status(400).json({ message: "Vui lòng mô tả lý do tranh chấp." });
+      }
+      const open = await loadOpenDispute(db, contractId);
+      if (open) {
+        await db.query("ROLLBACK");
+        return res.status(409).json({ message: "Đã có tranh chấp đang mở." });
+      }
+      const evidence = req.body?.evidence && typeof req.body.evidence === "object" ? req.body.evidence : {};
+      await db.query(
+        `INSERT INTO public.contract_disputes (contract_id, opened_by, reason, evidence)
+         VALUES ($1, $2, $3, $4::jsonb)`,
+        [contractId, payload.sub, reason, JSON.stringify(evidence)],
+      );
+      await db.query(
+        `UPDATE public.contracts SET status = 'disputed', updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
+        [contractId],
+      );
+      await logWorkflowEvent(db, contractId, "dispute_opened", { reason }, payload.sub);
+      await db.query("COMMIT");
+      return res.json({ message: "Đã mở tranh chấp. Đội ngũ sẽ xem xét trong thời gian sớm nhất." });
     }
 
     if (action === "release_payment") {
@@ -497,29 +708,9 @@ async function patchContractWorkflow(req, res) {
         await db.query("ROLLBACK");
         return res.status(409).json({ message: "Ký quỹ chưa được nạp hoặc đã giải ngân." });
       }
-      const amount = Number(contract.agreed_price) || 0;
-      await db.query(
-        `INSERT INTO public.accounts (user_id, balance, currency)
-         VALUES ($1, 0, 'VND')
-         ON CONFLICT (user_id, currency) DO NOTHING`,
-        [contract.freelancer_id],
-      );
-      await db.query(
-        `UPDATE public.accounts SET balance = balance + $1, updated_at = CURRENT_TIMESTAMP
-         WHERE user_id = $2 AND currency = 'VND'`,
-        [amount, contract.freelancer_id],
-      );
-      await db.query(
-        `UPDATE public.contracts
-         SET escrow_status = 'released', released_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
-         WHERE id = $1`,
-        [contractId],
-      );
-      await db.query(
-        `UPDATE public.contract_milestones SET status = 'paid', updated_at = CURRENT_TIMESTAMP
-         WHERE contract_id = $1`,
-        [contractId],
-      );
+      if (String(contract.escrow_status) === "funded") {
+        await releasePaymentToFreelancer(db, contract, payload.sub, false);
+      }
       await db.query("COMMIT");
       return res.json({ message: "Đã giải ngân cho Freelancer." });
     }
@@ -530,9 +721,7 @@ async function patchContractWorkflow(req, res) {
     await db.query("ROLLBACK").catch(() => {});
     console.error("patchContractWorkflow failed:", error.message);
     if (error.code === "42703" || error.code === "42P01") {
-      return res.status(503).json({
-        message: "Chạy backend/sql/service_order_workflow.sql trên PostgreSQL.",
-      });
+      return res.status(503).json({ message: dbSchemaMigrationHint(error) });
     }
     return res.status(500).json({ message: "Không thể cập nhật đơn hàng." });
   } finally {
@@ -568,6 +757,13 @@ async function listServiceOrders(req, res) {
          c.released_at,
          c.created_at,
          c.updated_at,
+         c.stage_deadline_at,
+         c.escrow_deadline_at,
+         c.cancel_type,
+         c.cancel_reason,
+         c.cancelled_at,
+         c.delivery_review_deadline_at,
+         c.auto_accepted_at,
          s.title AS service_title,
          j.title AS job_title,
          CASE
@@ -583,8 +779,7 @@ async function listServiceOrders(req, res) {
        LEFT JOIN public.jobs j ON j.id = c.job_id
        LEFT JOIN public.user_profiles cup ON cup.user_id = c.client_id
        LEFT JOIN public.user_profiles fup ON fup.user_id = c.freelancer_id
-       WHERE c.service_id IS NOT NULL
-         AND c.deleted_at IS NULL
+       WHERE c.deleted_at IS NULL
          AND (c.client_id = $1 OR c.freelancer_id = $1)
        ORDER BY c.updated_at DESC, c.created_at DESC
        LIMIT 100`,
@@ -595,9 +790,7 @@ async function listServiceOrders(req, res) {
   } catch (error) {
     console.error("listServiceOrders failed:", error.message);
     if (error.code === "42703" || error.code === "42P01") {
-      return res.status(503).json({
-        message: "Chạy backend/sql/service_order_workflow.sql trên PostgreSQL.",
-      });
+      return res.status(503).json({ message: dbSchemaMigrationHint(error) });
     }
     return res.status(500).json({ message: "Không thể tải danh sách đơn dịch vụ." });
   } finally {

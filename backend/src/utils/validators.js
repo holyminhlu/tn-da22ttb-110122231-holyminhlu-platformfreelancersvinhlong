@@ -117,6 +117,40 @@ function readServiceUpsertBody(req) {
       ? Number(responseTimeHoursRaw)
       : null;
 
+  const listingStatus = String(req.body?.listingStatus || req.body?.listing_status || "")
+    .trim()
+    .toLowerCase();
+  const isDraft = listingStatus === "draft";
+
+  if (isDraft) {
+    if (!title) {
+      return { ok: false, message: "Nháp cần ít nhất tiêu đề dịch vụ." };
+    }
+    const draftPrice = Number.isFinite(price) && price > 0 ? price : 1000000;
+    const draftDelivery =
+      deliveryDays && ALLOWED_SERVICE_DELIVERY_DAYS.has(deliveryDays) ? deliveryDays : 5;
+    return {
+      ok: true,
+      values: {
+        title,
+        description,
+        price: draftPrice,
+        deliveryDays: draftDelivery,
+        category,
+        requirements,
+        supportUpsell,
+        mediaUrls,
+        thumbnailUrl,
+        demoMedia,
+        techStack,
+        faqs,
+        packages,
+        responseTimeHours: responseTimeHours ?? 24,
+        listingStatus: "draft",
+      },
+    };
+  }
+
   if (!title || !Number.isFinite(price) || price <= 0) {
     return { ok: false, message: "Tiêu đề và giá dịch vụ hợp lệ là bắt buộc." };
   }
@@ -141,6 +175,8 @@ function readServiceUpsertBody(req) {
       faqs,
       packages,
       responseTimeHours,
+      listingStatus:
+        listingStatus && ["pending", "active"].includes(listingStatus) ? listingStatus : "pending",
     },
   };
 }

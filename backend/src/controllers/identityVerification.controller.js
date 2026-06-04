@@ -38,8 +38,9 @@ function parseExpiry(expiry) {
   return `${m[1]}/${m[2]}`;
 }
 
-function randomChargeCents() {
-  return Math.floor(Math.random() * 1000) + 1;
+/** Số tiền VND ngẫu nhiên (lưu vào card_charge_cents — đơn vị đồng). */
+function randomChargeVnd() {
+  return Math.floor(Math.random() * 99_000) + 1_000;
 }
 
 function mapRow(row) {
@@ -398,7 +399,7 @@ async function addCreditCard(req, res) {
 
   const last4 = digits.slice(-4);
   const brand = detectCardBrand(digits);
-  const chargeCents = randomChargeCents();
+  const chargeVnd = randomChargeVnd();
   const userId = payload.sub;
   const db = await pool.connect();
 
@@ -437,7 +438,7 @@ async function addCreditCard(req, res) {
         billing.postal || null,
         billing.phone || null,
         billing.currency,
-        chargeCents,
+        chargeVnd,
       ],
     );
 
@@ -449,7 +450,7 @@ async function addCreditCard(req, res) {
     return res.json({
       message:
         "Đã thêm thẻ. Một khoản phí tạm thời đã được trừ — vui lòng xác minh số tiền ở bước tiếp theo.",
-      chargeAmountUsd: (chargeCents / 100).toFixed(2),
+      chargeAmountVnd: String(chargeVnd),
       verification: mapRow(result.rows[0]),
     });
   } catch (error) {
@@ -470,9 +471,9 @@ async function verifyCardCharge(req, res) {
   const payload = verifyAccessToken(req, res);
   if (!payload) return;
 
-  const raw = bodyAmountUsd(req.body?.chargeAmount);
+  const raw = bodyAmountVnd(req.body?.chargeAmount);
   if (raw === null) {
-    return res.status(400).json({ message: "Nhập số tiền đã thanh toán (USD)." });
+    return res.status(400).json({ message: "Nhập số tiền đã thanh toán (VND)." });
   }
 
   const userId = payload.sub;
@@ -492,9 +493,9 @@ async function verifyCardCharge(req, res) {
       return res.status(400).json({ message: "Thẻ đã được xác minh." });
     }
 
-    const expectedCents = Number(row.card_charge_cents);
-    const enteredCents = Math.round(raw * 100);
-    if (enteredCents !== expectedCents) {
+    const expectedVnd = Number(row.card_charge_cents);
+    const enteredVnd = Math.round(raw);
+    if (enteredVnd !== expectedVnd) {
       return res.status(400).json({
         message: "Số tiền không khớp. Kiểm tra sao kê thẻ và thử lại.",
       });
@@ -530,10 +531,12 @@ async function verifyCardCharge(req, res) {
   }
 }
 
-function bodyAmountUsd(value) {
-  const n = Number(String(value ?? "").replace(",", "."));
-  if (!Number.isFinite(n) || n <= 0 || n > 10) return null;
-  return Math.round(n * 100) / 100;
+function bodyAmountVnd(value) {
+  const digits = String(value ?? "").replace(/[^\d]/g, "");
+  if (!digits) return null;
+  const n = Number(digits);
+  if (!Number.isFinite(n) || n < 1_000 || n > 200_000) return null;
+  return Math.round(n);
 }
 
 module.exports = {

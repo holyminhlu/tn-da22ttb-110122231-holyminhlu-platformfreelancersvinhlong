@@ -1,0 +1,369 @@
+.fw-quotes__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.fw-quotes__title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.fw-quotes__lead {
+  margin: 0.35rem 0 0;
+  font-size: 0.875rem;
+  color: #6b7280;
+  max-width: 42rem;
+}
+
+.fw-quotes__cta {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #fff;
+  background: #0066cc;
+  border-radius: 0.25rem;
+  text-decoration: none;
+  transition: background-color 0.15s;
+}
+
+.fw-quotes__cta:hover {
+  background: #0052a3;
+}
+
+.fw-quotes__stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.fw-quotes__stat {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.35rem;
+  padding: 0.85rem 1rem;
+  background: #fff;
+}
+
+.fw-quotes__stat-value {
+  display: block;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.fw-quotes__stat-label {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.fw-quotes__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.fw-quotes__search {
+  flex: 1 1 14rem;
+  min-width: 0;
+  max-width: 22rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.25rem;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.875rem;
+}
+
+.fw-quotes__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.fw-quotes__filter {
+  border: 1px solid #e5e7eb;
+  border-radius: 9999px;
+  padding: 0.35rem 0.85rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #4b5563;
+  background: #fff;
+  cursor: pointer;
+}
+
+.fw-quotes__filter--active {
+  border-color: #0073b1;
+  background: #e8f4fc;
+  color: #0073b1;
+}
+
+.fw-quotes__filter-count {
+  margin-left: 0.35rem;
+  font-size: 0.6875rem;
+  opacity: 0.85;
+}
+
+.fw-quotes__sort {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.25rem;
+  padding: 0.4rem 0.65rem;
+  font-size: 0.8125rem;
+  color: #374151;
+  background: #fff;
+}
+
+.fw-quotes__summary {
+  margin: 0 0 1rem;
+  font-size: 0.8125rem;
+  color: #6b7280;
+}
+
+.fw-quotes__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(17rem, 1fr));
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fw-quotes__card {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.35rem;
+  background: #fff;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
+  overflow: hidden;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.fw-quotes__card:hover {
+  border-color: #93c5fd;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.06);
+}
+
+.fw-quotes__card--accepted {
+  border-top: 3px solid #059669;
+}
+
+.fw-quotes__card--offered,
+.fw-quotes__card--interviewing,
+.fw-quotes__card--shortlisted {
+  border-top: 3px solid #0073b1;
+}
+
+.fw-quotes__card--pending {
+  border-top: 3px solid #f59e0b;
+}
+
+.fw-quotes__card--declined,
+.fw-quotes__card--withdrawn {
+  opacity: 0.88;
+}
+
+.fw-quotes__card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.85rem 1rem 0;
+}
+
+.fw-quotes__badge {
+  border-radius: 9999px;
+  padding: 0.15rem 0.55rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.fw-quotes__badge--pending {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.fw-quotes__badge--hot {
+  background: #e8f4fc;
+  color: #0073b1;
+}
+
+.fw-quotes__badge--accepted {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.fw-quotes__badge--muted {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.fw-quotes__job-status {
+  font-size: 0.6875rem;
+  color: #9ca3af;
+}
+
+.fw-quotes__card-body {
+  padding: 0.65rem 1rem 1rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.fw-quotes__client-row {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.fw-quotes__avatar {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 9999px;
+  object-fit: cover;
+  background: #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #4b5563;
+  flex-shrink: 0;
+}
+
+.fw-quotes__client-name {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.fw-quotes__job-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.fw-quotes__job-title a {
+  color: #0073b1;
+  text-decoration: none;
+}
+
+.fw-quotes__job-title a:hover {
+  text-decoration: underline;
+}
+
+.fw-quotes__hint {
+  margin: 0;
+  font-size: 0.75rem;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+.fw-quotes__message {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: #4b5563;
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.fw-quotes__price {
+  margin: 0.25rem 0 0;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.fw-quotes__price-type {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+.fw-quotes__time {
+  margin: 0;
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+.fw-quotes__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: auto;
+  padding-top: 0.65rem;
+}
+
+.fw-quotes__action {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #0066cc;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.fw-quotes__action:hover {
+  text-decoration: underline;
+}
+
+.fw-quotes__action--muted {
+  color: #6b7280;
+}
+
+.fw-quotes__action:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.fw-quotes__empty {
+  padding: 3rem 1.5rem;
+  text-align: center;
+  border: 1px dashed #e5e7eb;
+  border-radius: 0.35rem;
+  background: #fff;
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.fw-quotes__guest {
+  padding: 2rem 1.5rem;
+  border: 1px solid #dbeafe;
+  border-radius: 0.5rem;
+  background: linear-gradient(135deg, #eff6ff 0%, #f8fafc 100%);
+  text-align: center;
+}
+
+.fw-quotes__guest p {
+  margin: 0 0 1rem;
+  font-size: 0.875rem;
+  color: #374151;
+}
+
+.fw-quotes__error {
+  margin: 0 0 1rem;
+  font-size: 0.875rem;
+  color: #b91c1c;
+}
+
+.fw-quotes__pagination {
+  margin-top: 1.5rem;
+}

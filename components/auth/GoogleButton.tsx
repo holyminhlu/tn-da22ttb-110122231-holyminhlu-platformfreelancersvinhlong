@@ -18,7 +18,7 @@ export default function GoogleButton() {
   return (
     <a href={apiUrl(apiPaths.auth.google, apiBaseUrl)} className={styles.googleButton}>
       {GOOGLE_ICON}
-      Continue with Google
+      Tiếp tục với Google
     </a>
   );
 }

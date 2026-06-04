@@ -32,6 +32,8 @@ type AddressSearchPickerProps = {
   lat?: number | null;
   lng?: number | null;
   onCoordsChange?: (lat: number | null, lng: number | null) => void;
+  /** Tự động lấy GPS và đối chiếu khi mount (ví dụ form đổi địa chỉ tài khoản). */
+  requestGpsOnMount?: boolean;
 };
 
 type Suggestion =
@@ -52,6 +54,7 @@ export default function AddressSearchPicker({
   lat,
   lng,
   onCoordsChange,
+  requestGpsOnMount = false,
 }: AddressSearchPickerProps) {
   const [query, setQuery] = useState(value.addressSearch);
   const [open, setOpen] = useState(false);
@@ -61,6 +64,7 @@ export default function AddressSearchPicker({
   const [osmResults, setOsmResults] = useState<NominatimSearchResult[]>([]);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
+  const gpsOnMountRan = useRef(false);
 
   const mapLat = lat ?? VINH_LONG_MAP_CENTER.lat;
   const mapLng = lng ?? VINH_LONG_MAP_CENTER.lng;
@@ -203,6 +207,14 @@ export default function AddressSearchPicker({
       { enableHighAccuracy: true, timeout: 20000, maximumAge: 60000 },
     );
   }
+
+  useEffect(() => {
+    if (!requestGpsOnMount || gpsOnMountRan.current) return;
+    gpsOnMountRan.current = true;
+    handleUseGps();
+    // Chỉ chạy một lần khi mở form với requestGpsOnMount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [requestGpsOnMount]);
 
   return (
     <div className="idv-address-picker" ref={wrapRef}>

@@ -6,7 +6,7 @@ import FreelancerWorkShell from "./FreelancerWorkShell";
 export default function FreelancerOrderWorkflowPage() {
   return (
     <FreelancerWorkShell>
-      <ServiceOrderWorkflow backHref="/findwork/orders" backLabel="Đơn dịch vụ của tôi" />
+      <ServiceOrderWorkflow backHref="/dich-vu/don-hang" backLabel="Đơn hàng dịch vụ" />
     </FreelancerWorkShell>
   );
 }

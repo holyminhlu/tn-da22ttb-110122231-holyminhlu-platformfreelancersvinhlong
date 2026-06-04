@@ -91,9 +91,46 @@ export type FreelancerMeResponse = {
   timeline?: { event_type: string; event_time: string; event_title: string }[];
 };
 
-type ClientMeResponse = {
+export type ClientStats = {
+  total_jobs: number | string;
+  open_jobs: number | string;
+  total_contracts: number | string;
+};
+
+export type ClientRecentJob = {
+  id: string;
+  title: string;
+  budget: string | number | null;
+  status: string;
+  created_at: string;
+};
+
+export type ClientAccountBalance = {
+  balance: number;
+  escrowBalance: number;
+};
+
+export type ClientRecentPayment = {
+  id: string;
+  job_id: string | null;
+  service_id: string | null;
+  title: string;
+  amount: string | number | null;
+  paid_at: string;
+  freelancer_name: string | null;
+  escrow_status: string | null;
+};
+
+export type ClientMeResponse = {
   user: MeUser;
   completionScore?: number;
+  skills: UserSkill[];
+  clientStats: ClientStats;
+  recentJobs: ClientRecentJob[];
+  reviews: ContractReview[];
+  timeline?: { event_type: string; event_time: string; event_title: string }[];
+  account?: ClientAccountBalance;
+  recentPayments?: ClientRecentPayment[];
 };
 
 export type UpdateProfilePayload = {
@@ -237,4 +274,8 @@ export async function createPortfolio(payload: CreatePortfolioPayload) {
 
 export function isFreelancerMeResponse(data: ClientMeResponse | FreelancerMeResponse): data is FreelancerMeResponse {
   return "freelancerProfile" in data || "services" in data;
+}
+
+export function isClientMeResponse(data: ClientMeResponse | FreelancerMeResponse): data is ClientMeResponse {
+  return "clientStats" in data;
 }

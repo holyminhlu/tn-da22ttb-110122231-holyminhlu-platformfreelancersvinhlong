@@ -11,7 +11,7 @@ export default function WorkDetailPage() {
     <div className="home-landing work-detail-page find-work-page min-h-screen text-gray-900">
       <HomeNavbar />
       <FindWorkSubNav />
-      <main id="main-content" className="wd-main">
+      <main id="main-content" className="wd-main pt-4">
         <WorkDetailContent />
       </main>
       <HomeFooter />

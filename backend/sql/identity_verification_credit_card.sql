@@ -21,6 +21,6 @@ ALTER TABLE public.identity_verifications
   ADD COLUMN IF NOT EXISTS card_verified_at timestamp without time zone;
 
 COMMENT ON COLUMN public.identity_verifications.card_charge_cents IS
-  'Số tiền tạm trừ xác minh (cent USD), người dùng nhập lại để xác nhận.';
+  'Số tiền tạm trừ xác minh (VND), người dùng nhập lại để xác nhận.';
 
 COMMIT;

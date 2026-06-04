@@ -16,6 +16,10 @@ export type JobsListItem = {
   workflowStage?: string | null;
   escrowStatus?: string | null;
   proposalText?: string | null;
+  progressNote?: string | null;
+  jobDueAt?: string | null;
+  deliveredAt?: string | null;
+  reviewRating?: number | null;
 };
 
 function normalizeStatus(s: string) {
@@ -37,6 +41,7 @@ function isCompleted(contractStatus: string) {
 }
 
 export function assignmentToListItem(row: MyWorkFreelancerAssignment): JobsListItem {
+  const escrow = String(row.escrow_status || "").toLowerCase();
   return {
     id: row.contract_id,
     jobId: row.job_id,
@@ -47,7 +52,15 @@ export function assignmentToListItem(row: MyWorkFreelancerAssignment): JobsListI
     agreedPrice: row.agreed_price,
     budget: row.budget,
     activityAt: row.delivered_at || row.contract_created_at,
-    hasSafepay: false,
+    hasSafepay: escrow === "funded" || escrow === "released",
+    serviceId: row.service_id ?? null,
+    workflowStage: row.workflow_stage ?? null,
+    escrowStatus: row.escrow_status ?? null,
+    proposalText: row.proposal_text ?? null,
+    progressNote: row.progress_note ?? null,
+    jobDueAt: row.job_due_at ?? null,
+    deliveredAt: row.delivered_at ?? null,
+    reviewRating: row.review_rating ?? null,
   };
 }
 

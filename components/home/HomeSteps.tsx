@@ -6,7 +6,9 @@ export default function HomeSteps() {
     <section id="steps" className="border-b border-t border-gray-100 bg-gray-50 py-24">
       <div className="mx-auto max-w-7xl px-6">
         <div className="mb-16 text-center">
-          <h2 className="mb-2 text-3xl font-bold">It&apos;s Easy to Get Work Done on VLC Connected</h2>
+          <h2 className="mb-2 text-3xl font-bold">
+            Hoàn thành công việc dễ dàng trên Vĩnh Long Connected
+          </h2>
           <div className="mx-auto h-1 w-12 bg-blue-500" />
         </div>
         <div className="grid grid-cols-1 gap-12 md:grid-cols-2 lg:grid-cols-4">
@@ -25,7 +27,7 @@ export default function HomeSteps() {
             type="button"
             className="rounded bg-[#0066cc] px-8 py-3 font-bold text-white transition hover:bg-blue-700"
           >
-            See How It Works
+            Xem hướng dẫn sử dụng
           </button>
         </div>
       </div>

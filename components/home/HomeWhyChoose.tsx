@@ -7,7 +7,7 @@ export default function HomeWhyChoose() {
     <section className="relative overflow-hidden bg-white py-24">
       <div className="mx-auto max-w-7xl px-6">
         <div className="mb-16 text-center">
-          <h2 className="mb-2 text-4xl font-bold">Why Over 3 Million People Choose Us</h2>
+          <h2 className="mb-2 text-4xl font-bold">Vì sao chọn Vĩnh Long Connected</h2>
           <div className="mx-auto h-1 w-12 bg-blue-500" />
         </div>
         <div className="relative flex flex-col items-center justify-between gap-8 lg:flex-row">
@@ -31,8 +31,8 @@ export default function HomeWhyChoose() {
               <div className="absolute inset-0 scale-110 rounded-full bg-gray-100 opacity-50" />
               <div className="relative z-10 h-full w-full overflow-hidden rounded-full border-[12px] border-white shadow-2xl">
                 <Image
-                  src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=800"
-                  alt="Support"
+                  src="/Media/anhVinhLong2.jpg"
+                  alt="Vĩnh Long về đêm — đô thị và sông nước"
                   fill
                   className="object-cover"
                   sizes="400px"
@@ -60,7 +60,7 @@ export default function HomeWhyChoose() {
                 type="button"
                 className="rounded bg-[#0066cc] px-8 py-3 font-bold text-white transition hover:bg-blue-700"
               >
-                Why Choose VLC Connected
+                Khám phá nền tảng
               </button>
             </div>
           </div>

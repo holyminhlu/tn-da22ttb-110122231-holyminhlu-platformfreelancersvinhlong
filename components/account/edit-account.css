@@ -338,45 +338,92 @@
   opacity: 0.6;
 }
 
-/* Layout dùng chung: menu cố định trái + nội dung phải (mọi trang con tài khoản) */
+.edit-account-page .ea-dialog--wide {
+  max-width: min(42rem, 100%);
+}
+
+.edit-account-page .ea-dialog-address {
+  margin-bottom: 0.25rem;
+}
+
+.edit-account-page .ea-dialog-address-lead {
+  margin: 0 0 1rem;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: #6b7280;
+}
+
+.edit-account-page .ea-address-hint {
+  margin: 0 0 0.75rem;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: #6b7280;
+}
+
+/* Layout: cột menu trái tách biệt + panel nội dung phải (menu sticky, không cuộn riêng) */
+.edit-account-page {
+  --ea-nav-offset: 4.5rem;
+}
+
+.edit-account-page #main-content {
+  overflow-x: clip;
+}
+
 .edit-account-page .ea-shell {
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: 1.5rem;
+  gap: 0;
   width: 100%;
   max-width: none;
-  padding: 2rem clamp(0.75rem, 2vw, 1.5rem) 2.5rem;
+  padding: 0;
   box-sizing: border-box;
 }
 
 @media (min-width: 768px) {
   .edit-account-page .ea-shell {
     flex-direction: row;
-    align-items: flex-start;
-    gap: 3rem;
+    align-items: stretch;
+    min-height: calc(100vh - var(--ea-nav-offset));
   }
 }
 
 .edit-account-page .ea-shell__sidebar {
   flex-shrink: 0;
   width: 100%;
+  padding: 1.5rem clamp(0.75rem, 2vw, 1.25rem);
+  box-sizing: border-box;
 }
 
 @media (min-width: 768px) {
   .edit-account-page .ea-shell__sidebar {
-    width: 14rem;
+    width: 15rem;
     position: sticky;
-    top: 5.5rem;
+    top: var(--ea-nav-offset);
     align-self: flex-start;
-    max-height: calc(100vh - 6rem);
-    overflow-y: auto;
+    z-index: 10;
+    overflow: visible;
+    background: #fff;
+    border-right: 1px solid #e5e7eb;
+    padding: 2rem 1.25rem 2.5rem;
+  }
+
+  .edit-account-page .ea-shell__sidebar .ea-sidebar {
+    width: 100%;
   }
 }
 
 .edit-account-page .ea-shell__content {
   flex: 1;
   min-width: 0;
+  padding: 1.5rem clamp(0.75rem, 2vw, 1.5rem) 2.5rem;
+  box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+  .edit-account-page .ea-shell__content {
+    padding: 2rem clamp(1rem, 2.5vw, 2rem) 2.5rem;
+  }
 }
 
 .edit-account-page .ea-shell__content > .ea-main {

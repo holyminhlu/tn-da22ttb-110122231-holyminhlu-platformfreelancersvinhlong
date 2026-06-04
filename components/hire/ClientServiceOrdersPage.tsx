@@ -11,8 +11,10 @@ import {
   workflowStageLabel,
   type OrderListFilter,
 } from "@/lib/orders/serviceOrderDisplay";
+import { orderDeadlineSubtitle } from "@/lib/orders/workflowSlaDisplay";
 import { formatDate } from "@/lib/format";
 import HireShell from "./HireShell";
+import "./hire.css";
 import "../findwork/findwork-orders.css";
 
 const FILTERS: { value: OrderListFilter; label: string }[] = [
@@ -72,16 +74,21 @@ export default function ClientServiceOrdersPage() {
 
   return (
     <HireShell>
-      <div className="hire-page fw-orders">
-        <header className="fw-orders__head">
-          <h1 className="fw-orders__title">Đơn dịch vụ</h1>
-          <p className="fw-orders__lead">
-            Theo dõi yêu cầu báo giá, đề xuất từ freelancer, ký quỹ và nghiệm thu từng giai
-            đoạn.
-            {proposalPending > 0
-              ? ` Bạn có ${proposalPending} đề xuất chờ xem xét.`
-              : ""}
-          </p>
+      <div className="hire-page hire-orders hire-orders--full-width">
+        <header className="hire-page__head">
+          <div>
+            <h1 className="hire-page__title">Đơn dịch vụ</h1>
+            <p className="hire-page__lead">
+              Theo dõi yêu cầu báo giá, đề xuất từ freelancer, ký quỹ và nghiệm thu từng giai
+              đoạn.
+              {proposalPending > 0
+                ? ` Bạn có ${proposalPending} đề xuất chờ xem xét.`
+                : ""}
+            </p>
+          </div>
+          <Link href="/hire/search" className="hire-page__post-btn">
+            Tìm freelancer
+          </Link>
         </header>
 
         {proposalPending > 0 ? (
@@ -122,6 +129,7 @@ export default function ClientServiceOrdersPage() {
             {filtered.map((order) => {
               const pkgName = parsePackageName(order.package_snapshot);
               const hint = orderStatusHint(order, false);
+              const deadlineLine = orderDeadlineSubtitle(order);
               const hasProposal = Boolean(order.proposal_text?.trim());
               const urgent =
                 String(order.workflow_stage).toLowerCase() === "selection" && hasProposal;
@@ -163,6 +171,9 @@ export default function ClientServiceOrdersPage() {
                     <div className="fw-orders__card-foot">
                       <span>{workflowStageLabel(order.workflow_stage)}</span>
                       <span>Escrow: {order.escrow_status}</span>
+                      {deadlineLine ? (
+                        <span className="fw-orders__card-deadline">{deadlineLine}</span>
+                      ) : null}
                       <span>Cập nhật {formatDate(order.updated_at || order.created_at)}</span>
                     </div>
                   </Link>

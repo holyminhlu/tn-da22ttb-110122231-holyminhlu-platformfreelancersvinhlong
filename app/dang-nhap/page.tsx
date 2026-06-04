@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import LoginForm from "@/components/auth/LoginForm";
 
 export const metadata: Metadata = {
@@ -6,6 +7,18 @@ export const metadata: Metadata = {
   description: "Đăng nhập bằng email/password hoặc tiếp tục với Google.",
 };
 
+function LoginFallback() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-[#f4f7f9] text-sm text-gray-500">
+      Đang tải…
+    </div>
+  );
+}
+
 export default function LoginPage() {
-  return <LoginForm />;
+  return (
+    <Suspense fallback={<LoginFallback />}>
+      <LoginForm />
+    </Suspense>
+  );
 }

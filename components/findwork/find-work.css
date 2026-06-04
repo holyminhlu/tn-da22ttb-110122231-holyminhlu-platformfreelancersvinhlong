@@ -2,35 +2,91 @@
   background-color: #f4f7f9;
 }
 
+.find-work-page .fw-btn-primary {
+  background-color: #0066cc;
+  transition: background-color 0.15s;
+}
+
+.find-work-page .fw-btn-primary:hover {
+  background-color: #0052a3;
+}
+
+.find-work-page .fw-guest-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid #dbeafe;
+  border-radius: 0.5rem;
+  background: linear-gradient(135deg, #eff6ff 0%, #f8fafc 100%);
+}
+
+.find-work-page .fw-guest-banner__text {
+  margin: 0;
+  flex: 1 1 16rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: #374151;
+}
+
+.find-work-page .fw-guest-banner__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
 .find-work-page .fw-guru-blue {
   color: #0073b1;
 }
 
-.find-work-page .fw-subnav {
+/* Subnav — cùng phong cách menu Hire (client) */
+.find-work-page .hire-subnav {
   border-bottom: 1px solid #e5e7eb;
   background: #fff;
 }
 
-.find-work-page .fw-subnav__inner {
+.find-work-page .hire-subnav__inner {
   display: flex;
-  gap: 2rem;
+  max-width: 80rem;
+  margin: 0 auto;
   overflow-x: auto;
-  padding: 0.5rem clamp(0.75rem, 2vw, 1.5rem);
-  font-size: 0.875rem;
-  color: #6b7280;
-}
-
-.find-work-page .fw-subnav__link {
+  padding: 0 clamp(0.75rem, 2vw, 1rem);
+  gap: 2rem;
   white-space: nowrap;
-  padding-bottom: 0.25rem;
 }
 
-.find-work-page .fw-subnav__link--active {
-  font-weight: 600;
-  color: #0073b1;
-  text-decoration: underline;
-  text-decoration-thickness: 2px;
-  text-underline-offset: 8px;
+.find-work-page .hire-subnav__link {
+  display: inline-block;
+  padding: 1rem 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #6b7280;
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.find-work-page .hire-subnav__link:hover {
+  color: #374151;
+  border-bottom-color: #d1d5db;
+}
+
+.find-work-page .hire-subnav__link--active {
+  color: #111827;
+  border-bottom-color: #3b82f6;
+}
+
+.find-work-page .hire-subnav__link--disabled {
+  cursor: default;
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.find-work-page .hire-subnav__link--disabled:hover {
+  color: #6b7280;
+  border-bottom-color: transparent;
 }
 
 .find-work-page .fw-main {

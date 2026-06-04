@@ -72,6 +72,8 @@ export const apiPaths = {
     delete: (jobId: string) => `/api/jobs/me/jobs/${jobId}`,
     images: "/api/jobs/me/job-images",
     accept: (jobId: string) => `/api/jobs/me/jobs/${jobId}/accept`,
+    quotes: "/api/jobs/me/quotes",
+    quote: (quoteId: string) => `/api/jobs/me/quotes/${quoteId}`,
     /** Legacy */
     createLegacy: "/api/auth/me/job",
     imagesLegacy: "/api/auth/me/job-images",
@@ -81,13 +83,24 @@ export const apiPaths = {
     list: "/api/services",
     categories: "/api/services/categories",
     detail: (id: string) => `/api/services/${id}`,
+    myList: "/api/services/me/services",
+    myDetail: (id: string) => `/api/services/me/service/${id}`,
     create: "/api/services/me/service",
     update: (id: string) => `/api/services/me/service/${id}`,
+    patchStatus: (id: string) => `/api/services/me/service/${id}/status`,
+    myReviews: "/api/services/me/reviews",
+    replyReview: (id: string) => `/api/services/me/reviews/${id}/reply`,
     images: "/api/services/me/service-images",
     thumbnail: "/api/services/me/service-thumbnail",
     demo: "/api/services/me/service-demo",
     /** Legacy */
     createLegacy: "/api/auth/me/service",
     updateLegacy: (id: string) => `/api/auth/me/service/${id}`,
+  },
+  payments: {
+    billing: "/api/payments/billing",
+    billingProfile: "/api/payments/billing-profile",
+    deposit: "/api/payments/deposit",
+    withdraw: "/api/payments/withdraw",
   },
 } as const;

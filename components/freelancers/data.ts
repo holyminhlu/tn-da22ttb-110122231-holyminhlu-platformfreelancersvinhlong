@@ -26,8 +26,8 @@ export const FREELANCER_LISTINGS: FreelancerListing[] = [
     earnings: "470,233",
     rating: "100",
     title: "Mobile and Web Application Development",
-    rate: "$30/hr",
-    minProject: "$120",
+    rate: "750.000 ₫/giờ",
+    minProject: "3.000.000 ₫",
     description:
       "Outsource your project to us and we will deliver the software you need on budget. Delivering tailored agile software solutions for all your software challenges. With over 20 years experience in develo...",
     category: "Programming & Development",
@@ -51,8 +51,8 @@ export const FREELANCER_LISTINGS: FreelancerListing[] = [
     earnings: "411,683",
     rating: "100",
     title: "AI Solutions",
-    rate: "$15/hr",
-    minProject: "$1,000",
+    rate: "375.000 ₫/giờ",
+    minProject: "25.000.000 ₫",
     description:
       "Suretek InfoSoft develops AI-powered systems that transform business operations through automation, insight generation, and predictive intelligence. We design and implement models in machine learning,...",
     category: "Programming & Development",
@@ -76,8 +76,8 @@ export const FREELANCER_LISTINGS: FreelancerListing[] = [
     earnings: "220,133",
     rating: "100",
     title: "Highly experienced full-stack developer",
-    rate: "$50/hr",
-    minProject: "$25",
+    rate: "1.250.000 ₫/giờ",
+    minProject: "625.000 ₫",
     description:
       "I am a highly experienced and creative full-stack web developer with more than a decade of experience in web development. I have extensive knowledge of commercial and open source software/database eng...",
     category: "Programming & Development",

@@ -28,6 +28,10 @@ export type JobListing = {
   client_email_verified: boolean;
   proposal_count: number;
   quote_count?: number;
+  has_my_pending_quote?: boolean;
+  my_contract_id?: string | null;
+  my_contract_status?: string | null;
+  my_quote_status?: string | null;
 };
 
 export type JobSort =
@@ -105,12 +109,12 @@ export async function listMyJobs(params?: ListMyJobsParams) {
   return data;
 }
 
-export async function listJobs(params?: ListJobsParams) {
+export async function listJobs(params?: ListJobsParams, options?: { auth?: boolean }) {
   const search = new URLSearchParams();
   appendListJobsParams(search, params);
   const qs = search.toString();
   const path = qs ? `${apiPaths.jobs.list}?${qs}` : apiPaths.jobs.list;
-  const { data } = await fetchApi<ListJobsResponse>(path);
+  const { data } = await fetchApi<ListJobsResponse>(path, { auth: options?.auth });
   return data;
 }
 
@@ -126,10 +130,23 @@ export async function getJob(jobId: string) {
   return data.job;
 }
 
-export async function acceptJob(jobId: string) {
-  const { data } = await fetchApi<{ message?: string; contract?: { id: string } }>(
+export type SubmitJobQuotePayload = {
+  message?: string;
+  amount?: number | null;
+  pricing_type?: "fixed" | "hourly";
+};
+
+export async function acceptJob(
+  jobId: string,
+  payload?: SubmitJobQuotePayload,
+) {
+  const { data } = await fetchApi<{ message?: string; quote?: { id: string } }>(
     apiPaths.jobs.accept(jobId),
-    { method: "POST", auth: true },
+    {
+      method: "POST",
+      auth: true,
+      body: payload ?? {},
+    },
   );
   return data;
 }

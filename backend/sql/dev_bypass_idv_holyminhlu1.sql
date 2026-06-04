@@ -21,7 +21,7 @@ SET
   card_brand = COALESCE(iv.card_brand, 'visa'),
   card_expiry = COALESCE(iv.card_expiry, '12/28'),
   cardholder_name = COALESCE(iv.cardholder_name, 'Holy Minh Lu'),
-  card_charge_cents = COALESCE(iv.card_charge_cents, 123),
+  card_charge_cents = COALESCE(iv.card_charge_cents, 50000),
   submitted_for_review_at = COALESCE(iv.submitted_for_review_at, CURRENT_TIMESTAMP),
   updated_at = CURRENT_TIMESTAMP
 FROM public.users u

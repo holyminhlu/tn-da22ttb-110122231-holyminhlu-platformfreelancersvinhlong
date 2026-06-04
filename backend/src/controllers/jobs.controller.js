@@ -511,12 +511,11 @@ async function deleteMyJob(req, res) {
 }
 
 async function acceptJob(req, res) {
-
   const payload = verifyAccessToken(req, res);
   if (!payload) return;
 
   if (payload.role !== "freelancer") {
-    return res.status(403).json({ message: "Chỉ freelancer mới có thể tiếp nhận việc." });
+    return res.status(403).json({ message: "Chỉ freelancer mới có thể gửi báo giá." });
   }
 
   const jobId = parseUuidParam(req.params.jobId);
@@ -525,13 +524,20 @@ async function acceptJob(req, res) {
   }
 
   const freelancerId = payload.sub;
+  const body = req.body && typeof req.body === "object" ? req.body : {};
+  const message = body.message != null ? String(body.message).trim() : "";
+  const pricingRaw = String(body.pricing_type || body.pricingType || "fixed").toLowerCase();
+  const requestedPricingType = pricingRaw === "hourly" ? "hourly" : "fixed";
+  let amount = body.amount != null && body.amount !== "" ? Number(body.amount) : null;
+
   const dbClient = await pool.connect();
 
   try {
     await dbClient.query("BEGIN");
 
     const jobResult = await dbClient.query(
-      `SELECT id, client_id, budget, status FROM public.jobs WHERE id = $1 FOR UPDATE`,
+      `SELECT id, client_id, budget, budget_type, budget_max, status FROM public.jobs
+       WHERE id = $1 AND deleted_at IS NULL FOR UPDATE`,
       [jobId],
     );
 
@@ -544,50 +550,543 @@ async function acceptJob(req, res) {
 
     if (job.status !== "open") {
       await dbClient.query("ROLLBACK");
-      return res.status(409).json({ message: "Công việc không còn trạng thái mở để nhận." });
+      return res.status(409).json({ message: "Công việc không còn trạng thái mở để báo giá." });
     }
 
     if (String(job.client_id) === String(freelancerId)) {
       await dbClient.query("ROLLBACK");
-      return res.status(403).json({ message: "Bạn không thể nhận công việc do chính bạn đăng." });
+      return res.status(403).json({ message: "Bạn không thể báo giá công việc do chính bạn đăng." });
     }
 
-    const existing = await dbClient.query(
+    const existingContract = await dbClient.query(
       `SELECT id FROM public.contracts
        WHERE job_id = $1 AND deleted_at IS NULL AND status IN ('pending', 'active')
        LIMIT 1`,
       [jobId],
     );
 
-    if (existing.rowCount > 0) {
+    if (existingContract.rowCount > 0) {
       await dbClient.query("ROLLBACK");
-      return res.status(409).json({ message: "Công việc đã được freelancer khác tiếp nhận." });
+      return res.status(409).json({ message: "Công việc đã có freelancer được chọn." });
+    }
+
+    const jobPricingType = String(job.budget_type || "fixed").toLowerCase() === "hourly" ? "hourly" : "fixed";
+    const pricingType = jobPricingType;
+    if (requestedPricingType !== pricingType) {
+      await dbClient.query("ROLLBACK");
+      return res.status(400).json({
+        message: "Loại báo giá phải khớp với loại ngân sách công việc.",
+      });
+    }
+
+    const minBudget = job.budget != null ? Number(job.budget) : null;
+    const maxBudget = job.budget_max != null ? Number(job.budget_max) : null;
+    const hasRange = Number.isFinite(minBudget) && Number.isFinite(maxBudget) && maxBudget > minBudget;
+
+    if (hasRange) {
+      if (amount == null || !Number.isFinite(amount)) {
+        amount = minBudget;
+      }
+      if (amount < minBudget || amount > maxBudget) {
+        await dbClient.query("ROLLBACK");
+        const unit = pricingType === "hourly" ? "/giờ" : "";
+        return res.status(400).json({
+          message: `Mức giá phải nằm trong khoảng ${minBudget} - ${maxBudget}${unit}.`,
+        });
+      }
+    } else if (amount == null || !Number.isFinite(amount) || amount < 0) {
+      amount = minBudget;
+    }
+
+    const existingQuote = await dbClient.query(
+      `SELECT id FROM public.job_quotes
+       WHERE job_id = $1 AND freelancer_id = $2
+         AND status IN ('pending', 'shortlisted', 'interviewing', 'offered')
+       LIMIT 1`,
+      [jobId, freelancerId],
+    );
+
+    if (existingQuote.rowCount > 0) {
+      await dbClient.query("ROLLBACK");
+      return res.status(409).json({
+        message: "Bạn đã gửi báo giá cho công việc này và đang chờ client phản hồi.",
+      });
     }
 
     const insertResult = await dbClient.query(
-      `INSERT INTO public.contracts (job_id, service_id, client_id, freelancer_id, agreed_price, start_date, status)
-       VALUES ($1, NULL, $2, $3, $4, CURRENT_TIMESTAMP, 'active')
-       RETURNING id, job_id, agreed_price, status, created_at`,
-      [jobId, job.client_id, freelancerId, job.budget],
+      `INSERT INTO public.job_quotes (job_id, freelancer_id, amount, currency, message, pricing_type, status)
+       VALUES ($1, $2, $3, 'VND', $4, $5, 'pending')
+       RETURNING id, job_id, freelancer_id, amount, pricing_type, message, status, created_at, updated_at`,
+      [jobId, freelancerId, amount, message || null, pricingType],
     );
-
-    await dbClient.query(`UPDATE public.jobs SET status = 'in_progress', updated_at = CURRENT_TIMESTAMP WHERE id = $1`, [
-      jobId,
-    ]);
+    const quoteRow = insertResult.rows[0];
 
     await dbClient.query("COMMIT");
 
     return res.status(201).json({
-      message: "Bạn đã tiếp nhận công việc thành công.",
-      contract: insertResult.rows[0],
+      message: "Đã gửi báo giá thành công.",
+      quote: quoteRow,
     });
   } catch (error) {
     await dbClient.query("ROLLBACK").catch(() => {});
     if (error.code === "23505") {
-      return res.status(409).json({ message: "Công việc đã được freelancer khác tiếp nhận." });
+      return res.status(409).json({ message: "Bạn đã gửi báo giá cho công việc này." });
     }
-    console.error("Accept job failed:", error.message);
-    return res.status(500).json({ message: "Không thể tiếp nhận công việc lúc này." });
+    if (error.code === "42703") {
+      return res.status(503).json({
+        message:
+          "Thiếu bảng/cột job_quotes. Chạy backend/sql/hire_joblist_columns.sql, job_quotes_pricing_type.sql và job_quotes_screening_status.sql trên PostgreSQL.",
+      });
+    }
+    console.error("Submit job quote failed:", error.message);
+    return res.status(500).json({ message: "Không thể gửi báo giá lúc này." });
+  } finally {
+    dbClient.release();
+  }
+}
+
+const JOB_QUOTE_FREELANCER_JOINS = `
+  INNER JOIN public.jobs j ON j.id = jq.job_id
+  INNER JOIN public.users fu ON fu.id = jq.freelancer_id AND fu.deleted_at IS NULL
+  LEFT JOIN public.user_profiles fup ON fup.user_id = jq.freelancer_id
+  LEFT JOIN public.freelancer_profiles fp ON fp.user_id = jq.freelancer_id
+  LEFT JOIN (
+    SELECT freelancer_id, ROUND(AVG(rating)::numeric, 2) AS rating_avg, COUNT(*)::int AS total_reviews
+    FROM public.contract_reviews
+    GROUP BY freelancer_id
+  ) rv ON rv.freelancer_id = jq.freelancer_id
+  LEFT JOIN (
+    SELECT freelancer_id, COUNT(*)::int AS completed_jobs
+    FROM public.contracts
+    WHERE status = 'completed' AND deleted_at IS NULL
+    GROUP BY freelancer_id
+  ) ct ON ct.freelancer_id = jq.freelancer_id
+`;
+
+function mapJobQuoteRow(row) {
+  return {
+    id: row.id,
+    job_id: row.job_id,
+    job_title: row.job_title || null,
+    freelancer_id: row.freelancer_id,
+    amount: row.amount,
+    currency: row.currency || "VND",
+    pricing_type: row.pricing_type || "fixed",
+    message: row.message,
+    status: row.status,
+    created_at: row.created_at,
+    updated_at: row.updated_at,
+    freelancer_name: row.freelancer_name || null,
+    freelancer_email: row.freelancer_email || null,
+    freelancer_avatar_url: row.freelancer_avatar_url || null,
+    freelancer_title: row.freelancer_title || null,
+    freelancer_bio: row.freelancer_bio || null,
+    freelancer_location: row.freelancer_location || null,
+    rating_avg: row.rating_avg != null ? Number(row.rating_avg) : null,
+    total_reviews: Number(row.total_reviews) || 0,
+    completed_jobs: Number(row.completed_jobs) || 0,
+    job_success_score: row.job_success_score != null ? Number(row.job_success_score) : null,
+    client_name: row.client_name || null,
+    client_avatar_url: row.client_avatar_url || null,
+    client_location: row.client_location || null,
+    job_status: row.job_status || null,
+    job_budget: row.job_budget != null ? Number(row.job_budget) : null,
+  };
+}
+
+const JOB_QUOTE_CLIENT_JOINS = `
+  INNER JOIN public.jobs j ON j.id = jq.job_id AND j.deleted_at IS NULL
+  INNER JOIN public.users cu ON cu.id = j.client_id AND cu.deleted_at IS NULL
+  LEFT JOIN public.user_profiles cup ON cup.user_id = j.client_id
+`;
+
+async function listFreelancerJobQuotes(req, res, payload) {
+  const jobId = parseUuidParam(req.query.job_id || req.query.jobId);
+  const status = String(req.query.status || "").trim().toLowerCase();
+  const q = String(req.query.q || "").trim();
+  const includeWithdrawn = String(req.query.include_withdrawn || "") === "1";
+
+  const conditions = ["jq.freelancer_id = $1"];
+  const params = [payload.sub];
+  let idx = 2;
+
+  if (jobId) {
+    conditions.push(`jq.job_id = $${idx}`);
+    params.push(jobId);
+    idx += 1;
+  }
+
+  if (
+    status &&
+    ["pending", "shortlisted", "interviewing", "offered", "accepted", "declined", "withdrawn"].includes(
+      status,
+    )
+  ) {
+    conditions.push(`jq.status = $${idx}`);
+    params.push(status);
+    idx += 1;
+  } else if (!includeWithdrawn) {
+    conditions.push(`jq.status NOT IN ('withdrawn')`);
+  }
+
+  if (q) {
+    conditions.push(
+      `(cup.full_name ILIKE $${idx} OR jq.message ILIKE $${idx} OR j.title ILIKE $${idx})`,
+    );
+    params.push(`%${q}%`);
+    idx += 1;
+  }
+
+  const db = await pool.connect();
+  try {
+    const result = await db.query(
+      `SELECT
+         jq.id,
+         jq.job_id,
+         j.title AS job_title,
+         j.status AS job_status,
+         j.budget AS job_budget,
+         jq.freelancer_id,
+         jq.amount,
+         jq.currency,
+         jq.pricing_type,
+         jq.message,
+         jq.status,
+         jq.created_at,
+         jq.updated_at,
+         cup.full_name AS client_name,
+         cup.avatar_url AS client_avatar_url,
+         COALESCE(cup.district_city, cup.city) AS client_location
+       FROM public.job_quotes jq
+       ${JOB_QUOTE_CLIENT_JOINS}
+       WHERE ${conditions.join(" AND ")}
+       ORDER BY jq.updated_at DESC, jq.created_at DESC`,
+      params,
+    );
+
+    return res.json({ quotes: result.rows.map(mapJobQuoteRow), role: "freelancer" });
+  } catch (error) {
+    console.error("List freelancer job quotes failed:", error.message);
+    if (error.code === "42703") {
+      return res.status(503).json({
+        message:
+          "Thiếu cột/bảng phục vụ báo giá. Chạy backend/sql/hire_joblist_columns.sql, job_quotes_pricing_type.sql và job_quotes_screening_status.sql trên PostgreSQL.",
+      });
+    }
+    return res.status(500).json({ message: "Không thể tải danh sách báo giá." });
+  } finally {
+    db.release();
+  }
+}
+
+async function listMyJobQuotes(req, res) {
+  const payload = verifyAccessToken(req, res);
+  if (!payload) return;
+
+  if (payload.role === "freelancer") {
+    return listFreelancerJobQuotes(req, res, payload);
+  }
+
+  if (payload.role !== "client") {
+    return res.status(403).json({ message: "Chỉ client hoặc freelancer được xem báo giá." });
+  }
+
+  const jobId = parseUuidParam(req.query.job_id || req.query.jobId);
+  const status = String(req.query.status || "").trim().toLowerCase();
+  const q = String(req.query.q || "").trim();
+
+  const conditions = ["j.client_id = $1", "j.deleted_at IS NULL"];
+  const params = [payload.sub];
+  let idx = 2;
+
+  if (jobId) {
+    conditions.push(`jq.job_id = $${idx}`);
+    params.push(jobId);
+    idx += 1;
+  }
+
+  if (
+    status &&
+    ["pending", "shortlisted", "interviewing", "offered", "accepted", "declined", "withdrawn"].includes(
+      status,
+    )
+  ) {
+    conditions.push(`jq.status = $${idx}`);
+    params.push(status);
+    idx += 1;
+  } else {
+    conditions.push(`jq.status NOT IN ('withdrawn')`);
+  }
+
+  if (q) {
+    conditions.push(
+      `(fup.full_name ILIKE $${idx} OR jq.message ILIKE $${idx} OR j.title ILIKE $${idx})`,
+    );
+    params.push(`%${q}%`);
+    idx += 1;
+  }
+
+  const db = await pool.connect();
+  try {
+    const result = await db.query(
+      `SELECT
+         jq.id,
+         jq.job_id,
+         j.title AS job_title,
+         jq.freelancer_id,
+         jq.amount,
+         jq.currency,
+         jq.pricing_type,
+         jq.message,
+         jq.status,
+         jq.created_at,
+         jq.updated_at,
+         fup.full_name AS freelancer_name,
+         fu.email AS freelancer_email,
+         fup.avatar_url AS freelancer_avatar_url,
+         fup.tagline AS freelancer_title,
+         fup.bio AS freelancer_bio,
+         COALESCE(fup.district_city, fup.city) AS freelancer_location,
+         fp.job_success_score,
+         COALESCE(rv.rating_avg, 0)::float8 AS rating_avg,
+         COALESCE(rv.total_reviews, 0)::int AS total_reviews,
+         COALESCE(ct.completed_jobs, 0)::int AS completed_jobs
+       FROM public.job_quotes jq
+       ${JOB_QUOTE_FREELANCER_JOINS}
+       WHERE ${conditions.join(" AND ")}
+       ORDER BY jq.created_at DESC`,
+      params,
+    );
+
+    return res.json({ quotes: result.rows.map(mapJobQuoteRow), role: "client" });
+  } catch (error) {
+    console.error("List job quotes failed:", error.message);
+    if (error.code === "42703") {
+      return res.status(503).json({
+        message:
+          "Thiếu cột/bảng phục vụ báo giá. Chạy backend/sql/hire_joblist_columns.sql, job_quotes_pricing_type.sql, job_quotes_screening_status.sql và profile_landing_columns.sql.",
+      });
+    }
+    return res.status(500).json({ message: "Không thể tải danh sách báo giá." });
+  } finally {
+    db.release();
+  }
+}
+
+async function patchFreelancerJobQuote(req, res, payload, quoteId, action) {
+  if (action !== "withdraw") {
+    return res.status(400).json({ message: "Freelancer chỉ có thể withdraw (rút báo giá)." });
+  }
+
+  const dbClient = await pool.connect();
+  try {
+    await dbClient.query("BEGIN");
+
+    const quoteResult = await dbClient.query(
+      `SELECT jq.id, jq.status, jq.freelancer_id
+       FROM public.job_quotes jq
+       WHERE jq.id = $1
+       FOR UPDATE`,
+      [quoteId],
+    );
+
+    if (quoteResult.rowCount === 0) {
+      await dbClient.query("ROLLBACK");
+      return res.status(404).json({ message: "Không tìm thấy báo giá." });
+    }
+
+    const quote = quoteResult.rows[0];
+    if (String(quote.freelancer_id) !== String(payload.sub)) {
+      await dbClient.query("ROLLBACK");
+      return res.status(403).json({ message: "Bạn không có quyền với báo giá này." });
+    }
+
+    if (!["pending", "shortlisted", "interviewing", "offered"].includes(quote.status)) {
+      await dbClient.query("ROLLBACK");
+      return res.status(409).json({ message: "Không thể rút báo giá ở trạng thái hiện tại." });
+    }
+
+    await dbClient.query(
+      `UPDATE public.job_quotes SET status = 'withdrawn', updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
+      [quoteId],
+    );
+    await dbClient.query("COMMIT");
+    return res.json({ message: "Đã rút báo giá." });
+  } catch (error) {
+    await dbClient.query("ROLLBACK").catch(() => {});
+    console.error("Withdraw job quote failed:", error.message);
+    return res.status(500).json({ message: "Không thể rút báo giá." });
+  } finally {
+    dbClient.release();
+  }
+}
+
+async function patchJobQuote(req, res) {
+  const payload = verifyAccessToken(req, res);
+  if (!payload) return;
+
+  const quoteId = parseUuidParam(req.params.quoteId);
+  if (!quoteId) {
+    return res.status(400).json({ message: "Mã báo giá không hợp lệ." });
+  }
+
+  const action = String(req.body?.action || "").trim().toLowerCase();
+
+  if (payload.role === "freelancer") {
+    return patchFreelancerJobQuote(req, res, payload, quoteId, action);
+  }
+
+  if (payload.role !== "client") {
+    return res.status(403).json({ message: "Chỉ client hoặc freelancer được quản lý báo giá." });
+  }
+
+  if (!["shortlist", "interview", "offer", "accept", "decline"].includes(action)) {
+    return res.status(400).json({
+      message: "action phải là shortlist, interview, offer, accept hoặc decline.",
+    });
+  }
+
+  const dbClient = await pool.connect();
+  try {
+    await dbClient.query("BEGIN");
+
+    const quoteResult = await dbClient.query(
+      `SELECT jq.id, jq.job_id, jq.freelancer_id, jq.amount, jq.message, jq.status,
+              j.client_id, j.status AS job_status, j.budget
+       FROM public.job_quotes jq
+       INNER JOIN public.jobs j ON j.id = jq.job_id AND j.deleted_at IS NULL
+       WHERE jq.id = $1
+       FOR UPDATE OF jq, j`,
+      [quoteId],
+    );
+
+    if (quoteResult.rowCount === 0) {
+      await dbClient.query("ROLLBACK");
+      return res.status(404).json({ message: "Không tìm thấy báo giá." });
+    }
+
+    const quote = quoteResult.rows[0];
+    if (String(quote.client_id) !== String(payload.sub)) {
+      await dbClient.query("ROLLBACK");
+      return res.status(403).json({ message: "Bạn không có quyền với báo giá này." });
+    }
+
+    if (action === "decline") {
+      if (!["pending", "shortlisted", "interviewing", "offered"].includes(quote.status)) {
+        await dbClient.query("ROLLBACK");
+        return res.status(409).json({ message: "Không thể từ chối báo giá ở trạng thái hiện tại." });
+      }
+      await dbClient.query(
+        `UPDATE public.job_quotes SET status = 'declined', updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
+        [quoteId],
+      );
+      await dbClient.query("COMMIT");
+      return res.json({ message: "Đã từ chối báo giá." });
+    }
+
+    if (action === "shortlist") {
+      if (!["pending", "interviewing", "offered"].includes(quote.status)) {
+        await dbClient.query("ROLLBACK");
+        return res.status(409).json({ message: "Chỉ có thể shortlist hồ sơ còn mở." });
+      }
+      await dbClient.query(
+        `UPDATE public.job_quotes SET status = 'shortlisted', updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
+        [quoteId],
+      );
+      await dbClient.query("COMMIT");
+      return res.json({ message: "Đã đưa freelancer vào shortlist." });
+    }
+
+    if (action === "interview") {
+      if (!["pending", "shortlisted", "offered"].includes(quote.status)) {
+        await dbClient.query("ROLLBACK");
+        return res.status(409).json({ message: "Chỉ có thể chuyển phỏng vấn hồ sơ còn mở." });
+      }
+      await dbClient.query(
+        `UPDATE public.job_quotes SET status = 'interviewing', updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
+        [quoteId],
+      );
+      await dbClient.query("COMMIT");
+      return res.json({ message: "Đã chuyển hồ sơ sang trạng thái phỏng vấn." });
+    }
+
+    if (action === "offer") {
+      if (!["pending", "shortlisted", "interviewing"].includes(quote.status)) {
+        await dbClient.query("ROLLBACK");
+        return res.status(409).json({ message: "Chỉ có thể gửi offer cho hồ sơ còn mở." });
+      }
+      await dbClient.query(
+        `UPDATE public.job_quotes SET status = 'offered', updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
+        [quoteId],
+      );
+      await dbClient.query("COMMIT");
+      return res.json({ message: "Đã gửi offer cho freelancer." });
+    }
+
+    if (quote.job_status !== "open") {
+      await dbClient.query("ROLLBACK");
+      return res.status(409).json({ message: "Công việc không còn mở để thuê freelancer." });
+    }
+
+    if (quote.status !== "offered") {
+      await dbClient.query("ROLLBACK");
+      return res.status(409).json({
+        message: "Bạn cần gửi offer trước khi xác nhận tuyển freelancer.",
+      });
+    }
+
+    const activeContract = await dbClient.query(
+      `SELECT id FROM public.contracts
+       WHERE job_id = $1 AND deleted_at IS NULL AND status IN ('pending', 'active')
+       LIMIT 1`,
+      [quote.job_id],
+    );
+
+    if (activeContract.rowCount > 0) {
+      await dbClient.query("ROLLBACK");
+      return res.status(409).json({ message: "Công việc đã có hợp đồng đang hoạt động." });
+    }
+
+    const agreedPrice =
+      quote.amount != null ? quote.amount : quote.budget != null ? quote.budget : null;
+
+    const contractResult = await dbClient.query(
+      `INSERT INTO public.contracts (
+         job_id, service_id, client_id, freelancer_id, agreed_price, start_date, status,
+         workflow_stage, proposal_text, proposal_submitted_at
+       )
+       VALUES ($1, NULL, $2, $3, $4, CURRENT_TIMESTAMP, 'active', 'execution', $5, CURRENT_TIMESTAMP)
+       RETURNING id, job_id, agreed_price, status, created_at`,
+      [quote.job_id, quote.client_id, quote.freelancer_id, agreedPrice, quote.message ?? null],
+    );
+
+    await dbClient.query(
+      `UPDATE public.job_quotes SET status = 'accepted', updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
+      [quoteId],
+    );
+
+    await dbClient.query(
+      `UPDATE public.job_quotes
+       SET status = 'declined', updated_at = CURRENT_TIMESTAMP
+       WHERE job_id = $1 AND id <> $2 AND status IN ('pending', 'shortlisted', 'interviewing', 'offered')`,
+      [quote.job_id, quoteId],
+    );
+
+    await dbClient.query(
+      `UPDATE public.jobs SET status = 'in_progress', updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
+      [quote.job_id],
+    );
+
+    await dbClient.query("COMMIT");
+
+    return res.json({
+      message: "Đã chọn freelancer và tạo hợp đồng.",
+      contract: contractResult.rows[0],
+    });
+  } catch (error) {
+    await dbClient.query("ROLLBACK").catch(() => {});
+    console.error("Patch job quote failed:", error.message);
+    return res.status(500).json({ message: "Không thể cập nhật báo giá." });
   } finally {
     dbClient.release();
   }
@@ -722,6 +1221,10 @@ function mapJobListingRow(row) {
     client_email_verified: Boolean(row.client_email_verified),
     proposal_count: Number(row.proposal_count) || 0,
     quote_count: Number(row.quote_count) || 0,
+    has_my_pending_quote: Boolean(row.has_my_pending_quote),
+    my_contract_id: row.my_contract_id ?? null,
+    my_contract_status: row.my_contract_status ?? null,
+    my_quote_status: row.my_quote_status ?? null,
   };
 }
 
@@ -780,17 +1283,40 @@ async function listJobs(req, res) {
   const limit = Math.min(Math.max(Number.parseInt(String(req.query.limit || ""), 10) || 24, 1), 100);
   const offset = Math.max(Number.parseInt(String(req.query.offset || ""), 10) || 0, 0);
   const { conditions, params, orderBy } = buildJobListFilters(req);
+  const viewer = tryVerifyAccessToken(req);
+  const viewerFreelancerId = viewer?.role === "freelancer" ? viewer.sub : null;
 
   const db = await pool.connect();
   try {
     const listParams = [...params];
+    const viewerIdx = listParams.length + 1;
+    listParams.push(viewerFreelancerId);
     const limitIdx = listParams.length + 1;
     listParams.push(limit);
     const offsetIdx = listParams.length + 1;
     listParams.push(offset);
 
     const listResult = await db.query(
-      `SELECT${JOB_LISTING_SELECT}
+      `SELECT${JOB_LISTING_SELECT},
+         CASE
+           WHEN $${viewerIdx}::uuid IS NULL THEN FALSE
+           ELSE EXISTS (
+             SELECT 1
+             FROM public.job_quotes jqm
+             WHERE jqm.job_id = j.id
+               AND jqm.freelancer_id = $${viewerIdx}::uuid
+               AND jqm.status = 'pending'
+           )
+         END AS has_my_pending_quote,
+         (
+           SELECT jq.status
+           FROM public.job_quotes jq
+           WHERE jq.job_id = j.id
+             AND jq.freelancer_id = $${viewerIdx}::uuid
+             AND jq.status NOT IN ('withdrawn')
+           ORDER BY jq.updated_at DESC
+           LIMIT 1
+         ) AS my_quote_status
        FROM public.jobs j
        INNER JOIN public.users u ON u.id = j.client_id
        LEFT JOIN public.user_profiles up ON up.user_id = j.client_id
@@ -857,8 +1383,48 @@ async function getJob(req, res) {
   const db = await pool.connect();
 
   try {
+    const viewerFreelancerId = payload?.role === "freelancer" ? payload.sub : null;
     const jobResult = await db.query(
-      `SELECT${JOB_LISTING_SELECT}
+      `SELECT${JOB_LISTING_SELECT},
+         CASE
+           WHEN $2::uuid IS NULL THEN FALSE
+           ELSE EXISTS (
+             SELECT 1
+             FROM public.job_quotes jqm
+             WHERE jqm.job_id = j.id
+               AND jqm.freelancer_id = $2::uuid
+               AND jqm.status = 'pending'
+           )
+         END AS has_my_pending_quote,
+         (
+           SELECT c.id
+           FROM public.contracts c
+           WHERE c.job_id = j.id
+             AND c.freelancer_id = $2::uuid
+             AND c.deleted_at IS NULL
+             AND c.status IN ('pending', 'active')
+           ORDER BY c.created_at DESC
+           LIMIT 1
+         ) AS my_contract_id,
+         (
+           SELECT c.status
+           FROM public.contracts c
+           WHERE c.job_id = j.id
+             AND c.freelancer_id = $2::uuid
+             AND c.deleted_at IS NULL
+             AND c.status IN ('pending', 'active')
+           ORDER BY c.created_at DESC
+           LIMIT 1
+         ) AS my_contract_status,
+         (
+           SELECT jq.status
+           FROM public.job_quotes jq
+           WHERE jq.job_id = j.id
+             AND jq.freelancer_id = $2::uuid
+             AND jq.status NOT IN ('withdrawn', 'declined')
+           ORDER BY jq.updated_at DESC
+           LIMIT 1
+         ) AS my_quote_status
        FROM public.jobs j
        INNER JOIN public.users u ON u.id = j.client_id
        LEFT JOIN public.user_profiles up ON up.user_id = j.client_id
@@ -882,7 +1448,7 @@ async function getJob(req, res) {
        ) qc ON qc.job_id = j.id
        WHERE j.id = $1
        LIMIT 1`,
-      [jobId],
+      [jobId, viewerFreelancerId],
     );
 
     if (jobResult.rowCount === 0) {
@@ -1035,4 +1601,6 @@ module.exports = {
   updateMyJob,
   deleteMyJob,
   acceptJob,
+  listMyJobQuotes,
+  patchJobQuote,
 };

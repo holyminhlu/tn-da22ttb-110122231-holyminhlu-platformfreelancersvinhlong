@@ -1,16 +1,25 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
+import AuthLayout from "./AuthLayout";
 import GoogleButton from "./GoogleButton";
 import { login } from "@/lib/api/auth";
 import { isClientRole, isFreelancerRole } from "@/hooks/useStoredUser";
 import { persistAuthTokens, persistStoredUser, toStoredUser } from "@/lib/authSession";
 import styles from "./auth.module.css";
 
+function safeNextPath(raw: string | null): string | null {
+  if (!raw?.startsWith("/") || raw.startsWith("//")) return null;
+  return raw;
+}
+
 export default function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const nextPath = safeNextPath(searchParams.get("next"));
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -40,14 +49,18 @@ export default function LoginForm() {
         persistStoredUser(toStoredUser(data.user));
       }
 
-      setSuccess(`${data.message} (${data.user?.role ?? "user"})`);
+      setSuccess("Đăng nhập thành công. Đang chuyển hướng…");
       const role = data.user?.role;
       const destination =
-        isFreelancerRole(role) || isClientRole(role) ? "/dashboard" : "/";
+        nextPath ??
+        (isFreelancerRole(role) || isClientRole(role) ? "/dashboard" : "/");
       router.push(destination);
       router.refresh();
     } catch (err) {
-      const message = err && typeof err === "object" && "message" in err ? String((err as { message: string }).message) : "";
+      const message =
+        err && typeof err === "object" && "message" in err
+          ? String((err as { message: string }).message)
+          : "";
       setError(message || "Không thể kết nối máy chủ.");
     } finally {
       setLoading(false);
@@ -55,61 +68,83 @@ export default function LoginForm() {
   }
 
   return (
-    <section className={styles.authSection} data-theme="light">
-      <div className={styles.loginBox}>
-        <p className={styles.title}>Đăng nhập</p>
-        <p className={styles.subtitle}>Đăng nhập bằng email/mật khẩu hoặc Google</p>
+    <AuthLayout variant="login">
+      <h2 className={styles.title}>Đăng nhập</h2>
+      <p className={styles.subtitle}>
+        Đăng nhập bằng email hoặc tiếp tục với Google
+      </p>
 
-        {error ? (
-          <div className={styles.toastStack} role="alert" aria-live="assertive">
-            <div className={styles.toastError}>
-              <div>
-                <p className={styles.toastTitle}>Đăng nhập thất bại</p>
-                <p className={styles.toastMessage}>{error}</p>
-              </div>
-              <button type="button" className={styles.toastClose} onClick={() => setError("")} aria-label="Đóng thông báo">
-                x
-              </button>
+      {error ? (
+        <div className={styles.toastStack} role="alert" aria-live="assertive">
+          <div className={styles.toastError}>
+            <div>
+              <p className={styles.toastTitle}>Đăng nhập thất bại</p>
+              <p className={styles.toastMessage}>{error}</p>
             </div>
+            <button
+              type="button"
+              className={styles.toastClose}
+              onClick={() => setError("")}
+              aria-label="Đóng thông báo"
+            >
+              ×
+            </button>
           </div>
-        ) : null}
+        </div>
+      ) : null}
 
-        {success ? <p className={styles.success}>{success}</p> : null}
+      {success ? (
+        <p className={`${styles.inlineAlert} ${styles.inlineAlertSuccess}`} role="status">
+          {success}
+        </p>
+      ) : null}
 
-        <form onSubmit={handleSubmit}>
-          <div className={styles.field}>
-            <input required type="email" className={styles.input} placeholder=" " value={email} onChange={(e) => setEmail(e.target.value)} />
-            <label className={styles.label}>Email</label>
-          </div>
-          <div className={styles.field}>
-            <input
-              required
-              type="password"
-              className={styles.input}
-              placeholder=" "
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            <label className={styles.label}>Mật khẩu</label>
-          </div>
-
-          <button type="submit" className={styles.submit} disabled={loading}>
-            <span />
-            <span />
-            <span />
-            <span />
-            {loading ? "Đang xử lý..." : "Đăng nhập"}
-          </button>
-        </form>
-
-        <div style={{ marginTop: "1rem" }}>
-          <GoogleButton />
+      <form onSubmit={handleSubmit}>
+        <div className={styles.field}>
+          <label className={styles.label} htmlFor="login-email">
+            Email
+          </label>
+          <input
+            id="login-email"
+            required
+            type="email"
+            autoComplete="email"
+            className={styles.input}
+            placeholder="ban@email.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+        </div>
+        <div className={styles.field}>
+          <label className={styles.label} htmlFor="login-password">
+            Mật khẩu
+          </label>
+          <input
+            id="login-password"
+            required
+            type="password"
+            autoComplete="current-password"
+            className={styles.input}
+            placeholder="••••••••"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
         </div>
 
-        <p className={styles.helperText}>
-          Chưa có tài khoản? <Link href="/dang-ky">Đăng ký ngay!</Link>
-        </p>
-      </div>
-    </section>
+        <button type="submit" className={styles.submit} disabled={loading}>
+          {loading ? "Đang xử lý…" : "Đăng nhập"}
+        </button>
+      </form>
+
+      <div className={styles.divider}>hoặc</div>
+      <GoogleButton />
+
+      <p className={styles.helperText}>
+        Chưa có tài khoản?{" "}
+        <Link href={nextPath ? `/dang-ky?next=${encodeURIComponent(nextPath)}` : "/dang-ky"}>
+          Đăng ký ngay
+        </Link>
+      </p>
+    </AuthLayout>
   );
 }

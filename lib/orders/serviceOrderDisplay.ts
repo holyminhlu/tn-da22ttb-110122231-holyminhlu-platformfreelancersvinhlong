@@ -1,7 +1,7 @@
 import type { ServiceOrderListItem } from "@/lib/api/contracts";
+import { cancelTypeLabel, isOrderExpiredOrCancelled } from "./workflowSlaDisplay";
 
-const STAGE_LABELS: Record<string, string> = {
-  selection: "Chốt thỏa thuận",
+const STAGE_LABELS: Record<string, string> = {  selection: "Chốt thỏa thuận",
   escrow: "Ký quỹ",
   execution: "Thực hiện",
   delivery: "Bàn giao",
@@ -19,8 +19,10 @@ export function parsePackageName(snapshot: unknown): string | null {
 }
 
 export function orderStatusHint(order: ServiceOrderListItem, asFreelancer: boolean): string {
-  const stage = String(order.workflow_stage || "").toLowerCase();
-  const escrow = String(order.escrow_status || "").toLowerCase();
+  if (isOrderExpiredOrCancelled(order.status, order.cancel_type)) {
+    return cancelTypeLabel(order.cancel_type) || "Đã hủy";
+  }
+  const stage = String(order.workflow_stage || "").toLowerCase();  const escrow = String(order.escrow_status || "").toLowerCase();
 
   if (asFreelancer) {
     if (stage === "selection" && !order.proposal_text) {

@@ -114,6 +114,11 @@
   color: #9ca3af;
 }
 
+.fw-orders__card-deadline {
+  color: #b45309;
+  font-weight: 500;
+}
+
 .fw-orders__empty {
   padding: 3rem 1.5rem;
   text-align: center;

@@ -22,6 +22,8 @@ const jobsLegacyRoutes = require("./routes/jobs.legacy.routes");
 const servicesRoutes = require("./routes/services.routes");
 const servicesMeRoutes = require("./routes/services.me.routes");
 const servicesLegacyRoutes = require("./routes/services.legacy.routes");
+const paymentsRoutes = require("./routes/payments.routes");
+const { runWorkflowSlaTick } = require("./utils/workflowSla");
 
 const app = express();
 const PORT = Number(process.env.PORT) || 5000;
@@ -44,6 +46,7 @@ app.use("/api/jobs", jobsRoutes);
 app.use("/api/jobs/me", jobsMeRoutes);
 app.use("/api/services", servicesRoutes);
 app.use("/api/services/me", servicesMeRoutes);
+app.use("/api/payments", paymentsRoutes);
 
 /** Legacy: /api/auth/me/*, /api/auth/freelancers, … */
 app.use("/api/auth", usersRoutes);
@@ -86,3 +89,27 @@ async function shutdown(signal) {
 
 process.once("SIGINT", () => shutdown("SIGINT"));
 process.once("SIGTERM", () => shutdown("SIGTERM"));
+
+const SLA_TICK_MS = Number(process.env.WORKFLOW_SLA_TICK_MS) || 60 * 60 * 1000;
+if (process.env.WORKFLOW_SLA_CRON !== "0") {
+  setInterval(() => {
+    pool
+      .connect()
+      .then(async (db) => {
+        try {
+          const summary = await runWorkflowSlaTick(db);
+          if (
+            summary.expiredPreEscrow > 0 ||
+            summary.autoAcceptDelivery > 0 ||
+            summary.autoRefunds > 0
+          ) {
+            console.log("[workflow-sla-cron]", summary);
+          }
+        } finally {
+          db.release();
+        }
+      })
+      .catch((err) => console.error("[workflow-sla-cron] error:", err.message));
+  }, SLA_TICK_MS);
+  console.log(`Workflow SLA cron enabled (every ${Math.round(SLA_TICK_MS / 60000)} min)`);
+}

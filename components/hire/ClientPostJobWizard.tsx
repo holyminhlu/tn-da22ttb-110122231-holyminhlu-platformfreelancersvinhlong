@@ -412,7 +412,7 @@ export default function ClientPostJobWizard({ editJobId = null }: ClientPostJobW
             </fieldset>
             <div className="post-job-wizard__row-2">
               <label className="post-job-field">
-                <span>{form.budgetType === "hourly" ? "Mức giờ tối thiểu (USD)" : "Ngân sách tối thiểu (USD)"}</span>
+                <span>{form.budgetType === "hourly" ? "Mức giờ tối thiểu (VND)" : "Ngân sách tối thiểu (VND)"}</span>
                 <input
                   type="number"
                   min={0}
@@ -423,7 +423,7 @@ export default function ClientPostJobWizard({ editJobId = null }: ClientPostJobW
                 />
               </label>
               <label className="post-job-field">
-                <span>{form.budgetType === "hourly" ? "Mức giờ tối đa (USD)" : "Ngân sách tối đa (USD)"}</span>
+                <span>{form.budgetType === "hourly" ? "Mức giờ tối đa (VND)" : "Ngân sách tối đa (VND)"}</span>
                 <input
                   type="number"
                   min={0}

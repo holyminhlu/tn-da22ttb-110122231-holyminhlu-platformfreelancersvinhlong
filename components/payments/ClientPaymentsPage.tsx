@@ -1,308 +1,433 @@
 "use client";
 
+import Link from "next/link";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import ClientShell from "@/components/layout/ClientShell";
+import DashboardPagination from "@/components/dashboard/DashboardPagination";
+import { usePagedList } from "@/hooks/usePagedList";
+import {
+  billingMethodTypeLabel,
+  depositFunds,
+  getClientBillingOverview,
+  transactionCategoryLabel,
+  updateBillingProfile,
+  type BillingOverview,
+  type BillingProfile,
+  type BillingTransaction,
+} from "@/lib/api/payments";
+import { formatDate, formatVnd } from "@/lib/format";
+import "@/components/hire/hire.css";
+import "@/components/dashboard/dashboardPagination.css";
 import "./payments.css";
 
-type BillingMethodType = "card" | "paypal" | "bank";
-type TransactionType = "milestone" | "deposit" | "withdraw" | "processing_fee";
+const TX_PAGE_SIZE = 8;
+const DEPOSIT_PRESETS = [500_000, 1_000_000, 2_000_000, 5_000_000];
 
-type BillingMethod = {
-  id: string;
-  type: BillingMethodType;
-  label: string;
-  detail: string;
-  isPrimary: boolean;
-  isAutoBillingEnabled?: boolean;
-};
-
-type BillingTransaction = {
-  id: string;
-  createdAt: string;
-  project: string;
-  freelancer: string;
-  type: TransactionType;
-  amount: number;
-  currency: string;
-  invoiceCode: string;
-};
-
-const billingMethods: BillingMethod[] = [
-  {
-    id: "bm_visa_1018",
-    type: "card",
-    label: "Visa",
-    detail: "**** 1018 • Hết hạn 08/28",
-    isPrimary: true,
-    isAutoBillingEnabled: true,
-  },
-  {
-    id: "bm_paypal_work",
-    type: "paypal",
-    label: "PayPal",
-    detail: "finance@company.vn",
-    isPrimary: false,
-  },
-  {
-    id: "bm_bank_vcb",
-    type: "bank",
-    label: "Vietcombank",
-    detail: "TK **** 6688",
-    isPrimary: false,
-  },
-];
-
-const billingHistory: BillingTransaction[] = [
-  {
-    id: "trx_001",
-    createdAt: "2026-05-27",
-    project: "App đặt lịch khám",
-    freelancer: "Nguyen Van A",
-    type: "milestone",
-    amount: -4200000,
-    currency: "VND",
-    invoiceCode: "INV-2026-0527-001",
-  },
-  {
-    id: "trx_002",
-    createdAt: "2026-05-24",
-    project: "Ví công ty",
-    freelancer: "-",
-    type: "deposit",
-    amount: 6000000,
-    currency: "VND",
-    invoiceCode: "INV-2026-0524-002",
-  },
-  {
-    id: "trx_003",
-    createdAt: "2026-05-22",
-    project: "Website giới thiệu",
-    freelancer: "Tran Thi B",
-    type: "processing_fee",
-    amount: -95000,
-    currency: "VND",
-    invoiceCode: "INV-2026-0522-003",
-  },
-  {
-    id: "trx_004",
-    createdAt: "2026-05-20",
-    project: "Ví công ty",
-    freelancer: "-",
-    type: "withdraw",
-    amount: -1500000,
-    currency: "VND",
-    invoiceCode: "INV-2026-0520-004",
-  },
-];
-
-function formatMoney(value: number, currency: string) {
-  return new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency,
-    maximumFractionDigits: 0,
-  }).format(value);
+function monthKey(iso: string) {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 }
 
-function typeLabel(type: TransactionType) {
-  switch (type) {
-    case "milestone":
-      return "Thanh toán Milestone";
-    case "deposit":
-      return "Nạp tiền vào ví";
-    case "withdraw":
-      return "Rút tiền / Hoàn tiền";
-    case "processing_fee":
-      return "Phí nền tảng";
-    default:
-      return type;
-  }
-}
-
-function methodTypeLabel(type: BillingMethodType) {
-  switch (type) {
-    case "card":
-      return "Thẻ tín dụng/ghi nợ";
-    case "paypal":
-      return "PayPal";
-    case "bank":
-      return "Tài khoản ngân hàng";
-    default:
-      return type;
-  }
+function exportCsv(rows: BillingTransaction[]) {
+  const header = ["Ngày", "Dự án", "Freelancer", "Loại", "Số tiền", "Mã hóa đơn"];
+  const lines = rows.map((r) =>
+    [
+      formatDate(r.occurredAt),
+      r.projectTitle,
+      r.freelancerName,
+      transactionCategoryLabel(r.category),
+      String(r.amount),
+      r.invoiceNumber || "",
+    ]
+      .map((cell) => `"${String(cell).replace(/"/g, '""')}"`)
+      .join(","),
+  );
+  const blob = new Blob([`\uFEFF${[header.join(","), ...lines].join("\n")}`], {
+    type: "text/csv;charset=utf-8",
+  });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `saoke-thanh-toan-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 export default function ClientPaymentsPage() {
-  const availableBalance = 18850000;
-  const escrowBalance = 6500000;
+  const [data, setData] = useState<BillingOverview | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [depositBusy, setDepositBusy] = useState(false);
+  const [depositAmount, setDepositAmount] = useState(String(DEPOSIT_PRESETS[1]));
+  const [profileForm, setProfileForm] = useState<BillingProfile>({
+    companyName: "",
+    companyAddress: "",
+    taxId: "",
+    billingEmail: "",
+    contactName: "",
+  });
+  const [profileMessage, setProfileMessage] = useState("");
+  const [filterJobId, setFilterJobId] = useState("");
+  const [filterFreelancerId, setFilterFreelancerId] = useState("");
+  const [filterMonth, setFilterMonth] = useState("");
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const overview = await getClientBillingOverview();
+      setData(overview);
+      setProfileForm(overview.billingProfile);
+    } catch (err) {
+      const message =
+        err && typeof err === "object" && "message" in err
+          ? String((err as { message: string }).message)
+          : "Không thể tải dữ liệu thanh toán.";
+      setError(message);
+      setData(null);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  const filteredTransactions = useMemo(() => {
+    const list = data?.transactions ?? [];
+    return list.filter((t) => {
+      if (filterJobId && t.jobId !== filterJobId) return false;
+      if (filterFreelancerId && t.freelancerId !== filterFreelancerId) return false;
+      if (filterMonth && monthKey(t.occurredAt) !== filterMonth) return false;
+      return true;
+    });
+  }, [data?.transactions, filterJobId, filterFreelancerId, filterMonth]);
+
+  const txPage = usePagedList(filteredTransactions, TX_PAGE_SIZE);
+
+  const defaultMethod = data?.defaultMethod;
+  const autoBillingOn = Boolean(defaultMethod?.isAutoBillingEnabled);
+
+  async function handleDeposit() {
+    const amount = Number(depositAmount.replace(/\D/g, ""));
+    if (!Number.isFinite(amount) || amount < 10000) {
+      alert("Số tiền nạp tối thiểu 10.000 VND.");
+      return;
+    }
+    setDepositBusy(true);
+    try {
+      const result = await depositFunds(amount);
+      setData((prev) =>
+        prev ? { ...prev, account: result.account } : prev,
+      );
+      await load();
+      alert(result.message);
+    } catch (err) {
+      const message =
+        err && typeof err === "object" && "message" in err
+          ? String((err as { message: string }).message)
+          : "Không thể nạp tiền.";
+      alert(message);
+    } finally {
+      setDepositBusy(false);
+    }
+  }
+
+  async function handleSaveProfile(e: React.FormEvent) {
+    e.preventDefault();
+    setSavingProfile(true);
+    setProfileMessage("");
+    try {
+      const result = await updateBillingProfile(profileForm);
+      setProfileMessage(result.message);
+    } catch (err) {
+      const message =
+        err && typeof err === "object" && "message" in err
+          ? String((err as { message: string }).message)
+          : "Không thể lưu thông tin.";
+      setProfileMessage(message);
+    } finally {
+      setSavingProfile(false);
+    }
+  }
 
   return (
     <ClientShell>
-      <div className="client-payments">
-        <header className="client-payments__header">
-          <h1 className="client-page__title">Thanh toán</h1>
-          <p className="client-page__desc">
-            Quản lý số dư, ký quỹ, phương thức thanh toán, hóa đơn và thông tin xuất hóa đơn.
-          </p>
+      <div className="payments-page payments-page--full-width">
+        <header className="hire-page__head payments-page__head">
+          <div>
+            <h1 className="hire-page__title">Thanh toán</h1>
+            <p className="hire-page__lead">
+              Quản lý số dư ví, ký quỹ Escrow, phương thức thanh toán và lịch sử giao dịch từ hệ thống.
+            </p>
+          </div>
+          <Link href="/payments/phuong-thuc" className="hire-page__post-btn">
+            Quản lý phương thức
+          </Link>
         </header>
 
-        <section className="client-payments__panel">
-          <h2 className="client-payments__section-title">1. Tổng quan Số dư &amp; Ký quỹ</h2>
-          <div className="client-payments__balance-grid">
-            <article className="client-payments__balance-card">
-              <p className="client-payments__label">Số dư khả dụng</p>
-              <p className="client-payments__amount">{formatMoney(availableBalance, "VND")}</p>
-            </article>
-            <article className="client-payments__balance-card">
-              <p className="client-payments__label">Tiền đang ký quỹ</p>
-              <p className="client-payments__amount">{formatMoney(escrowBalance, "VND")}</p>
-            </article>
-          </div>
-
-          <div className="client-payments__cta-row">
-            <button type="button" className="client-payments__btn client-payments__btn--primary">
-              Nạp tiền
-            </button>
-            <button type="button" className="client-payments__btn client-payments__btn--secondary">
-              Rút tiền / Hoàn tiền
-            </button>
-          </div>
-        </section>
-
-        <section className="client-payments__panel">
-          <div className="client-payments__section-head">
-            <h2 className="client-payments__section-title">2. Phương thức thanh toán</h2>
-            <button type="button" className="client-payments__link-btn">
-              + Thêm phương thức
-            </button>
-          </div>
-
-          <div className="client-payments__method-list">
-            {billingMethods.map((method) => (
-              <article key={method.id} className="client-payments__method-item">
-                <div>
-                  <p className="client-payments__method-title">{method.label}</p>
-                  <p className="client-payments__method-detail">
-                    {methodTypeLabel(method.type)} • {method.detail}
-                  </p>
-                </div>
-                <div className="client-payments__method-actions">
-                  {method.isPrimary ? (
-                    <span className="client-payments__badge">Phương thức mặc định</span>
-                  ) : (
-                    <button type="button" className="client-payments__text-btn">
-                      Đặt mặc định
-                    </button>
-                  )}
-                  <button type="button" className="client-payments__text-btn">
-                    Cập nhật
-                  </button>
-                </div>
-              </article>
+        {loading ? (
+          <div className="payments-page__loading" aria-busy="true">
+            {Array.from({ length: 3 }, (_, i) => (
+              <div key={i} className="payments-page__skeleton" />
             ))}
           </div>
-
-          <div className="client-payments__auto-billing">
-            <h3 className="client-payments__sub-title">Tự động thanh toán</h3>
-            <p className="client-payments__muted">
-              Khi số dư dưới 2.000.000 VND, hệ thống tự động nạp 5.000.000 VND từ phương thức mặc định.
-            </p>
-            <label className="client-payments__switch-row">
-              <input type="checkbox" defaultChecked aria-label="Bật tự động thanh toán" />
-              <span>Bật Auto-billing</span>
-            </label>
-          </div>
-        </section>
-
-        <section className="client-payments__panel">
-          <div className="client-payments__section-head">
-            <h2 className="client-payments__section-title">3. Lịch sử giao dịch &amp; Hóa đơn</h2>
-            <button type="button" className="client-payments__btn client-payments__btn--secondary">
-              Export Statement (CSV)
-            </button>
-          </div>
-
-          <div className="client-payments__filters">
-            <select aria-label="Lọc theo dự án">
-              <option>Tất cả dự án</option>
-            </select>
-            <select aria-label="Lọc theo freelancer">
-              <option>Tất cả freelancer</option>
-            </select>
-            <input type="month" aria-label="Lọc theo tháng" />
-          </div>
-
-          <div className="client-payments__table-wrap">
-            <table className="client-payments__table">
-              <thead>
-                <tr>
-                  <th>Ngày</th>
-                  <th>Dự án</th>
-                  <th>Freelancer</th>
-                  <th>Loại giao dịch</th>
-                  <th>Số tiền</th>
-                  <th>Hóa đơn</th>
-                </tr>
-              </thead>
-              <tbody>
-                {billingHistory.map((item) => (
-                  <tr key={item.id}>
-                    <td>{item.createdAt}</td>
-                    <td>{item.project}</td>
-                    <td>{item.freelancer}</td>
-                    <td>{typeLabel(item.type)}</td>
-                    <td className={item.amount < 0 ? "client-payments__neg" : "client-payments__pos"}>
-                      {formatMoney(item.amount, item.currency)}
-                    </td>
-                    <td>
-                      <div className="client-payments__invoice-actions">
-                        <span>{item.invoiceCode}</span>
-                        <button type="button" className="client-payments__text-btn">
-                          PDF
-                        </button>
-                        <button type="button" className="client-payments__text-btn">
-                          In
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        <section className="client-payments__panel">
-          <h2 className="client-payments__section-title">4. Cài đặt Thông tin Thanh toán</h2>
-          <p className="client-payments__muted">
-            Thông tin này được in trực tiếp trên hóa đơn tải về.
+        ) : error ? (
+          <p className="hire-page__state hire-page__state--error" role="alert">
+            {error}
           </p>
-          <form className="client-payments__form-grid">
-            <label>
-              <span>Tên công ty</span>
-              <input type="text" defaultValue="Công ty TNHH ABC" />
-            </label>
-            <label>
-              <span>Mã số thuế (Tax ID / VAT)</span>
-              <input type="text" defaultValue="0312345678" />
-            </label>
-            <label className="client-payments__full-width">
-              <span>Địa chỉ công ty</span>
-              <input type="text" defaultValue="12A Nguyễn Huệ, P. Bến Nghé, Q.1, TP.HCM" />
-            </label>
-            <label>
-              <span>Email nhận hóa đơn</span>
-              <input type="email" defaultValue="accounting@company.vn" />
-            </label>
-            <label>
-              <span>Người liên hệ kế toán</span>
-              <input type="text" defaultValue="Le Thi C" />
-            </label>
-          </form>
-          <div className="client-payments__cta-row">
-            <button type="button" className="client-payments__btn client-payments__btn--primary">
-              Lưu Billing Details
-            </button>
-          </div>
-        </section>
+        ) : data ? (
+          <>
+            <section className="payments-panel">
+              <h2 className="payments-panel__title">Số dư &amp; ký quỹ</h2>
+              <div className="payments-balance-grid">
+                <article className="payments-balance-card payments-balance-card--primary">
+                  <p className="payments-balance-card__label">Số dư khả dụng</p>
+                  <p className="payments-balance-card__amount">{formatVnd(data.account.balance)}</p>
+                  <p className="payments-balance-card__hint">Dùng để nạp ký quỹ cho hợp đồng</p>
+                </article>
+                <article className="payments-balance-card">
+                  <p className="payments-balance-card__label">Tiền đang ký quỹ</p>
+                  <p className="payments-balance-card__amount">{formatVnd(data.account.escrowBalance)}</p>
+                  <p className="payments-balance-card__hint">Hợp đồng đã nạp Escrow, chưa giải ngân</p>
+                </article>
+              </div>
+
+              <div className="payments-deposit">
+                <label className="payments-deposit__label" htmlFor="deposit-amount">
+                  Nạp tiền vào ví (VND)
+                </label>
+                <div className="payments-deposit__row">
+                  <input
+                    id="deposit-amount"
+                    type="text"
+                    inputMode="numeric"
+                    className="payments-deposit__input"
+                    value={depositAmount}
+                    onChange={(e) => setDepositAmount(e.target.value.replace(/[^\d]/g, ""))}
+                  />
+                  <button
+                    type="button"
+                    className="payments-btn payments-btn--primary"
+                    disabled={depositBusy}
+                    onClick={() => void handleDeposit()}
+                  >
+                    {depositBusy ? "Đang xử lý..." : "Nạp tiền"}
+                  </button>
+                </div>
+                <div className="payments-deposit__presets">
+                  {DEPOSIT_PRESETS.map((preset) => (
+                    <button
+                      key={preset}
+                      type="button"
+                      className="payments-chip"
+                      onClick={() => setDepositAmount(String(preset))}
+                    >
+                      {formatVnd(preset)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </section>
+
+            <section className="payments-panel">
+              <div className="payments-panel__head">
+                <h2 className="payments-panel__title">Phương thức thanh toán</h2>
+                <Link href="/payments/phuong-thuc" className="payments-link-btn">
+                  + Thêm / chỉnh sửa
+                </Link>
+              </div>
+
+              {data.billingMethods.length === 0 ? (
+                <p className="payments-muted">
+                  Chưa có phương thức thanh toán. Thêm thẻ khi{" "}
+                  <Link href="/xac-minh-danh-tinh">xác minh danh tính</Link> hoặc tại trang phương thức.
+                </p>
+              ) : (
+                <ul className="payments-method-list">
+                  {data.billingMethods.map((method) => (
+                    <li key={method.id} className="payments-method-item">
+                      <div>
+                        <p className="payments-method-item__title">{method.label}</p>
+                        <p className="payments-method-item__detail">
+                          {billingMethodTypeLabel(method.type)} • {method.detail}
+                        </p>
+                      </div>
+                      <div className="payments-method-item__aside">
+                        {method.isPrimary ? (
+                          <span className="payments-badge">Mặc định</span>
+                        ) : null}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              {defaultMethod?.autoTopupThreshold != null && defaultMethod.autoTopupAmount != null ? (
+                <div className="payments-auto">
+                  <h3 className="payments-auto__title">Tự động nạp tiền</h3>
+                  <p className="payments-muted">
+                    {autoBillingOn
+                      ? `Khi số dư dưới ${formatVnd(defaultMethod.autoTopupThreshold)}, hệ thống tự nạp ${formatVnd(defaultMethod.autoTopupAmount)} từ phương thức mặc định.`
+                      : "Tự động nạp tiền đang tắt."}
+                  </p>
+                </div>
+              ) : null}
+            </section>
+
+            <section className="payments-panel">
+              <div className="payments-panel__head">
+                <h2 className="payments-panel__title">Lịch sử giao dịch &amp; hóa đơn</h2>
+                <button
+                  type="button"
+                  className="payments-btn payments-btn--secondary"
+                  disabled={filteredTransactions.length === 0}
+                  onClick={() => exportCsv(filteredTransactions)}
+                >
+                  Xuất sao kê (CSV)
+                </button>
+              </div>
+
+              <div className="payments-filters">
+                <select
+                  aria-label="Lọc theo dự án"
+                  value={filterJobId}
+                  onChange={(e) => setFilterJobId(e.target.value)}
+                >
+                  <option value="">Tất cả dự án</option>
+                  {data.filterOptions.jobs.map((j) => (
+                    <option key={j.id} value={j.id}>
+                      {j.title}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  aria-label="Lọc theo freelancer"
+                  value={filterFreelancerId}
+                  onChange={(e) => setFilterFreelancerId(e.target.value)}
+                >
+                  <option value="">Tất cả freelancer</option>
+                  {data.filterOptions.freelancers.map((f) => (
+                    <option key={f.id} value={f.id}>
+                      {f.name}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  type="month"
+                  aria-label="Lọc theo tháng"
+                  value={filterMonth}
+                  onChange={(e) => setFilterMonth(e.target.value)}
+                />
+              </div>
+
+              {filteredTransactions.length === 0 ? (
+                <p className="payments-muted">Chưa có giao dịch nào phù hợp bộ lọc.</p>
+              ) : (
+                <>
+                  <div className="payments-table-wrap">
+                    <table className="payments-table">
+                      <thead>
+                        <tr>
+                          <th>Ngày</th>
+                          <th>Dự án / mô tả</th>
+                          <th>Freelancer</th>
+                          <th>Loại</th>
+                          <th>Số tiền</th>
+                          <th>Hóa đơn</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {txPage.items.map((item) => (
+                          <tr key={item.id}>
+                            <td>{formatDate(item.occurredAt)}</td>
+                            <td className="payments-table__project">{item.projectTitle}</td>
+                            <td>{item.freelancerName}</td>
+                            <td>{transactionCategoryLabel(item.category)}</td>
+                            <td className={item.amount < 0 ? "payments-neg" : "payments-pos"}>
+                              {formatVnd(item.amount)}
+                            </td>
+                            <td>{item.invoiceNumber || "—"}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <DashboardPagination
+                    page={txPage.page}
+                    totalPages={txPage.totalPages}
+                    total={txPage.total}
+                    onPageChange={txPage.setPage}
+                  />
+                </>
+              )}
+            </section>
+
+            <section className="payments-panel">
+              <h2 className="payments-panel__title">Thông tin xuất hóa đơn</h2>
+              <p className="payments-muted">Thông tin này dùng khi xuất hóa đơn / sao kê.</p>
+              <form className="payments-form-grid" onSubmit={(e) => void handleSaveProfile(e)}>
+                <label>
+                  <span>Tên công ty</span>
+                  <input
+                    type="text"
+                    value={profileForm.companyName}
+                    onChange={(e) => setProfileForm((p) => ({ ...p, companyName: e.target.value }))}
+                  />
+                </label>
+                <label>
+                  <span>Mã số thuế</span>
+                  <input
+                    type="text"
+                    value={profileForm.taxId}
+                    onChange={(e) => setProfileForm((p) => ({ ...p, taxId: e.target.value }))}
+                  />
+                </label>
+                <label className="payments-form-grid__full">
+                  <span>Địa chỉ công ty</span>
+                  <input
+                    type="text"
+                    value={profileForm.companyAddress}
+                    onChange={(e) => setProfileForm((p) => ({ ...p, companyAddress: e.target.value }))}
+                  />
+                </label>
+                <label>
+                  <span>Email nhận hóa đơn</span>
+                  <input
+                    type="email"
+                    value={profileForm.billingEmail}
+                    onChange={(e) => setProfileForm((p) => ({ ...p, billingEmail: e.target.value }))}
+                  />
+                </label>
+                <label>
+                  <span>Người liên hệ kế toán</span>
+                  <input
+                    type="text"
+                    value={profileForm.contactName}
+                    onChange={(e) => setProfileForm((p) => ({ ...p, contactName: e.target.value }))}
+                  />
+                </label>
+                <div className="payments-form-grid__actions">
+                  <button
+                    type="submit"
+                    className="payments-btn payments-btn--primary"
+                    disabled={savingProfile}
+                  >
+                    {savingProfile ? "Đang lưu..." : "Lưu thông tin"}
+                  </button>
+                  {profileMessage ? (
+                    <p className="payments-form-message" role="status">
+                      {profileMessage}
+                    </p>
+                  ) : null}
+                </div>
+              </form>
+            </section>
+          </>
+        ) : null}
       </div>
     </ClientShell>
   );

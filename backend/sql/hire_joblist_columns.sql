@@ -15,7 +15,7 @@ ALTER TABLE public.jobs
   CHECK (budget_type IN ('fixed', 'hourly'));
 
 COMMENT ON COLUMN public.jobs.budget_type IS 'fixed = trọn gói, hourly = theo giờ (budget = mức giờ hoặc ngân sách chính).';
-COMMENT ON COLUMN public.jobs.budget_max IS 'Ngân sách tối đa / trần dự án (hiển thị khoảng $1k–$2.5k).';
+COMMENT ON COLUMN public.jobs.budget_max IS 'Ngân sách tối đa / trần dự án (VND).';
 
 ALTER TABLE public.user_profiles
   ADD COLUMN IF NOT EXISTS country character varying(120),
@@ -29,10 +29,10 @@ CREATE TABLE IF NOT EXISTS public.job_quotes (
   job_id uuid NOT NULL REFERENCES public.jobs(id) ON DELETE CASCADE,
   freelancer_id uuid NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
   amount numeric(12,2),
-  currency character(3) NOT NULL DEFAULT 'USD',
+  currency character(3) NOT NULL DEFAULT 'VND',
   message text,
   status character varying(20) NOT NULL DEFAULT 'pending'
-    CHECK (status IN ('pending', 'accepted', 'declined', 'withdrawn')),
+    CHECK (status IN ('pending', 'shortlisted', 'interviewing', 'offered', 'accepted', 'declined', 'withdrawn')),
   created_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at timestamp without time zone NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

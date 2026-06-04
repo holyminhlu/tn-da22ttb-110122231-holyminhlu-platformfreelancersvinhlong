@@ -6,7 +6,7 @@ const FOOTER_LINKS = {
     { label: "Home", href: "/" },
     { label: "Post a Job", href: "#" },
     { label: "Find a Freelancer", href: "/freelancers" },
-    { label: "Find a Job", href: "#steps" },
+    { label: "Find a Job", href: "/findwork" },
     { label: "Enterprise Solutions", href: "/enterprise" },
     { label: "Agency Solutions", href: "/agency" },
     { label: "PO Solutions", href: "/purchase-orders" },

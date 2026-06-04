@@ -2,6 +2,7 @@
 
 import FreelancerPlaceholderPage from "@/components/layout/FreelancerPlaceholderPage";
 import ClientPaymentsPage from "@/components/payments/ClientPaymentsPage";
+import FreelancerPaymentsPage from "@/components/payments/FreelancerPaymentsPage";
 import { useStoredUser } from "@/hooks/useStoredUser";
 
 export default function PaymentsRouter() {
@@ -19,18 +20,17 @@ export default function PaymentsRouter() {
     return <ClientPaymentsPage />;
   }
 
-  if (isFreelancer || user) {
-    return (
-      <FreelancerPlaceholderPage
-        title="Payments"
-        description="Thanh toán và số dư tài khoản — sẽ kết nối accounts / transactions sau."
-      />
-    );
+  if (isFreelancer) {
+    return <FreelancerPaymentsPage />;
+  }
+
+  if (user) {
+    return <FreelancerPaymentsPage />;
   }
 
   return (
     <FreelancerPlaceholderPage
-      title="Payments"
+      title="Thanh toán"
       description="Vui lòng đăng nhập để xem thanh toán."
     />
   );

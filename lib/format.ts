@@ -8,6 +8,22 @@ export function formatVnd(amount: string | number | null | undefined): string {
   }).format(n);
 }
 
+/** Rút gọn số lớn cho ngân sách / chi tiêu (vd. 1,5 tr, 500k). */
+export function formatCompactVnd(amount: string | number | null | undefined): string | null {
+  const n = Number(amount);
+  if (!Number.isFinite(n) || n <= 0) return null;
+  if (n >= 1_000_000_000) {
+    return `${(n / 1_000_000_000).toFixed(1).replace(/\.0$/, "")} tỷ`;
+  }
+  if (n >= 1_000_000) {
+    return `${(n / 1_000_000).toFixed(1).replace(/\.0$/, "")} tr`;
+  }
+  if (n >= 1000) {
+    return `${(n / 1000).toFixed(n >= 10_000 ? 0 : 1).replace(/\.0$/, "")}k`;
+  }
+  return formatVnd(n);
+}
+
 export function formatDate(value: string | null | undefined): string {
   if (!value) return "—";
   const d = new Date(value);

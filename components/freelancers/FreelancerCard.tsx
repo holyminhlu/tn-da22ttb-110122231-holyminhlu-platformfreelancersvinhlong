@@ -48,7 +48,7 @@ export default function FreelancerCard({ freelancer }: FreelancerCardProps) {
                 </h3>
                 <p className="text-xs text-gray-500">{freelancer.location}</p>
                 <div className="mt-0.5 flex items-center text-[11px] text-gray-500">
-                  <span className="mr-3 font-semibold">${freelancer.earnings} /yr</span>
+                  <span className="mr-3 font-semibold">{freelancer.earnings} ₫/năm</span>
                   <span className="flex items-center font-bold text-green-600">
                     <FaThumbsUp className="mr-1" aria-hidden />
                     {freelancer.rating}%
@@ -95,7 +95,7 @@ export default function FreelancerCard({ freelancer }: FreelancerCardProps) {
                 <span>{freelancer.title}</span>
                 <span className="text-xs font-normal text-gray-400">{freelancer.rate}</span>
                 <span className="text-xs font-normal text-gray-400">
-                  • Starting at {freelancer.minProject}
+                  • Từ {freelancer.minProject}
                 </span>
               </div>
               <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-gray-600">

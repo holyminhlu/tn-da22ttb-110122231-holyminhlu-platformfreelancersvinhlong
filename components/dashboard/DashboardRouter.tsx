@@ -25,7 +25,7 @@ export default function DashboardRouter() {
 
   return (
     <div className="home-landing flex min-h-screen items-center justify-center bg-white text-gray-500">
-      Vui lòng đăng nhập để xem dashboard.
+      Vui lòng đăng nhập để xem bảng tổng quan.
     </div>
   );
 }

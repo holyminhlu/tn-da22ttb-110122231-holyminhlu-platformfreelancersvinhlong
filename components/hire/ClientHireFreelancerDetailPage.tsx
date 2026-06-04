@@ -40,7 +40,7 @@ import "./hire.css";
 import "./hire-freelancer-detail.css";
 
 function formatPriceVndStyle(amount: string | number | null | undefined): string | null {
-  return formatStartingPrice(amount)?.replace(/^Starting at /, "Từ ");
+  return formatStartingPrice(amount);
 }
 
 export default function ClientHireFreelancerDetailPage() {

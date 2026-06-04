@@ -6,17 +6,17 @@ import { ABOUT_NAV, SOLUTIONS_NAV } from "./navMenus";
 import NavDropdown from "./NavDropdown";
 
 const FREELANCER_NAV = [
-  { href: "/dashboard", label: "Dashboard" },
-  { href: "/findwork", label: "Find Work" },
-  { href: "/jobs", label: "Jobs" },
-  { href: "/payments", label: "Payments" },
+  { href: "/dashboard", label: "Tổng quan" },
+  { href: "/findwork", label: "Tìm việc" },
+  { href: "/dich-vu", label: "Dịch vụ" },
+  { href: "/payments", label: "Thanh toán" },
 ] as const;
 
 const CLIENT_NAV = [
-  { href: "/dashboard", label: "Dashboard" },
-  { href: "/hire/quotes", label: "Hire" },
-  { href: "/manage", label: "Manage" },
-  { href: "/payments", label: "Payments" },
+  { href: "/dashboard", label: "Tổng quan" },
+  { href: "/hire/quotes", label: "Thuê việc" },
+  { href: "/manage", label: "Quản lý" },
+  { href: "/payments", label: "Thanh toán" },
 ] as const;
 
 export default function HomeNavbarNav() {
@@ -55,9 +55,9 @@ export default function HomeNavbarNav() {
       <Link href="/freelancers" className="hover:text-blue-600">
         Find Freelancers
       </Link>
-      <a href="#steps" className="hover:text-blue-600">
+      <Link href="/findwork" className="hover:text-blue-600">
         Find Jobs
-      </a>
+      </Link>
       <NavDropdown label="About" items={ABOUT_NAV} />
       <NavDropdown label="Solutions" items={SOLUTIONS_NAV} />
     </div>

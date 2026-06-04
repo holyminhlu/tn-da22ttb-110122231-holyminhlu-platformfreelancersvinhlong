@@ -391,7 +391,7 @@ async function getMe(req, res) {
          FROM public.services
          WHERE freelancer_id = $1
          ORDER BY created_at DESC
-         LIMIT 6`,
+         LIMIT 50`,
         [userId],
       );
 
@@ -400,7 +400,7 @@ async function getMe(req, res) {
          FROM public.freelancer_portfolios
          WHERE freelancer_id = $1 AND deleted_at IS NULL
          ORDER BY created_at DESC
-         LIMIT 12`,
+         LIMIT 50`,
         [userId],
       );
 
@@ -415,7 +415,7 @@ async function getMe(req, res) {
          LEFT JOIN public.user_profiles reviewer_up ON reviewer_up.user_id = cr.client_id
          WHERE cr.freelancer_id = $1
          ORDER BY cr.created_at DESC
-         LIMIT 8`,
+         LIMIT 50`,
         [userId],
       );
 
@@ -488,9 +488,63 @@ async function getMe(req, res) {
        FROM public.jobs
        WHERE client_id = $1
        ORDER BY created_at DESC
-       LIMIT 6`,
+       LIMIT 50`,
       [userId],
     );
+
+    let accountBalance = 0;
+    let escrowBalance = 0;
+    try {
+      const accountResult = await client.query(
+        `SELECT balance, escrow_balance
+         FROM public.accounts
+         WHERE user_id = $1 AND currency = 'VND'
+         LIMIT 1`,
+        [userId],
+      );
+      if (accountResult.rows[0]) {
+        accountBalance = Number(accountResult.rows[0].balance) || 0;
+        escrowBalance = Number(accountResult.rows[0].escrow_balance) || 0;
+      }
+    } catch (accountErr) {
+      if (accountErr.code === "42703") {
+        const fallback = await client.query(
+          `SELECT balance FROM public.accounts WHERE user_id = $1 AND currency = 'VND' LIMIT 1`,
+          [userId],
+        );
+        accountBalance = Number(fallback.rows[0]?.balance) || 0;
+      } else {
+        throw accountErr;
+      }
+    }
+
+    let recentPayments = [];
+    try {
+      const paymentsResult = await client.query(
+        `SELECT
+           c.id,
+           c.job_id,
+           c.service_id,
+           COALESCE(j.title, s.title, 'Đơn hàng dịch vụ') AS title,
+           c.agreed_price AS amount,
+           COALESCE(c.funded_at, c.created_at) AS paid_at,
+           fup.full_name AS freelancer_name,
+           c.escrow_status
+         FROM public.contracts c
+         LEFT JOIN public.jobs j ON j.id = c.job_id
+         LEFT JOIN public.services s ON s.id = c.service_id
+         LEFT JOIN public.user_profiles fup ON fup.user_id = c.freelancer_id
+         WHERE c.client_id = $1
+           AND c.deleted_at IS NULL
+           AND COALESCE(c.escrow_status, 'none') IN ('funded', 'released')
+         ORDER BY COALESCE(c.funded_at, c.created_at) DESC
+         LIMIT 30`,
+        [userId],
+      );
+      recentPayments = paymentsResult.rows;
+    } catch (paymentsErr) {
+      if (paymentsErr.code !== "42703") throw paymentsErr;
+    }
 
     // Đánh giá client gửi cho freelancer nằm ở contract_reviews (không phải bảng reviews cũ).
     const clientReviewsResult = await client.query(
@@ -555,6 +609,11 @@ async function getMe(req, res) {
       recentJobs: recentJobsResult.rows,
       reviews: clientReviewsResult.rows,
       timeline: timelineResult.rows,
+      account: {
+        balance: accountBalance,
+        escrowBalance,
+      },
+      recentPayments,
     });
   } catch (error) {
     console.error("Get profile failed:", error.message);

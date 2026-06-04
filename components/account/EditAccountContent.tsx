@@ -14,6 +14,11 @@ import {
   type MeUser,
 } from "@/lib/api/users";
 import { persistStoredUser, toStoredUser } from "@/lib/authSession";
+import { VINH_LONG_PROVINCE } from "@/lib/geo/vinhLongCommunes2025";
+import AddressSearchPicker, {
+  type AddressFormSlice,
+} from "@/components/account/identity-verification/AddressSearchPicker";
+import "@/components/account/identity-verification.css";
 
 const WHATSAPP_PREF_KEY = "vlc_whatsapp_quotes";
 const DEFAULT_TIMEZONE = "Giờ Đông Nam Á (GMT+07:00)";
@@ -21,12 +26,34 @@ const DEFAULT_COUNTRY = "Việt Nam";
 
 type EditFieldKey = "fullName" | "phone" | "website" | "address";
 
-type EditDialogState = {
-  field: EditFieldKey;
-  title: string;
-  value: string;
-  extra?: string;
-} | null;
+type EditDialogState =
+  | {
+      field: "fullName" | "phone" | "website";
+      title: string;
+      value: string;
+    }
+  | {
+      field: "address";
+      title: string;
+      address: AddressFormSlice;
+      lat: number | null;
+      lng: number | null;
+    }
+  | null;
+
+function profileToAddress(user: MeUser): AddressFormSlice {
+  const street = user.bio?.trim() || "";
+  const city = user.districtCity?.trim() || "";
+  const addressSearch = [street, city].filter(Boolean).join(", ");
+  return {
+    addressSearch,
+    street,
+    country: DEFAULT_COUNTRY,
+    state: VINH_LONG_PROVINCE,
+    city,
+    postal: "",
+  };
+}
 
 function displayValue(value: string | null | undefined, fallback = "—") {
   const t = String(value ?? "").trim();
@@ -187,10 +214,11 @@ export default function EditAccountContent() {
       setDialog({ field, title: "Website / Liên hệ", value: user.website || "" });
     } else if (field === "address") {
       setDialog({
-        field,
+        field: "address",
         title: "Địa chỉ",
-        value: user.districtCity || "",
-        extra: user.bio || "",
+        address: profileToAddress(user),
+        lat: null,
+        lng: null,
       });
     }
   }
@@ -220,16 +248,34 @@ export default function EditAccountContent() {
       return;
     }
     if (dialog.field === "address") {
-      await saveProfile({
-        fullName,
-        districtCity: dialog.value.trim() || null,
-        bio: dialog.extra?.trim() || null,
-      });
+      const { address } = dialog;
+      const hasAddress =
+        Boolean(address.addressSearch.trim()) || Boolean(address.street.trim());
+      if (!hasAddress) {
+        alert("Vui lòng dùng GPS hoặc chọn địa chỉ trong phạm vi Vĩnh Long.");
+        return;
+      }
+      const districtCity =
+        address.city.trim() ||
+        address.state.trim() ||
+        address.addressSearch.trim() ||
+        null;
+      const bio =
+        address.street.trim() ||
+        address.addressSearch.trim() ||
+        null;
+      await saveProfile({ fullName, districtCity, bio });
     }
   }
 
-  const streetLine = user?.bio?.trim() || "—";
-  const cityLine = displayValue(user?.districtCity);
+  const addressPreview = user
+    ? profileToAddress(user)
+    : { addressSearch: "", street: "", city: "", state: "", country: "", postal: "" };
+  const streetLine = addressPreview.street || addressPreview.addressSearch || "—";
+  const cityLine = displayValue(
+    addressPreview.city || user?.districtCity,
+  );
+  const provinceLine = addressPreview.state || VINH_LONG_PROVINCE;
   const phoneDisplay = displayValue(user?.phone);
   const showWhatsapp = Boolean(user?.phone?.trim());
 
@@ -299,14 +345,17 @@ export default function EditAccountContent() {
                   Đổi địa chỉ
                 </button>
               </div>
+              <p className="ea-address-hint">
+                Địa chỉ được lấy từ GPS hiện tại và đối chiếu bản đồ (trong phạm vi Vĩnh Long).
+              </p>
               <div className="ea-address-grid">
                 <div className="ea-address-span-full">
-                  <AddressBlock label="Địa chỉ / Ghi chú" value={streetLine} />
+                  <AddressBlock label="Địa chỉ đầy đủ" value={streetLine} />
                 </div>
+                <AddressBlock label="Xã / Phường / Thị trấn" value={cityLine} />
+                <AddressBlock label="Tỉnh / Thành" value={provinceLine} />
                 <AddressBlock label="Quốc gia" value={DEFAULT_COUNTRY} />
-                <AddressBlock label="Tỉnh / Thành" value={cityLine.includes(",") ? cityLine.split(",")[0]?.trim() || cityLine : cityLine} />
-                <AddressBlock label="Quận / Huyện / Thành phố" value={cityLine} />
-                <AddressBlock label="Mã bưu điện" value="—" />
+                <AddressBlock label="Mã bưu điện" value={addressPreview.postal || "—"} />
                 <div className="ea-address-span-full">
                   <AddressBlock label="Múi giờ" value={DEFAULT_TIMEZONE} />
                 </div>
@@ -329,26 +378,35 @@ export default function EditAccountContent() {
       {dialog ? (
         <div className="ea-dialog-backdrop" role="presentation" onClick={() => !saving && setDialog(null)}>
           <div
-            className="ea-dialog"
+            className={`ea-dialog${dialog.field === "address" ? " ea-dialog--wide" : ""}`}
             role="dialog"
             aria-labelledby="ea-dialog-title"
             onClick={(e) => e.stopPropagation()}
           >
             <h3 id="ea-dialog-title">{dialog.title}</h3>
-            <input
-              className="ea-dialog-input"
-              value={dialog.value}
-              onChange={(e) => setDialog({ ...dialog, value: e.target.value })}
-              autoFocus
-            />
             {dialog.field === "address" ? (
-              <textarea
-                className="ea-dialog-input min-h-[4rem] resize-y"
-                placeholder="Ghi chú địa chỉ (tùy chọn)"
-                value={dialog.extra ?? ""}
-                onChange={(e) => setDialog({ ...dialog, extra: e.target.value })}
+              <div className="ea-dialog-address">
+                <p className="ea-dialog-address-lead">
+                  Hệ thống lấy vị trí GPS hiện tại, đối chiếu OpenStreetMap và điền địa chỉ tự
+                  động. Bạn có thể chỉnh tìm kiếm hoặc bấm <strong>Dùng GPS</strong> để cập nhật lại.
+                </p>
+                <AddressSearchPicker
+                  value={dialog.address}
+                  lat={dialog.lat}
+                  lng={dialog.lng}
+                  requestGpsOnMount
+                  onChange={(address) => setDialog({ ...dialog, address })}
+                  onCoordsChange={(lat, lng) => setDialog({ ...dialog, lat, lng })}
+                />
+              </div>
+            ) : (
+              <input
+                className="ea-dialog-input"
+                value={dialog.value}
+                onChange={(e) => setDialog({ ...dialog, value: e.target.value })}
+                autoFocus
               />
-            ) : null}
+            )}
             <div className="ea-dialog-actions">
               <button
                 type="button"

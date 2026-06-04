@@ -282,7 +282,7 @@ export default function HireSearchFreelancerCard({
               ) : (
                 <ul className="hire-search__service-grid">
                   {(detail?.services ?? []).map((svc) => {
-                    const priceLabel = formatStartingPrice(svc.price)?.replace(/^Starting at /, "Từ ");
+                    const priceLabel = formatStartingPrice(svc.price);
                     return (
                       <li key={svc.id} className="hire-search__service-item">
                         <h3 className="hire-search__service-item-title">{svc.title}</h3>

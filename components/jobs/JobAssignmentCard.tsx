@@ -17,9 +17,14 @@ export default function JobAssignmentCard({ item, role }: JobAssignmentCardProps
     item.agreedPrice != null ? formatVnd(item.agreedPrice) : formatVnd(item.budget);
   const counterpartyLabel = role === "client" ? "Freelancer" : "Khách hàng";
 
+  const href =
+    role === "freelancer" && item.id && item.id !== item.jobId
+      ? `/findwork/orders/${item.id}`
+      : `/work/detail/${item.jobId}`;
+
   return (
     <article className="jobs-card jobs-card--interactive">
-      <Link href={`/work/detail/${item.jobId}`} className="jobs-card__link">
+      <Link href={href} className="jobs-card__link">
         <div className="jobs-card__head">
           <div className="jobs-card__body">
             <h2 className="jobs-card__title">{item.title}</h2>

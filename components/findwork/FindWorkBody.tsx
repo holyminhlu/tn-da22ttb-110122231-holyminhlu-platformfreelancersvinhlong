@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { useStoredUser } from "@/hooks/useStoredUser";
 import { listJobCategories, listJobs, type JobListing } from "@/lib/api/jobs";
 import JobCard from "./JobCard";
 import FindWorkToolbar, {
@@ -34,6 +36,9 @@ function buildPageItems(current: number, totalPages: number): PageItem[] {
 }
 
 export default function FindWorkBody() {
+  const { user, ready } = useStoredUser({ refreshFromApi: false });
+  const isGuest = ready && !user;
+
   const [jobs, setJobs] = useState<JobListing[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -126,10 +131,30 @@ export default function FindWorkBody() {
       <div className="mb-6">
         <h1 className="mb-2 text-2xl font-bold text-gray-800">Tìm việc làm tự do</h1>
         <p className="text-sm text-gray-600">
-          Chúng tôi có {total.toLocaleString("vi-VN")} việc làm tự do trực tuyến. Hãy gửi yêu cầu báo
-          giá ngay để được tuyển dụng.
+          {isGuest
+            ? `Khám phá ${total > 0 ? total.toLocaleString("vi-VN") : "các"} công việc đang mở tại Vĩnh Long. Đăng nhập để gửi báo giá và nhận việc.`
+            : `Chúng tôi có ${total.toLocaleString("vi-VN")} việc làm tự do trực tuyến. Hãy gửi yêu cầu báo giá ngay để được tuyển dụng.`}
         </p>
       </div>
+
+      {isGuest ? (
+        <div className="fw-guest-banner mb-6">
+          <p className="fw-guest-banner__text">
+            Bạn đang xem danh sách công việc công khai. Đăng nhập để gửi báo giá và theo dõi đơn của bạn.
+          </p>
+          <div className="fw-guest-banner__actions">
+            <Link href="/dang-nhap?next=/findwork" className="fw-btn-primary rounded px-4 py-2 text-sm font-semibold text-white">
+              Đăng nhập
+            </Link>
+            <Link
+              href="/dang-ky"
+              className="rounded border border-[#0066cc] px-4 py-2 text-sm font-semibold text-[#0066cc] transition hover:bg-blue-50"
+            >
+              Đăng ký
+            </Link>
+          </div>
+        </div>
+      ) : null}
 
       <FindWorkToolbar
         query={query}
@@ -169,7 +194,7 @@ export default function FindWorkBody() {
         <p className="text-gray-500">Không có việc làm phù hợp với bộ lọc hiện tại.</p>
       ) : (
         jobs.map((job) => (
-          <JobCard key={job.id} job={job} onAccepted={handleAccepted} />
+          <JobCard key={job.id} job={job} onAccepted={handleAccepted} guestMode={isGuest} />
         ))
       )}
 

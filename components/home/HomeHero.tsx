@@ -8,13 +8,13 @@ export default function HomeHero() {
       <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-12 px-6 lg:grid-cols-2">
         <div>
           <h1 className="mb-4 text-5xl font-bold leading-tight">
-            Find &amp; Hire
+            Tìm &amp; Thuê
             <br />
-            Expert Freelancers
+            Freelancer Tại Vĩnh Long
           </h1>
           <p className="mb-10 max-w-lg text-xl opacity-90">
-            Work with the best freelance talent from around the world on our secure, flexible and
-            cost-effective platform.
+            Kết nối doanh nghiệp, hộ kinh doanh và người làm nghề tự do địa phương — đăng việc,
+            nhận báo giá, ký quỹ an toàn trên nền tảng Vĩnh Long Connected.
           </p>
 
           <HeroSearchBar />
@@ -29,14 +29,15 @@ export default function HomeHero() {
         </div>
         <div className="relative hidden lg:block">
           <Image
-            src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=800"
-            alt="Freelancer"
-            width={450}
-            height={560}
-            className="relative z-10 ml-auto w-[450px] rounded-lg"
+            src="/Media/anhVinhLong.jpg"
+            alt="Toàn cảnh phát triển tại Vĩnh Long"
+            width={640}
+            height={400}
+            className="relative z-10 ml-auto w-full max-w-[520px] rounded-lg object-cover shadow-2xl"
             style={{
-              maskImage: "linear-gradient(to bottom, black 80%, transparent 100%)",
-              WebkitMaskImage: "linear-gradient(to bottom, black 80%, transparent 100%)",
+              aspectRatio: "16 / 10",
+              maskImage: "linear-gradient(to bottom, black 85%, transparent 100%)",
+              WebkitMaskImage: "linear-gradient(to bottom, black 85%, transparent 100%)",
             }}
             priority
           />

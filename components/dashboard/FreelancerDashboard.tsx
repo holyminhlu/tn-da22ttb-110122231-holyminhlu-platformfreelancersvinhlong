@@ -17,12 +17,35 @@ import {
   type PortfolioItem,
   type UserSkill,
 } from "@/lib/api/users";
-import { getUserInitials, resolveAvatarSrc } from "@/lib/authSession";
+import { getUserInitials, persistStoredUser, resolveAvatarSrc, toStoredUser } from "@/lib/authSession";
+import { contractStatusLabel } from "@/components/jobs/jobs-filter";
 import { formatDate, formatVnd, parseJsonArray } from "@/lib/format";
 import HomeFooter from "@/components/home/HomeFooter";
 import HomeNavbar from "@/components/home/HomeNavbar";
+import { usePagedList } from "@/hooks/usePagedList";
+import DashboardPagination from "./DashboardPagination";
 import "../home/home.css";
 import "./dashboard.css";
+import "./dashboardPagination.css";
+
+const LIST_PAGE_SIZE = 5;
+
+function availabilityStatusLabel(status: string | null | undefined) {
+  const s = String(status || "").toLowerCase();
+  if (s === "available") return "Sẵn sàng nhận việc";
+  if (s === "busy") return "Đang bận";
+  if (s === "unavailable") return "Không nhận việc";
+  return status?.trim() || "—";
+}
+
+function skillLevelLabel(level: string | null | undefined) {
+  const s = String(level || "").toLowerCase();
+  if (s === "beginner") return "Cơ bản";
+  if (s === "intermediate") return "Trung cấp";
+  if (s === "advanced") return "Nâng cao";
+  if (s === "expert") return "Chuyên gia";
+  return level?.trim() || "—";
+}
 
 function InfoRow({ label, value }: { label: string; value: ReactNode }) {
   return (
@@ -63,18 +86,25 @@ function BasicInfoPanel({ user, profile, completionScore }: { user: MeUser; prof
           </div>
         </div>
         <dl className="freelancer-dashboard__dl">
-          <InfoRow label="Email" value={user.email} />
+          <InfoRow label="E-mail" value={user.email} />
           <InfoRow label="Điện thoại" value={user.phone} />
           <InfoRow label="Khu vực" value={user.districtCity} />
           <InfoRow label="Chức danh" value={profile?.title} />
           <InfoRow label="Giá/giờ" value={profile?.hourly_rate != null ? formatVnd(profile.hourly_rate) : null} />
           <InfoRow label="Kinh nghiệm" value={profile?.experience_years != null ? `${profile.experience_years} năm` : null} />
-          <InfoRow label="Trạng thái" value={profile?.availability_status} />
+          <InfoRow
+            label="Trạng thái làm việc"
+            value={availabilityStatusLabel(profile?.availability_status)}
+          />
           <InfoRow label="Thu nhập" value={formatVnd(profile?.total_earnings)} />
           <InfoRow label="Hoàn thành hồ sơ" value={`${completionScore}%`} />
           <InfoRow
             label="Xác thực"
-            value={[user.isEmailVerified && "Email", user.isPhoneVerified && "SĐT"].filter(Boolean).join(", ") || "Chưa"}
+            value={
+              [user.isEmailVerified && "E-mail", user.isPhoneVerified && "Số điện thoại"]
+                .filter(Boolean)
+                .join(", ") || "Chưa xác thực"
+            }
           />
         </dl>
         {badges.length > 0 ? (
@@ -122,43 +152,66 @@ function PanelSectionLabel({
 }
 
 function SkillsPortfolioPanel({ skills, portfolio }: { skills: UserSkill[]; portfolio: PortfolioItem[] }) {
+  const skillsPage = usePagedList(skills, LIST_PAGE_SIZE);
+  const portfolioPage = usePagedList(portfolio, LIST_PAGE_SIZE);
+
   return (
     <section className="freelancer-dashboard__panel freelancer-dashboard__panel--square">
-      <header className="freelancer-dashboard__panel-head">Kỹ năng & Portfolio</header>
+      <header className="freelancer-dashboard__panel-head">Kỹ năng & danh mục dự án</header>
       <div className="freelancer-dashboard__panel-body">
         <PanelSectionLabel label="Kỹ năng" count={skills.length} addHref="/ho-so?add=skills" />
         {skills.length === 0 ? (
           <p className="freelancer-dashboard__empty">Chưa thêm kỹ năng.</p>
         ) : (
-          <ul className="mb-4">
-            {skills.map((s) => (
-              <li key={s.id} className="freelancer-dashboard__list-item">
-                <span className="font-medium text-gray-800">{s.name}</span>
-                <span className="freelancer-dashboard__muted">
-                  {" "}
-                  — {s.level || "—"} · {s.years_of_experience} năm
-                </span>
-              </li>
-            ))}
-          </ul>
+          <>
+            <ul className="mb-4">
+              {skillsPage.items.map((s) => (
+                <li key={s.id} className="freelancer-dashboard__list-item">
+                  <span className="font-medium text-gray-800">{s.name}</span>
+                  <span className="freelancer-dashboard__muted">
+                    {" "}
+                    — {skillLevelLabel(s.level)} · {s.years_of_experience} năm
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <DashboardPagination
+              page={skillsPage.page}
+              totalPages={skillsPage.totalPages}
+              total={skillsPage.total}
+              onPageChange={skillsPage.setPage}
+            />
+          </>
         )}
-        <PanelSectionLabel label="Portfolio" count={portfolio.length} addHref="/ho-so?add=portfolio" />
+        <PanelSectionLabel
+          label="Danh mục dự án"
+          count={portfolio.length}
+          addHref="/ho-so?add=portfolio"
+        />
         {portfolio.length === 0 ? (
-          <p className="freelancer-dashboard__empty">Chưa có dự án portfolio.</p>
+          <p className="freelancer-dashboard__empty">Chưa có dự án trong danh mục.</p>
         ) : (
-          <ul>
-            {portfolio.map((p) => (
-              <li key={p.id} className="freelancer-dashboard__list-item">
-                <p className="font-medium text-gray-800">{p.title}</p>
-                {p.description ? <p className="freelancer-dashboard__muted line-clamp-2">{p.description}</p> : null}
-                {p.project_url ? (
-                  <a href={p.project_url} className="text-xs text-[#0066cc] hover:underline" target="_blank" rel="noreferrer">
-                    Xem dự án
-                  </a>
-                ) : null}
-              </li>
-            ))}
-          </ul>
+          <>
+            <ul>
+              {portfolioPage.items.map((p) => (
+                <li key={p.id} className="freelancer-dashboard__list-item">
+                  <p className="font-medium text-gray-800">{p.title}</p>
+                  {p.description ? <p className="freelancer-dashboard__muted line-clamp-2">{p.description}</p> : null}
+                  {p.project_url ? (
+                    <a href={p.project_url} className="text-xs text-[#0066cc] hover:underline" target="_blank" rel="noreferrer">
+                      Xem dự án
+                    </a>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+            <DashboardPagination
+              page={portfolioPage.page}
+              totalPages={portfolioPage.totalPages}
+              total={portfolioPage.total}
+              onPageChange={portfolioPage.setPage}
+            />
+          </>
         )}
       </div>
     </section>
@@ -166,6 +219,8 @@ function SkillsPortfolioPanel({ skills, portfolio }: { skills: UserSkill[]; port
 }
 
 function ServicesPanel({ services }: { services: FreelancerService[] }) {
+  const { items, page, totalPages, total, setPage } = usePagedList(services, LIST_PAGE_SIZE);
+
   return (
     <section className="freelancer-dashboard__panel freelancer-dashboard__panel--square">
       <header className="freelancer-dashboard__panel-head">Dịch vụ ({services.length})</header>
@@ -173,31 +228,39 @@ function ServicesPanel({ services }: { services: FreelancerService[] }) {
         {services.length === 0 ? (
           <p className="freelancer-dashboard__empty">Chưa đăng dịch vụ nào.</p>
         ) : (
-          <ul>
-            {services.map((s) => (
-              <li key={s.id} className="freelancer-dashboard__list-item">
-                <div className="flex gap-2">
-                  {s.thumbnail_url ? (
-                    <Image
-                      src={s.thumbnail_url}
-                      alt=""
-                      width={40}
-                      height={40}
-                      className="h-10 w-10 shrink-0 rounded object-cover"
-                      unoptimized
-                    />
-                  ) : null}
-                  <div className="min-w-0 flex-1">
-                    <p className="font-medium text-gray-800">{s.title}</p>
-                    <p className="text-xs font-semibold text-[#0066cc]">{formatVnd(s.price)}</p>
-                    {s.delivery_days != null ? (
-                      <p className="freelancer-dashboard__muted">Giao trong {s.delivery_days} ngày</p>
+          <>
+            <ul>
+              {items.map((s) => (
+                <li key={s.id} className="freelancer-dashboard__list-item">
+                  <div className="flex gap-2">
+                    {s.thumbnail_url ? (
+                      <Image
+                        src={s.thumbnail_url}
+                        alt=""
+                        width={40}
+                        height={40}
+                        className="h-10 w-10 shrink-0 rounded object-cover"
+                        unoptimized
+                      />
                     ) : null}
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-gray-800">{s.title}</p>
+                      <p className="text-xs font-semibold text-[#0066cc]">{formatVnd(s.price)}</p>
+                      {s.delivery_days != null ? (
+                        <p className="freelancer-dashboard__muted">Giao trong {s.delivery_days} ngày</p>
+                      ) : null}
+                    </div>
                   </div>
-                </div>
-              </li>
-            ))}
-          </ul>
+                </li>
+              ))}
+            </ul>
+            <DashboardPagination
+              page={page}
+              totalPages={totalPages}
+              total={total}
+              onPageChange={setPage}
+            />
+          </>
         )}
       </div>
     </section>
@@ -206,6 +269,7 @@ function ServicesPanel({ services }: { services: FreelancerService[] }) {
 
 function ReviewsPanel({ profile, reviews }: { profile: FreelancerProfile | null; reviews: ContractReview[] }) {
   const avg = profile ? Number(profile.rating_avg) : 0;
+  const { items, page, totalPages, total, setPage } = usePagedList(reviews, LIST_PAGE_SIZE);
 
   return (
     <section className="freelancer-dashboard__panel freelancer-dashboard__panel-bottom">
@@ -223,24 +287,32 @@ function ReviewsPanel({ profile, reviews }: { profile: FreelancerProfile | null;
           {profile?.job_success_score != null ? (
             <div>
               <p className="text-lg font-bold text-gray-800">{profile.job_success_score}%</p>
-              <p className="freelancer-dashboard__muted">Job success</p>
+              <p className="freelancer-dashboard__muted">Tỷ lệ thành công</p>
             </div>
           ) : null}
         </div>
         {reviews.length === 0 ? (
           <p className="freelancer-dashboard__empty">Chưa có đánh giá từ khách hàng.</p>
         ) : (
-          <ul>
-            {reviews.map((r) => (
-              <li key={r.id} className="freelancer-dashboard__list-item">
-                <p className="font-medium text-gray-800">
-                  {r.rating}/5 — {r.reviewer_name || "Khách hàng"}
-                </p>
-                {r.comment ? <p className="freelancer-dashboard__muted line-clamp-2">{r.comment}</p> : null}
-                <p className="freelancer-dashboard__muted">{formatDate(r.created_at)}</p>
-              </li>
-            ))}
-          </ul>
+          <>
+            <ul>
+              {items.map((r) => (
+                <li key={r.id} className="freelancer-dashboard__list-item">
+                  <p className="font-medium text-gray-800">
+                    {r.rating}/5 — {r.reviewer_name || "Khách hàng"}
+                  </p>
+                  {r.comment ? <p className="freelancer-dashboard__muted line-clamp-2">{r.comment}</p> : null}
+                  <p className="freelancer-dashboard__muted">{formatDate(r.created_at)}</p>
+                </li>
+              ))}
+            </ul>
+            <DashboardPagination
+              page={page}
+              totalPages={totalPages}
+              total={total}
+              onPageChange={setPage}
+            />
+          </>
         )}
       </div>
     </section>
@@ -248,6 +320,8 @@ function ReviewsPanel({ profile, reviews }: { profile: FreelancerProfile | null;
 }
 
 function InvoicesPanel({ contracts }: { contracts: ContractRow[] }) {
+  const { items, page, totalPages, total, setPage } = usePagedList(contracts, LIST_PAGE_SIZE);
+
   return (
     <section className="freelancer-dashboard__panel freelancer-dashboard__panel-bottom">
       <header className="freelancer-dashboard__panel-head">Hợp đồng & hóa đơn</header>
@@ -255,21 +329,31 @@ function InvoicesPanel({ contracts }: { contracts: ContractRow[] }) {
         {contracts.length === 0 ? (
           <p className="freelancer-dashboard__empty">Chưa có hợp đồng / hóa đơn.</p>
         ) : (
-          <ul>
-            {contracts.map((c) => (
-              <li key={c.id} className="freelancer-dashboard__list-item">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="font-medium text-gray-800">{c.job_title || `Hợp đồng #${c.id.slice(0, 8)}`}</span>
-                  <span className={contractStatusClass(c.status)}>{c.status}</span>
-                </div>
-                <p className="text-sm font-semibold text-[#0066cc]">{formatVnd(c.agreed_price)}</p>
-                <p className="freelancer-dashboard__muted">
-                  {c.counterparty_name ? `Khách: ${c.counterparty_name} · ` : ""}
-                  {formatDate(c.created_at)}
-                </p>
-              </li>
-            ))}
-          </ul>
+          <>
+            <ul>
+              {items.map((c) => (
+                <li key={c.id} className="freelancer-dashboard__list-item">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="font-medium text-gray-800">{c.job_title || `Hợp đồng #${c.id.slice(0, 8)}`}</span>
+                    <span className={contractStatusClass(c.status)}>
+                      {contractStatusLabel(c.status)}
+                    </span>
+                  </div>
+                  <p className="text-sm font-semibold text-[#0066cc]">{formatVnd(c.agreed_price)}</p>
+                  <p className="freelancer-dashboard__muted">
+                    {c.counterparty_name ? `Khách: ${c.counterparty_name} · ` : ""}
+                    {formatDate(c.created_at)}
+                  </p>
+                </li>
+              ))}
+            </ul>
+            <DashboardPagination
+              page={page}
+              totalPages={totalPages}
+              total={total}
+              onPageChange={setPage}
+            />
+          </>
         )}
       </div>
     </section>
@@ -292,18 +376,29 @@ export default function FreelancerDashboard() {
         const [me, contractData] = await Promise.all([getMe(), listMyContracts()]);
         if (cancelled) return;
         if (!isFreelancerMeResponse(me)) {
-          setError("Tài khoản này không phải freelancer.");
+          setError("Tài khoản này không phải tài khoản chuyên gia.");
           setData(null);
           return;
         }
         setData(me);
         setContracts(contractData.contracts ?? []);
+        if (me.user) {
+          persistStoredUser(
+            toStoredUser({
+              id: me.user.id,
+              email: me.user.email,
+              role: me.user.role,
+              fullName: me.user.fullName,
+              avatarUrl: me.user.avatarUrl,
+            }),
+          );
+        }
       } catch (err) {
         if (cancelled) return;
         const message =
           err && typeof err === "object" && "message" in err
             ? String((err as { message: string }).message)
-            : "Không thể tải dashboard.";
+            : "Không thể tải bảng tổng quan.";
         setError(message);
       } finally {
         if (!cancelled) setLoading(false);
@@ -320,7 +415,7 @@ export default function FreelancerDashboard() {
     <div className="home-landing freelancer-dashboard min-h-screen text-gray-900">
       <HomeNavbar />
       <main id="main-content" className="freelancer-dashboard__inner">
-        <h1 className="freelancer-dashboard__title">Dashboard</h1>
+        <h1 className="freelancer-dashboard__title">Tổng quan</h1>
 
         {loading ? (
           <p className="text-gray-500">Đang tải dữ liệu...</p>

@@ -9,5 +9,7 @@ router.post("/job", jobs.createMyJob);
 router.patch("/jobs/:jobId", jobs.updateMyJob);
 router.delete("/jobs/:jobId", jobs.deleteMyJob);
 router.post("/jobs/:jobId/accept", jobs.acceptJob);
+router.get("/quotes", jobs.listMyJobQuotes);
+router.patch("/quotes/:quoteId", jobs.patchJobQuote);
 
 module.exports = router;

@@ -8,6 +8,7 @@ import {
   verifyCardCharge,
   type IdentityVerificationResponse,
 } from "@/lib/api/identityVerification";
+import { formatVnd } from "@/lib/format";
 
 type CreditCardVerifyPanelProps = {
   data: IdentityVerificationResponse;
@@ -110,12 +111,12 @@ export default function CreditCardVerifyPanel({ data, onSaved }: CreditCardVerif
         billingPhone: billingPhone.trim(),
         billingCurrency: billingCurrency.trim(),
       });
-      if (result.chargeAmountUsd) {
-        setChargeHint(result.chargeAmountUsd);
+      if (result.chargeAmountVnd) {
+        setChargeHint(result.chargeAmountVnd);
       }
       setMessage(
         result.message ??
-          `Đã trừ tạm $${result.chargeAmountUsd ?? "—"} USD. Chuyển sang bước xác minh số tiền.`,
+          `Đã trừ tạm ${formatVnd(result.chargeAmountVnd ?? 0)}. Chuyển sang bước xác minh số tiền.`,
       );
       setCvv("");
       setCardNumber("");
@@ -134,7 +135,7 @@ export default function CreditCardVerifyPanel({ data, onSaved }: CreditCardVerif
 
   async function handleVerifyCharge() {
     if (!chargeAmount.trim()) {
-      setMessage("Nhập số tiền đã thanh toán (USD).");
+      setMessage("Nhập số tiền đã thanh toán (VND).");
       return;
     }
     setSaving(true);
@@ -381,8 +382,8 @@ export default function CreditCardVerifyPanel({ data, onSaved }: CreditCardVerif
           </label>
 
           <p className="idv-cc-charge-note">
-            Để xác minh, chúng tôi sẽ trừ ngẫu nhiên một khoản tiền lên đến 10 đô la vào thẻ của
-            bạn. Bạn cần nhập chính xác số tiền này để xác minh thẻ.{" "}
+            Để xác minh, chúng tôi sẽ trừ ngẫu nhiên một khoản tiền từ 1.000 đến 100.000 VND vào thẻ
+            của bạn. Bạn cần nhập chính xác số tiền này để xác minh thẻ.{" "}
             <Link href="/help">Tìm hiểu thêm</Link>
           </p>
 
@@ -409,22 +410,22 @@ export default function CreditCardVerifyPanel({ data, onSaved }: CreditCardVerif
         <div className="idv-cc-form">
           <h2 className="idv-detail__title">Xác minh số tiền</h2>
           <p className="idv-detail__lead">
-            Nhập chính xác số tiền (USD) đã bị trừ tạm thời trên thẻ của bạn.
+            Nhập chính xác số tiền (VND) đã bị trừ tạm thời trên thẻ của bạn.
             {maskedCard ? ` Thẻ: ${maskedCard}.` : null}
           </p>
           {process.env.NODE_ENV === "development" && chargeHint ? (
             <p className="idv-msg">
-              Dev: số tiền vừa trừ là <strong>${chargeHint}</strong> USD.
+              Dev: số tiền vừa trừ là <strong>{formatVnd(chargeHint)}</strong>.
             </p>
           ) : null}
 
           <label className="idv-field">
-            <span className="idv-field__label">Số tiền đã thanh toán (USD)</span>
+            <span className="idv-field__label">Số tiền đã thanh toán (VND)</span>
             <input
               className="idv-field__input"
               type="text"
-              inputMode="decimal"
-              placeholder="0.00"
+              inputMode="numeric"
+              placeholder="VD: 25000"
               value={chargeAmount}
               onChange={(e) => setChargeAmount(e.target.value)}
             />

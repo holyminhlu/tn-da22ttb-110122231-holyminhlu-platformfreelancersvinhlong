@@ -2,8 +2,8 @@ import { freelancerPageMetadata } from "@/components/layout/FreelancerPlaceholde
 import JobsPage from "@/components/jobs/JobsPage";
 
 export const metadata = freelancerPageMetadata(
-  "Việc làm",
-  "Quản lý công việc đã nhận, lọc theo trạng thái và tìm theo mã hoặc tiêu đề.",
+  "Hợp đồng việc",
+  "Theo dõi hợp đồng từ báo giá job — tiến độ, bàn giao và nghiệm thu.",
 );
 
 export default function FreelancerJobsPage() {

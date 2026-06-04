@@ -270,11 +270,15 @@
 /* —— Workspace card —— */
 .manage-workspace-card {
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   border: 1px solid #e5e7eb;
   border-radius: 0.35rem;
   background: #fff;
   transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.manage-workspace-card:has(.manage-workspace-card__menu) {
+  z-index: 40;
 }
 
 .manage-workspace-card:hover {
@@ -288,6 +292,7 @@
   bottom: 0;
   left: 0;
   width: 3px;
+  border-radius: 0.35rem 0 0 0.35rem;
   background: linear-gradient(180deg, #3b82f6, #60a5fa);
 }
 
@@ -530,7 +535,7 @@
   position: absolute;
   top: 100%;
   right: 0;
-  z-index: 20;
+  z-index: 50;
   min-width: 11.5rem;
   margin-top: 0.25rem;
   border: 1px solid #e5e7eb;

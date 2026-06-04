@@ -29,7 +29,7 @@ export const EMPLOYER_CATEGORIES: (HelpCategoryItem | null)[] = [
   },
   {
     title: "Hợp đồng",
-    desc: "Điều khoản thanh toán, tính năng bổ sung, chỉnh sửa và kết thúc hợp đồng",
+    desc: "SLA hết hạn pre-Escrow, hủy đơn, auto-nghiệm thu, hoàn tiền & tranh chấp",
   },
   {
     title: "Quản lý công việc",
@@ -77,7 +77,7 @@ export const FREELANCER_CATEGORIES: (HelpCategoryItem | null)[] = [
   },
   {
     title: "Hợp đồng",
-    desc: "Nhận việc, điều khoản, chỉnh sửa và hoàn thành hợp đồng",
+    desc: "SLA, hủy đơn, hoàn tiền, auto-nghiệm thu và tranh chấp",
   },
   {
     title: "Quản lý công việc",

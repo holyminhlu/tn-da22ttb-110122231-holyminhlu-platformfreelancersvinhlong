@@ -1,5 +1,5 @@
 export const HIRE_NAV = [
-  { id: "quotes", href: "/hire/quotes", label: "Tuyển dụng" },
+  { id: "quotes", href: "/hire/quotes", label: "Báo giá" },
   { id: "orders", href: "/hire/orders", label: "Đơn dịch vụ" },
   { id: "favorites", href: "/hire/favorites", label: "Mục yêu thích của tôi" },
   { id: "search", href: "/hire/search", label: "Tìm kiếm người làm việc tự do" },

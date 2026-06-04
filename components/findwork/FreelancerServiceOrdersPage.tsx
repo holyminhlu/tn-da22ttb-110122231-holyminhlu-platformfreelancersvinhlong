@@ -11,6 +11,7 @@ import {
   workflowStageLabel,
   type OrderListFilter,
 } from "@/lib/orders/serviceOrderDisplay";
+import { orderDeadlineSubtitle } from "@/lib/orders/workflowSlaDisplay";
 import { formatDate } from "@/lib/format";
 import FreelancerWorkShell from "./FreelancerWorkShell";
 import "./findwork-orders.css";
@@ -69,10 +70,11 @@ export default function FreelancerServiceOrdersPage() {
     <FreelancerWorkShell>
       <div className="fw-orders">
         <header className="fw-orders__head">
-          <h1 className="fw-orders__title">Đơn dịch vụ (Gigs)</h1>
+          <h1 className="fw-orders__title">Việc & đơn đã nhận</h1>
           <p className="fw-orders__lead">
-            Client đặt gói dịch vụ của bạn — gửi đề xuất, thực hiện công việc và bàn giao theo từng
-            giai đoạn. {actionCount > 0 ? `Bạn có ${actionCount} đơn cần xử lý.` : ""}
+            Gồm đơn dịch vụ (gigs) và công việc client chốt tuyển từ báo giá — cập nhật tiến độ,
+            bàn giao và nghiệm thu theo từng giai đoạn.
+            {actionCount > 0 ? ` Bạn có ${actionCount} mục cần xử lý.` : ""}
           </p>
         </header>
 
@@ -100,14 +102,15 @@ export default function FreelancerServiceOrdersPage() {
         ) : filtered.length === 0 ? (
           <div className="fw-orders__empty">
             {filter === "all"
-              ? "Chưa có đơn đặt dịch vụ nào. Khách hàng sẽ tìm thấy gói dịch vụ của bạn qua tìm kiếm Hire."
-              : "Không có đơn trong bộ lọc này."}
+              ? "Chưa có việc hoặc đơn nào. Hãy nộp báo giá tại Tìm việc làm hoặc chờ client đặt gói dịch vụ của bạn."
+              : "Không có mục nào trong bộ lọc này."}
           </div>
         ) : (
           <ul className="fw-orders__list">
             {filtered.map((order) => {
               const pkgName = parsePackageName(order.package_snapshot);
               const hint = orderStatusHint(order, true);
+              const deadlineLine = orderDeadlineSubtitle(order);
               const urgent =
                 (order.workflow_stage === "selection" && !order.proposal_text) ||
                 (order.workflow_stage === "delivery" && !order.delivered_at);
@@ -120,7 +123,7 @@ export default function FreelancerServiceOrdersPage() {
                   >
                     <div className="fw-orders__card-top">
                       <h2 className="fw-orders__card-title">
-                        {order.service_title || order.job_title || "Đơn dịch vụ"}
+                        {order.job_title || order.service_title || "Hợp đồng"}
                       </h2>
                       <span
                         className={`fw-orders__card-badge${urgent ? "" : " fw-orders__card-badge--stage"}`}
@@ -144,6 +147,9 @@ export default function FreelancerServiceOrdersPage() {
                     <div className="fw-orders__card-foot">
                       <span>{workflowStageLabel(order.workflow_stage)}</span>
                       <span>Escrow: {order.escrow_status}</span>
+                      {deadlineLine ? (
+                        <span className="fw-orders__card-deadline">{deadlineLine}</span>
+                      ) : null}
                       <span>Cập nhật {formatDate(order.updated_at || order.created_at)}</span>
                     </div>
                   </Link>

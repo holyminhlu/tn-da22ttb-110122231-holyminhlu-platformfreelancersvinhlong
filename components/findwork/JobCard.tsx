@@ -2,9 +2,9 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FaCheckCircle, FaListUl, FaMapMarkerAlt, FaStar } from "react-icons/fa";
-import { acceptJob, type JobListing } from "@/lib/api/jobs";
+import { type JobListing } from "@/lib/api/jobs";
 import { getUserInitials, resolveAvatarSrc } from "@/lib/authSession";
 import { formatDate, formatVnd } from "@/lib/format";
 import {
@@ -14,15 +14,21 @@ import {
   relativePosted,
 } from "@/lib/jobsDisplay";
 import JobCardMedia from "./JobCardMedia";
+import JobProposalFormModal from "./JobProposalFormModal";
 
 type JobCardProps = {
   job: JobListing;
   onAccepted?: (jobId: string) => void;
+  /** Khách chưa đăng nhập — chỉ xem, không gửi báo giá trực tiếp. */
+  guestMode?: boolean;
 };
 
-export default function JobCard({ job, onAccepted }: JobCardProps) {
-  const [submitting, setSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState("");
+export default function JobCard({ job, onAccepted, guestMode = false }: JobCardProps) {
+  const [proposalOpen, setProposalOpen] = useState(false);
+  const [accepted, setAccepted] = useState(Boolean(job.has_my_pending_quote));
+  useEffect(() => {
+    setAccepted(Boolean(job.has_my_pending_quote));
+  }, [job.has_my_pending_quote]);
 
   const budgetText = job.budget != null ? formatVnd(job.budget) : "Thỏa thuận";
   const tags = parseJobTags(job.tags);
@@ -33,21 +39,9 @@ export default function JobCard({ job, onAccepted }: JobCardProps) {
     job.client_district_city?.trim() || job.location_label?.trim() || "—";
   const categoryLabel = job.category?.trim() || null;
 
-  async function handleAccept() {
-    setSubmitError("");
-    setSubmitting(true);
-    try {
-      await acceptJob(job.id);
-      onAccepted?.(job.id);
-    } catch (err) {
-      const message =
-        err && typeof err === "object" && "message" in err
-          ? String((err as { message: string }).message)
-          : "Không thể gửi yêu cầu báo giá.";
-      setSubmitError(message);
-    } finally {
-      setSubmitting(false);
-    }
+  function handleProposalSuccess() {
+    setAccepted(true);
+    onAccepted?.(job.id);
   }
 
   return (
@@ -161,23 +155,36 @@ export default function JobCard({ job, onAccepted }: JobCardProps) {
             >
               <FaStar />
             </button>
-            <button
-              type="button"
-              disabled={submitting}
-              onClick={() => void handleAccept()}
-              className="rounded bg-blue-300 px-4 py-1.5 text-sm font-semibold text-white hover:bg-blue-400 disabled:opacity-60"
-            >
-              {submitting ? "Đang gửi..." : "Gửi yêu cầu báo giá"}
-            </button>
+            {guestMode ? (
+              <Link
+                href="/dang-nhap?next=/findwork"
+                className="fw-btn-primary rounded px-4 py-1.5 text-sm font-semibold text-white"
+              >
+                Đăng nhập để báo giá
+              </Link>
+            ) : accepted ? (
+              <span className="rounded border border-green-200 bg-green-50 px-4 py-1.5 text-sm font-semibold text-green-700">
+                Đã gửi báo giá
+              </span>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setProposalOpen(true)}
+                className="fw-btn-primary rounded px-4 py-1.5 text-sm font-semibold text-white"
+              >
+                Gửi báo giá
+              </button>
+            )}
           </div>
-          {submitError ? (
-            <p className="mb-2 max-w-[12rem] text-right text-[11px] text-red-600" role="alert">
-              {submitError}
-            </p>
-          ) : null}
-          <a href="#submit-help" className="text-[11px] text-blue-500 hover:underline">
-            Tại sao tôi không thể nộp đơn?
-          </a>
+          {guestMode ? (
+            <Link href="/dang-ky" className="text-[11px] text-[#0066cc] hover:underline">
+              Chưa có tài khoản? Đăng ký
+            </Link>
+          ) : (
+            <a href="#submit-help" className="text-[11px] text-blue-500 hover:underline">
+              Tại sao tôi không thể nộp đơn?
+            </a>
+          )}
         </div>
       </div>
 
@@ -186,6 +193,13 @@ export default function JobCard({ job, onAccepted }: JobCardProps) {
           {job.description || "—"}
         </p>
       ) : null}
+
+      <JobProposalFormModal
+        job={job}
+        open={proposalOpen}
+        onClose={() => setProposalOpen(false)}
+        onSuccess={handleProposalSuccess}
+      />
     </article>
   );
 }

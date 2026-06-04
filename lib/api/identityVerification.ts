@@ -122,7 +122,7 @@ export async function patchIdentityVerification(payload: PatchIdentityPayload) {
 export async function addCreditCard(payload: AddCreditCardPayload) {
   const { data } = await fetchApi<{
     message?: string;
-    chargeAmountUsd?: string;
+    chargeAmountVnd?: string;
     verification: IdentityVerificationRecord;
   }>(apiPaths.users.identityCard, {
     method: "POST",

@@ -1,8 +1,8 @@
 import DashboardRouter from "@/components/dashboard/DashboardRouter";
 
 export const metadata = {
-  title: "Dashboard — Vĩnh Long Connected",
-  description: "Tổng quan tài khoản client hoặc freelancer.",
+  title: "Tổng quan — Vĩnh Long Connected",
+  description: "Tổng quan tài khoản khách hàng hoặc chuyên gia.",
 };
 
 export default function DashboardPage() {

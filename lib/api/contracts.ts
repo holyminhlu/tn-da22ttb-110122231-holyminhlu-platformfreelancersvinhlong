@@ -33,6 +33,11 @@ export type MyWorkFreelancerAssignment = {
   contract_created_at: string;
   progress_note: string | null;
   delivered_at: string | null;
+  service_id?: string | null;
+  workflow_stage?: string | null;
+  escrow_status?: string | null;
+  proposal_text?: string | null;
+  proposal_submitted_at?: string | null;
   job_id: string;
   title: string;
   description: string | null;
@@ -120,6 +125,35 @@ export type WorkflowContract = ContractRow & {
   client_name: string | null;
   freelancer_name: string | null;
   freelancer_email: string | null;
+  stage_deadline_at?: string | null;
+  escrow_deadline_at?: string | null;
+  cancel_type?: string | null;
+  cancel_reason?: string | null;
+  cancelled_at?: string | null;
+  delivery_review_deadline_at?: string | null;
+  auto_accepted_at?: string | null;
+  revision_requested_at?: string | null;
+};
+
+export type CancelRequest = {
+  id: string;
+  reason: string;
+  status: string;
+  respond_by_at: string;
+  freelancer_response: string | null;
+  created_at: string;
+  requested_by: string;
+};
+
+export type ContractDispute = {
+  id: string;
+  reason: string;
+  status: string;
+  evidence: unknown;
+  created_at: string;
+  opened_by: string;
+  resolution: string | null;
+  admin_notes: string | null;
 };
 
 export type ContractWorkflowResponse = {
@@ -128,6 +162,8 @@ export type ContractWorkflowResponse = {
   review: { id: string; rating: number; comment: string | null; created_at: string } | null;
   role: "client" | "freelancer";
   stages: string[];
+  cancelRequest?: CancelRequest | null;
+  dispute?: ContractDispute | null;
 };
 
 export type ServiceOrderListItem = {
@@ -153,6 +189,13 @@ export type ServiceOrderListItem = {
   job_title: string | null;
   counterparty_name: string | null;
   viewer_role: string;
+  stage_deadline_at?: string | null;
+  escrow_deadline_at?: string | null;
+  cancel_type?: string | null;
+  cancel_reason?: string | null;
+  cancelled_at?: string | null;
+  delivery_review_deadline_at?: string | null;
+  auto_accepted_at?: string | null;
 };
 
 export async function listServiceOrders() {
