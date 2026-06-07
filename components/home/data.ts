@@ -13,18 +13,6 @@ export const STATS = [
   { icon: "thumbs" as const, value: "99%", label: "Customer Satisfaction Rate", highlight: true },
 ] as const;
 
-export const CATEGORIES = [
-  { icon: "code" as const, title: "Programming & Development", count: "295,668" },
-  { icon: "pen" as const, title: "Writing & Translation", count: "216,599" },
-  { icon: "palette" as const, title: "Design & Art", count: "200,312" },
-  { icon: "cog" as const, title: "Administrative & Secretarial", count: "89,049" },
-  { icon: "chart" as const, title: "Sales & Marketing", count: "79,705" },
-  { icon: "draft" as const, title: "Engineering & Architecture", count: "51,709" },
-  { icon: "calc" as const, title: "Business & Finance", count: "47,279" },
-  { icon: "grad" as const, title: "Education & Training", count: "10,790" },
-  { icon: "gavel" as const, title: "Legal", count: "5,960" },
-] as const;
-
 export const WHY_CHOOSE_LEFT = [
   {
     title: "Uy tín rõ ràng",

@@ -18,6 +18,7 @@ import {
   FaUser,
   FaWallet,
 } from "react-icons/fa";
+import { useStoredUser } from "@/hooks/useStoredUser";
 
 type SidebarItemProps = {
   icon?: React.ReactNode;
@@ -64,6 +65,9 @@ type EditAccountSidebarProps = {
 };
 
 export default function EditAccountSidebar({ active = "contact" }: EditAccountSidebarProps) {
+  const { ready, isClient } = useStoredUser({ refreshFromApi: false });
+  const hideClientMenus = ready && isClient;
+
   return (
     <aside className="ea-sidebar" aria-label="Cài đặt tài khoản">
       <SidebarGroup label="Hồ sơ" />
@@ -79,12 +83,14 @@ export default function EditAccountSidebar({ active = "contact" }: EditAccountSi
         href="/ho-so/phan-hoi"
         active={active === "feedback"}
       />
-      <SidebarItem
-        icon={<FaChartBar />}
-        label="Thống kê hồ sơ"
-        href="/ho-so/thong-ke"
-        active={active === "stats"}
-      />
+      {!hideClientMenus ? (
+        <SidebarItem
+          icon={<FaChartBar />}
+          label="Thống kê hồ sơ"
+          href="/ho-so/thong-ke"
+          active={active === "stats"}
+        />
+      ) : null}
 
       <SidebarGroup label="Cài đặt tài khoản" />
       <SidebarItem
@@ -109,14 +115,22 @@ export default function EditAccountSidebar({ active = "contact" }: EditAccountSi
       <SidebarItem icon={<FaShieldAlt />} label="Bảo mật tài khoản" disabled />
 
       <SidebarGroup label="Gói & Thanh toán" />
-      <SidebarItem icon={<FaGem />} label="Gói thành viên" disabled />
-      <SidebarItem icon={<FaBolt />} label="Đơn chào giá" disabled />
+      {!hideClientMenus ? (
+        <>
+          <SidebarItem icon={<FaGem />} label="Gói thành viên" disabled />
+          <SidebarItem icon={<FaBolt />} label="Đơn chào giá" disabled />
+        </>
+      ) : null}
       <SidebarItem icon={<FaWallet />} label="Phương thức chuyển tiền" href="/payments" />
 
       <SidebarGroup label="Khác" />
-      <SidebarItem icon={<FaCode />} label="API" disabled />
-      <SidebarItem icon={<FaDesktop />} label="Nhật ký thiết bị" disabled />
-      <SidebarItem icon={<FaEnvelope />} label="Tùy chọn email" disabled />
+      {!hideClientMenus ? (
+        <>
+          <SidebarItem icon={<FaCode />} label="API" disabled />
+          <SidebarItem icon={<FaDesktop />} label="Nhật ký thiết bị" disabled />
+          <SidebarItem icon={<FaEnvelope />} label="Tùy chọn email" disabled />
+        </>
+      ) : null}
       <SidebarItem icon={<FaTrashAlt />} label="Xóa tài khoản" disabled />
     </aside>
   );

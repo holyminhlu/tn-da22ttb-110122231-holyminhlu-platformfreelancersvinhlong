@@ -125,6 +125,7 @@ export default function AddressSearchPicker({
     onChange({
       ...value,
       addressSearch: label,
+      street: value.street.trim() || label,
       country: "Việt Nam",
       state: VINH_LONG_PROVINCE,
       city: label,
@@ -140,7 +141,7 @@ export default function AddressSearchPicker({
     const locality = formatLocalityFromNominatim(result.address);
     onChange({
       addressSearch: result.display_name,
-      street: street || value.street,
+      street: street || locality || result.display_name,
       country: "Việt Nam",
       state: result.address?.state || VINH_LONG_PROVINCE,
       city: locality || value.city,
@@ -157,14 +158,15 @@ export default function AddressSearchPicker({
     const street = formatStreetFromNominatim(data.address);
     const locality = formatLocalityFromNominatim(data.address);
     const display = data.display_name || `${latNum.toFixed(5)}, ${lonNum.toFixed(5)}`;
-    onChange({
+    const nextAddress: AddressFormSlice = {
       addressSearch: display,
-      street: street || value.street,
+      street: street || locality || display,
       country: "Việt Nam",
       state: data.address?.state || VINH_LONG_PROVINCE,
       city: locality || value.city,
       postal: data.address?.postcode || value.postal,
-    });
+    };
+    onChange(nextAddress);
     setQuery(display);
     onCoordsChange?.(latNum, lonNum);
   }

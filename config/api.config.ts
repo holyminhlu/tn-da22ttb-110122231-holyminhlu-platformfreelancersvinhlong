@@ -45,6 +45,9 @@ export const apiPaths = {
     avatar: "/api/users/me/avatar",
     skills: "/api/users/me/skills",
     portfolio: "/api/users/me/portfolio",
+    exclusiveResources: "/api/users/me/exclusive-resources",
+    profileFiles: "/api/users/me/profile-files",
+    profileFileUpload: "/api/users/me/profile-file-upload",
   },
   contracts: {
     list: "/api/contracts",
@@ -57,6 +60,7 @@ export const apiPaths = {
   },
   freelancers: {
     list: "/api/freelancers",
+    topSkills: "/api/freelancers/top-skills",
     detail: (id: string) => `/api/freelancers/${id}`,
     /** Legacy — tương thích client cũ */
     listLegacy: "/api/auth/freelancers",

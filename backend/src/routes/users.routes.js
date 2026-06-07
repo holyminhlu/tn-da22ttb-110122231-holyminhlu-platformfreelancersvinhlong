@@ -31,5 +31,8 @@ router.patch("/me/email", users.changeEmail);
 router.patch("/me/password", users.changePassword);
 router.put("/me/skills", users.updateSkills);
 router.post("/me/portfolio", users.createPortfolio);
+router.post("/me/exclusive-resources", users.createExclusiveResource);
+router.post("/me/profile-files", users.createProfileFile);
+router.post("/me/profile-file-upload", users.uploadProfileFileAsset);
 
 module.exports = router;

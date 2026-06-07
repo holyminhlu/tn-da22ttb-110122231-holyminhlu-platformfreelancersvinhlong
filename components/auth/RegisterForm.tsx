@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import AuthLayout from "./AuthLayout";
+import GoogleButton from "./GoogleButton";
 import { register } from "@/lib/api/auth";
 import styles from "./auth.module.css";
 
@@ -247,6 +248,9 @@ export default function RegisterForm() {
             {loading ? "Đang xử lý…" : "Tạo tài khoản"}
           </button>
         </form>
+
+        <div className={styles.divider}>hoặc</div>
+        <GoogleButton nextPath={nextPath} role={role} />
 
       <p className={styles.helperText}>
         Đã có tài khoản?{" "}

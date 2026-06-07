@@ -1,154 +1,484 @@
+"use client";
+
+import Link from "next/link";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   FaChevronDown,
+  FaChevronLeft,
+  FaChevronRight,
   FaFilter,
   FaListUl,
   FaMapMarkerAlt,
   FaSearch,
-  FaThLarge,
 } from "react-icons/fa";
+import HireSearchFreelancerCard from "@/components/hire/HireSearchFreelancerCard";
+import { useStoredUser } from "@/hooks/useStoredUser";
+import { listFreelancers, type FreelancerSearchRow } from "@/lib/api/freelancers";
 import {
-  BROWSE_CATEGORIES,
-  FREELANCER_LISTINGS,
-  TOTAL_FREELANCERS,
-  TOTAL_SERVICES,
-} from "./data";
-import FreelancerCard from "./FreelancerCard";
+  readFavoriteFreelancerIds,
+  toggleFavoriteFreelancerId,
+} from "@/lib/hire/favoriteFreelancersStorage";
 
-const PAGINATION_PAGES = [1, 2, 3, 4] as const;
+const PAGE_SIZE = 12;
+const ALL = "Tất cả";
 
 export default function FindFreelancersBody() {
+  const searchParams = useSearchParams();
+  const initialSkill = searchParams.get("skill")?.trim() || ALL;
+
+  const { user, ready, isClient } = useStoredUser({ refreshFromApi: false });
+  const isGuest = ready && !user;
+
+  const [rows, setRows] = useState<FreelancerSearchRow[]>([]);
+  const [total, setTotal] = useState(0);
+  const [servicesTotal, setServicesTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [offset, setOffset] = useState(0);
+
+  const [searchInput, setSearchInput] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [skill, setSkill] = useState(initialSkill);
+  const [district, setDistrict] = useState(ALL);
+  const [category, setCategory] = useState(ALL);
+
+  const [skillOptions, setSkillOptions] = useState<string[]>([]);
+  const [districtOptions, setDistrictOptions] = useState<string[]>([]);
+  const [categoryOptions, setCategoryOptions] = useState<string[]>([]);
+
+  const [skillOpen, setSkillOpen] = useState(false);
+  const [districtOpen, setDistrictOpen] = useState(false);
+  const [categoryOpen, setCategoryOpen] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
+
+  const skillRef = useRef<HTMLDivElement>(null);
+  const districtRef = useRef<HTMLDivElement>(null);
+  const categoryRef = useRef<HTMLDivElement>(null);
+  const filtersRef = useRef<HTMLDivElement>(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const data = await listFreelancers({
+        q: searchQuery || undefined,
+        skill: skill !== ALL ? skill : undefined,
+        district: district !== ALL ? district : undefined,
+        category: category !== ALL ? category : undefined,
+        limit: PAGE_SIZE,
+        offset,
+      });
+      setRows(data.freelancers ?? []);
+      setTotal(data.total ?? 0);
+      setServicesTotal(data.servicesTotal ?? 0);
+      if (data.filters) {
+        setSkillOptions(data.filters.skills ?? []);
+        setDistrictOptions(data.filters.districts ?? []);
+        setCategoryOptions(data.filters.categories ?? []);
+      }
+    } catch (err) {
+      const message =
+        err && typeof err === "object" && "message" in err
+          ? String((err as { message: string }).message)
+          : "Không thể tải danh sách freelancer.";
+      setError(message);
+      setRows([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [searchQuery, skill, district, category, offset]);
+
+  useEffect(() => {
+    if (!isGuest) {
+      setFavoriteIds(readFavoriteFreelancerIds());
+    }
+  }, [isGuest]);
+
+  useEffect(() => {
+    void load();
+  }, [load]);
+
+  useEffect(() => {
+    function onPointerDown(event: MouseEvent) {
+      const target = event.target as Node;
+      if (!skillRef.current?.contains(target)) setSkillOpen(false);
+      if (!districtRef.current?.contains(target)) setDistrictOpen(false);
+      if (!categoryRef.current?.contains(target)) setCategoryOpen(false);
+      if (!filtersRef.current?.contains(target)) setFiltersOpen(false);
+    }
+    document.addEventListener("mousedown", onPointerDown);
+    return () => document.removeEventListener("mousedown", onPointerDown);
+  }, []);
+
+  const page = Math.floor(offset / PAGE_SIZE) + 1;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const canPrev = offset > 0;
+  const canNext = offset + PAGE_SIZE < total;
+
+  const allSelectedOnPage = useMemo(
+    () => rows.length > 0 && rows.every((r) => selectedIds.has(r.id)),
+    [rows, selectedIds],
+  );
+
+  function applySearch() {
+    setSearchQuery(searchInput.trim());
+    setOffset(0);
+  }
+
+  function handleSearchKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      applySearch();
+    }
+  }
+
+  function handleFilterChange(
+    type: "skill" | "district" | "category",
+    value: string,
+  ) {
+    if (type === "skill") {
+      setSkill(value);
+      setSkillOpen(false);
+    } else if (type === "district") {
+      setDistrict(value);
+      setDistrictOpen(false);
+    } else {
+      setCategory(value);
+      setCategoryOpen(false);
+    }
+    setOffset(0);
+  }
+
+  function handleSelect(id: string, checked: boolean) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (checked) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+  }
+
+  function handleSelectAllOnPage(checked: boolean) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      for (const row of rows) {
+        if (checked) next.add(row.id);
+        else next.delete(row.id);
+      }
+      return next;
+    });
+  }
+
+  function handleToggleFavorite(id: string) {
+    toggleFavoriteFreelancerId(id);
+    setFavoriteIds(readFavoriteFreelancerIds());
+  }
+
   return (
-    <>
-      <div className="border-b border-gray-200 bg-white px-4 py-3">
-        <div className="mx-auto max-w-6xl">
-          <h1 className="text-xl font-bold text-gray-800">Find and Hire Freelancers</h1>
-          <p className="text-sm text-gray-500">
-            We found {TOTAL_FREELANCERS} Freelancers offering {TOTAL_SERVICES} freelancing services
-            online.
+    <div className="hire-page hire-search hire-search--full-width find-freelancers-body">
+      <header className="hire-search__intro">
+        <div>
+          <h1 className="hire-page__title">Tìm và thuê Freelancer</h1>
+          <p className="hire-search__summary">
+            {loading
+              ? "Đang tải..."
+              : `Có ${total.toLocaleString("vi-VN")} freelancer cung cấp ${servicesTotal.toLocaleString("vi-VN")} dịch vụ trực tuyến.`}
+          </p>
+          <p className="hire-favorites__lead-sub">
+            {isGuest
+              ? "Khám phá hồ sơ, dịch vụ và portfolio trước khi đăng nhập để thuê hoặc yêu cầu báo giá."
+              : isClient
+                ? "Bạn có thể thuê trực tiếp hoặc quản lý đơn trong mục Thuê việc."
+                : "Xem hồ sơ freelancer trên nền tảng Vĩnh Long Connected."}
           </p>
         </div>
-      </div>
+      </header>
 
-      <div className="mx-auto mt-4 max-w-6xl px-4 pb-10">
-        <div className="mb-6 flex flex-col gap-2 rounded border border-gray-200 bg-white p-2 sm:flex-row sm:items-center">
-          <div className="flex flex-1 overflow-hidden rounded border border-gray-300">
-            <button
-              type="button"
-              className="flex shrink-0 items-center whitespace-nowrap border-r border-gray-300 bg-gray-50 px-3 py-1.5 text-xs text-gray-600"
+      {isGuest ? (
+        <div className="ff-guest-banner">
+          <p className="ff-guest-banner__text">
+            Bạn đang xem danh sách freelancer công khai. Đăng nhập bằng tài khoản Client để yêu
+            cầu báo giá, lưu yêu thích và thuê dịch vụ.
+          </p>
+          <div className="ff-guest-banner__actions">
+            <Link
+              href="/dang-nhap?next=/freelancers"
+              className="ff-btn-primary rounded px-4 py-2 text-sm font-semibold text-white"
             >
-              <FaListUl className="mr-2" aria-hidden />
-              Any Category
-              <FaChevronDown className="ml-2 text-[8px]" aria-hidden />
-            </button>
+              Đăng nhập
+            </Link>
+            <Link
+              href="/dang-ky"
+              className="rounded border border-[#0066cc] px-4 py-2 text-sm font-semibold text-[#0066cc] transition hover:bg-blue-50"
+            >
+              Đăng ký
+            </Link>
+          </div>
+        </div>
+      ) : isClient ? (
+        <div className="ff-client-banner">
+          <p className="ff-client-banner__text">
+            Bạn đã đăng nhập. Vào mục Thuê việc để quản lý báo giá, đơn hàng và mục yêu thích.
+          </p>
+          <Link href="/hire/search" className="ff-btn-primary rounded px-4 py-2 text-sm font-semibold text-white">
+            Mở Thuê việc
+          </Link>
+        </div>
+      ) : null}
+
+      <div className="hire-search__toolbar">
+        <div className="hire-search__toolbar-main">
+          <div className="hire-search__search-wrap">
+            <div className="hire-search__category-slot" ref={categoryRef}>
+              <button
+                type="button"
+                className="hire-search__category-btn"
+                aria-expanded={categoryOpen}
+                onClick={() => setCategoryOpen((v) => !v)}
+              >
+                <FaListUl aria-hidden />
+                <span className="hire-search__category-label">
+                  {category === ALL ? "Danh mục" : category}
+                </span>
+                <FaChevronDown className="hire-search__chevron" aria-hidden />
+              </button>
+              {categoryOpen ? (
+                <div className="hire-page__filter-panel hire-search__dropdown" role="listbox">
+                  <button
+                    type="button"
+                    className={`hire-page__filter-option${category === ALL ? " hire-page__filter-option--active" : ""}`}
+                    onClick={() => handleFilterChange("category", ALL)}
+                  >
+                    Tất cả danh mục
+                  </button>
+                  {categoryOptions.map((opt) => (
+                    <button
+                      key={opt}
+                      type="button"
+                      className={`hire-page__filter-option${category === opt ? " hire-page__filter-option--active" : ""}`}
+                      onClick={() => handleFilterChange("category", opt)}
+                    >
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+            </div>
             <input
               type="search"
-              placeholder="Search Freelancers"
-              className="min-w-0 flex-grow px-3 py-1.5 text-sm outline-none"
+              className="hire-search__search-input"
+              placeholder="Tìm freelancer theo tên, kỹ năng..."
+              value={searchInput}
+              onChange={(e) => {
+                const value = e.target.value;
+                setSearchInput(value);
+                if (!value.trim()) {
+                  setSearchQuery("");
+                  setOffset(0);
+                }
+              }}
+              onKeyDown={handleSearchKeyDown}
+              aria-label="Tìm freelancer"
             />
             <button
               type="button"
-              className="border-l border-gray-300 bg-gray-50 px-4 py-1.5"
-              aria-label="Search"
+              className="hire-search__search-btn"
+              aria-label="Tìm kiếm"
+              onClick={applySearch}
             >
-              <FaSearch className="text-gray-400" />
+              <FaSearch aria-hidden />
             </button>
           </div>
-          <button
-            type="button"
-            className="flex items-center rounded border border-gray-300 px-4 py-1.5 text-sm text-gray-600"
-          >
-            <FaMapMarkerAlt className="mr-2 text-gray-400" aria-hidden />
-            Location
-            <FaChevronDown className="ml-2 text-[8px]" aria-hidden />
-          </button>
-          <button
-            type="button"
-            className="flex items-center rounded border border-gray-300 px-4 py-1.5 text-sm text-gray-600"
-          >
-            <FaFilter className="mr-2 text-gray-400" aria-hidden />
-            Filters
-            <FaChevronDown className="ml-2 text-[8px]" aria-hidden />
-          </button>
-        </div>
 
-        <div className="mb-3 flex items-center justify-between">
-          <label className="flex items-center text-xs text-gray-500">
-            <input type="checkbox" className="mr-2" />
-            {TOTAL_FREELANCERS} Results
-          </label>
-          <p className="text-xs text-gray-500">
-            Sort by:{" "}
-            <span className="font-bold text-gray-700">
-              Relevance <FaChevronDown className="ml-1 inline text-[8px]" aria-hidden />
-            </span>
-          </p>
-        </div>
-
-        {FREELANCER_LISTINGS.map((freelancer) => (
-          <FreelancerCard key={freelancer.id} freelancer={freelancer} />
-        ))}
-
-        <nav
-          className="my-10 flex justify-center space-x-1"
-          aria-label="Pagination"
-        >
-          <button
-            type="button"
-            className="border border-gray-300 px-3 py-1 text-sm text-gray-400"
-            aria-label="Previous page"
-          >
-            &lt;
-          </button>
-          {PAGINATION_PAGES.map((page) => (
-            <button
-              key={page}
-              type="button"
-              className={`border px-3 py-1 text-sm ${
-                page === 1
-                  ? "border-blue-600 bg-blue-600 text-white"
-                  : "border-gray-300 text-blue-600"
-              }`}
-              aria-current={page === 1 ? "page" : undefined}
-            >
-              {page}
-            </button>
-          ))}
-          <span className="px-2 py-1 text-gray-500" aria-hidden>
-            ...
-          </span>
-          <button
-            type="button"
-            className="border border-gray-300 px-3 py-1 text-sm text-blue-600"
-          >
-            100
-          </button>
-          <button
-            type="button"
-            className="border border-gray-300 px-3 py-1 text-sm text-blue-600"
-            aria-label="Next page"
-          >
-            &gt;
-          </button>
-        </nav>
-
-        <div className="mb-10 text-center">
-          <p className="mb-4 font-bold text-gray-800">
-            Browse 3 Million+ Professional Services to Get Your Job Done
-          </p>
-          <div className="flex flex-wrap justify-center gap-3">
-            {BROWSE_CATEGORIES.map((cat) => (
+          <div className="hire-search__filter-row">
+            <div className="hire-page__filter-wrap" ref={districtRef}>
               <button
-                key={cat}
                 type="button"
-                className="flex items-center rounded-sm border border-gray-300 px-4 py-2 text-[10px] font-bold text-gray-600 hover:bg-gray-50"
+                className="hire-search__filter-chip"
+                aria-expanded={districtOpen}
+                onClick={() => setDistrictOpen((v) => !v)}
               >
-                <FaThLarge className="mr-2 text-gray-400" aria-hidden />
-                {cat}
+                <FaMapMarkerAlt aria-hidden />
+                {district === ALL ? "Địa điểm" : district}
+                <FaChevronDown className="hire-search__chevron" aria-hidden />
               </button>
-            ))}
+              {districtOpen ? (
+                <div className="hire-page__filter-panel hire-search__dropdown" role="listbox">
+                  <button
+                    type="button"
+                    className={`hire-page__filter-option${district === ALL ? " hire-page__filter-option--active" : ""}`}
+                    onClick={() => handleFilterChange("district", ALL)}
+                  >
+                    Tất cả địa điểm
+                  </button>
+                  {districtOptions.map((opt) => (
+                    <button
+                      key={opt}
+                      type="button"
+                      className={`hire-page__filter-option${district === opt ? " hire-page__filter-option--active" : ""}`}
+                      onClick={() => handleFilterChange("district", opt)}
+                    >
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+
+            <div className="hire-search__filters-mobile" ref={filtersRef}>
+              <button
+                type="button"
+                className="hire-search__filter-chip"
+                aria-expanded={filtersOpen}
+                onClick={() => setFiltersOpen((v) => !v)}
+              >
+                <FaFilter aria-hidden />
+                Bộ lọc
+                <FaChevronDown className="hire-search__chevron" aria-hidden />
+              </button>
+              {filtersOpen ? (
+                <div className="hire-page__filter-panel hire-search__dropdown hire-search__dropdown--wide">
+                  <p className="hire-search__dropdown-title">Kỹ năng</p>
+                  <button
+                    type="button"
+                    className={`hire-page__filter-option${skill === ALL ? " hire-page__filter-option--active" : ""}`}
+                    onClick={() => handleFilterChange("skill", ALL)}
+                  >
+                    Tất cả kỹ năng
+                  </button>
+                  {skillOptions.map((opt) => (
+                    <button
+                      key={opt}
+                      type="button"
+                      className={`hire-page__filter-option${skill === opt ? " hire-page__filter-option--active" : ""}`}
+                      onClick={() => handleFilterChange("skill", opt)}
+                    >
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+
+            <div className="hire-page__filter-wrap hire-search__skill-desktop" ref={skillRef}>
+              <button
+                type="button"
+                className="hire-search__filter-chip"
+                aria-expanded={skillOpen}
+                onClick={() => setSkillOpen((v) => !v)}
+              >
+                <FaFilter aria-hidden />
+                {skill === ALL ? "Kỹ năng" : skill}
+                <FaChevronDown className="hire-search__chevron" aria-hidden />
+              </button>
+              {skillOpen ? (
+                <div className="hire-page__filter-panel hire-search__dropdown" role="listbox">
+                  <button
+                    type="button"
+                    className={`hire-page__filter-option${skill === ALL ? " hire-page__filter-option--active" : ""}`}
+                    onClick={() => handleFilterChange("skill", ALL)}
+                  >
+                    Tất cả kỹ năng
+                  </button>
+                  {skillOptions.map((opt) => (
+                    <button
+                      key={opt}
+                      type="button"
+                      className={`hire-page__filter-option${skill === opt ? " hire-page__filter-option--active" : ""}`}
+                      onClick={() => handleFilterChange("skill", opt)}
+                    >
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+            </div>
           </div>
         </div>
       </div>
-    </>
+
+      <div className="hire-search__results-bar">
+        {!isGuest ? (
+          <label className="hire-search__select-all">
+            <input
+              type="checkbox"
+              checked={allSelectedOnPage}
+              onChange={(e) => handleSelectAllOnPage(e.target.checked)}
+            />
+            <span>
+              {total.toLocaleString("vi-VN")} kết quả
+              {selectedIds.size > 0 ? ` · ${selectedIds.size} đã chọn` : ""}
+            </span>
+          </label>
+        ) : (
+          <p className="hire-search__select-all">
+            <span>{total.toLocaleString("vi-VN")} kết quả</span>
+          </p>
+        )}
+        <p className="hire-search__sort">
+          Sắp xếp: <strong>Phù hợp nhất</strong>
+        </p>
+      </div>
+
+      {loading ? (
+        <p className="hire-page__state">Đang tải freelancer...</p>
+      ) : error ? (
+        <p className="hire-page__state hire-page__state--error" role="alert">
+          {error}
+        </p>
+      ) : rows.length === 0 ? (
+        <div className="hire-page__empty">
+          <p className="hire-page__empty-text">Không tìm thấy freelancer phù hợp.</p>
+          <p className="hire-favorites__lead-sub">Thử đổi từ khóa hoặc bộ lọc.</p>
+        </div>
+      ) : (
+        <>
+          <div className="hire-search__list">
+            {rows.map((row) => (
+              <HireSearchFreelancerCard
+                key={row.id}
+                row={row}
+                selected={selectedIds.has(row.id)}
+                onSelect={handleSelect}
+                isFavorite={favoriteIds.includes(row.id)}
+                onToggleFavorite={handleToggleFavorite}
+                guestMode={isGuest}
+                publicProfile
+              />
+            ))}
+          </div>
+
+          {totalPages > 1 ? (
+            <nav className="hire-search__pagination" aria-label="Phân trang">
+              <button
+                type="button"
+                className="hire-search__page-btn"
+                disabled={!canPrev}
+                onClick={() => setOffset((o) => Math.max(0, o - PAGE_SIZE))}
+              >
+                <FaChevronLeft aria-hidden />
+                Trước
+              </button>
+              <span className="hire-search__page-label">
+                Trang {page} / {totalPages}
+              </span>
+              <button
+                type="button"
+                className="hire-search__page-btn"
+                disabled={!canNext}
+                onClick={() => setOffset((o) => o + PAGE_SIZE)}
+              >
+                Sau
+                <FaChevronRight aria-hidden />
+              </button>
+            </nav>
+          ) : null}
+        </>
+      )}
+    </div>
   );
 }

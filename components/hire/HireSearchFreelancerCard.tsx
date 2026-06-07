@@ -2,14 +2,18 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
+  FaBriefcase,
+  FaCheckCircle,
   FaChevronDown,
+  FaClock,
   FaExternalLinkAlt,
   FaHeart,
   FaImage,
   FaLaptopCode,
   FaListUl,
+  FaMapMarkerAlt,
   FaPaperclip,
   FaPlayCircle,
   FaStar,
@@ -32,6 +36,7 @@ import {
   locationDisplay,
   minProjectPrice,
   parseProfileBadges,
+  parsePortfolioImageUrls,
   resolveFreelancerMedia,
   satisfactionPercent,
 } from "@/lib/hire/freelancerSearchDisplay";
@@ -45,6 +50,53 @@ type HireSearchFreelancerCardProps = {
   onSelect: (id: string, checked: boolean) => void;
   isFavorite: boolean;
   onToggleFavorite: (id: string) => void;
+  /** Khách chưa đăng nhập — xem công khai, thuê qua đăng nhập. */
+  guestMode?: boolean;
+  /** Liên kết hồ sơ dùng /freelancers thay vì /hire/search. */
+  publicProfile?: boolean;
+};
+
+const MODAL_META: Record<
+  DetailTab,
+  {
+    title: string;
+    headline: string;
+    subtitle: (row: FreelancerSearchRow) => string;
+    closeLabel: string;
+    accent: string;
+  }
+> = {
+  services: {
+    title: "Dịch vụ",
+    headline: "Bộ dịch vụ chuyên nghiệp",
+    subtitle: (row) =>
+      `${row.full_name} cung cấp ${row.services_count} gói dịch vụ — chọn phù hợp nhu cầu và ngân sách của bạn.`,
+    closeLabel: "Đóng cửa sổ dịch vụ",
+    accent: "services",
+  },
+  portfolio: {
+    title: "Portfolio",
+    headline: "Dự án & thành tựu",
+    subtitle: (row) =>
+      `${row.portfolio_count} dự án tiêu biểu thể hiện chất lượng và phong cách làm việc của ${row.full_name}.`,
+    closeLabel: "Đóng cửa sổ portfolio",
+    accent: "portfolio",
+  },
+  performance: {
+    title: "Hiệu suất",
+    headline: "Uy tín trên nền tảng",
+    subtitle: (row) => `Thống kê thực tế từ hợp đồng và đánh giá của ${row.full_name}.`,
+    closeLabel: "Đóng cửa sổ hiệu suất",
+    accent: "performance",
+  },
+  about: {
+    title: "Giới thiệu",
+    headline: "Làm quen với chuyên gia",
+    subtitle: (row) =>
+      `Tìm hiểu kinh nghiệm, phong cách và lý do nên hợp tác cùng ${row.full_name}.`,
+    closeLabel: "Đóng cửa sổ giới thiệu",
+    accent: "about",
+  },
 };
 
 export default function HireSearchFreelancerCard({
@@ -53,8 +105,10 @@ export default function HireSearchFreelancerCard({
   onSelect,
   isFavorite,
   onToggleFavorite,
+  guestMode = false,
+  publicProfile = false,
 }: HireSearchFreelancerCardProps) {
-  const [openTab, setOpenTab] = useState<DetailTab | null>(null);
+  const [activeModal, setActiveModal] = useState<DetailTab | null>(null);
   const [detail, setDetail] = useState<FreelancerProfilePayload | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [detailError, setDetailError] = useState("");
@@ -71,6 +125,31 @@ export default function HireSearchFreelancerCard({
     row.skills[0] ||
     "Programming & Development";
 
+  const profileBase = publicProfile ? "/freelancers" : "/hire/search";
+
+  function profileHref(serviceId?: string | null) {
+    if (serviceId) {
+      return `${profileBase}/${row.id}?service=${encodeURIComponent(serviceId)}`;
+    }
+    return `${profileBase}/${row.id}`;
+  }
+
+  function quoteHref(serviceId?: string | null) {
+    const target = serviceId
+      ? `/hire/quote?serviceId=${encodeURIComponent(serviceId)}&freelancerId=${encodeURIComponent(row.id)}`
+      : profileHref(serviceId);
+    if (guestMode) {
+      return `/dang-nhap?next=${encodeURIComponent(target)}`;
+    }
+    return serviceId
+      ? `/hire/quote?serviceId=${encodeURIComponent(serviceId)}&freelancerId=${encodeURIComponent(row.id)}`
+      : profileHref(serviceId);
+  }
+
+  function favoriteHref() {
+    return `/dang-nhap?next=${encodeURIComponent("/freelancers")}`;
+  }
+
   const loadDetail = useCallback(async () => {
     if (detail) return;
     setDetailLoading(true);
@@ -86,13 +165,28 @@ export default function HireSearchFreelancerCard({
   }, [detail, row.id, row.featured_service_id]);
 
   async function handleTabClick(tab: DetailTab) {
-    if (openTab === tab) {
-      setOpenTab(null);
+    if (activeModal === tab) {
+      setActiveModal(null);
       return;
     }
-    setOpenTab(tab);
+    setActiveModal(tab);
     await loadDetail();
   }
+
+  function closeModal() {
+    setActiveModal(null);
+  }
+
+  useEffect(() => {
+    if (!activeModal) return;
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setActiveModal(null);
+      }
+    }
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [activeModal]);
 
   const tabs: {
     id: DetailTab;
@@ -103,26 +197,454 @@ export default function HireSearchFreelancerCard({
     {
       id: "services",
       icon: FaPaperclip,
-      label: `More Services (${row.services_count})`,
+      label: `Dịch vụ (${row.services_count})`,
       rotate: true,
     },
     { id: "portfolio", icon: FaImage, label: `Portfolio (${row.portfolio_count})` },
-    { id: "performance", icon: FaThumbsUp, label: "Performance" },
-    { id: "about", icon: FaUser, label: "About" },
+    { id: "performance", icon: FaThumbsUp, label: "Hiệu suất" },
+    { id: "about", icon: FaUser, label: "Giới thiệu" },
   ];
+
+  function renderModalContent() {
+    if (detailLoading) {
+      return (
+        <div className="hire-search__detail-loading" aria-busy="true">
+          <span className="hire-search__detail-loading-bar" />
+          <span className="hire-search__detail-loading-bar hire-search__detail-loading-bar--short" />
+          <span className="hire-search__detail-loading-bar hire-search__detail-loading-bar--medium" />
+        </div>
+      );
+    }
+
+    if (detailError) {
+      return (
+        <p className="hire-search__detail-error" role="alert">
+          {detailError}
+        </p>
+      );
+    }
+
+    if (activeModal === "services") {
+      if ((detail?.services ?? []).length === 0) {
+        return (
+          <div className="hire-modal-empty">
+            <FaPaperclip className="hire-modal-empty__icon" aria-hidden />
+            <p>Freelancer chưa đăng thêm dịch vụ nào.</p>
+          </div>
+        );
+      }
+      return (
+        <ul className="hire-modal-services">
+          {(detail?.services ?? []).map((svc) => {
+            const priceLabel = formatStartingPrice(svc.price);
+            const thumbSrc = resolveFreelancerMedia(svc.thumbnail_url);
+            const desc = svc.description?.trim();
+            return (
+              <li key={svc.id}>
+                <article className="hire-modal-svc-card">
+                  <div className="hire-modal-svc-card__media">
+                    {thumbSrc ? (
+                      <Image
+                        src={thumbSrc}
+                        alt=""
+                        width={320}
+                        height={180}
+                        className="hire-modal-svc-card__img"
+                        unoptimized
+                      />
+                    ) : (
+                      <div className="hire-modal-svc-card__placeholder" aria-hidden>
+                        <FaLaptopCode />
+                      </div>
+                    )}
+                    {svc.category ? (
+                      <span className="hire-modal-svc-card__badge">{svc.category}</span>
+                    ) : null}
+                  </div>
+                  <div className="hire-modal-svc-card__body">
+                    <h4 className="hire-modal-svc-card__title">{svc.title}</h4>
+                    {desc ? (
+                      <p className="hire-modal-svc-card__desc">{desc}</p>
+                    ) : null}
+                    <div className="hire-modal-svc-card__meta">
+                      {priceLabel ? (
+                        <span className="hire-modal-svc-card__price">{priceLabel}</span>
+                      ) : null}
+                      {svc.delivery_days != null ? (
+                        <span className="hire-modal-svc-card__days">
+                          <FaClock aria-hidden />
+                          {svc.delivery_days} ngày giao hàng
+                        </span>
+                      ) : null}
+                    </div>
+                    <Link
+                      href={profileHref(svc.id)}
+                      className="hire-modal-svc-card__cta"
+                    >
+                      {guestMode ? "Xem chi tiết dịch vụ" : "Xem & yêu cầu báo giá"}
+                      <span aria-hidden>→</span>
+                    </Link>
+                  </div>
+                </article>
+              </li>
+            );
+          })}
+        </ul>
+      );
+    }
+
+    if (activeModal === "portfolio") {
+      if ((detail?.portfolio ?? []).length === 0) {
+        return (
+          <div className="hire-modal-empty">
+            <FaImage className="hire-modal-empty__icon" aria-hidden />
+            <p>Chưa có mục portfolio.</p>
+          </div>
+        );
+      }
+      return (
+        <ul className="hire-modal-services">
+          {(detail?.portfolio ?? []).map((item) => {
+            const images = parsePortfolioImageUrls(item.images);
+            const preview = images[0];
+            const desc =
+              item.description?.trim() ||
+              "Dự án thực tế do freelancer thực hiện trên nền tảng.";
+            return (
+              <li key={item.id}>
+                <article className="hire-modal-svc-card">
+                  <div className="hire-modal-svc-card__media">
+                    {preview ? (
+                      <Image
+                        src={preview}
+                        alt=""
+                        width={480}
+                        height={280}
+                        className="hire-modal-svc-card__img"
+                        unoptimized
+                      />
+                    ) : (
+                      <div className="hire-modal-svc-card__placeholder" aria-hidden>
+                        <FaImage />
+                      </div>
+                    )}
+                    <span className="hire-modal-svc-card__badge">Portfolio</span>
+                    {images.length > 1 ? (
+                      <span className="hire-modal-svc-card__badge hire-modal-svc-card__badge--secondary">
+                        +{images.length - 1} ảnh
+                      </span>
+                    ) : null}
+                  </div>
+                  <div className="hire-modal-svc-card__body">
+                    <h4 className="hire-modal-svc-card__title">{item.title}</h4>
+                    <p className="hire-modal-svc-card__desc">{desc}</p>
+                    <div className="hire-modal-svc-card__meta">
+                      {images.length > 0 ? (
+                        <span className="hire-modal-svc-card__days">
+                          <FaImage aria-hidden />
+                          {images.length} hình ảnh
+                        </span>
+                      ) : null}
+                    </div>
+                    {item.project_url ? (
+                      <a
+                        href={item.project_url}
+                        className="hire-modal-svc-card__cta"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        Xem dự án
+                        <FaExternalLinkAlt aria-hidden />
+                      </a>
+                    ) : (
+                      <Link href={profileHref()} className="hire-modal-svc-card__cta">
+                        Xem hồ sơ đầy đủ
+                        <span aria-hidden>→</span>
+                      </Link>
+                    )}
+                  </div>
+                </article>
+              </li>
+            );
+          })}
+        </ul>
+      );
+    }
+
+    if (activeModal === "performance") {
+      const ratingAvg = row.rating_avg > 0 ? Number(row.rating_avg) : 0;
+      const hasStrongSatisfaction = satisfaction >= 90;
+      const hasStrongRating = ratingAvg >= 4.5;
+      const hasStrongJobs = row.completed_jobs >= 5;
+
+      const perfCards: {
+        key: string;
+        icon: typeof FaThumbsUp;
+        title: string;
+        value: string;
+        badge?: string;
+      }[] = [
+        {
+          key: "satisfaction",
+          icon: FaThumbsUp,
+          title: "Tỷ lệ hài lòng",
+          value: satisfaction > 0 ? `${satisfaction}%` : "—",
+          badge: hasStrongSatisfaction ? "Được tin cậy" : undefined,
+        },
+        {
+          key: "rating",
+          icon: FaStar,
+          title: "Đánh giá trung bình",
+          value: ratingAvg > 0 ? ratingAvg.toFixed(1) : "—",
+          badge: hasStrongRating ? "Xuất sắc" : undefined,
+        },
+        {
+          key: "jobs",
+          icon: FaBriefcase,
+          title: "Hợp đồng hoàn thành",
+          value: String(row.completed_jobs),
+          badge: hasStrongJobs ? "Kinh nghiệm tốt" : undefined,
+        },
+      ];
+
+      if (row.job_success_score != null) {
+        perfCards.push({
+          key: "success",
+          icon: FaCheckCircle,
+          title: "Job Success",
+          value: `${row.job_success_score}%`,
+        });
+      }
+
+      const reviews = detail?.reviews ?? [];
+
+      return (
+        <div className="hire-modal-stack">
+          <div className="hire-modal-trust">
+            <FaCheckCircle aria-hidden />
+            Thống kê từ hợp đồng và đánh giá thực tế trên nền tảng
+          </div>
+
+          <ul className="hire-modal-services">
+            {perfCards.map((card) => (
+              <li key={card.key}>
+                <article className="hire-modal-svc-card">
+                  <div className="hire-modal-svc-card__media hire-modal-svc-card__media--icon">
+                    <card.icon aria-hidden />
+                  </div>
+                  <div className="hire-modal-svc-card__body">
+                    <h4 className="hire-modal-svc-card__title">{card.title}</h4>
+                    <div className="hire-modal-svc-card__meta">
+                      <span className="hire-modal-svc-card__price">{card.value}</span>
+                      {card.key === "rating" && ratingAvg > 0 ? (
+                        <span className="hire-modal-svc-card__days">
+                          {row.total_reviews > 0
+                            ? `${row.total_reviews} đánh giá`
+                            : "Chưa có nhận xét"}
+                        </span>
+                      ) : null}
+                    </div>
+                    {card.badge ? (
+                      <span className="hire-modal-svc-card__tag">{card.badge}</span>
+                    ) : null}
+                  </div>
+                </article>
+              </li>
+            ))}
+          </ul>
+
+          {reviews.length > 0 ? (
+            <>
+              <p className="hire-modal-section-title">Đánh giá gần đây</p>
+              <ul className="hire-modal-services">
+                {reviews.slice(0, 5).map((review) => (
+                  <li key={review.id}>
+                    <article className="hire-modal-svc-card">
+                      <div className="hire-modal-svc-card__media hire-modal-svc-card__media--icon">
+                        <FaStar aria-hidden />
+                        <span className="hire-modal-svc-card__badge">{review.rating}/5</span>
+                      </div>
+                      <div className="hire-modal-svc-card__body">
+                        <h4 className="hire-modal-svc-card__title">
+                          {review.client_name || "Client"}
+                        </h4>
+                        <p className="hire-modal-svc-card__desc">
+                          {review.comment?.trim() || "Không có nhận xét chi tiết."}
+                        </p>
+                        <div className="hire-modal-svc-card__meta">
+                          <span className="hire-modal-svc-card__days">
+                            <FaClock aria-hidden />
+                            {formatDate(review.created_at)}
+                          </span>
+                          <span className="hire-modal-svc-card__stars" aria-hidden>
+                            {Array.from({ length: 5 }, (_, i) => (
+                              <FaStar
+                                key={i}
+                                className={
+                                  i < review.rating
+                                    ? "hire-modal-svc-card__star hire-modal-svc-card__star--on"
+                                    : "hire-modal-svc-card__star"
+                                }
+                              />
+                            ))}
+                          </span>
+                        </div>
+                      </div>
+                    </article>
+                  </li>
+                ))}
+              </ul>
+            </>
+          ) : (
+            <div className="hire-modal-empty hire-modal-empty--compact">
+              <FaStar className="hire-modal-empty__icon" aria-hidden />
+              <p>Chưa có đánh giá từ client.</p>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    if (activeModal === "about") {
+      const bio =
+        detail?.freelancer.bio?.trim() || row.bio?.trim() || "Freelancer chưa cập nhật phần giới thiệu.";
+      const ratingAvg = row.rating_avg > 0 ? Number(row.rating_avg) : 0;
+
+      const aboutStats: { label: string; value: string }[] = [];
+      if (row.experience_years != null) {
+        aboutStats.push({ label: "Kinh nghiệm", value: `${row.experience_years}+ năm` });
+      }
+      if (row.avg_response_minutes) {
+        aboutStats.push({ label: "Phản hồi TB", value: `~${row.avg_response_minutes} phút` });
+      }
+      if (row.services_count > 0) {
+        aboutStats.push({ label: "Dịch vụ", value: String(row.services_count) });
+      }
+      if (row.portfolio_count > 0) {
+        aboutStats.push({ label: "Portfolio", value: String(row.portfolio_count) });
+      }
+
+      return (
+        <div className="hire-modal-stack">
+          <ul className="hire-modal-services hire-modal-services--featured">
+            <li>
+              <article className="hire-modal-svc-card hire-modal-svc-card--featured">
+                <div className="hire-modal-svc-card__media hire-modal-svc-card__media--avatar">
+                  {avatarSrc ? (
+                    <Image
+                      src={avatarSrc}
+                      alt=""
+                      width={320}
+                      height={180}
+                      className="hire-modal-svc-card__img hire-modal-svc-card__img--avatar"
+                      unoptimized
+                    />
+                  ) : (
+                    <div className="hire-modal-svc-card__placeholder hire-modal-svc-card__placeholder--avatar">
+                      {getUserInitials(row.full_name)}
+                    </div>
+                  )}
+                  {badges[0] ? (
+                    <span className="hire-modal-svc-card__badge">{badges[0].toUpperCase()}</span>
+                  ) : (
+                    <span className="hire-modal-svc-card__badge">Freelancer</span>
+                  )}
+                </div>
+                <div className="hire-modal-svc-card__body">
+                  <h4 className="hire-modal-svc-card__title">{row.full_name}</h4>
+                  {row.title?.trim() ? (
+                    <p className="hire-modal-svc-card__subtitle">{row.title.trim()}</p>
+                  ) : null}
+                  {locationDisplay(row) !== "—" ? (
+                    <p className="hire-modal-svc-card__desc">
+                      <FaMapMarkerAlt aria-hidden />
+                      {locationDisplay(row)}
+                    </p>
+                  ) : null}
+                  <p className="hire-modal-svc-card__desc hire-modal-svc-card__desc--bio">{bio}</p>
+                  <div className="hire-modal-svc-card__meta">
+                    {satisfaction > 0 ? (
+                      <span className="hire-modal-svc-card__price">{satisfaction}% hài lòng</span>
+                    ) : null}
+                    {row.completed_jobs > 0 ? (
+                      <span className="hire-modal-svc-card__days">
+                        <FaBriefcase aria-hidden />
+                        {row.completed_jobs} hợp đồng
+                      </span>
+                    ) : null}
+                    {ratingAvg > 0 ? (
+                      <span className="hire-modal-svc-card__days">
+                        <FaStar aria-hidden />
+                        {ratingAvg.toFixed(1)} điểm
+                      </span>
+                    ) : null}
+                  </div>
+                  {row.skills.length > 0 ? (
+                    <div className="hire-modal-svc-card__tags">
+                      {row.skills.map((skill) => (
+                        <span key={skill} className="hire-modal-svc-card__tag">
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
+                  ) : null}
+                  <div className="hire-modal-svc-card__actions">
+                    <Link href={profileHref()} className="hire-modal-svc-card__cta">
+                      Xem hồ sơ đầy đủ
+                      <span aria-hidden>→</span>
+                    </Link>
+                    <Link
+                      href={quoteHref(row.featured_service_id)}
+                      className="hire-modal-svc-card__cta hire-modal-svc-card__cta--outline"
+                    >
+                      {guestMode ? "Đăng nhập để thuê" : "Yêu cầu báo giá"}
+                    </Link>
+                  </div>
+                </div>
+              </article>
+            </li>
+          </ul>
+
+          {aboutStats.length > 0 ? (
+            <ul className="hire-modal-services">
+              {aboutStats.map((stat) => (
+                <li key={stat.label}>
+                  <article className="hire-modal-svc-card">
+                    <div className="hire-modal-svc-card__media hire-modal-svc-card__media--icon">
+                      <FaUser aria-hidden />
+                    </div>
+                    <div className="hire-modal-svc-card__body">
+                      <h4 className="hire-modal-svc-card__title">{stat.label}</h4>
+                      <div className="hire-modal-svc-card__meta">
+                        <span className="hire-modal-svc-card__price">{stat.value}</span>
+                      </div>
+                    </div>
+                  </article>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </div>
+      );
+    }
+
+    return null;
+  }
 
   return (
     <article className="hire-search__card">
       <div className="hire-search__card-inner">
-        <div className="hire-search__checkbox-col">
-          <input
-            type="checkbox"
-            className="hire-search__checkbox"
-            checked={selected}
-            onChange={(e) => onSelect(row.id, e.target.checked)}
-            aria-label={`Chọn ${row.full_name}`}
-          />
-        </div>
+        {!guestMode ? (
+          <div className="hire-search__checkbox-col">
+            <input
+              type="checkbox"
+              className="hire-search__checkbox"
+              checked={selected}
+              onChange={(e) => onSelect(row.id, e.target.checked)}
+              aria-label={`Chọn ${row.full_name}`}
+            />
+          </div>
+        ) : null}
 
         <div className="hire-search__card-content">
           <div className="hire-search__card-top">
@@ -145,13 +667,7 @@ export default function HireSearchFreelancerCard({
               </div>
               <div className="hire-search__identity-text">
                 <h2 className="hire-search__freelancer-name">
-                  <Link
-                    href={
-                      row.featured_service_id
-                        ? `/hire/search/${row.id}?service=${encodeURIComponent(row.featured_service_id)}`
-                        : `/hire/search/${row.id}`
-                    }
-                  >
+                  <Link href={profileHref(row.featured_service_id)}>
                     {row.full_name}
                   </Link>
                   {badges.map((badge) => (
@@ -179,24 +695,30 @@ export default function HireSearchFreelancerCard({
             </div>
 
             <div className="hire-search__card-actions">
-              <button
-                type="button"
-                className={`hire-search__heart${isFavorite ? " hire-search__heart--active" : ""}`}
-                aria-pressed={isFavorite}
-                aria-label={isFavorite ? "Bỏ yêu thích" : "Thêm vào My Favorites"}
-                onClick={() => onToggleFavorite(row.id)}
-              >
-                <FaHeart aria-hidden />
-              </button>
+              {guestMode ? (
+                <Link
+                  href={favoriteHref()}
+                  className="hire-search__heart"
+                  aria-label="Đăng nhập để lưu yêu thích"
+                >
+                  <FaHeart aria-hidden />
+                </Link>
+              ) : (
+                <button
+                  type="button"
+                  className={`hire-search__heart${isFavorite ? " hire-search__heart--active" : ""}`}
+                  aria-pressed={isFavorite}
+                  aria-label={isFavorite ? "Bỏ yêu thích" : "Thêm vào My Favorites"}
+                  onClick={() => onToggleFavorite(row.id)}
+                >
+                  <FaHeart aria-hidden />
+                </button>
+              )}
               <Link
-                href={
-                  row.featured_service_id
-                    ? `/hire/quote?serviceId=${encodeURIComponent(row.featured_service_id)}&freelancerId=${encodeURIComponent(row.id)}`
-                    : `/hire/search/${row.id}`
-                }
+                href={quoteHref(row.featured_service_id)}
                 className="hire-search__quote-btn"
               >
-                Get a Quote
+                {guestMode ? "Đăng nhập để thuê" : "Get a Quote"}
               </Link>
             </div>
           </div>
@@ -245,10 +767,10 @@ export default function HireSearchFreelancerCard({
             key={tab.id}
             type="button"
             role="tab"
-            aria-selected={openTab === tab.id}
-            className={`hire-search__tab${openTab === tab.id ? " hire-search__tab--open" : ""}${
-              index < tabs.length - 1 ? " hire-search__tab--border" : ""
-            }`}
+            aria-selected={activeModal === tab.id}
+            className={`hire-search__tab${
+              activeModal === tab.id ? " hire-search__tab--open" : ""
+            }${index < tabs.length - 1 ? " hire-search__tab--border" : ""}`}
             onClick={() => void handleTabClick(tab.id)}
           >
             <tab.icon
@@ -261,187 +783,62 @@ export default function HireSearchFreelancerCard({
         ))}
       </div>
 
-      {openTab ? (
-        <div className="hire-search__detail-panel" role="tabpanel">
-            {detailLoading ? (
-              <div className="hire-search__detail-loading" aria-busy="true">
-                <span className="hire-search__detail-loading-bar" />
-                <span className="hire-search__detail-loading-bar hire-search__detail-loading-bar--short" />
-                <span className="hire-search__detail-loading-bar hire-search__detail-loading-bar--medium" />
-              </div>
-            ) : null}
-            {detailError ? (
-              <p className="hire-search__detail-error" role="alert">
-                {detailError}
-              </p>
-            ) : null}
-
-            {!detailLoading && !detailError && openTab === "services" ? (
-              (detail?.services ?? []).length === 0 ? (
-                <p className="hire-search__detail-empty">Freelancer chưa đăng thêm dịch vụ nào.</p>
-              ) : (
-                <ul className="hire-search__service-grid">
-                  {(detail?.services ?? []).map((svc) => {
-                    const priceLabel = formatStartingPrice(svc.price);
-                    return (
-                      <li key={svc.id} className="hire-search__service-item">
-                        <h3 className="hire-search__service-item-title">{svc.title}</h3>
-                        {svc.category ? (
-                          <p className="hire-search__service-item-meta">{svc.category}</p>
-                        ) : null}
-                        <div className="hire-search__service-item-foot">
-                          {priceLabel ? (
-                            <span className="hire-search__service-item-price">{priceLabel}</span>
-                          ) : null}
-                          {svc.delivery_days != null ? (
-                            <span className="hire-search__service-item-days">
-                              {svc.delivery_days} ngày
-                            </span>
-                          ) : null}
-                        </div>
-                      </li>
-                    );
-                  })}
-                </ul>
-              )
-            ) : null}
-
-            {!detailLoading && !detailError && openTab === "portfolio" ? (
-              (detail?.portfolio ?? []).length === 0 ? (
-                <p className="hire-search__detail-empty">Chưa có mục portfolio.</p>
-              ) : (
-                <ul className="hire-search__portfolio-list">
-                  {(detail?.portfolio ?? []).map((item) => (
-                    <li key={item.id} className="hire-search__portfolio-item">
-                      <div className="hire-search__portfolio-item-icon" aria-hidden>
-                        <FaImage />
-                      </div>
-                      <div className="hire-search__portfolio-item-body">
-                        <h3 className="hire-search__portfolio-item-title">{item.title}</h3>
-                        {item.description ? (
-                          <p className="hire-search__portfolio-item-desc">{item.description}</p>
-                        ) : null}
-                        {item.project_url ? (
-                          <a
-                            href={item.project_url}
-                            className="hire-search__portfolio-item-link"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            Xem dự án <FaExternalLinkAlt aria-hidden />
-                          </a>
-                        ) : null}
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              )
-            ) : null}
-
-            {!detailLoading && !detailError && openTab === "performance" ? (
-              <>
-                <div className="hire-search__perf-grid">
-                  <div className="hire-search__perf-stat">
-                    <span className="hire-search__perf-stat-value">
-                      {satisfaction > 0 ? `${satisfaction}%` : "—"}
-                    </span>
-                    <span className="hire-search__perf-stat-label">Tỷ lệ hài lòng</span>
+      {activeModal ? (
+        <div
+          className="hire-search__detail-modal-backdrop"
+          role="presentation"
+          onClick={closeModal}
+        >
+          <div
+            className={`hire-search__detail-modal hire-search__detail-modal--${MODAL_META[activeModal].accent}`}
+            role="dialog"
+            aria-modal="true"
+            aria-label={`${MODAL_META[activeModal].title} — ${row.full_name}`}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <header
+              className={`hire-modal-header hire-modal-header--${MODAL_META[activeModal].accent}`}
+            >
+              <div className="hire-modal-header__top">
+                <div className="hire-modal-header__identity">
+                  <div className="hire-modal-header__avatar">
+                    {avatarSrc ? (
+                      <Image
+                        src={avatarSrc}
+                        alt=""
+                        width={40}
+                        height={40}
+                        className="hire-modal-header__avatar-img"
+                        unoptimized
+                      />
+                    ) : (
+                      <span className="hire-modal-header__avatar-fallback">
+                        {getUserInitials(row.full_name)}
+                      </span>
+                    )}
                   </div>
-                  <div className="hire-search__perf-stat">
-                    <span className="hire-search__perf-stat-value">
-                      {row.rating_avg > 0 ? Number(row.rating_avg).toFixed(1) : "—"}
-                    </span>
-                    <span className="hire-search__perf-stat-label">
-                      Đánh giá TB
-                      {row.total_reviews > 0 ? ` (${row.total_reviews})` : ""}
-                    </span>
+                  <div>
+                    <p className="hire-modal-header__eyebrow">{MODAL_META[activeModal].title}</p>
+                    <h3 className="hire-modal-header__headline">
+                      {MODAL_META[activeModal].headline}
+                    </h3>
                   </div>
-                  <div className="hire-search__perf-stat">
-                    <span className="hire-search__perf-stat-value">{row.completed_jobs}</span>
-                    <span className="hire-search__perf-stat-label">Hợp đồng hoàn thành</span>
-                  </div>
-                  {row.job_success_score != null ? (
-                    <div className="hire-search__perf-stat">
-                      <span className="hire-search__perf-stat-value">{row.job_success_score}%</span>
-                      <span className="hire-search__perf-stat-label">Job Success</span>
-                    </div>
-                  ) : null}
                 </div>
-                {(detail?.reviews ?? []).length > 0 ? (
-                  <div className="hire-search__reviews-block">
-                    <h3 className="hire-search__reviews-heading">Đánh giá gần đây</h3>
-                    <ul className="hire-search__reviews-list">
-                      {detail!.reviews.slice(0, 5).map((review) => (
-                        <li key={review.id} className="hire-search__review-card">
-                          <div className="hire-search__review-card-head">
-                            <span className="hire-search__review-stars" aria-label={`${review.rating} sao`}>
-                              {Array.from({ length: 5 }, (_, i) => (
-                                <FaStar
-                                  key={i}
-                                  className={
-                                    i < review.rating
-                                      ? "hire-search__review-star hire-search__review-star--on"
-                                      : "hire-search__review-star"
-                                  }
-                                  aria-hidden
-                                />
-                              ))}
-                            </span>
-                            <span className="hire-search__review-author">
-                              {review.client_name || "Client"}
-                            </span>
-                            <time className="hire-search__review-date" dateTime={review.created_at}>
-                              {formatDate(review.created_at)}
-                            </time>
-                          </div>
-                          {review.comment ? (
-                            <p className="hire-search__review-comment">{review.comment}</p>
-                          ) : null}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ) : (
-                  <p className="hire-search__detail-empty hire-search__detail-empty--inline">
-                    Chưa có đánh giá từ client.
-                  </p>
-                )}
-              </>
-            ) : null}
-
-            {!detailLoading && !detailError && openTab === "about" ? (
-              <div className="hire-search__about">
-                <p className="hire-search__about-bio">
-                  {detail?.freelancer.bio?.trim() || row.bio?.trim() || "Chưa có giới thiệu."}
-                </p>
-                <dl className="hire-search__about-meta">
-                  {row.experience_years != null ? (
-                    <div className="hire-search__about-meta-item">
-                      <dt>Kinh nghiệm</dt>
-                      <dd>{row.experience_years} năm</dd>
-                    </div>
-                  ) : null}
-                  {row.avg_response_minutes ? (
-                    <div className="hire-search__about-meta-item">
-                      <dt>Phản hồi</dt>
-                      <dd>~{row.avg_response_minutes} phút</dd>
-                    </div>
-                  ) : null}
-                  {row.title?.trim() ? (
-                    <div className="hire-search__about-meta-item">
-                      <dt>Chức danh</dt>
-                      <dd>{row.title.trim()}</dd>
-                    </div>
-                  ) : null}
-                  {locationDisplay(row) !== "—" ? (
-                    <div className="hire-search__about-meta-item">
-                      <dt>Địa điểm</dt>
-                      <dd>{locationDisplay(row)}</dd>
-                    </div>
-                  ) : null}
-                </dl>
+                <button
+                  type="button"
+                  className="hire-modal-header__close"
+                  aria-label={MODAL_META[activeModal].closeLabel}
+                  onClick={closeModal}
+                >
+                  ×
+                </button>
               </div>
-            ) : null}
+              <p className="hire-modal-header__subtitle">
+                {MODAL_META[activeModal].subtitle(row)}
+              </p>
+            </header>
+            <div className="hire-search__detail-modal-body">{renderModalContent()}</div>
+          </div>
         </div>
       ) : null}
     </article>

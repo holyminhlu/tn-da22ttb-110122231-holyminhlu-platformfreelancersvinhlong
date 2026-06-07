@@ -36,6 +36,8 @@ import {
 } from "@/lib/hire/freelancerSearchDisplay";
 import { formatDate } from "@/lib/format";
 import HireShell from "./HireShell";
+import FindFreelancersPage from "@/components/freelancers/FindFreelancersPage";
+import { useStoredUser } from "@/hooks/useStoredUser";
 import "./hire.css";
 import "./hire-freelancer-detail.css";
 
@@ -43,7 +45,17 @@ function formatPriceVndStyle(amount: string | number | null | undefined): string
   return formatStartingPrice(amount);
 }
 
-export default function ClientHireFreelancerDetailPage() {
+type ClientHireFreelancerDetailPageProps = {
+  /** Trang công khai /freelancers/[id] — khách xem trước khi đăng nhập thuê. */
+  publicBrowse?: boolean;
+};
+
+export default function ClientHireFreelancerDetailPage({
+  publicBrowse = false,
+}: ClientHireFreelancerDetailPageProps = {}) {
+  const { user, ready, isClient } = useStoredUser({ refreshFromApi: false });
+  const isGuest = publicBrowse && ready && !user;
+  const canHire = ready && user && isClient;
   const params = useParams();
   const searchParams = useSearchParams();
   const freelancerId = String(params?.freelancerId ?? "");
@@ -102,9 +114,22 @@ export default function ClientHireFreelancerDetailPage() {
   const highlightServiceId = serviceQuery || data?.featuredService?.id;
   const primaryServiceId =
     highlightServiceId || data?.services?.[0]?.id || data?.featuredService?.id;
-  const quoteHref = primaryServiceId
+  const hireQuotePath = primaryServiceId
     ? `/hire/quote?serviceId=${encodeURIComponent(primaryServiceId)}&freelancerId=${encodeURIComponent(freelancerId)}`
-    : `/hire/search/${freelancerId}`;
+    : publicBrowse
+      ? `/freelancers/${freelancerId}`
+      : `/hire/search/${freelancerId}`;
+  const quoteHref = isGuest
+    ? `/dang-nhap?next=${encodeURIComponent(hireQuotePath)}`
+    : hireQuotePath;
+  const backHref = publicBrowse ? "/freelancers" : "/hire/search";
+
+  function serviceQuoteHref(serviceId: string) {
+    const target = `/hire/quote?serviceId=${encodeURIComponent(serviceId)}&freelancerId=${encodeURIComponent(freelancerId)}`;
+    return isGuest ? `/dang-nhap?next=${encodeURIComponent(target)}` : target;
+  }
+
+  const PageShell = publicBrowse ? PublicDetailShell : HireShell;
 
   function handleToggleFavorite() {
     if (!freelancerId) return;
@@ -114,26 +139,26 @@ export default function ClientHireFreelancerDetailPage() {
 
   if (loading) {
     return (
-      <HireShell>
+      <PageShell>
         <div className="hire-page hire-fl-detail hire-fl-detail--full-width">
           <p className="hire-page__state">Đang tải hồ sơ freelancer...</p>
         </div>
-      </HireShell>
+      </PageShell>
     );
   }
 
   if (error || !fl) {
     return (
-      <HireShell>
+      <PageShell>
         <div className="hire-page hire-fl-detail hire-fl-detail--full-width">
-          <Link href="/hire/search" className="hire-fl-detail__back">
+          <Link href={backHref} className="hire-fl-detail__back">
             <FaArrowLeft aria-hidden /> Quay lại tìm kiếm
           </Link>
           <p className="hire-page__state hire-page__state--error" role="alert">
             {error || "Không tìm thấy freelancer."}
           </p>
         </div>
-      </HireShell>
+      </PageShell>
     );
   }
 
@@ -142,11 +167,43 @@ export default function ClientHireFreelancerDetailPage() {
   const featuredThumb = resolveFreelancerMedia(featured?.thumbnail_url);
 
   return (
-    <HireShell>
+    <PageShell>
       <div className="hire-page hire-fl-detail hire-fl-detail--full-width">
-        <Link href="/hire/search" className="hire-fl-detail__back">
+        <Link href={backHref} className="hire-fl-detail__back">
           <FaArrowLeft aria-hidden /> Quay lại tìm kiếm freelancer
         </Link>
+
+        {isGuest ? (
+          <div className="ff-guest-banner hire-fl-detail__guest-banner">
+            <p className="ff-guest-banner__text">
+              Bạn đang xem hồ sơ công khai. Đăng nhập bằng tài khoản Client để yêu cầu báo giá và
+              thuê dịch vụ.
+            </p>
+            <div className="ff-guest-banner__actions">
+              <Link
+                href={`/dang-nhap?next=${encodeURIComponent(`/freelancers/${freelancerId}${serviceQuery ? `?service=${encodeURIComponent(serviceQuery)}` : ""}`)}`}
+                className="ff-btn-primary rounded px-4 py-2 text-sm font-semibold text-white"
+              >
+                Đăng nhập
+              </Link>
+              <Link
+                href="/dang-ky"
+                className="rounded border border-[#0066cc] px-4 py-2 text-sm font-semibold text-[#0066cc] transition hover:bg-blue-50"
+              >
+                Đăng ký
+              </Link>
+            </div>
+          </div>
+        ) : canHire && publicBrowse ? (
+          <div className="ff-client-banner hire-fl-detail__guest-banner">
+            <p className="ff-client-banner__text">
+              Bạn đã đăng nhập. Có thể yêu cầu báo giá ngay hoặc quản lý trong mục Thuê việc.
+            </p>
+            <Link href="/hire/search" className="ff-btn-primary rounded px-4 py-2 text-sm font-semibold text-white">
+              Mở Thuê việc
+            </Link>
+          </div>
+        ) : null}
 
         <header className="hire-fl-detail__hero">
           <div className="hire-fl-detail__avatar">
@@ -220,23 +277,43 @@ export default function ClientHireFreelancerDetailPage() {
 
           <div className="hire-fl-detail__actions">
             <Link href={quoteHref} className="hire-fl-detail__btn hire-fl-detail__btn--primary">
-              Yêu cầu báo giá
+              {isGuest ? "Đăng nhập để báo giá" : "Yêu cầu báo giá"}
             </Link>
-            <Link
-              href="/hire/post"
-              className="hire-fl-detail__btn hire-fl-detail__btn--outline"
-            >
-              Đăng tin thuê
-            </Link>
-            <button
-              type="button"
-              className={`hire-fl-detail__btn hire-fl-detail__btn--heart${isFavorite ? " hire-fl-detail__btn--heart-active" : ""}`}
-              onClick={handleToggleFavorite}
-              aria-pressed={isFavorite}
-            >
-              <FaHeart aria-hidden />
-              {isFavorite ? "Đã lưu yêu thích" : "Lưu yêu thích"}
-            </button>
+            {canHire ? (
+              <Link
+                href="/hire/post"
+                className="hire-fl-detail__btn hire-fl-detail__btn--outline"
+              >
+                Đăng tin thuê
+              </Link>
+            ) : isGuest ? (
+              <Link
+                href="/dang-ky"
+                className="hire-fl-detail__btn hire-fl-detail__btn--outline"
+              >
+                Đăng ký tài khoản
+              </Link>
+            ) : null}
+            {isGuest ? (
+              <Link
+                href={`/dang-nhap?next=${encodeURIComponent(`/freelancers/${freelancerId}`)}`}
+                className="hire-fl-detail__btn hire-fl-detail__btn--heart"
+                aria-label="Đăng nhập để lưu yêu thích"
+              >
+                <FaHeart aria-hidden />
+                Lưu yêu thích
+              </Link>
+            ) : (
+              <button
+                type="button"
+                className={`hire-fl-detail__btn hire-fl-detail__btn--heart${isFavorite ? " hire-fl-detail__btn--heart-active" : ""}`}
+                onClick={handleToggleFavorite}
+                aria-pressed={isFavorite}
+              >
+                <FaHeart aria-hidden />
+                {isFavorite ? "Đã lưu yêu thích" : "Lưu yêu thích"}
+              </button>
+            )}
           </div>
         </header>
 
@@ -391,11 +468,11 @@ export default function ClientHireFreelancerDetailPage() {
                             ) : null}
                           </div>
                           <Link
-                            href={`/hire/quote?serviceId=${encodeURIComponent(svc.id)}&freelancerId=${encodeURIComponent(freelancerId)}`}
+                            href={serviceQuoteHref(svc.id)}
                             className="hire-fl-detail__btn hire-fl-detail__btn--primary"
                             style={{ marginTop: "0.65rem", display: "inline-flex" }}
                           >
-                            Yêu cầu báo giá
+                            {isGuest ? "Đăng nhập để báo giá" : "Yêu cầu báo giá"}
                           </Link>
                         </div>
                       </li>
@@ -529,19 +606,36 @@ export default function ClientHireFreelancerDetailPage() {
               </ul>
               <div className="hire-fl-detail__sidebar-actions">
                 <Link href={quoteHref} className="hire-fl-detail__btn hire-fl-detail__btn--primary">
-                  Yêu cầu báo giá
+                  {isGuest ? "Đăng nhập để báo giá" : "Yêu cầu báo giá"}
                 </Link>
-                <Link
-                  href="/hire/favorites"
-                  className="hire-fl-detail__btn hire-fl-detail__btn--outline"
-                >
-                  Xem mục yêu thích
-                </Link>
+                {canHire ? (
+                  <Link
+                    href="/hire/favorites"
+                    className="hire-fl-detail__btn hire-fl-detail__btn--outline"
+                  >
+                    Xem mục yêu thích
+                  </Link>
+                ) : isGuest ? (
+                  <Link
+                    href="/dang-ky"
+                    className="hire-fl-detail__btn hire-fl-detail__btn--outline"
+                  >
+                    Tạo tài khoản Client
+                  </Link>
+                ) : null}
               </div>
             </div>
           </aside>
         </div>
       </div>
-    </HireShell>
+    </PageShell>
+  );
+}
+
+function PublicDetailShell({ children }: { children: React.ReactNode }) {
+  return (
+    <FindFreelancersPage>
+      <div className="find-freelancers-detail-wrap">{children}</div>
+    </FindFreelancersPage>
   );
 }

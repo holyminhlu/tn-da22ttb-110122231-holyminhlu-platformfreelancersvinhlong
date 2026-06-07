@@ -88,6 +88,24 @@ export type FreelancerProfilePayload = {
   reviews: { id: string; rating: number; comment: string | null; created_at: string; client_name: string | null }[];
 };
 
+export type TopSkillRow = {
+  name: string;
+  freelancerCount: number;
+};
+
+export type TopSkillsResponse = {
+  skills: TopSkillRow[];
+};
+
+export async function getTopSkills(limit = 9) {
+  const search = new URLSearchParams();
+  if (limit != null) search.set("limit", String(limit));
+  const qs = search.toString();
+  const path = qs ? `${apiPaths.freelancers.topSkills}?${qs}` : apiPaths.freelancers.topSkills;
+  const { data } = await fetchApi<TopSkillsResponse>(path);
+  return data;
+}
+
 export async function listFreelancers(params?: {
   q?: string;
   skill?: string;

@@ -430,7 +430,46 @@ async function getFreelancer(req, res) {
   }
 }
 
+async function getTopSkills(req, res) {
+  const limit = Math.min(Math.max(Number.parseInt(String(req.query.limit || ""), 10) || 9, 1), 24);
+
+  const dbClient = await pool.connect();
+  try {
+    const result = await dbClient.query(
+      `SELECT s.name,
+              COUNT(DISTINCT us.user_id)::int AS freelancer_count
+       FROM public.skills s
+       INNER JOIN public.user_skills us ON us.skill_id = s.id
+       INNER JOIN public.users u
+         ON u.id = us.user_id
+        AND u.role = 'freelancer'
+        AND u.deleted_at IS NULL
+        AND u.status = 'active'
+       INNER JOIN public.freelancer_profiles fp
+         ON fp.user_id = u.id
+        AND fp.deleted_at IS NULL
+       GROUP BY s.id, s.name
+       ORDER BY freelancer_count DESC, s.name ASC
+       LIMIT $1`,
+      [limit],
+    );
+
+    return res.json({
+      skills: result.rows.map((row) => ({
+        name: row.name,
+        freelancerCount: row.freelancer_count,
+      })),
+    });
+  } catch (error) {
+    console.error("Get top skills failed:", error.message);
+    return res.status(500).json({ message: "Không thể tải danh sách kỹ năng." });
+  } finally {
+    dbClient.release();
+  }
+}
+
 module.exports = {
   listFreelancers,
   getFreelancer,
+  getTopSkills,
 };

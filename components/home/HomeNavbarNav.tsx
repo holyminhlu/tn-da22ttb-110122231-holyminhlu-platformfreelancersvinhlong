@@ -53,7 +53,7 @@ export default function HomeNavbarNav() {
   return (
     <div className="hidden space-x-6 font-medium text-gray-700 md:flex">
       <Link href="/freelancers" className="hover:text-blue-600">
-        Find Freelancers
+        Tìm Freelancer
       </Link>
       <Link href="/findwork" className="hover:text-blue-600">
         Find Jobs

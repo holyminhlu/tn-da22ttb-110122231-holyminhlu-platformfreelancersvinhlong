@@ -1,11 +1,5 @@
 const bcrypt = require("bcryptjs");
-async function logLoginAttempt(client, { email, ip, success }) {
-  await client.query(
-    "INSERT INTO public.login_attempts (email, ip_address, success) VALUES ($1, $2, $3)",
-    [email, ip || "unknown", success],
-  );
-}
-
+const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const { pool } = require("../db/pool");
 const {
@@ -19,6 +13,229 @@ const {
   verifyAccessToken,
   persistRefreshToken,
 } = require("../utils/authTokens");
+
+function getFrontendUrl() {
+  return (process.env.FRONTEND_URL || "http://localhost:3000").replace(/\/+$/, "");
+}
+
+function getGoogleRedirectUri() {
+  return (
+    process.env.GOOGLE_REDIRECT_URI ||
+    `http://localhost:${Number(process.env.PORT) || 5000}/api/auth/google/callback`
+  );
+}
+
+function isGoogleConfigured() {
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  return (
+    clientId &&
+    clientSecret &&
+    clientId !== "your-google-client-id" &&
+    clientSecret !== "your-google-client-secret"
+  );
+}
+
+function safeNextPath(raw) {
+  if (!raw || typeof raw !== "string") return "/dashboard";
+  if (!raw.startsWith("/") || raw.startsWith("//")) return "/dashboard";
+  return raw;
+}
+
+function normalizeOAuthRole(raw) {
+  const role = String(raw || "").trim().toLowerCase();
+  return role === "freelancer" ? "freelancer" : "client";
+}
+
+function encodeOAuthState({ next, role }) {
+  return jwt.sign(
+    {
+      next: safeNextPath(next),
+      role: normalizeOAuthRole(role),
+    },
+    ACCESS_SECRET,
+    { expiresIn: "15m" },
+  );
+}
+
+function decodeOAuthState(state) {
+  if (!state) return { next: "/dashboard", role: "client" };
+  try {
+    const payload = jwt.verify(String(state), ACCESS_SECRET);
+    return {
+      next: safeNextPath(payload.next),
+      role: normalizeOAuthRole(payload.role),
+    };
+  } catch {
+    return { next: "/dashboard", role: "client" };
+  }
+}
+
+function encodeUserPayload(user) {
+  return Buffer.from(
+    JSON.stringify({
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      fullName: user.fullName || null,
+      avatarUrl: user.avatarUrl || null,
+    }),
+  ).toString("base64url");
+}
+
+function redirectGoogleError(res, message) {
+  const target = new URL("/auth/google/callback", getFrontendUrl());
+  target.searchParams.set("error", message);
+  return res.redirect(target.toString());
+}
+
+function redirectGoogleSuccess(res, { accessToken, refreshToken, user, next }) {
+  const target = new URL("/auth/google/callback", getFrontendUrl());
+  target.hash = new URLSearchParams({
+    accessToken,
+    refreshToken,
+    user: encodeUserPayload(user),
+    next: safeNextPath(next),
+  }).toString();
+  return res.redirect(target.toString());
+}
+
+async function logLoginAttempt(client, { email, ip, success }) {
+  await client.query(
+    "INSERT INTO public.login_attempts (email, ip_address, success) VALUES ($1, $2, $3)",
+    [email, ip || "unknown", success],
+  );
+}
+
+async function exchangeGoogleCode(code, redirectUri) {
+  const response = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      code,
+      client_id: process.env.GOOGLE_CLIENT_ID,
+      client_secret: process.env.GOOGLE_CLIENT_SECRET,
+      redirect_uri: redirectUri,
+      grant_type: "authorization_code",
+    }),
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.error_description || data.error || "Không thể đổi mã Google OAuth.");
+  }
+  return data;
+}
+
+async function fetchGoogleProfile(accessToken) {
+  const response = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  const data = await response.json();
+  if (!response.ok || !data.sub || !data.email) {
+    throw new Error("Không thể lấy thông tin tài khoản Google.");
+  }
+  return data;
+}
+
+async function findOrCreateGoogleUser(client, profile, preferredRole, req) {
+  const googleId = String(profile.sub);
+  const email = normalizeEmail(profile.email);
+  const fullName = String(profile.name || profile.given_name || email.split("@")[0]).trim();
+  const avatarUrl = profile.picture ? String(profile.picture) : null;
+  const ipAddress = getClientIp(req);
+
+  let userResult = await client.query(
+    `SELECT u.id, u.email, u.role, up.full_name, up.avatar_url
+     FROM public.users u
+     LEFT JOIN public.user_profiles up ON up.user_id = u.id
+     WHERE u.google_id = $1 AND u.deleted_at IS NULL
+     LIMIT 1`,
+    [googleId],
+  );
+
+  if (userResult.rowCount === 0) {
+    userResult = await client.query(
+      `SELECT u.id, u.email, u.role, u.google_id, up.full_name, up.avatar_url
+       FROM public.users u
+       LEFT JOIN public.user_profiles up ON up.user_id = u.id
+       WHERE u.email = $1 AND u.deleted_at IS NULL
+       LIMIT 1`,
+      [email],
+    );
+  }
+
+  if (userResult.rowCount > 0) {
+    const existing = userResult.rows[0];
+    if (!existing.google_id) {
+      await client.query(
+        `UPDATE public.users SET google_id = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
+        [existing.id, googleId],
+      );
+    }
+    if (avatarUrl && !existing.avatar_url) {
+      await client.query(
+        `UPDATE public.user_profiles SET avatar_url = $2, updated_at = CURRENT_TIMESTAMP WHERE user_id = $1`,
+        [existing.id, avatarUrl],
+      );
+      existing.avatar_url = avatarUrl;
+    }
+    await logLoginAttempt(client, { email, ip: ipAddress, success: true });
+    await client.query(
+      `INSERT INTO public.user_login_logs (user_id, ip_address, user_agent)
+       VALUES ($1, $2::inet, $3)`,
+      [existing.id, ipAddress || null, req.headers["user-agent"] || null],
+    );
+    return {
+      id: existing.id,
+      email: existing.email,
+      role: existing.role,
+      fullName: existing.full_name || fullName,
+      avatarUrl: existing.avatar_url || avatarUrl,
+    };
+  }
+
+  const role = normalizeOAuthRole(preferredRole);
+  const passwordHash = await bcrypt.hash(`google-oauth:${googleId}:${crypto.randomUUID()}`, 10);
+
+  const created = await client.query(
+    `INSERT INTO public.users (email, password_hash, role, google_id, is_email_verified)
+     VALUES ($1, $2, $3, $4, TRUE)
+     RETURNING id, email, role`,
+    [email, passwordHash, role, googleId],
+  );
+  const user = created.rows[0];
+
+  await client.query(
+    `INSERT INTO public.user_profiles (user_id, full_name, avatar_url)
+     VALUES ($1, $2, $3)`,
+    [user.id, fullName, avatarUrl],
+  );
+
+  if (role === "freelancer") {
+    await client.query(
+      `INSERT INTO public.freelancer_profiles
+        (user_id, availability_status, languages)
+       VALUES ($1, 'available', '[]'::jsonb)`,
+      [user.id],
+    );
+  }
+
+  await logLoginAttempt(client, { email, ip: ipAddress, success: true });
+  await client.query(
+    `INSERT INTO public.user_login_logs (user_id, ip_address, user_agent)
+     VALUES ($1, $2::inet, $3)`,
+    [user.id, ipAddress || null, req.headers["user-agent"] || null],
+  );
+
+  return {
+    id: user.id,
+    email: user.email,
+    role: user.role,
+    fullName,
+    avatarUrl,
+  };
+}
 
 async function register(req, res) {
 
@@ -282,31 +499,78 @@ async function logout(req, res) {
 }
 
 function googleAuth(req, res) {
-
-  if (!process.env.GOOGLE_CLIENT_ID || process.env.GOOGLE_CLIENT_ID === "your-google-client-id") {
+  if (!isGoogleConfigured()) {
     return res.status(501).json({
-      message: "Google OAuth ch?a ???c c?u h�nh. C?p nh?t GOOGLE_CLIENT_ID/SECRET trong .env.",
+      message: "Google OAuth chưa được cấu hình. Cập nhật GOOGLE_CLIENT_ID/SECRET trong .env.",
     });
   }
 
-  const redirectUri = process.env.GOOGLE_REDIRECT_URI;
+  const redirectUri = getGoogleRedirectUri();
+  const state = encodeOAuthState({
+    next: req.query.next,
+    role: req.query.role,
+  });
+
   const params = new URLSearchParams({
     client_id: process.env.GOOGLE_CLIENT_ID,
     redirect_uri: redirectUri,
     response_type: "code",
     scope: "openid email profile",
-    access_type: "offline",
-    prompt: "consent",
+    access_type: "online",
+    prompt: "select_account",
+    state,
   });
 
   return res.redirect(`https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`);
 }
 
-function googleCallback(req, res) {
+async function googleCallback(req, res) {
+  if (!isGoogleConfigured()) {
+    return redirectGoogleError(res, "Google OAuth chưa được cấu hình trên máy chủ.");
+  }
 
-  return res.status(501).json({
-    message: "Callback Google OAuth ?ang ? ch? ?? placeholder. C?n tri?n khai trao ??i code l?y token.",
-  });
+  const oauthError = req.query.error;
+  if (oauthError) {
+    return redirectGoogleError(
+      res,
+      oauthError === "access_denied"
+        ? "Bạn đã hủy đăng nhập Google."
+        : "Google từ chối yêu cầu đăng nhập.",
+    );
+  }
+
+  const code = String(req.query.code || "").trim();
+  if (!code) {
+    return redirectGoogleError(res, "Thiếu mã xác thực từ Google.");
+  }
+
+  const { next, role } = decodeOAuthState(req.query.state);
+  const redirectUri = getGoogleRedirectUri();
+  const client = await pool.connect();
+
+  try {
+    const tokenData = await exchangeGoogleCode(code, redirectUri);
+    const profile = await fetchGoogleProfile(tokenData.access_token);
+
+    await client.query("BEGIN");
+    const user = await findOrCreateGoogleUser(client, profile, role, req);
+    const { accessToken, refreshToken } = signTokens(user);
+    await persistRefreshToken(client, user.id, refreshToken, req);
+    await client.query("COMMIT");
+
+    return redirectGoogleSuccess(res, {
+      accessToken,
+      refreshToken,
+      user,
+      next,
+    });
+  } catch (error) {
+    await client.query("ROLLBACK").catch(() => {});
+    console.error("Google OAuth callback failed:", error.message);
+    return redirectGoogleError(res, error.message || "Không thể đăng nhập bằng Google.");
+  } finally {
+    client.release();
+  }
 }
 
 module.exports = {

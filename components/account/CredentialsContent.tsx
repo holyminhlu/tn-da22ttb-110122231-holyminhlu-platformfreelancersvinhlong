@@ -1,7 +1,19 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  FaCheck,
+  FaEnvelope,
+  FaExclamationCircle,
+  FaEye,
+  FaEyeSlash,
+  FaKey,
+  FaLock,
+  FaShieldAlt,
+  FaTimes,
+  FaUser,
+} from "react-icons/fa";
 import { changeEmail, changePassword, getMe } from "@/lib/api/users";
 import { clearStoredSession } from "@/lib/authSession";
 import {
@@ -12,6 +24,76 @@ import {
 import "./credentials.css";
 
 type DialogMode = "email" | "password" | null;
+
+function PasswordStrengthBar({ password }: { password: string }) {
+  const checks = getPasswordChecks(password);
+  const passed = Object.values(checks).filter(Boolean).length;
+  const total = Object.values(checks).length;
+  const ratio = total > 0 ? passed / total : 0;
+  const level = ratio === 0 ? "empty" : ratio < 0.5 ? "weak" : ratio < 1 ? "medium" : "strong";
+  const label =
+    level === "empty"
+      ? "Chưa nhập"
+      : level === "weak"
+        ? "Yếu"
+        : level === "medium"
+          ? "Trung bình"
+          : "Mạnh";
+
+  return (
+    <div className="cred-strength">
+      <div className="cred-strength__track" aria-hidden>
+        <span className={`cred-strength__fill cred-strength__fill--${level}`} style={{ width: `${ratio * 100}%` }} />
+      </div>
+      <span className={`cred-strength__label cred-strength__label--${level}`}>{label}</span>
+    </div>
+  );
+}
+
+function PasswordToggleInput({
+  id,
+  label,
+  value,
+  onChange,
+  placeholder,
+  autoComplete,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  autoComplete?: string;
+}) {
+  const [visible, setVisible] = useState(false);
+
+  return (
+    <div className="cred-modal__field">
+      <label className="cred-modal__label" htmlFor={id}>
+        {label}
+      </label>
+      <div className="cred-modal__input-wrap">
+        <input
+          id={id}
+          type={visible ? "text" : "password"}
+          className="cred-modal__input"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          autoComplete={autoComplete}
+        />
+        <button
+          type="button"
+          className="cred-modal__toggle-pwd"
+          onClick={() => setVisible((v) => !v)}
+          aria-label={visible ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+        >
+          {visible ? <FaEyeSlash aria-hidden /> : <FaEye aria-hidden />}
+        </button>
+      </div>
+    </div>
+  );
+}
 
 export default function CredentialsContent() {
   const router = useRouter();
@@ -26,6 +108,8 @@ export default function CredentialsContent() {
   const [newPassword, setNewPassword] = useState("");
 
   const pwdChecks = getPasswordChecks(newPassword);
+  const pwdReady = isPasswordStrong(newPassword);
+  const pwdPassedCount = useMemo(() => Object.values(pwdChecks).filter(Boolean).length, [pwdChecks]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -112,7 +196,7 @@ export default function CredentialsContent() {
       setError("Vui lòng nhập mật khẩu hiện tại.");
       return;
     }
-    if (!isPasswordStrong(newPassword)) {
+    if (!pwdReady) {
       setError("Mật khẩu mới chưa đáp ứng đủ tiêu chí.");
       return;
     }
@@ -137,163 +221,227 @@ export default function CredentialsContent() {
   }
 
   if (loading) {
-    return <p className="ea-loading">Đang tải...</p>;
+    return (
+      <div className="ea-main cred-panel">
+        <div className="cred-panel__loading">
+          <span className="cred-panel__spinner" aria-hidden />
+          <p>Đang tải thông tin đăng nhập...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="ea-main">
-      <h1 className="ea-title">Tên đăng nhập và mật khẩu</h1>
-
-      <section className="cred-section ea-card">
-        <h2 className="cred-section__title">Tên người dùng</h2>
-        <div className="cred-row">
-          <div>
-            <p className="cred-row__label">Tên người dùng hiện tại</p>
-            <p className="cred-row__value">{email || "—"}</p>
-          </div>
-          <button type="button" className="cred-change-btn" onClick={openEmailDialog}>
-            Thay đổi
-          </button>
+    <div className="ea-main cred-panel">
+      <header className="cred-panel__header">
+        <div className="cred-panel__header-icon" aria-hidden>
+          <FaKey />
         </div>
-      </section>
-
-      <section className="cred-section ea-card">
-        <h2 className="cred-section__title">Mật khẩu</h2>
-        <p className="cred-row__hint" style={{ marginBottom: "0.75rem" }}>
-          Mật khẩu của bạn đã được thiết lập
-        </p>
-        <div className="cred-row">
-          <div>
-            <p className="cred-row__label">Mật khẩu</p>
-            <p className="cred-row__value cred-masked" aria-hidden>
-              ••••••••
-            </p>
-          </div>
-          <button type="button" className="cred-change-btn" onClick={openPasswordDialog}>
-            Thay đổi
-          </button>
+        <div>
+          <h1 className="cred-panel__title">Tên đăng nhập và mật khẩu</h1>
+          <p className="cred-panel__subtitle">
+            Quản lý email đăng nhập và mật khẩu để bảo vệ tài khoản của bạn.
+          </p>
         </div>
-      </section>
+      </header>
 
-      {dialog === "email" ? (
-        <div className="ea-dialog-backdrop" role="presentation" onClick={closeDialog}>
+      <div className="cred-panel__cards">
+        <article className="cred-card">
+          <div className="cred-card__top">
+            <div className="cred-card__icon cred-card__icon--email">
+              <FaEnvelope aria-hidden />
+            </div>
+            <div className="cred-card__meta">
+              <h2 className="cred-card__title">Tên người dùng</h2>
+              <p className="cred-card__desc">Email dùng để đăng nhập và nhận thông báo hệ thống.</p>
+            </div>
+          </div>
+          <div className="cred-card__field">
+            <span className="cred-card__label">Email hiện tại</span>
+            <div className="cred-card__value-box">
+              <FaUser className="cred-card__value-icon" aria-hidden />
+              <span className="cred-card__value">{email || "—"}</span>
+            </div>
+          </div>
+          <button type="button" className="cred-card__btn" onClick={openEmailDialog}>
+            Thay đổi email
+          </button>
+        </article>
+
+        <article className="cred-card">
+          <div className="cred-card__top">
+            <div className="cred-card__icon cred-card__icon--password">
+              <FaLock aria-hidden />
+            </div>
+            <div className="cred-card__meta">
+              <h2 className="cred-card__title">Mật khẩu</h2>
+              <p className="cred-card__desc">
+                Mật khẩu đã được thiết lập. Nên đổi định kỳ và không chia sẻ với người khác.
+              </p>
+            </div>
+          </div>
+          <div className="cred-card__field">
+            <span className="cred-card__label">Mật khẩu hiện tại</span>
+            <div className="cred-card__value-box cred-card__value-box--masked">
+              <FaLock className="cred-card__value-icon" aria-hidden />
+              <span className="cred-card__value cred-card__masked" aria-hidden>
+                ••••••••••••
+              </span>
+              <span className="sr-only">Đã thiết lập</span>
+            </div>
+          </div>
+          <button type="button" className="cred-card__btn" onClick={openPasswordDialog}>
+            Đổi mật khẩu
+          </button>
+        </article>
+      </div>
+
+      <aside className="cred-tip">
+        <div className="cred-tip__icon" aria-hidden>
+          <FaShieldAlt />
+        </div>
+        <div>
+          <p className="cred-tip__title">Mẹo bảo mật</p>
+          <p className="cred-tip__text">
+            Dùng mật khẩu riêng cho VL Connected, bật xác minh email và không chia sẻ thông tin
+            đăng nhập qua tin nhắn hoặc cuộc gọi lạ.
+          </p>
+        </div>
+      </aside>
+
+      {dialog ? (
+        <div className="cred-modal-backdrop" role="presentation" onClick={closeDialog}>
           <div
-            className="ea-dialog ea-dialog--wide"
+            className="cred-modal"
             role="dialog"
-            aria-labelledby="cred-email-title"
+            aria-labelledby={dialog === "email" ? "cred-email-title" : "cred-pwd-title"}
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 id="cred-email-title">Thay đổi tên người dùng</h3>
-            <p className="ea-dialog__lead">Nhập tên người dùng</p>
-            <div className="ea-dialog-field">
-              <label className="ea-dialog-label" htmlFor="cred-new-email">
-                Email đăng nhập
-              </label>
-              <input
-                id="cred-new-email"
-                type="email"
-                className="ea-dialog-input"
-                value={newEmail}
-                onChange={(e) => setNewEmail(e.target.value)}
-                autoComplete="username"
-              />
+            <div className="cred-modal__header">
+              <div className="cred-modal__header-main">
+                <div
+                  className={`cred-modal__header-icon${dialog === "email" ? " cred-modal__header-icon--email" : " cred-modal__header-icon--password"}`}
+                  aria-hidden
+                >
+                  {dialog === "email" ? <FaEnvelope /> : <FaLock />}
+                </div>
+                <div>
+                  <h3 id={dialog === "email" ? "cred-email-title" : "cred-pwd-title"}>
+                    {dialog === "email" ? "Thay đổi email đăng nhập" : "Đổi mật khẩu"}
+                  </h3>
+                  <p className="cred-modal__header-sub">
+                    {dialog === "email"
+                      ? "Email mới sẽ dùng cho lần đăng nhập tiếp theo."
+                      : "Tạo mật khẩu mạnh để bảo vệ tài khoản."}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="cred-modal__close"
+                onClick={closeDialog}
+                disabled={saving}
+                aria-label="Đóng"
+              >
+                <FaTimes aria-hidden />
+              </button>
             </div>
-            <p className="ea-dialog__lead">Vui lòng xác minh bằng mật khẩu hiện tại.</p>
-            <div className="ea-dialog-field">
-              <label className="ea-dialog-label" htmlFor="cred-email-pwd">
-                Mật khẩu hiện tại
-              </label>
-              <input
-                id="cred-email-pwd"
-                type="password"
-                className="ea-dialog-input"
-                placeholder="Nhập mật khẩu"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                autoComplete="current-password"
-              />
+
+            <div className="cred-modal__body">
+              {dialog === "email" ? (
+                <>
+                  <div className="cred-modal__current">
+                    <span className="cred-modal__current-label">Email hiện tại</span>
+                    <span className="cred-modal__current-value">{email || "—"}</span>
+                  </div>
+                  <div className="cred-modal__field">
+                    <label className="cred-modal__label" htmlFor="cred-new-email">
+                      Email mới
+                    </label>
+                    <input
+                      id="cred-new-email"
+                      type="email"
+                      className="cred-modal__input"
+                      value={newEmail}
+                      onChange={(e) => setNewEmail(e.target.value)}
+                      placeholder="ten@email.com"
+                      autoComplete="username"
+                    />
+                  </div>
+                  <PasswordToggleInput
+                    id="cred-email-pwd"
+                    label="Mật khẩu hiện tại"
+                    value={currentPassword}
+                    onChange={setCurrentPassword}
+                    placeholder="Xác minh danh tính"
+                    autoComplete="current-password"
+                  />
+                </>
+              ) : (
+                <>
+                  <PasswordToggleInput
+                    id="cred-cur-pwd"
+                    label="Mật khẩu hiện tại"
+                    value={currentPassword}
+                    onChange={setCurrentPassword}
+                    placeholder="Nhập mật khẩu hiện tại"
+                    autoComplete="current-password"
+                  />
+                  <PasswordToggleInput
+                    id="cred-new-pwd"
+                    label="Mật khẩu mới"
+                    value={newPassword}
+                    onChange={setNewPassword}
+                    placeholder="Nhập mật khẩu mới"
+                    autoComplete="new-password"
+                  />
+                  <PasswordStrengthBar password={newPassword} />
+                  <div className="cred-modal__rules">
+                    <p className="cred-modal__rules-title">
+                      Tiêu chí mật khẩu ({pwdPassedCount}/{PASSWORD_RULE_LABELS.length})
+                    </p>
+                    <ul className="cred-pwd-rules">
+                      {PASSWORD_RULE_LABELS.map(({ key, label }) => (
+                        <li key={key} data-ok={pwdChecks[key] ? "true" : "false"}>
+                          <span className="cred-pwd-rules__mark" aria-hidden>
+                            {pwdChecks[key] ? <FaCheck /> : null}
+                          </span>
+                          {label}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </>
+              )}
+
+              {error ? (
+                <p className="cred-modal__error" role="alert">
+                  <FaExclamationCircle aria-hidden />
+                  {error}
+                </p>
+              ) : null}
+
+              <p className="cred-modal__note">
+                Sau khi cập nhật thành công, bạn sẽ cần đăng nhập lại bằng thông tin mới.
+              </p>
             </div>
-            {error ? <p className="ea-dialog-error" role="alert">{error}</p> : null}
-            <p className="ea-dialog__note">
-              Lưu ý: Bạn sẽ cần đăng nhập lại sau khi cập nhật tên người dùng thành công.
-            </p>
-            <div className="ea-dialog-actions">
-              <button type="button" className="ea-dialog-btn ea-dialog-btn--ghost" onClick={closeDialog}>
+
+            <div className="cred-modal__footer">
+              <button
+                type="button"
+                className="cred-modal__btn cred-modal__btn--ghost"
+                onClick={closeDialog}
+                disabled={saving}
+              >
                 Hủy
               </button>
               <button
                 type="button"
-                className="ea-dialog-btn ea-dialog-btn--primary"
-                disabled={saving}
-                onClick={() => void submitEmail()}
+                className="cred-modal__btn cred-modal__btn--primary"
+                disabled={saving || (dialog === "password" && !pwdReady && Boolean(newPassword))}
+                onClick={() => void (dialog === "email" ? submitEmail() : submitPassword())}
               >
-                {saving ? "Đang lưu..." : "Lưu"}
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
-
-      {dialog === "password" ? (
-        <div className="ea-dialog-backdrop" role="presentation" onClick={closeDialog}>
-          <div
-            className="ea-dialog ea-dialog--wide"
-            role="dialog"
-            aria-labelledby="cred-pwd-title"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 id="cred-pwd-title">Thay đổi mật khẩu</h3>
-            <div className="ea-dialog-field">
-              <label className="ea-dialog-label" htmlFor="cred-cur-pwd">
-                Nhập mật khẩu hiện tại
-              </label>
-              <input
-                id="cred-cur-pwd"
-                type="password"
-                className="ea-dialog-input"
-                placeholder="Nhập mật khẩu"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                autoComplete="current-password"
-              />
-            </div>
-            <div className="ea-dialog-field">
-              <label className="ea-dialog-label" htmlFor="cred-new-pwd">
-                Nhập mật khẩu mới
-              </label>
-              <input
-                id="cred-new-pwd"
-                type="password"
-                className="ea-dialog-input"
-                placeholder="Nhập mật khẩu"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                autoComplete="new-password"
-              />
-            </div>
-            <p className="ea-dialog__lead">Mật khẩu phải chứa</p>
-            <ul className="cred-pwd-rules">
-              {PASSWORD_RULE_LABELS.map(({ key, label }) => (
-                <li key={key} data-ok={pwdChecks[key] ? "true" : "false"}>
-                  {label}
-                </li>
-              ))}
-            </ul>
-            {error ? <p className="ea-dialog-error" role="alert">{error}</p> : null}
-            <p className="ea-dialog__note">
-              Lưu ý: Bạn sẽ cần đăng nhập lại sau khi cập nhật mật khẩu thành công.
-            </p>
-            <div className="ea-dialog-actions">
-              <button type="button" className="ea-dialog-btn ea-dialog-btn--ghost" onClick={closeDialog}>
-                Hủy
-              </button>
-              <button
-                type="button"
-                className="ea-dialog-btn ea-dialog-btn--primary"
-                disabled={saving}
-                onClick={() => void submitPassword()}
-              >
-                {saving ? "Đang lưu..." : "Lưu"}
+                {saving ? "Đang lưu..." : "Lưu thay đổi"}
               </button>
             </div>
           </div>

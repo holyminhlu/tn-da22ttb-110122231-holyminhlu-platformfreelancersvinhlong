@@ -80,6 +80,8 @@ async function updateProfile(req, res) {
   const gender = req.body?.gender ? String(req.body.gender).trim().slice(0, 30) : null;
   const tagline = String(req.body?.tagline ?? "").trim().slice(0, 220);
   const districtCity = String(req.body?.districtCity ?? "").trim().slice(0, 180);
+  const coverUrlProvided = Object.prototype.hasOwnProperty.call(req.body, "coverUrl");
+  const coverUrl = coverUrlProvided ? String(req.body?.coverUrl ?? "").trim().slice(0, 500) : null;
 
   const title = String(req.body?.title ?? "").trim().slice(0, 180);
   const hourlyRateRaw = req.body?.hourlyRate;
@@ -162,6 +164,15 @@ async function updateProfile(req, res) {
         districtCity || null,
       ],
     );
+
+    if (coverUrlProvided) {
+      await dbClient.query(
+        `UPDATE public.user_profiles
+         SET cover_url = $2, updated_at = NOW()
+         WHERE user_id = $1`,
+        [userId, coverUrl || null],
+      );
+    }
 
     if (role === "freelancer") {
       await dbClient.query(
@@ -257,6 +268,141 @@ async function updateSkills(req, res) {
   }
 }
 
+async function uploadProfileFileAsset(req, res) {
+  const payload = verifyAccessToken(req, res);
+  if (!payload) return;
+  if (payload.role !== "freelancer") {
+    return res.status(403).json({ message: "Chỉ freelancer mới tải tệp hồ sơ." });
+  }
+
+  const { uploadProfileFile: uploadMw } = require("../middleware/profileFilesUpload");
+  const handler = uploadMw.single("file");
+  handler(req, res, (err) => {
+    if (err) {
+      return res.status(400).json({ message: err.message || "Tải tệp thất bại." });
+    }
+    const file = req.file;
+    if (!file) {
+      return res.status(400).json({ message: "Chọn một tệp để tải lên." });
+    }
+    return res.status(201).json({
+      url: `/uploads/profile-files/${file.filename}`,
+      fileName: file.originalname || file.filename,
+      fileSize: file.size,
+      mimeType: file.mimetype || null,
+    });
+  });
+}
+
+async function createExclusiveResource(req, res) {
+  const payload = verifyAccessToken(req, res);
+  if (!payload) return;
+  if (payload.role !== "freelancer") {
+    return res.status(403).json({ message: "Chỉ freelancer mới thêm tài nguyên." });
+  }
+
+  const userId = payload.sub;
+  const title = String(req.body?.title ?? "").trim().slice(0, 200);
+  const description = String(req.body?.description ?? "").trim().slice(0, 3000);
+  const resourceType = String(req.body?.resourceType ?? "link").trim().toLowerCase() === "file" ? "file" : "link";
+  const linkUrl = String(req.body?.linkUrl ?? "").trim().slice(0, 500);
+  const fileUrl = String(req.body?.fileUrl ?? "").trim().slice(0, 500);
+  const fileName = String(req.body?.fileName ?? "").trim().slice(0, 255);
+
+  if (!title) {
+    return res.status(400).json({ message: "Tiêu đề tài nguyên là bắt buộc." });
+  }
+  if (resourceType === "link" && !linkUrl) {
+    return res.status(400).json({ message: "Vui lòng nhập link tài nguyên." });
+  }
+  if (resourceType === "file" && !fileUrl) {
+    return res.status(400).json({ message: "Vui lòng tải lên tệp tài nguyên." });
+  }
+
+  const dbClient = await pool.connect();
+  try {
+    const result = await dbClient.query(
+      `INSERT INTO public.freelancer_exclusive_resources
+         (freelancer_id, title, description, resource_type, link_url, file_url, file_name)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
+       RETURNING id, title, description, resource_type, link_url, file_url, file_name, created_at`,
+      [
+        userId,
+        title,
+        description || null,
+        resourceType,
+        resourceType === "link" ? linkUrl : null,
+        resourceType === "file" ? fileUrl : null,
+        resourceType === "file" ? fileName || null : null,
+      ],
+    );
+    return res.status(201).json({ message: "Đã thêm tài nguyên.", resource: result.rows[0] });
+  } catch (error) {
+    console.error("Create exclusive resource failed:", error.message);
+    if (error.code === "42P01") {
+      return res.status(503).json({
+        message: "Thiếu bảng freelancer_exclusive_resources. Chạy backend/sql/freelancer_profile_assets.sql.",
+      });
+    }
+    return res.status(500).json({ message: "Không thể thêm tài nguyên." });
+  } finally {
+    dbClient.release();
+  }
+}
+
+async function createProfileFile(req, res) {
+  const payload = verifyAccessToken(req, res);
+  if (!payload) return;
+  if (payload.role !== "freelancer") {
+    return res.status(403).json({ message: "Chỉ freelancer mới thêm tệp." });
+  }
+
+  const userId = payload.sub;
+  const title = String(req.body?.title ?? "").trim().slice(0, 200);
+  const description = String(req.body?.description ?? "").trim().slice(0, 3000);
+  const fileUrl = String(req.body?.fileUrl ?? "").trim().slice(0, 500);
+  const fileName = String(req.body?.fileName ?? "").trim().slice(0, 255);
+  const fileSize = Number(req.body?.fileSize);
+  const mimeType = String(req.body?.mimeType ?? "").trim().slice(0, 120);
+
+  if (!title) {
+    return res.status(400).json({ message: "Tiêu đề tệp là bắt buộc." });
+  }
+  if (!fileUrl) {
+    return res.status(400).json({ message: "Vui lòng tải lên tệp." });
+  }
+
+  const dbClient = await pool.connect();
+  try {
+    const result = await dbClient.query(
+      `INSERT INTO public.freelancer_profile_files
+         (freelancer_id, title, description, file_url, file_name, file_size, mime_type)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
+       RETURNING id, title, description, file_url, file_name, file_size, mime_type, created_at`,
+      [
+        userId,
+        title,
+        description || null,
+        fileUrl,
+        fileName || null,
+        Number.isFinite(fileSize) ? Math.round(fileSize) : null,
+        mimeType || null,
+      ],
+    );
+    return res.status(201).json({ message: "Đã thêm tệp.", file: result.rows[0] });
+  } catch (error) {
+    console.error("Create profile file failed:", error.message);
+    if (error.code === "42P01") {
+      return res.status(503).json({
+        message: "Thiếu bảng freelancer_profile_files. Chạy backend/sql/freelancer_profile_assets.sql.",
+      });
+    }
+    return res.status(500).json({ message: "Không thể thêm tệp." });
+  } finally {
+    dbClient.release();
+  }
+}
+
 async function createPortfolio(req, res) {
 
   const payload = verifyAccessToken(req, res);
@@ -321,6 +467,7 @@ async function getMe(req, res) {
          up.website,
          up.tagline,
          up.district_city,
+         up.cover_url,
          CASE
            WHEN up.location IS NULL THEN NULL
            ELSE ST_AsText(up.location::geometry)
@@ -404,6 +551,35 @@ async function getMe(req, res) {
         [userId],
       );
 
+      let exclusiveResources = [];
+      let profileFiles = [];
+      try {
+        const resourcesResult = await client.query(
+          `SELECT id, title, description, resource_type, link_url, file_url, file_name, created_at
+           FROM public.freelancer_exclusive_resources
+           WHERE freelancer_id = $1 AND deleted_at IS NULL
+           ORDER BY created_at DESC
+           LIMIT 50`,
+          [userId],
+        );
+        exclusiveResources = resourcesResult.rows;
+      } catch (resourcesErr) {
+        if (resourcesErr.code !== "42P01") throw resourcesErr;
+      }
+      try {
+        const filesResult = await client.query(
+          `SELECT id, title, description, file_url, file_name, file_size, mime_type, created_at
+           FROM public.freelancer_profile_files
+           WHERE freelancer_id = $1 AND deleted_at IS NULL
+           ORDER BY created_at DESC
+           LIMIT 50`,
+          [userId],
+        );
+        profileFiles = filesResult.rows;
+      } catch (filesErr) {
+        if (filesErr.code !== "42P01") throw filesErr;
+      }
+
       const reviewsResult = await client.query(
         `SELECT
            cr.id,
@@ -462,6 +638,7 @@ async function getMe(req, res) {
           website: user.website,
           tagline: user.tagline,
           districtCity: user.district_city,
+          coverUrl: user.cover_url,
           locationWkt: user.location_wkt,
         },
         completionScore,
@@ -469,6 +646,8 @@ async function getMe(req, res) {
         freelancerProfile: freelancerResult.rows[0] || null,
         services: servicesResult.rows,
         portfolio: portfolioResult.rows,
+        exclusiveResources,
+        profileFiles,
         reviews: reviewsResult.rows,
         timeline: timelineResult.rows,
       });
@@ -792,6 +971,9 @@ module.exports = {
   updateProfile,
   updateSkills,
   createPortfolio,
+  createExclusiveResource,
+  createProfileFile,
+  uploadProfileFileAsset,
   getMe,
   listMyFeedback,
   changeEmail,

@@ -250,7 +250,9 @@ export default function EditAccountContent() {
     if (dialog.field === "address") {
       const { address } = dialog;
       const hasAddress =
-        Boolean(address.addressSearch.trim()) || Boolean(address.street.trim());
+        Boolean(address.addressSearch.trim()) ||
+        Boolean(address.street.trim()) ||
+        Boolean(address.city.trim());
       if (!hasAddress) {
         alert("Vui lòng dùng GPS hoặc chọn địa chỉ trong phạm vi Vĩnh Long.");
         return;
@@ -395,8 +397,16 @@ export default function EditAccountContent() {
                   lat={dialog.lat}
                   lng={dialog.lng}
                   requestGpsOnMount
-                  onChange={(address) => setDialog({ ...dialog, address })}
-                  onCoordsChange={(lat, lng) => setDialog({ ...dialog, lat, lng })}
+                  onChange={(address) =>
+                    setDialog((current) =>
+                      current?.field === "address" ? { ...current, address } : current,
+                    )
+                  }
+                  onCoordsChange={(lat, lng) =>
+                    setDialog((current) =>
+                      current?.field === "address" ? { ...current, lat, lng } : current,
+                    )
+                  }
                 />
               </div>
             ) : (

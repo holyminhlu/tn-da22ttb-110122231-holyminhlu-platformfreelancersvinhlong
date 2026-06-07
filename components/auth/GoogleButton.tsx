@@ -12,11 +12,24 @@ const GOOGLE_ICON = (
   </svg>
 );
 
-export default function GoogleButton() {
+type GoogleButtonProps = {
+  nextPath?: string | null;
+  role?: "client" | "freelancer";
+};
+
+export default function GoogleButton({ nextPath, role }: GoogleButtonProps) {
   const apiBaseUrl = getApiBaseUrl();
+  const params = new URLSearchParams();
+  if (nextPath) params.set("next", nextPath);
+  if (role) params.set("role", role);
+  const qs = params.toString();
+  const href = apiUrl(
+    qs ? `${apiPaths.auth.google}?${qs}` : apiPaths.auth.google,
+    apiBaseUrl,
+  );
 
   return (
-    <a href={apiUrl(apiPaths.auth.google, apiBaseUrl)} className={styles.googleButton}>
+    <a href={href} className={styles.googleButton}>
       {GOOGLE_ICON}
       Tiếp tục với Google
     </a>

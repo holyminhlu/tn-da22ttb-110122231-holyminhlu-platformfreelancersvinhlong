@@ -1,18 +1,18 @@
 import Image from "next/image";
 import { HERO_SKILL_TAGS } from "./data";
 import HeroSearchBar from "./HeroSearchBar";
+import HomeHeroBackground from "./HomeHeroBackground";
+import HomeHeroTitle from "./HomeHeroTitle";
 
 export default function HomeHero() {
   return (
-    <section className="hero-gradient relative overflow-hidden pb-24 pt-16 text-white">
-      <div className="mx-auto grid max-w-7xl grid-cols-1 items-center gap-12 px-6 lg:grid-cols-2">
+    <section className="hero-section relative overflow-hidden pb-24 pt-16 text-white">
+      <HomeHeroBackground />
+
+      <div className="relative z-20 mx-auto grid max-w-7xl grid-cols-1 items-center gap-12 px-6 lg:grid-cols-2">
         <div>
-          <h1 className="mb-4 text-5xl font-bold leading-tight">
-            Tìm &amp; Thuê
-            <br />
-            Freelancer Tại Vĩnh Long
-          </h1>
-          <p className="mb-10 max-w-lg text-xl opacity-90">
+          <HomeHeroTitle />
+          <p className="mb-10 max-w-lg text-xl text-neutral-300">
             Kết nối doanh nghiệp, hộ kinh doanh và người làm nghề tự do địa phương — đăng việc,
             nhận báo giá, ký quỹ an toàn trên nền tảng Vĩnh Long Connected.
           </p>
@@ -33,7 +33,7 @@ export default function HomeHero() {
             alt="Toàn cảnh phát triển tại Vĩnh Long"
             width={640}
             height={400}
-            className="relative z-10 ml-auto w-full max-w-[520px] rounded-lg object-cover shadow-2xl"
+            className="relative z-10 ml-auto w-full max-w-[520px] rounded-lg object-cover shadow-2xl ring-1 ring-white/10"
             style={{
               aspectRatio: "16 / 10",
               maskImage: "linear-gradient(to bottom, black 85%, transparent 100%)",

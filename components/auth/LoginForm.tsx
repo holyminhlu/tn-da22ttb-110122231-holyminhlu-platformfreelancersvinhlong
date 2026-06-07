@@ -137,7 +137,7 @@ export default function LoginForm() {
       </form>
 
       <div className={styles.divider}>hoặc</div>
-      <GoogleButton />
+      <GoogleButton nextPath={nextPath} />
 
       <p className={styles.helperText}>
         Chưa có tài khoản?{" "}

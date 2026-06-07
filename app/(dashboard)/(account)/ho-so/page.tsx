@@ -1,17 +1,19 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
-import { freelancerPageMetadata } from "@/components/layout/FreelancerPlaceholderPage";
-import MyProfileContent from "@/components/profile/MyProfileContent";
+import ProfilePageContent from "@/components/profile/ProfilePageContent";
 import "@/components/profile/my-profile.css";
+import "@/components/profile/client-profile.css";
 
-export const metadata = freelancerPageMetadata(
-  "Hồ sơ của tôi",
-  "Quản lý hồ sơ freelancer — giới thiệu, kỹ năng, dịch vụ và portfolio.",
-);
+export const metadata: Metadata = {
+  title: "Hồ sơ của tôi — Vĩnh Long Connected",
+  description:
+    "Quản lý hồ sơ Client hoặc Freelancer — thông tin cá nhân, giới thiệu và hoạt động trên nền tảng.",
+};
 
 export default function HoSoPage() {
   return (
     <Suspense fallback={<p className="ea-loading px-4 py-12">Đang tải hồ sơ...</p>}>
-      <MyProfileContent />
+      <ProfilePageContent />
     </Suspense>
   );
 }

@@ -10,6 +10,16 @@ if (!process.env.JWT_ACCESS_SECRET || !process.env.JWT_REFRESH_SECRET) {
   );
 }
 
+if (
+  !process.env.GOOGLE_CLIENT_ID ||
+  !process.env.GOOGLE_CLIENT_SECRET ||
+  process.env.GOOGLE_CLIENT_ID === "your-google-client-id"
+) {
+  console.warn(
+    "[auth] Google OAuth chưa cấu hình — sao chép .env.example thành .env và điền GOOGLE_CLIENT_ID/SECRET.",
+  );
+}
+
 const { pool, query } = require("./db/pool");
 const authRoutes = require("./routes/auth.routes");
 const usersRoutes = require("./routes/users.routes");

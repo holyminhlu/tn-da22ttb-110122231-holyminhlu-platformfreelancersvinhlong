@@ -33,6 +33,11 @@
   border-radius: 4px;
 }
 
+.home-landing .hero-section {
+  background-color: #0f172a;
+  min-height: min(92vh, 820px);
+}
+
 .home-landing .hero-gradient {
   background: linear-gradient(135deg, #1c2e4a 0%, #111b2d 100%);
 }

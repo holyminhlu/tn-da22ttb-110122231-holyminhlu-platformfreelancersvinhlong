@@ -44,6 +44,28 @@ export type PortfolioItem = {
   created_at: string;
 };
 
+export type ExclusiveResourceItem = {
+  id: string;
+  title: string;
+  description: string | null;
+  resource_type: "link" | "file";
+  link_url: string | null;
+  file_url: string | null;
+  file_name: string | null;
+  created_at: string;
+};
+
+export type ProfileFileItem = {
+  id: string;
+  title: string;
+  description: string | null;
+  file_url: string;
+  file_name: string | null;
+  file_size: number | null;
+  mime_type: string | null;
+  created_at: string;
+};
+
 export type ContractReview = {
   id: string;
   rating: number;
@@ -77,6 +99,7 @@ export type MeUser = AuthUser & {
   website?: string | null;
   tagline?: string | null;
   districtCity?: string | null;
+  coverUrl?: string | null;
   locationWkt?: string | null;
 };
 
@@ -87,6 +110,8 @@ export type FreelancerMeResponse = {
   freelancerProfile: FreelancerProfile | null;
   services: FreelancerService[];
   portfolio: PortfolioItem[];
+  exclusiveResources?: ExclusiveResourceItem[];
+  profileFiles?: ProfileFileItem[];
   reviews: ContractReview[];
   timeline?: { event_type: string; event_time: string; event_title: string }[];
 };
@@ -142,6 +167,7 @@ export type UpdateProfilePayload = {
   gender?: string | null;
   tagline?: string | null;
   districtCity?: string | null;
+  coverUrl?: string | null;
   title?: string | null;
   hourlyRate?: number | null;
   experienceYears?: number | null;
@@ -238,6 +264,15 @@ export async function updateProfile(payload: UpdateProfilePayload) {
   return data;
 }
 
+export async function updateAvatar(avatarUrl: string) {
+  const { data } = await fetchApi<{ message?: string; avatarUrl?: string }>(apiPaths.users.avatar, {
+    method: "PATCH",
+    auth: true,
+    body: { avatarUrl },
+  });
+  return data;
+}
+
 export type SkillInput = {
   name: string;
   level?: string;
@@ -268,6 +303,58 @@ export async function createPortfolio(payload: CreatePortfolioPayload) {
       auth: true,
       body: payload,
     },
+  );
+  return data;
+}
+
+export type CreateExclusiveResourcePayload = {
+  title: string;
+  description?: string;
+  resourceType: "link" | "file";
+  linkUrl?: string;
+  fileUrl?: string;
+  fileName?: string;
+};
+
+export type CreateProfileFilePayload = {
+  title: string;
+  description?: string;
+  fileUrl: string;
+  fileName?: string;
+  fileSize?: number;
+  mimeType?: string;
+};
+
+export type ProfileFileUploadResult = {
+  url: string;
+  fileName: string;
+  fileSize: number;
+  mimeType: string | null;
+};
+
+export async function uploadProfileFile(file: File) {
+  const form = new FormData();
+  form.append("file", file);
+  const { data } = await fetchApi<ProfileFileUploadResult>(apiPaths.users.profileFileUpload, {
+    method: "POST",
+    auth: true,
+    body: form,
+  });
+  return data;
+}
+
+export async function createExclusiveResource(payload: CreateExclusiveResourcePayload) {
+  const { data } = await fetchApi<{ message?: string; resource?: ExclusiveResourceItem }>(
+    apiPaths.users.exclusiveResources,
+    { method: "POST", auth: true, body: payload },
+  );
+  return data;
+}
+
+export async function createProfileFile(payload: CreateProfileFilePayload) {
+  const { data } = await fetchApi<{ message?: string; file?: ProfileFileItem }>(
+    apiPaths.users.profileFiles,
+    { method: "POST", auth: true, body: payload },
   );
   return data;
 }
