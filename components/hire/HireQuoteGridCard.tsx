@@ -38,6 +38,8 @@ type HireQuoteGridCardProps = {
 
   onAction?: (quoteId: string, action: PatchJobQuoteAction) => void;
 
+  onChat?: (quote: JobQuoteRow) => void;
+
 };
 
 
@@ -51,6 +53,8 @@ export default function HireQuoteGridCard({
   busy = false,
 
   onAction,
+
+  onChat,
 
 }: HireQuoteGridCardProps) {
 
@@ -194,75 +198,42 @@ export default function HireQuoteGridCard({
 
         ) : null}
 
-        <div className="hire-quote-product-card__quick" aria-label="Thao tác nhanh">
-
-          <Link
-
-            href={profileHref}
-
-            className="hire-quote-product-card__icon-btn"
-
-            title="Liên hệ freelancer"
-
-            aria-label="Liên hệ freelancer"
-
-          >
-
-            <FaCommentDots aria-hidden />
-
-          </Link>
-
-          {isPending && onAction ? (
-
-            <>
-
-              <button
-
-                type="button"
-
-                className="hire-quote-product-card__icon-btn hire-quote-product-card__icon-btn--accept"
-
-                disabled={busy}
-
-                title="Gửi offer"
-
-                aria-label="Gửi offer"
-
-                onClick={() => onAction(quote.id, "offer")}
-
-              >
-
-                ✓
-
-              </button>
-
-              <button
-
-                type="button"
-
-                className="hire-quote-product-card__icon-btn hire-quote-product-card__icon-btn--decline"
-
-                disabled={busy}
-
-                title="Từ chối báo giá"
-
-                aria-label="Từ chối báo giá"
-
-                onClick={() => onAction(quote.id, "decline")}
-
-              >
-
-                <FaTimes aria-hidden />
-
-              </button>
-
-            </>
-
-          ) : null}
-
-        </div>
+        {isPending && onAction ? (
+          <div className="hire-quote-product-card__quick" aria-label="Thao tác nhanh">
+            <button
+              type="button"
+              className="hire-quote-product-card__icon-btn hire-quote-product-card__icon-btn--accept"
+              disabled={busy}
+              title="Gửi offer"
+              aria-label="Gửi offer"
+              onClick={() => onAction(quote.id, "offer")}
+            >
+              ✓
+            </button>
+            <button
+              type="button"
+              className="hire-quote-product-card__icon-btn hire-quote-product-card__icon-btn--decline"
+              disabled={busy}
+              title="Từ chối báo giá"
+              aria-label="Từ chối báo giá"
+              onClick={() => onAction(quote.id, "decline")}
+            >
+              <FaTimes aria-hidden />
+            </button>
+          </div>
+        ) : null}
 
         <div className="hire-quote-product-card__actions">
+
+          <button
+            type="button"
+            className="hire-quote-product-card__icon-btn hire-quote-product-card__icon-btn--chat"
+            title="Chat với freelancer"
+            aria-label="Chat với freelancer"
+            onClick={() => onChat?.(quote)}
+          >
+            <FaCommentDots aria-hidden />
+          </button>
 
           <Link href={href} className="hire-quote-product-card__action">
 

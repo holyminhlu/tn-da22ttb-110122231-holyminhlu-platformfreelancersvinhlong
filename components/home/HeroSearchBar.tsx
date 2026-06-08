@@ -30,7 +30,7 @@ export default function HeroSearchBar() {
         </div>
 
         <button type="button" className="hero-search-bar__cta">
-          <span>Post a Job</span>
+          <span>Đăng việc</span>
           <span className="hero-search-bar__cta-badge">It&apos;s Free</span>
         </button>
       </div>

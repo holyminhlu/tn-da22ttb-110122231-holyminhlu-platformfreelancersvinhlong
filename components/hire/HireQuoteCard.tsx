@@ -3,10 +3,10 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import { FreelancerChatInlineButton } from "@/components/chat/FreelancerChatWidget";
 import {
   FaBriefcase,
   FaCheckCircle,
-  FaEnvelope,
   FaMapMarkerAlt,
   FaStar,
   FaThumbsUp,
@@ -22,6 +22,7 @@ type HireQuoteCardProps = {
   busy?: boolean;
   onAccept?: (quoteId: string) => void;
   onDecline?: (quoteId: string) => void;
+  onChat?: (quote: JobQuoteRow) => void;
 };
 
 function quoteStatusLabel(status: string): string {
@@ -39,7 +40,7 @@ function formatQuoteAmount(quote: JobQuoteRow): string {
   return amount;
 }
 
-export default function HireQuoteCard({ quote, busy, onAccept, onDecline }: HireQuoteCardProps) {
+export default function HireQuoteCard({ quote, busy, onAccept, onDecline, onChat }: HireQuoteCardProps) {
   const [expanded, setExpanded] = useState(false);
   const avatarSrc = resolveAvatarSrc(quote.freelancer_avatar_url);
   const name = quote.freelancer_name?.trim() || "Freelancer";
@@ -160,14 +161,8 @@ export default function HireQuoteCard({ quote, busy, onAccept, onDecline }: Hire
           <FaUser aria-hidden />
           Xem hồ sơ
         </Link>
-        {quote.freelancer_email ? (
-          <a
-            href={`mailto:${quote.freelancer_email}?subject=${encodeURIComponent(`Về công việc: ${quote.job_title || ""}`)}`}
-            className="hire-quote-card__btn hire-quote-card__btn--ghost"
-          >
-            <FaEnvelope aria-hidden />
-            Nhắn tin
-          </a>
+        {onChat ? (
+          <FreelancerChatInlineButton onClick={() => onChat(quote)} />
         ) : null}
         {isPending ? (
           <>

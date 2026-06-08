@@ -1,0 +1,51 @@
+.about-page .about-hero {
+  background: linear-gradient(135deg, #1c2e4a 0%, #111b2d 100%);
+}
+
+.about-page .about-hero__overlay {
+  background: linear-gradient(
+    135deg,
+    rgb(28 46 74 / 0.82) 0%,
+    rgb(28 46 74 / 0.62) 45%,
+    rgb(17 27 45 / 0.75) 100%
+  );
+}
+
+.about-page .about-section-title::after {
+  content: "";
+  display: block;
+  width: 3rem;
+  height: 4px;
+  margin: 0.75rem auto 0;
+  border-radius: 2px;
+  background: #0066cc;
+}
+
+.about-page .about-mission-card {
+  border-left: 4px solid #0066cc;
+}
+
+.about-page .about-vision-card {
+  border-left: 4px solid #38bdf8;
+}
+
+.about-page .about-timeline::before {
+  content: "";
+  position: absolute;
+  left: 1.25rem;
+  top: 0.5rem;
+  bottom: 0.5rem;
+  width: 2px;
+  background: linear-gradient(to bottom, #0066cc, #38bdf8);
+}
+
+@media (min-width: 768px) {
+  .about-page .about-timeline::before {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}
+
+.about-page .about-cta {
+  background: linear-gradient(135deg, #1a202c 0%, #1c2e4a 100%);
+}

@@ -4,35 +4,30 @@ import { FaAndroid, FaApple, FaFacebookF, FaLinkedinIn, FaTwitter } from "./icon
 
 const FOOTER_LINKS = {
   navigate: [
-    { label: "Home", href: "/" },
-    { label: "Post a Job", href: "#" },
-    { label: "Find a Freelancer", href: "/freelancers" },
-    { label: "Find a Job", href: "/findwork" },
-    { label: "Enterprise Solutions", href: "/enterprise" },
-    { label: "Agency Solutions", href: "/agency" },
-    { label: "PO Solutions", href: "/purchase-orders" },
+    { label: "Trang chủ", href: "/" },
+    { label: "Đăng việc", href: "#" },
+    { label: "Tìm Freelancer", href: "/freelancers" },
+    { label: "Tìm việc", href: "/findwork" },
   ],
   company: [
-    { label: "About VLC Connected", href: "/about" },
-    { label: "How It Works", href: "/how-vlc-works" },
-    { label: "Why VLC Connected", href: "/why-vlc" },
-    { label: "Work Agreements", href: "/agreements" },
-    { label: "SafePay", href: "/safepay" },
-    { label: "Pricing", href: "/pricing" },
+    { label: "Giới thiệu về VLC", href: "/about" },
+    { label: "Cách VLC hoạt động", href: "/how-vlc-works" },
+    { label: "Tại sao chọn VLC", href: "/why-vlc" },
+    { label: "Bảng giá", href: "/pricing" },
   ],
   resources: [
-    { label: "Help & FAQ", href: "/help" },
+    { label: "Trợ giúp & FAQ", href: "/help" },
     { label: "Blog", href: "/blog" },
-    { label: "Contact Us", href: "#" },
-    { label: "Mobile App", href: "#" },
-    { label: "APIs", href: "#" },
-    { label: "Sitemap", href: "#" },
-    { label: "Cookie Settings", href: "#" },
+    { label: "Liên hệ", href: "#" },
+    { label: "Ứng dụng di động", href: "#" },
+    { label: "API", href: "#" },
+    { label: "Sơ đồ trang", href: "#" },
+    { label: "Cài đặt cookie", href: "#" },
   ],
   policies: [
-    { label: "IP Policy", href: "#" },
-    { label: "Privacy Policy", href: "#" },
-    { label: "Terms of Service", href: "#" },
+    { label: "Chính sách sở hữu trí tuệ", href: "#" },
+    { label: "Chính sách bảo mật", href: "#" },
+    { label: "Điều khoản dịch vụ", href: "#" },
   ],
 } as const;
 
@@ -58,12 +53,12 @@ export default function HomeFooter() {
     <footer className="bg-[#1a202c] pb-10 pt-20 text-white">
       <div className="mx-auto max-w-7xl px-6">
         <div className="mb-20 grid grid-cols-2 gap-10 md:grid-cols-3 lg:grid-cols-6">
-          <FooterColumn title="Navigate" links={FOOTER_LINKS.navigate} />
-          <FooterColumn title="Company Info" links={FOOTER_LINKS.company} />
-          <FooterColumn title="Resources" links={FOOTER_LINKS.resources} />
-          <FooterColumn title="Policies" links={FOOTER_LINKS.policies} />
+          <FooterColumn title="Điều hướng" links={FOOTER_LINKS.navigate} />
+          <FooterColumn title="Thông tin công ty" links={FOOTER_LINKS.company} />
+          <FooterColumn title="Tài nguyên" links={FOOTER_LINKS.resources} />
+          <FooterColumn title="Chính sách" links={FOOTER_LINKS.policies} />
           <div className="lg:col-span-2">
-            <h4 className="mb-6 font-bold">Connect With Us</h4>
+            <h4 className="mb-6 font-bold">Kết nối với chúng tôi</h4>
             <div className="mb-10 flex space-x-4">
               <a
                 href="#"
@@ -87,12 +82,12 @@ export default function HomeFooter() {
                 <FaLinkedinIn />
               </a>
             </div>
-            <h4 className="mb-6 font-bold">Get the VLC App</h4>
+            <h4 className="mb-6 font-bold">Tải ứng dụng VLC</h4>
             <div className="flex space-x-4">
-              <a href="#" className="transition hover:opacity-80" aria-label="App Store">
+              <a href="#" className="transition hover:opacity-80" aria-label="Tải trên App Store">
                 <FaApple className="text-3xl" />
               </a>
-              <a href="#" className="transition hover:opacity-80" aria-label="Google Play">
+              <a href="#" className="transition hover:opacity-80" aria-label="Tải trên Google Play">
                 <FaAndroid className="text-3xl" />
               </a>
             </div>
@@ -110,9 +105,9 @@ export default function HomeFooter() {
                 className="h-full w-full object-contain p-1.5"
               />
             </span>
-            <span>Get Work Done</span>
+            <span>Hoàn thành mọi công việc</span>
           </div>
-          <div>Copyright © {new Date().getFullYear()}, Vĩnh Long Connected</div>
+          <div>Bản quyền © {new Date().getFullYear()}, Vĩnh Long Connected</div>
         </div>
       </div>
     </footer>

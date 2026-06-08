@@ -10,6 +10,7 @@ import {
   type JobQuoteRow,
   type PatchJobQuoteAction,
 } from "@/lib/api/jobQuotes";
+import FreelancerChatWidget from "@/components/chat/FreelancerChatWidget";
 import HireQuoteDetailView from "./HireQuoteDetailView";
 import HireShell from "./HireShell";
 import "./hire.css";
@@ -24,6 +25,7 @@ export default function ClientHireQuoteDetailPage() {
   const [error, setError] = useState("");
   const [actionError, setActionError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [chatOpen, setChatOpen] = useState(false);
 
   const load = useCallback(async () => {
     if (!quoteId) {
@@ -106,9 +108,21 @@ export default function ClientHireQuoteDetailPage() {
             onOffer={() => void handleQuoteAction("offer")}
             onAccept={() => void handleQuoteAction("accept")}
             onDecline={() => void handleQuoteAction("decline")}
+            onChat={() => setChatOpen(true)}
           />
         ) : null}
       </div>
+
+      {quote ? (
+        <FreelancerChatWidget
+          freelancerId={quote.freelancer_id}
+          freelancerName={quote.freelancer_name?.trim() || "Freelancer"}
+          jobQuoteId={quote.id}
+          contextTitle={quote.job_title}
+          initialOpen={chatOpen}
+          onClose={() => setChatOpen(false)}
+        />
+      ) : null}
     </HireShell>
   );
 }

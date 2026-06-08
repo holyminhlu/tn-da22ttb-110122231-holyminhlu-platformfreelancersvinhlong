@@ -19,10 +19,10 @@ export default function HomeNavbarAuth() {
   return (
     <>
       <Link href="/dang-ky" className="flex items-center text-gray-600 hover:text-blue-600">
-        <FaEdit className="mr-2 text-blue-500" /> Sign Up
+        <FaEdit className="mr-2 text-blue-500" /> Đăng ký
       </Link>
       <Link href="/dang-nhap" className="flex items-center text-gray-600 hover:text-blue-600">
-        <FaSignInAlt className="mr-2 text-blue-500" /> Log In
+        <FaSignInAlt className="mr-2 text-blue-500" /> Đăng nhập
       </Link>
     </>
   );

@@ -1,3 +1,4 @@
+const http = require("http");
 const express = require("express");
 const cors = require("cors");
 
@@ -33,6 +34,8 @@ const servicesRoutes = require("./routes/services.routes");
 const servicesMeRoutes = require("./routes/services.me.routes");
 const servicesLegacyRoutes = require("./routes/services.legacy.routes");
 const paymentsRoutes = require("./routes/payments.routes");
+const chatRoutes = require("./routes/chat.routes");
+const { initChatSocket } = require("./socket/chatSocket");
 const { runWorkflowSlaTick } = require("./utils/workflowSla");
 
 const app = express();
@@ -57,6 +60,7 @@ app.use("/api/jobs/me", jobsMeRoutes);
 app.use("/api/services", servicesRoutes);
 app.use("/api/services/me", servicesMeRoutes);
 app.use("/api/payments", paymentsRoutes);
+app.use("/api/chat", chatRoutes);
 
 /** Legacy: /api/auth/me/*, /api/auth/freelancers, … */
 app.use("/api/auth", usersRoutes);
@@ -80,7 +84,10 @@ app.get("/health", async (_req, res) => {
   }
 });
 
-const server = app.listen(PORT, async () => {
+const httpServer = http.createServer(app);
+initChatSocket(httpServer, frontendUrl);
+
+const server = httpServer.listen(PORT, async () => {
   console.log(`API listening on http://localhost:${PORT}`);
   try {
     await query("SELECT current_database() AS db, version() AS version");

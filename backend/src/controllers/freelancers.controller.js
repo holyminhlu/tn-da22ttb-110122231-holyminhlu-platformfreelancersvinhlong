@@ -431,7 +431,7 @@ async function getFreelancer(req, res) {
 }
 
 async function getTopSkills(req, res) {
-  const limit = Math.min(Math.max(Number.parseInt(String(req.query.limit || ""), 10) || 9, 1), 24);
+  const limit = Math.min(Math.max(Number.parseInt(String(req.query.limit || ""), 10) || 9, 1), 52);
 
   const dbClient = await pool.connect();
   try {
@@ -468,8 +468,71 @@ async function getTopSkills(req, res) {
   }
 }
 
+async function getTopLocations(req, res) {
+  const limit = Math.min(Math.max(Number.parseInt(String(req.query.limit || ""), 10) || 16, 1), 32);
+
+  const dbClient = await pool.connect();
+  try {
+    const result = await dbClient.query(
+      `WITH freelancer_locations AS (
+         SELECT
+           u.id,
+           COALESCE(
+             NULLIF(
+               TRIM(
+                 CONCAT_WS(
+                   ', ',
+                   NULLIF(TRIM(up.city), ''),
+                   NULLIF(TRIM(up.state_province), ''),
+                   NULLIF(TRIM(up.country), '')
+                 )
+               ),
+               ''
+             ),
+             NULLIF(TRIM(up.district_city), '')
+           ) AS label
+         FROM public.users u
+         INNER JOIN public.freelancer_profiles fp
+           ON fp.user_id = u.id
+          AND fp.deleted_at IS NULL
+         LEFT JOIN public.user_profiles up ON up.user_id = u.id
+         WHERE u.role = 'freelancer'
+           AND u.deleted_at IS NULL
+           AND u.status = 'active'
+       )
+       SELECT label AS name,
+              COUNT(DISTINCT id)::int AS freelancer_count
+       FROM freelancer_locations
+       WHERE label IS NOT NULL AND label <> ''
+       GROUP BY label
+       ORDER BY freelancer_count DESC, label ASC
+       LIMIT $1`,
+      [limit],
+    );
+
+    return res.json({
+      locations: result.rows.map((row) => ({
+        name: row.name,
+        freelancerCount: row.freelancer_count,
+      })),
+    });
+  } catch (error) {
+    console.error("Get top locations failed:", error.message);
+    if (error.code === "42703") {
+      return res.status(503).json({
+        message:
+          "Thiếu cột trên user_profiles. Chạy backend/sql/profile_landing_columns.sql trên PostgreSQL.",
+      });
+    }
+    return res.status(500).json({ message: "Không thể tải danh sách địa điểm." });
+  } finally {
+    dbClient.release();
+  }
+}
+
 module.exports = {
   listFreelancers,
   getFreelancer,
   getTopSkills,
+  getTopLocations,
 };

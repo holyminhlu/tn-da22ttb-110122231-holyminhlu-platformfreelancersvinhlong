@@ -1,0 +1,326 @@
+.vlc-chat-fab-wrap {
+  position: fixed;
+  right: 1.5rem;
+  bottom: 1.5rem;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.75rem;
+}
+
+.vlc-chat-fab-wrap--inline {
+  position: static;
+  z-index: auto;
+}
+
+.vlc-chat-fab-wrap--embedded {
+  position: static;
+  z-index: auto;
+  width: 100%;
+  height: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.vlc-chat-panel--embedded {
+  width: 100%;
+  height: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.vlc-chat-panel--embedded .vlc-chat-panel__messages {
+  flex: 1;
+  max-height: none;
+  min-height: 12rem;
+}
+
+.vlc-chat-panel__subtitle {
+  font-size: 0.75rem;
+  color: #6b7280;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 0.1rem;
+}
+
+.vlc-chat-panel {
+  width: min(100vw - 2rem, 22rem);
+  border-radius: 0.75rem;
+  background: #fff;
+  box-shadow: 0 12px 40px rgb(0 0 0 / 0.18);
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+}
+
+.vlc-chat-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.75rem 0.875rem;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.vlc-chat-panel__title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.vlc-chat-panel__title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #1c2e4a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.vlc-chat-panel__close {
+  border: none;
+  background: transparent;
+  color: #6b7280;
+  cursor: pointer;
+  border-radius: 9999px;
+  padding: 0.35rem;
+  line-height: 0;
+}
+
+.vlc-chat-panel__close:hover {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+.vlc-chat-panel__messages {
+  max-height: 18rem;
+  overflow-y: auto;
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.vlc-chat-panel__empty,
+.vlc-chat-panel__loading {
+  padding: 1.5rem 0.75rem;
+  text-align: center;
+  font-size: 0.8125rem;
+  color: #6b7280;
+}
+
+.vlc-chat-panel__error {
+  margin: 0.5rem 0.75rem 0;
+  padding: 0.5rem 0.625rem;
+  border-radius: 0.5rem;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-size: 0.75rem;
+}
+
+.vlc-chat-bubble-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.vlc-chat-bubble-row--mine {
+  align-items: flex-end;
+}
+
+.vlc-chat-bubble-row--theirs {
+  align-items: flex-start;
+}
+
+.vlc-chat-bubble-time {
+  font-size: 0.6875rem;
+  color: #9ca3af;
+}
+
+.vlc-chat-bubble {
+  max-width: 85%;
+  border-radius: 0.625rem;
+  padding: 0.45rem 0.625rem;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  word-break: break-word;
+}
+
+.vlc-chat-bubble--mine {
+  background: rgb(37 99 235 / 0.85);
+  color: #fff;
+  border-bottom-right-radius: 0.2rem;
+}
+
+.vlc-chat-bubble--theirs {
+  background: #f3f4f6;
+  color: #111827;
+  border-bottom-left-radius: 0.2rem;
+}
+
+.vlc-chat-panel__composer {
+  position: relative;
+  border-top: 1px solid #e5e7eb;
+}
+
+.vlc-chat-panel__input {
+  width: 100%;
+  height: 2.75rem;
+  border: none;
+  background: #f3f4f6;
+  padding: 0 2.75rem 0 0.75rem;
+  font-size: 0.875rem;
+  border-bottom-left-radius: 0.75rem;
+  border-bottom-right-radius: 0.75rem;
+  outline: none;
+}
+
+.vlc-chat-panel__input:focus {
+  background: #fff;
+  box-shadow: inset 0 0 0 2px rgb(0 102 204 / 0.25);
+}
+
+.vlc-chat-panel__send {
+  position: absolute;
+  right: 0.35rem;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  color: #0066cc;
+  border-radius: 9999px;
+  padding: 0.4rem;
+  cursor: pointer;
+}
+
+.vlc-chat-panel__send:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.vlc-chat-btn {
+  width: 55px;
+  height: 55px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: none;
+  background-color: #ffe53b;
+  background-image: linear-gradient(147deg, #ffe53b, #ff2525, #ffe53b);
+  cursor: pointer;
+  padding-top: 3px;
+  box-shadow: 5px 5px 10px rgb(0 0 0 / 0.164);
+  position: relative;
+  background-size: 300%;
+  background-position: left;
+  transition-duration: 1s;
+}
+
+.vlc-chat-btn__tooltip {
+  position: absolute;
+  top: -40px;
+  opacity: 0;
+  background-color: rgb(255 180 82);
+  color: #fff;
+  padding: 5px 10px;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition-duration: 0.5s;
+  pointer-events: none;
+  letter-spacing: 0.5px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.vlc-chat-btn:hover .vlc-chat-btn__tooltip {
+  opacity: 1;
+}
+
+.vlc-chat-btn:hover {
+  background-position: right;
+}
+
+.vlc-chat-inline-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid #dbeafe;
+  background: #eff6ff;
+  color: #0066cc;
+  border-radius: 0.5rem;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.vlc-chat-inline-btn:hover {
+  background: #dbeafe;
+}
+
+.vlc-chat-context-attach {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  padding: 0.625rem 0.75rem;
+  margin: 0.25rem 0;
+  border-radius: 0.625rem;
+  border: 1px solid #dbeafe;
+  background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%);
+  list-style: none;
+}
+
+.vlc-chat-context-attach__icon {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0066cc;
+  color: #fff;
+  font-size: 0.875rem;
+}
+
+.vlc-chat-context-attach__body {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.vlc-chat-context-attach__label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #6b7280;
+}
+
+.vlc-chat-context-attach__title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #1c2e4a;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.vlc-chat-context-attach__time {
+  flex-shrink: 0;
+  font-size: 0.625rem;
+  color: #9ca3af;
+  margin-top: 0.1rem;
+}

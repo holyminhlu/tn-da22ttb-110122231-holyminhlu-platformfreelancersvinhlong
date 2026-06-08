@@ -61,6 +61,7 @@ export const apiPaths = {
   freelancers: {
     list: "/api/freelancers",
     topSkills: "/api/freelancers/top-skills",
+    topLocations: "/api/freelancers/top-locations",
     detail: (id: string) => `/api/freelancers/${id}`,
     /** Legacy — tương thích client cũ */
     listLegacy: "/api/auth/freelancers",
@@ -106,5 +107,10 @@ export const apiPaths = {
     billingProfile: "/api/payments/billing-profile",
     deposit: "/api/payments/deposit",
     withdraw: "/api/payments/withdraw",
+  },
+  chat: {
+    listConversations: "/api/chat/conversations",
+    openConversation: "/api/chat/conversations/open",
+    messages: (conversationId: string) => `/api/chat/conversations/${conversationId}/messages`,
   },
 } as const;

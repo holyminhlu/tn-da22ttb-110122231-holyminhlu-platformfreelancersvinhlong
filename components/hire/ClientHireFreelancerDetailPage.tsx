@@ -35,6 +35,7 @@ import {
   satisfactionPercent,
 } from "@/lib/hire/freelancerSearchDisplay";
 import { formatDate } from "@/lib/format";
+import FreelancerChatWidget from "@/components/chat/FreelancerChatWidget";
 import HireShell from "./HireShell";
 import FindFreelancersPage from "@/components/freelancers/FindFreelancersPage";
 import { useStoredUser } from "@/hooks/useStoredUser";
@@ -165,6 +166,13 @@ export default function ClientHireFreelancerDetailPage({
   const ratingAvg = Number(fl.rating_avg);
   const featured = data.featuredService;
   const featuredThumb = resolveFreelancerMedia(featured?.thumbnail_url);
+  const chatService =
+    (highlightServiceId
+      ? data.services.find((svc) => svc.id === highlightServiceId)
+      : null) ??
+    featured ??
+    data.services[0] ??
+    null;
 
   return (
     <PageShell>
@@ -628,6 +636,15 @@ export default function ClientHireFreelancerDetailPage({
           </aside>
         </div>
       </div>
+
+      {canHire && fl ? (
+        <FreelancerChatWidget
+          freelancerId={freelancerId}
+          freelancerName={fl.full_name?.trim() || "Freelancer"}
+          serviceId={chatService?.id}
+          contextTitle={chatService?.title}
+        />
+      ) : null}
     </PageShell>
   );
 }

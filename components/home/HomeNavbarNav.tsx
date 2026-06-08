@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useStoredUser } from "@/hooks/useStoredUser";
-import { ABOUT_NAV, SOLUTIONS_NAV } from "./navMenus";
+import { ABOUT_NAV } from "./navMenus";
 import NavDropdown from "./NavDropdown";
 
 const FREELANCER_NAV = [
@@ -56,10 +56,9 @@ export default function HomeNavbarNav() {
         Tìm Freelancer
       </Link>
       <Link href="/findwork" className="hover:text-blue-600">
-        Find Jobs
+        Tìm việc
       </Link>
-      <NavDropdown label="About" items={ABOUT_NAV} />
-      <NavDropdown label="Solutions" items={SOLUTIONS_NAV} />
+      <NavDropdown label="Giới thiệu" items={ABOUT_NAV} />
     </div>
   );
 }

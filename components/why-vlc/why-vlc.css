@@ -1,0 +1,48 @@
+.why-vlc-page .why-vlc-hero {
+  background: linear-gradient(135deg, #1c2e4a 0%, #111b2d 100%);
+}
+
+.why-vlc-page .why-vlc-hero__overlay {
+  background: linear-gradient(
+    135deg,
+    rgb(28 46 74 / 0.82) 0%,
+    rgb(28 46 74 / 0.62) 45%,
+    rgb(17 27 45 / 0.75) 100%
+  );
+}
+
+.why-vlc-page .why-vlc-section-title::after {
+  content: "";
+  display: block;
+  width: 3rem;
+  height: 4px;
+  margin: 0.75rem auto 0;
+  border-radius: 2px;
+  background: #0066cc;
+}
+
+.why-vlc-page .why-vlc-benefit-card {
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+
+.why-vlc-page .why-vlc-benefit-card:hover {
+  border-color: rgb(0 102 204 / 0.35);
+  box-shadow: 0 8px 24px rgb(0 102 204 / 0.08);
+  transform: translateY(-2px);
+}
+
+.why-vlc-page .why-vlc-usp-card {
+  background: linear-gradient(160deg, #f8fafc 0%, #fff 100%);
+}
+
+.why-vlc-page .why-vlc-stats-bar {
+  margin-top: -3rem;
+}
+
+.why-vlc-page .why-vlc-testimonial-card {
+  border-left: 4px solid #0066cc;
+}
+
+.why-vlc-page .why-vlc-cta {
+  background: linear-gradient(135deg, #1a202c 0%, #1c2e4a 100%);
+}

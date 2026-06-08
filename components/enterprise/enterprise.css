@@ -1,0 +1,77 @@
+.enterprise-page .enterprise-hero {
+  background-color: #1a202c;
+  background-image: url("https://www.transparenttextures.com/patterns/gears.png");
+  background-size: 400px;
+}
+
+.enterprise-page .enterprise-section-title::after {
+  content: "";
+  display: block;
+  width: 3rem;
+  height: 4px;
+  margin: 0.75rem auto 0;
+  border-radius: 2px;
+  background: #38bdf8;
+}
+
+.enterprise-page .enterprise-benefit-card {
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+
+.enterprise-page .enterprise-benefit-card:hover {
+  border-color: rgb(56 189 248 / 0.4);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.08);
+  transform: translateY(-2px);
+}
+
+.enterprise-page .enterprise-support-panel {
+  background: linear-gradient(135deg, #1c2e4a 0%, #111b2d 100%);
+}
+
+.enterprise-page .enterprise-logo-tile {
+  filter: grayscale(1);
+  opacity: 0.75;
+  transition: filter 0.2s, opacity 0.2s;
+}
+
+.enterprise-page .enterprise-logo-tile:hover {
+  filter: grayscale(0);
+  opacity: 1;
+}
+
+.enterprise-page .enterprise-case-card {
+  border-top: 4px solid #0066cc;
+}
+
+.enterprise-page .enterprise-form input,
+.enterprise-page .enterprise-form select,
+.enterprise-page .enterprise-form textarea {
+  width: 100%;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e7eb;
+  padding: 0.75rem 1rem;
+  font-size: 0.9375rem;
+  color: #1a202c;
+  background: #fff;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.enterprise-page .enterprise-form input:focus,
+.enterprise-page .enterprise-form select:focus,
+.enterprise-page .enterprise-form textarea:focus {
+  border-color: #0066cc;
+  box-shadow: 0 0 0 3px rgb(0 102 204 / 0.15);
+}
+
+.enterprise-page .enterprise-form label {
+  display: block;
+  margin-bottom: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.enterprise-page .enterprise-form__field {
+  margin-bottom: 1rem;
+}

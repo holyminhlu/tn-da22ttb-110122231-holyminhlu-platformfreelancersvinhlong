@@ -1,15 +1,22 @@
-import SitePage, { sitePageMetadata } from "@/components/layout/SitePage";
+import HomeFooter from "@/components/home/HomeFooter";
+import HomeNavbar from "@/components/home/HomeNavbar";
+import "@/components/home/home.css";
+import WhyVlcContent from "@/components/why-vlc/WhyVlcContent";
+import { sitePageMetadata } from "@/components/layout/SitePage";
 
 export const metadata = sitePageMetadata(
-  "Why Vĩnh Long Connected",
-  "Lý do chọn Vĩnh Long Connected.",
+  "Tại sao chọn VLC",
+  "Lý do doanh nghiệp và freelancer chọn Vĩnh Long Connected — minh bạch, SafePay, hỗ trợ địa phương và phí cạnh tranh.",
 );
 
 export default function WhyVlcPage() {
   return (
-    <SitePage
-      title="Why Vĩnh Long Connected"
-      description="Nội dung lợi ích và điểm khác biệt sẽ được bổ sung."
-    />
+    <div className="home-landing min-h-screen bg-white text-gray-900">
+      <HomeNavbar />
+      <main id="main-content">
+        <WhyVlcContent />
+      </main>
+      <HomeFooter />
+    </div>
   );
 }

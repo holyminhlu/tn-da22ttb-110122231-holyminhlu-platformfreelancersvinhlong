@@ -2,10 +2,10 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { FreelancerChatInlineButton } from "@/components/chat/FreelancerChatWidget";
 import {
   FaBriefcase,
   FaCheckCircle,
-  FaEnvelope,
   FaMapMarkerAlt,
   FaStar,
   FaThumbsUp,
@@ -31,6 +31,7 @@ type HireQuoteDetailViewProps = {
   onOffer?: (quoteId: string) => void;
   onAccept?: (quoteId: string) => void;
   onDecline?: (quoteId: string) => void;
+  onChat?: () => void;
 };
 
 export default function HireQuoteDetailView({
@@ -42,6 +43,7 @@ export default function HireQuoteDetailView({
   onOffer,
   onAccept,
   onDecline,
+  onChat,
 }: HireQuoteDetailViewProps) {
   const avatarSrc = resolveAvatarSrc(quote.freelancer_avatar_url);
   const name = quote.freelancer_name?.trim() || "Freelancer";
@@ -172,15 +174,7 @@ export default function HireQuoteDetailView({
           <FaUser aria-hidden />
           Xem hồ sơ
         </Link>
-        {quote.freelancer_email ? (
-          <a
-            href={`mailto:${quote.freelancer_email}?subject=${encodeURIComponent(`Về công việc: ${quote.job_title || ""}`)}`}
-            className="hire-favorites__action"
-          >
-            <FaEnvelope aria-hidden />
-            Nhắn tin
-          </a>
-        ) : null}
+        {onChat ? <FreelancerChatInlineButton onClick={onChat} /> : null}
         {canShortlist ? (
           <button
             type="button"

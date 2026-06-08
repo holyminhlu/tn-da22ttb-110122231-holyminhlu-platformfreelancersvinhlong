@@ -13,6 +13,7 @@ import {
   type JobQuoteRow,
   type JobQuoteStatus,
 } from "@/lib/api/jobQuotes";
+import FreelancerChatWidget from "@/components/chat/FreelancerChatWidget";
 import HireQuoteGridCard from "./HireQuoteGridCard";
 import HireShell from "./HireShell";
 import { sortJobQuotes, type QuoteSort } from "@/lib/hire/quoteDisplay";
@@ -53,6 +54,7 @@ export default function ClientHireQuotesPage() {
   const [quoteSortOpen, setQuoteSortOpen] = useState(false);
   const [page, setPage] = useState(1);
   const [actionBusyId, setActionBusyId] = useState("");
+  const [chatQuote, setChatQuote] = useState<JobQuoteRow | null>(null);
   const quoteFilterRef = useRef<HTMLDivElement>(null);
   const quoteSortRef = useRef<HTMLDivElement>(null);
 
@@ -355,6 +357,7 @@ export default function ClientHireQuotesPage() {
                       showJobTitle
                       busy={actionBusyId === quote.id}
                       onAction={(id, action) => void handleQuoteAction(id, action)}
+                      onChat={(row) => setChatQuote(row)}
                     />
                   ))}
                 </div>
@@ -371,6 +374,18 @@ export default function ClientHireQuotesPage() {
           </>
         )}
       </div>
+
+      {chatQuote ? (
+        <FreelancerChatWidget
+          key={chatQuote.id}
+          freelancerId={chatQuote.freelancer_id}
+          freelancerName={chatQuote.freelancer_name?.trim() || "Freelancer"}
+          jobQuoteId={chatQuote.id}
+          contextTitle={chatQuote.job_title}
+          initialOpen
+          onClose={() => setChatQuote(null)}
+        />
+      ) : null}
     </HireShell>
   );
 }

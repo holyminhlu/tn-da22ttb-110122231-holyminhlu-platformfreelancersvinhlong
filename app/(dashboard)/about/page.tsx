@@ -1,15 +1,22 @@
-import SitePage, { sitePageMetadata } from "@/components/layout/SitePage";
+import HomeFooter from "@/components/home/HomeFooter";
+import HomeNavbar from "@/components/home/HomeNavbar";
+import "@/components/home/home.css";
+import AboutPageContent from "@/components/about/AboutPageContent";
+import { sitePageMetadata } from "@/components/layout/SitePage";
 
 export const metadata = sitePageMetadata(
-  "About Vĩnh Long Connected",
-  "Giới thiệu nền tảng kết nối dịch vụ và freelancer tại Vĩnh Long.",
+  "Giới thiệu về VLC",
+  "Tìm hiểu sứ mệnh, tầm nhìn và đội ngũ đứng sau Vĩnh Long Connected — nền tảng kết nối freelancer và doanh nghiệp tại Vĩnh Long.",
 );
 
 export default function AboutPage() {
   return (
-    <SitePage
-      title="About Vĩnh Long Connected"
-      description="Nội dung giới thiệu sẽ được bổ sung."
-    />
+    <div className="home-landing min-h-screen bg-white text-gray-900">
+      <HomeNavbar />
+      <main id="main-content">
+        <AboutPageContent />
+      </main>
+      <HomeFooter />
+    </div>
   );
 }
