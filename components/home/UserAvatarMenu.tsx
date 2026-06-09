@@ -2,9 +2,11 @@
 
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
+import FreelancerAvatarFrame from "@/components/freelancer/FreelancerAvatarFrame";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { logout } from "@/lib/api/auth";
 import { clearStoredSession, getUserInitials, resolveAvatarSrc } from "@/lib/authSession";
+import { isFreelancerRole } from "@/hooks/useStoredUser";
 import type { StoredUser } from "@/lib/authSession";
 import { getUserMenuItems, type UserMenuEntry } from "./userMenuItems";
 
@@ -90,19 +92,29 @@ export default function UserAvatarMenu({ user }: UserAvatarMenuProps) {
         aria-controls={menuId}
         onClick={() => setOpen((prev) => !prev)}
       >
-        <Avatar size="lg" className="size-10 ring-2 ring-[#0066cc]/25 transition hover:ring-[#0066cc]/50">
-          {avatarSrc ? <AvatarImage src={avatarSrc} alt={label} /> : null}
-          <AvatarFallback className="bg-[#e8f1fb] text-sm font-semibold text-[#0066cc]">
-            {getUserInitials(user.fullName, user.email)}
-          </AvatarFallback>
-        </Avatar>
+        {isFreelancerRole(user.role) ? (
+          <FreelancerAvatarFrame
+            completedJobs={user.completedJobs}
+            size={40}
+            src={avatarSrc}
+            alt={label}
+            fallback={getUserInitials(user.fullName, user.email)}
+          />
+        ) : (
+          <Avatar size="lg" className="size-10 ring-2 ring-[#0066cc]/25 transition hover:ring-[#0066cc]/50">
+            {avatarSrc ? <AvatarImage src={avatarSrc} alt={label} /> : null}
+            <AvatarFallback className="bg-[#e8f1fb] text-sm font-semibold text-[#0066cc]">
+              {getUserInitials(user.fullName, user.email)}
+            </AvatarFallback>
+          </Avatar>
+        )}
       </button>
 
       {open ? (
         <div
           id={menuId}
           role="menu"
-          aria-label="User menu"
+          aria-label="Menu tài khoản"
           className="absolute right-0 top-[calc(100%+0.5rem)] z-[60] min-w-[14rem] overflow-hidden rounded-md border border-gray-200 bg-white py-1 shadow-lg"
         >
           {menuItems.map((item, index) => {

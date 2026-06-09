@@ -23,8 +23,18 @@ const {
   loadPendingCancelRequest,
   loadOpenDispute,
 } = require("../utils/workflowSla");
+const {
+  notifyWorkflowAction,
+  notifyServiceOrderCreated,
+} = require("../utils/notificationService");
 
 const WORKFLOW_STAGES = ["selection", "escrow", "execution", "delivery", "completion"];
+
+function fireWorkflowNotification(db, contract, action, actorId, extra = {}) {
+  notifyWorkflowAction(db, contract, action, actorId, extra).catch((err) =>
+    console.error(`notifyWorkflowAction ${action}:`, err.message),
+  );
+}
 
 function terminalResponse(res) {
   return res.status(409).json({ message: "Đơn đã hủy, hết hạn hoặc đã kết thúc — không thể thực hiện thao tác này." });
@@ -218,6 +228,12 @@ async function createFromServiceQuote(req, res) {
     await logWorkflowEvent(db, contractId, "order_created", { slaDays: SLA_DAYS.AWAIT_PROPOSAL }, payload.sub);
 
     await db.query("COMMIT");
+    notifyServiceOrderCreated(
+      db,
+      { id: contractId, freelancer_id: svc.freelancer_id },
+      svc.title,
+      payload.sub,
+    ).catch((err) => console.error("notifyServiceOrderCreated:", err.message));
     return res.status(201).json({
       message: "Đã gửi yêu cầu báo giá. Freelancer sẽ phản hồi đề xuất.",
       contractId,
@@ -382,6 +398,7 @@ async function patchContractWorkflow(req, res) {
       await setStageDeadline(db, contractId, SLA_DAYS.AWAIT_ACCEPT);
       await logWorkflowEvent(db, contractId, "proposal_submitted", {}, payload.sub);
       await db.query("COMMIT");
+      fireWorkflowNotification(db, contract, "submit_proposal", payload.sub);
       return res.json({ message: "Đã gửi đề xuất cho Client." });
     }
 
@@ -403,6 +420,7 @@ async function patchContractWorkflow(req, res) {
       await setStageDeadline(db, contractId, SLA_DAYS.AWAIT_PROPOSAL);
       await logWorkflowEvent(db, contractId, "proposal_withdrawn", {}, payload.sub);
       await db.query("COMMIT");
+      fireWorkflowNotification(db, contract, "withdraw_proposal", payload.sub);
       return res.json({ message: "Đã rút đề xuất. Bạn có thể gửi lại." });
     }
 
@@ -425,6 +443,7 @@ async function patchContractWorkflow(req, res) {
       await setStageDeadline(db, contractId, SLA_DAYS.AWAIT_PROPOSAL);
       await logWorkflowEvent(db, contractId, "proposal_rejected", { note }, payload.sub);
       await db.query("COMMIT");
+      fireWorkflowNotification(db, contract, "reject_proposal", payload.sub);
       return res.json({ message: "Đã từ chối đề xuất. Freelancer có thể gửi đề xuất mới." });
     }
 
@@ -447,6 +466,7 @@ async function patchContractWorkflow(req, res) {
       await closeJobIfAny(db, contract.job_id);
       await logWorkflowEvent(db, contractId, "order_cancelled", { cancelType, reason }, payload.sub);
       await db.query("COMMIT");
+      fireWorkflowNotification(db, contract, "cancel_order", payload.sub);
       return res.json({ message: "Đã hủy đơn. Không ảnh hưởng uy tín (chưa nạp ký quỹ)." });
     }
 
@@ -468,6 +488,7 @@ async function patchContractWorkflow(req, res) {
       await setEscrowDeadlines(db, contractId);
       await logWorkflowEvent(db, contractId, "proposal_accepted", {}, payload.sub);
       await db.query("COMMIT");
+      fireWorkflowNotification(db, contract, "accept_proposal", payload.sub);
       return res.json({ message: "Đã chấp nhận đề xuất. Tiếp theo: nạp ký quỹ (Escrow)." });
     }
 
@@ -512,6 +533,7 @@ async function patchContractWorkflow(req, res) {
       );
       await logWorkflowEvent(db, contractId, "escrow_funded", { amount }, payload.sub);
       await db.query("COMMIT");
+      fireWorkflowNotification(db, contract, "fund_escrow", payload.sub);
       return res.json({ message: "Đã nạp ký quỹ. Freelancer có thể bắt đầu làm việc." });
     }
 
@@ -534,6 +556,7 @@ async function patchContractWorkflow(req, res) {
         [contractId],
       );
       await db.query("COMMIT");
+      fireWorkflowNotification(db, contract, "update_progress", payload.sub);
       return res.json({ message: "Đã cập nhật tiến độ." });
     }
 
@@ -562,6 +585,7 @@ async function patchContractWorkflow(req, res) {
       );
       await logWorkflowEvent(db, contractId, "revision_requested", { note }, payload.sub);
       await db.query("COMMIT");
+      fireWorkflowNotification(db, contract, "request_revision", payload.sub);
       return res.json({ message: "Đã gửi yêu cầu chỉnh sửa. Đồng hồ tự nghiệm thu tạm dừng." });
     }
 
@@ -589,6 +613,7 @@ async function patchContractWorkflow(req, res) {
       );
       await logWorkflowEvent(db, contractId, "marked_delivered", { reviewDeadline }, payload.sub);
       await db.query("COMMIT");
+      fireWorkflowNotification(db, contract, "mark_delivered", payload.sub);
       return res.json({ message: "Đã gửi bàn giao cho Client nghiệm thu." });
     }
 
@@ -599,6 +624,7 @@ async function patchContractWorkflow(req, res) {
       }
       await acceptDeliveryInternal(db, contract, payload.sub, false);
       await db.query("COMMIT");
+      fireWorkflowNotification(db, contract, "accept_delivery", payload.sub);
       return res.json({ message: "Đã nghiệm thu. Bạn có thể giải ngân và đánh giá." });
     }
 
@@ -633,6 +659,7 @@ async function patchContractWorkflow(req, res) {
       );
       await logWorkflowEvent(db, contractId, "cancel_refund_requested", { reason, respondBy }, payload.sub);
       await db.query("COMMIT");
+      fireWorkflowNotification(db, contract, "request_cancel_refund", payload.sub);
       return res.json({
         message: `Đã gửi yêu cầu hủy. Freelancer có ${SLA_DAYS.CANCEL_RESPONSE} ngày để phản hồi.`,
       });
@@ -668,6 +695,7 @@ async function patchContractWorkflow(req, res) {
         await logWorkflowEvent(db, contractId, "cancel_refund_rejected", { responseNote }, payload.sub);
       }
       await db.query("COMMIT");
+      fireWorkflowNotification(db, contract, "respond_cancel_request", payload.sub, { agree });
       return res.json({
         message: agree ? "Đã đồng ý hủy và hoàn tiền cho Client." : "Đã phản đối yêu cầu hủy.",
       });
@@ -696,6 +724,7 @@ async function patchContractWorkflow(req, res) {
       );
       await logWorkflowEvent(db, contractId, "dispute_opened", { reason }, payload.sub);
       await db.query("COMMIT");
+      fireWorkflowNotification(db, contract, "open_dispute", payload.sub);
       return res.json({ message: "Đã mở tranh chấp. Đội ngũ sẽ xem xét trong thời gian sớm nhất." });
     }
 
@@ -712,6 +741,7 @@ async function patchContractWorkflow(req, res) {
         await releasePaymentToFreelancer(db, contract, payload.sub, false);
       }
       await db.query("COMMIT");
+      fireWorkflowNotification(db, contract, "release_payment", payload.sub);
       return res.json({ message: "Đã giải ngân cho Freelancer." });
     }
 

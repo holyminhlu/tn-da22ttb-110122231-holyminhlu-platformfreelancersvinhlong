@@ -6,6 +6,12 @@
   box-sizing: border-box;
 }
 
+.client-shell__main--wide {
+  max-width: none;
+  padding-left: clamp(1rem, 2.5vw, 2rem);
+  padding-right: clamp(1rem, 2.5vw, 2rem);
+}
+
 .client-page__title {
   font-size: 1.5rem;
   font-weight: 400;
@@ -132,8 +138,14 @@
   gap: 1rem;
 }
 
+.client-dashboard__grid--duo {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-top: 1rem;
+}
+
 @media (max-width: 900px) {
-  .client-dashboard__grid {
+  .client-dashboard__grid,
+  .client-dashboard__grid--duo {
     grid-template-columns: 1fr;
     grid-auto-rows: auto;
   }

@@ -10,6 +10,7 @@ export type StoredUser = {
   role: string;
   fullName?: string;
   avatarUrl?: string;
+  completedJobs?: number;
 };
 
 export function toStoredUser(user: AuthUser): StoredUser {
@@ -19,6 +20,7 @@ export function toStoredUser(user: AuthUser): StoredUser {
     role: user.role,
     fullName: user.fullName || "",
     avatarUrl: user.avatarUrl || "",
+    completedJobs: user.completedJobs ?? 0,
   };
 }
 

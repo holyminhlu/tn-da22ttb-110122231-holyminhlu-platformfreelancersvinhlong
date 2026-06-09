@@ -2,10 +2,30 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState, type ReactNode } from "react";
-import { FaPlus } from "react-icons/fa";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { listMyContracts, type ContractRow } from "@/lib/api/contracts";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
+import {
+  FaCheckCircle,
+  FaFolderOpen,
+  FaPlusCircle,
+  FaQuoteLeft,
+  FaStar,
+  FaTools,
+  FaUserEdit,
+  FaWallet,
+} from "react-icons/fa";
+import FreelancerAvatarFrame from "@/components/freelancer/FreelancerAvatarFrame";
+import FreelancerShell from "@/components/layout/FreelancerShell";
+import { assignmentToListItem, type JobsListItem } from "@/components/jobs/jobs-filter";
+import { isFreelancerRole } from "@/hooks/useStoredUser";
+import { usePagedList } from "@/hooks/usePagedList";
+import { getMyWork } from "@/lib/api/contracts";
+import {
+  freelancerTransactionCategoryLabel,
+  getFreelancerBillingOverview,
+  type FreelancerBillingOverview,
+  type FreelancerTransaction,
+} from "@/lib/api/payments";
 import {
   getMe,
   isFreelancerMeResponse,
@@ -14,434 +34,609 @@ import {
   type FreelancerProfile,
   type FreelancerService,
   type MeUser,
-  type PortfolioItem,
-  type UserSkill,
 } from "@/lib/api/users";
-import { getUserInitials, persistStoredUser, resolveAvatarSrc, toStoredUser } from "@/lib/authSession";
-import { contractStatusLabel } from "@/components/jobs/jobs-filter";
-import { formatDate, formatVnd, parseJsonArray } from "@/lib/format";
-import HomeFooter from "@/components/home/HomeFooter";
-import HomeNavbar from "@/components/home/HomeNavbar";
-import { usePagedList } from "@/hooks/usePagedList";
+import {
+  getUserInitials,
+  persistStoredUser,
+  resolveAvatarSrc,
+  toStoredUser,
+  VLC_USER_UPDATED_EVENT,
+} from "@/lib/authSession";
+import { formatDate, formatVnd } from "@/lib/format";
+import {
+  isActiveJobContract,
+  isJobOnlyContract,
+  jobContractHref,
+  jobContractStageLabel,
+} from "@/lib/findwork/jobContractsDisplay";
 import DashboardPagination from "./DashboardPagination";
-import "../home/home.css";
 import "./dashboard.css";
 import "./dashboardPagination.css";
 
-const LIST_PAGE_SIZE = 5;
+const WIDGET_PAGE_SIZE = 5;
 
-function availabilityStatusLabel(status: string | null | undefined) {
-  const s = String(status || "").toLowerCase();
-  if (s === "available") return "Sẵn sàng nhận việc";
-  if (s === "busy") return "Đang bận";
-  if (s === "unavailable") return "Không nhận việc";
-  return status?.trim() || "—";
+function apiErrorMessage(err: unknown, fallback: string) {
+  if (err && typeof err === "object" && "message" in err) {
+    return String((err as { message: string }).message);
+  }
+  return fallback;
 }
 
-function skillLevelLabel(level: string | null | undefined) {
-  const s = String(level || "").toLowerCase();
-  if (s === "beginner") return "Cơ bản";
-  if (s === "intermediate") return "Trung cấp";
-  if (s === "advanced") return "Nâng cao";
-  if (s === "expert") return "Chuyên gia";
-  return level?.trim() || "—";
-}
-
-function InfoRow({ label, value }: { label: string; value: ReactNode }) {
-  return (
-    <div className="freelancer-dashboard__row">
-      <dt>{label}</dt>
-      <dd>{value ?? "—"}</dd>
-    </div>
+function isUnauthorized(err: unknown) {
+  return Boolean(
+    err && typeof err === "object" && "status" in err && (err as { status: number }).status === 401,
   );
 }
 
-function contractStatusClass(status: string) {
-  const s = status.toLowerCase();
-  if (s === "active") return "freelancer-dashboard__status freelancer-dashboard__status--active";
-  if (s === "pending") return "freelancer-dashboard__status freelancer-dashboard__status--pending";
-  if (s === "completed") return "freelancer-dashboard__status freelancer-dashboard__status--completed";
-  return "freelancer-dashboard__status freelancer-dashboard__status--other";
-}
-
-function BasicInfoPanel({ user, profile, completionScore }: { user: MeUser; profile: FreelancerProfile | null; completionScore: number }) {
-  const avatarSrc = resolveAvatarSrc(user.avatarUrl);
-  const badges = parseJsonArray(profile?.profile_badges);
-  const languages = parseJsonArray(profile?.languages);
-
-  return (
-    <section className="freelancer-dashboard__panel freelancer-dashboard__panel--square">
-      <header className="freelancer-dashboard__panel-head">Thông tin cơ bản</header>
-      <div className="freelancer-dashboard__panel-body">
-        <div className="freelancer-dashboard__avatar-wrap">
-          <Avatar size="lg" className="size-14">
-            {avatarSrc ? <AvatarImage src={avatarSrc} alt={user.fullName || ""} /> : null}
-            <AvatarFallback className="bg-[#e8f1fb] text-[#0066cc]">
-              {getUserInitials(user.fullName, user.email)}
-            </AvatarFallback>
-          </Avatar>
-          <div>
-            <p className="freelancer-dashboard__name">{user.fullName || user.email}</p>
-            {user.tagline ? <p className="freelancer-dashboard__tagline">{user.tagline}</p> : null}
-          </div>
-        </div>
-        <dl className="freelancer-dashboard__dl">
-          <InfoRow label="E-mail" value={user.email} />
-          <InfoRow label="Điện thoại" value={user.phone} />
-          <InfoRow label="Khu vực" value={user.districtCity} />
-          <InfoRow label="Chức danh" value={profile?.title} />
-          <InfoRow label="Giá/giờ" value={profile?.hourly_rate != null ? formatVnd(profile.hourly_rate) : null} />
-          <InfoRow label="Kinh nghiệm" value={profile?.experience_years != null ? `${profile.experience_years} năm` : null} />
-          <InfoRow
-            label="Trạng thái làm việc"
-            value={availabilityStatusLabel(profile?.availability_status)}
-          />
-          <InfoRow label="Thu nhập" value={formatVnd(profile?.total_earnings)} />
-          <InfoRow label="Hoàn thành hồ sơ" value={`${completionScore}%`} />
-          <InfoRow
-            label="Xác thực"
-            value={
-              [user.isEmailVerified && "E-mail", user.isPhoneVerified && "Số điện thoại"]
-                .filter(Boolean)
-                .join(", ") || "Chưa xác thực"
-            }
-          />
-        </dl>
-        {badges.length > 0 ? (
-          <div className="mt-2">
-            {badges.map((b) => (
-              <span key={b} className="freelancer-dashboard__badge">
-                {b}
-              </span>
-            ))}
-          </div>
-        ) : null}
-        {languages.length > 0 ? (
-          <p className="freelancer-dashboard__muted mt-2">Ngôn ngữ: {languages.join(", ")}</p>
-        ) : null}
-        {user.bio ? <p className="freelancer-dashboard__muted mt-2 line-clamp-4">{user.bio}</p> : null}
-      </div>
-    </section>
-  );
-}
-
-function PanelSectionLabel({
-  label,
-  count,
-  addHref,
+function DashboardWidget({
+  title,
+  headLinks,
+  children,
+  alignLeft = false,
 }: {
-  label: string;
-  count: number;
-  addHref: string;
+  title: string;
+  headLinks?: ReactNode;
+  children: ReactNode;
+  alignLeft?: boolean;
 }) {
   return (
-    <div className="freelancer-dashboard__section-head">
-      <span className="freelancer-dashboard__section-head-label">
-        {label} ({count})
-      </span>
-      <Link
-        href={addHref}
-        className="freelancer-dashboard__section-head-add"
-        aria-label={`Thêm ${label}`}
-        title={`Thêm ${label}`}
-      >
-        <FaPlus aria-hidden />
-      </Link>
-    </div>
+    <section className="client-widget">
+      <header className="client-widget__head">
+        <span>{title}</span>
+        {headLinks ? <div className="client-widget__head-links">{headLinks}</div> : null}
+      </header>
+      <div className={`client-widget__body${alignLeft ? " client-widget__body--left" : ""}`}>
+        {children}
+      </div>
+    </section>
   );
 }
 
-function SkillsPortfolioPanel({ skills, portfolio }: { skills: UserSkill[]; portfolio: PortfolioItem[] }) {
-  const skillsPage = usePagedList(skills, LIST_PAGE_SIZE);
-  const portfolioPage = usePagedList(portfolio, LIST_PAGE_SIZE);
+function WidgetWorkList({ items }: { items: JobsListItem[] }) {
+  const { items: pageItems, page, totalPages, total, setPage } = usePagedList(items, WIDGET_PAGE_SIZE);
 
   return (
-    <section className="freelancer-dashboard__panel freelancer-dashboard__panel--square">
-      <header className="freelancer-dashboard__panel-head">Kỹ năng & danh mục dự án</header>
-      <div className="freelancer-dashboard__panel-body">
-        <PanelSectionLabel label="Kỹ năng" count={skills.length} addHref="/ho-so?add=skills" />
-        {skills.length === 0 ? (
-          <p className="freelancer-dashboard__empty">Chưa thêm kỹ năng.</p>
-        ) : (
-          <>
-            <ul className="mb-4">
-              {skillsPage.items.map((s) => (
-                <li key={s.id} className="freelancer-dashboard__list-item">
-                  <span className="font-medium text-gray-800">{s.name}</span>
-                  <span className="freelancer-dashboard__muted">
-                    {" "}
-                    — {skillLevelLabel(s.level)} · {s.years_of_experience} năm
-                  </span>
-                </li>
-              ))}
-            </ul>
-            <DashboardPagination
-              page={skillsPage.page}
-              totalPages={skillsPage.totalPages}
-              total={skillsPage.total}
-              onPageChange={skillsPage.setPage}
-            />
-          </>
-        )}
-        <PanelSectionLabel
-          label="Danh mục dự án"
-          count={portfolio.length}
-          addHref="/ho-so?add=portfolio"
+    <>
+      <ul className="client-widget__list">
+        {pageItems.map((item) => (
+          <li key={item.id} className="client-widget__list-item">
+            <Link href={jobContractHref(item, "freelancer")} className="client-widget__list-title">
+              {item.title}
+            </Link>
+            <p className="client-widget__list-meta">
+              {item.counterparty ? `${item.counterparty} · ` : ""}
+              {jobContractStageLabel(item)}
+              {item.agreedPrice != null ? ` · ${formatVnd(item.agreedPrice)}` : ""}
+            </p>
+          </li>
+        ))}
+      </ul>
+      <DashboardPagination page={page} totalPages={totalPages} total={total} onPageChange={setPage} />
+    </>
+  );
+}
+
+function WidgetServiceList({ services }: { services: FreelancerService[] }) {
+  const { items, page, totalPages, total, setPage } = usePagedList(services, WIDGET_PAGE_SIZE);
+
+  return (
+    <>
+      <ul className="client-widget__list">
+        {items.map((service) => (
+          <li key={service.id} className="client-widget__list-item">
+            <Link
+              href={`/dich-vu/quan-ly/${service.id}`}
+              className="client-widget__list-title freelancer-dashboard__service-link"
+            >
+              {service.thumbnail_url ? (
+                <Image
+                  src={service.thumbnail_url}
+                  alt=""
+                  width={28}
+                  height={28}
+                  className="freelancer-dashboard__service-thumb"
+                  unoptimized
+                />
+              ) : null}
+              <span>{service.title}</span>
+            </Link>
+            <p className="client-widget__list-meta">
+              {formatVnd(service.price)}
+              {service.delivery_days != null ? ` · Giao ${service.delivery_days} ngày` : ""}
+            </p>
+          </li>
+        ))}
+      </ul>
+      <DashboardPagination page={page} totalPages={totalPages} total={total} onPageChange={setPage} />
+    </>
+  );
+}
+
+function WidgetPaymentsList({ transactions }: { transactions: FreelancerTransaction[] }) {
+  const { items, page, totalPages, total, setPage } = usePagedList(transactions, WIDGET_PAGE_SIZE);
+
+  return (
+    <>
+      <ul className="client-widget__list">
+        {items.map((tx) => (
+          <li key={tx.id} className="client-widget__list-item">
+            <span className="client-widget__list-title">{tx.projectTitle || "Giao dịch"}</span>
+            <p className="client-widget__list-meta">
+              {formatVnd(tx.amount)}
+              {tx.clientName ? ` · ${tx.clientName}` : ""}
+              {" · "}
+              {freelancerTransactionCategoryLabel(tx.category)}
+              {" · "}
+              {formatDate(tx.occurredAt)}
+            </p>
+          </li>
+        ))}
+      </ul>
+      <DashboardPagination page={page} totalPages={totalPages} total={total} onPageChange={setPage} />
+    </>
+  );
+}
+
+function StarRating({ rating, size = "md" }: { rating: number; size?: "md" | "sm" }) {
+  const filled = Math.round(Math.min(5, Math.max(0, rating)));
+  return (
+    <span
+      className={`fd-stars fd-stars--${size}`}
+      aria-label={`${rating.toFixed(1)} trên 5 sao`}
+      role="img"
+    >
+      {Array.from({ length: 5 }, (_, index) => (
+        <FaStar
+          key={index}
+          className={index < filled ? "fd-stars__icon fd-stars__icon--on" : "fd-stars__icon"}
+          aria-hidden
         />
-        {portfolio.length === 0 ? (
-          <p className="freelancer-dashboard__empty">Chưa có dự án trong danh mục.</p>
-        ) : (
-          <>
-            <ul>
-              {portfolioPage.items.map((p) => (
-                <li key={p.id} className="freelancer-dashboard__list-item">
-                  <p className="font-medium text-gray-800">{p.title}</p>
-                  {p.description ? <p className="freelancer-dashboard__muted line-clamp-2">{p.description}</p> : null}
-                  {p.project_url ? (
-                    <a href={p.project_url} className="text-xs text-[#0066cc] hover:underline" target="_blank" rel="noreferrer">
-                      Xem dự án
-                    </a>
-                  ) : null}
-                </li>
-              ))}
-            </ul>
-            <DashboardPagination
-              page={portfolioPage.page}
-              totalPages={portfolioPage.totalPages}
-              total={portfolioPage.total}
-              onPageChange={portfolioPage.setPage}
-            />
-          </>
-        )}
-      </div>
-    </section>
+      ))}
+    </span>
   );
 }
 
-function ServicesPanel({ services }: { services: FreelancerService[] }) {
-  const { items, page, totalPages, total, setPage } = usePagedList(services, LIST_PAGE_SIZE);
-
-  return (
-    <section className="freelancer-dashboard__panel freelancer-dashboard__panel--square">
-      <header className="freelancer-dashboard__panel-head">Dịch vụ ({services.length})</header>
-      <div className="freelancer-dashboard__panel-body">
-        {services.length === 0 ? (
-          <p className="freelancer-dashboard__empty">Chưa đăng dịch vụ nào.</p>
-        ) : (
-          <>
-            <ul>
-              {items.map((s) => (
-                <li key={s.id} className="freelancer-dashboard__list-item">
-                  <div className="flex gap-2">
-                    {s.thumbnail_url ? (
-                      <Image
-                        src={s.thumbnail_url}
-                        alt=""
-                        width={40}
-                        height={40}
-                        className="h-10 w-10 shrink-0 rounded object-cover"
-                        unoptimized
-                      />
-                    ) : null}
-                    <div className="min-w-0 flex-1">
-                      <p className="font-medium text-gray-800">{s.title}</p>
-                      <p className="text-xs font-semibold text-[#0066cc]">{formatVnd(s.price)}</p>
-                      {s.delivery_days != null ? (
-                        <p className="freelancer-dashboard__muted">Giao trong {s.delivery_days} ngày</p>
-                      ) : null}
-                    </div>
-                  </div>
-                </li>
-              ))}
-            </ul>
-            <DashboardPagination
-              page={page}
-              totalPages={totalPages}
-              total={total}
-              onPageChange={setPage}
-            />
-          </>
-        )}
-      </div>
-    </section>
-  );
-}
-
-function ReviewsPanel({ profile, reviews }: { profile: FreelancerProfile | null; reviews: ContractReview[] }) {
+function ReviewsHighlightPanel({
+  profile,
+  reviews,
+}: {
+  profile: FreelancerProfile | null;
+  reviews: ContractReview[];
+}) {
   const avg = profile ? Number(profile.rating_avg) : 0;
-  const { items, page, totalPages, total, setPage } = usePagedList(reviews, LIST_PAGE_SIZE);
+  const totalReviews = profile?.total_reviews ?? reviews.length;
+  const successScore = profile?.job_success_score;
+  const featured = reviews[0];
+  const recent = reviews.slice(0, 3);
 
   return (
-    <section className="freelancer-dashboard__panel freelancer-dashboard__panel-bottom">
-      <header className="freelancer-dashboard__panel-head">Đánh giá</header>
-      <div className="freelancer-dashboard__panel-body">
-        <div className="mb-4 flex items-end gap-4">
-          <div>
-            <p className="freelancer-dashboard__rating-big">{avg > 0 ? avg.toFixed(1) : "—"}</p>
-            <p className="freelancer-dashboard__muted">Điểm trung bình / 5</p>
+    <DashboardWidget
+      title="Đánh giá"
+      alignLeft
+      headLinks={<Link href="/ho-so/phan-hoi">Tất cả phản hồi</Link>}
+    >
+      <div className="fd-widget-block">
+        <div className="fd-reviews-hero">
+          <div className="fd-reviews-score">
+            <p className="fd-reviews-score__value">{avg > 0 ? avg.toFixed(1) : "—"}</p>
+            <StarRating rating={avg > 0 ? avg : 0} />
+            <p className="fd-reviews-score__caption">
+              {totalReviews > 0 ? `${totalReviews} lượt đánh giá` : "Chưa có đánh giá"}
+            </p>
           </div>
-          <div>
-            <p className="text-lg font-bold text-gray-800">{profile?.total_reviews ?? 0}</p>
-            <p className="freelancer-dashboard__muted">Lượt đánh giá</p>
-          </div>
-          {profile?.job_success_score != null ? (
-            <div>
-              <p className="text-lg font-bold text-gray-800">{profile.job_success_score}%</p>
-              <p className="freelancer-dashboard__muted">Tỷ lệ thành công</p>
+          {successScore != null ? (
+            <div className="fd-reviews-metric">
+              <p className="fd-reviews-metric__value">{successScore}%</p>
+              <p className="fd-reviews-metric__label">Tỷ lệ thành công</p>
             </div>
           ) : null}
         </div>
-        {reviews.length === 0 ? (
-          <p className="freelancer-dashboard__empty">Chưa có đánh giá từ khách hàng.</p>
+
+        {featured ? (
+          <blockquote className="fd-review-featured">
+            <FaQuoteLeft className="fd-review-featured__icon" aria-hidden />
+            <p className="fd-review-featured__text">
+              {featured.comment?.trim() || "Khách hàng đã để lại điểm đánh giá."}
+            </p>
+            <footer className="fd-review-featured__foot">
+              <StarRating rating={featured.rating} size="sm" />
+              <span>
+                {featured.reviewer_name || "Khách hàng"} · {formatDate(featured.created_at)}
+              </span>
+            </footer>
+          </blockquote>
         ) : (
-          <>
-            <ul>
-              {items.map((r) => (
-                <li key={r.id} className="freelancer-dashboard__list-item">
-                  <p className="font-medium text-gray-800">
-                    {r.rating}/5 — {r.reviewer_name || "Khách hàng"}
-                  </p>
-                  {r.comment ? <p className="freelancer-dashboard__muted line-clamp-2">{r.comment}</p> : null}
-                  <p className="freelancer-dashboard__muted">{formatDate(r.created_at)}</p>
-                </li>
-              ))}
-            </ul>
-            <DashboardPagination
-              page={page}
-              totalPages={totalPages}
-              total={total}
-              onPageChange={setPage}
-            />
-          </>
+          <div className="fd-review-empty">
+            <h3 className="client-widget__title">Chưa có phản hồi nào</h3>
+            <p className="client-widget__muted">
+              Hoàn thành đơn hàng và nhận đánh giá từ client để xây dựng uy tín trên nền tảng.
+            </p>
+            <Link href="/findwork" className="client-widget__link">
+              Tìm việc ngay
+            </Link>
+          </div>
         )}
+
+        {recent.length > 1 ? (
+          <ul className="client-widget__list fd-review-mini-list">
+            {recent.slice(featured ? 1 : 0).map((review) => (
+              <li key={review.id} className="client-widget__list-item">
+                <p className="client-widget__list-title">
+                  {review.reviewer_name || "Khách hàng"}
+                </p>
+                <p className="client-widget__list-meta">
+                  <StarRating rating={review.rating} size="sm" />
+                  {review.comment ? ` · ${review.comment}` : ""}
+                </p>
+              </li>
+            ))}
+          </ul>
+        ) : null}
       </div>
-    </section>
+    </DashboardWidget>
   );
 }
 
-function InvoicesPanel({ contracts }: { contracts: ContractRow[] }) {
-  const { items, page, totalPages, total, setPage } = usePagedList(contracts, LIST_PAGE_SIZE);
+function ProfileQuickPanel({
+  user,
+  profile,
+  completionScore,
+  skillsCount,
+  portfolioCount,
+}: {
+  user: MeUser;
+  profile: FreelancerProfile | null;
+  completionScore: number;
+  skillsCount: number;
+  portfolioCount: number;
+}) {
+  const emailOk = Boolean(user.isEmailVerified);
+  const phoneOk = Boolean(user.isPhoneVerified);
+  const availability = String(profile?.availability_status || "").toLowerCase();
+
+  const availabilityLabel =
+    availability === "available"
+      ? "Sẵn sàng nhận việc"
+      : availability === "busy"
+        ? "Đang bận"
+        : availability === "unavailable"
+          ? "Không nhận việc"
+          : "Chưa cập nhật";
+
+  const availabilityClass =
+    availability === "available"
+      ? "fd-pill--success"
+      : availability === "busy"
+        ? "fd-pill--warn"
+        : availability === "unavailable"
+          ? "fd-pill--muted"
+          : "fd-pill--muted";
 
   return (
-    <section className="freelancer-dashboard__panel freelancer-dashboard__panel-bottom">
-      <header className="freelancer-dashboard__panel-head">Hợp đồng & hóa đơn</header>
-      <div className="freelancer-dashboard__panel-body">
-        {contracts.length === 0 ? (
-          <p className="freelancer-dashboard__empty">Chưa có hợp đồng / hóa đơn.</p>
+    <DashboardWidget
+      title="Hồ sơ nhanh"
+      alignLeft
+      headLinks={<Link href="/ho-so">Chỉnh sửa hồ sơ</Link>}
+    >
+      <div className="fd-widget-block">
+        <div className="fd-profile-top">
+          <div
+            className="fd-profile-ring"
+            style={
+              { "--fd-progress": `${Math.min(100, Math.max(0, completionScore))}` } as CSSProperties
+            }
+          >
+            <div className="fd-profile-ring__inner">
+              <strong>{completionScore}%</strong>
+              <span>Hoàn thiện</span>
+            </div>
+          </div>
+          <div className="fd-profile-top__meta">
+            <span className={`fd-pill ${availabilityClass}`}>{availabilityLabel}</span>
+            <p className="fd-profile-top__hint">
+              {completionScore >= 100
+                ? "Hồ sơ của bạn đã đầy đủ — tiếp tục cập nhật để nổi bật hơn."
+                : `Còn ${100 - completionScore}% để hoàn thiện hồ sơ công khai.`}
+            </p>
+          </div>
+        </div>
+
+        <div className="fd-profile-stats">
+          <Link href="/ho-so?add=skills" className="fd-stat-card fd-stat-card--skills">
+            <span className="fd-stat-card__icon" aria-hidden>
+              <FaTools />
+            </span>
+            <strong className="fd-stat-card__value">{skillsCount}</strong>
+            <span className="fd-stat-card__label">Kỹ năng</span>
+          </Link>
+          <Link href="/ho-so?add=portfolio" className="fd-stat-card fd-stat-card--portfolio">
+            <span className="fd-stat-card__icon" aria-hidden>
+              <FaFolderOpen />
+            </span>
+            <strong className="fd-stat-card__value">{portfolioCount}</strong>
+            <span className="fd-stat-card__label">Dự án</span>
+          </Link>
+        </div>
+
+        <div className="fd-verify-row">
+          <span className={`fd-verify-badge${emailOk ? " fd-verify-badge--ok" : ""}`}>
+            {emailOk ? <FaCheckCircle aria-hidden /> : null}
+            E-mail {emailOk ? "đã xác thực" : "chưa xác thực"}
+          </span>
+          <span className={`fd-verify-badge${phoneOk ? " fd-verify-badge--ok" : ""}`}>
+            {phoneOk ? <FaCheckCircle aria-hidden /> : null}
+            Số điện thoại {phoneOk ? "đã xác thực" : "chưa xác thực"}
+          </span>
+        </div>
+
+        {completionScore < 100 ? (
+          <Link href="/ho-so" className="client-widget__link fd-widget-action">
+            <FaUserEdit className="mr-1 inline" aria-hidden />
+            Hoàn thiện hồ sơ ngay
+          </Link>
         ) : (
-          <>
-            <ul>
-              {items.map((c) => (
-                <li key={c.id} className="freelancer-dashboard__list-item">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <span className="font-medium text-gray-800">{c.job_title || `Hợp đồng #${c.id.slice(0, 8)}`}</span>
-                    <span className={contractStatusClass(c.status)}>
-                      {contractStatusLabel(c.status)}
-                    </span>
-                  </div>
-                  <p className="text-sm font-semibold text-[#0066cc]">{formatVnd(c.agreed_price)}</p>
-                  <p className="freelancer-dashboard__muted">
-                    {c.counterparty_name ? `Khách: ${c.counterparty_name} · ` : ""}
-                    {formatDate(c.created_at)}
-                  </p>
-                </li>
-              ))}
-            </ul>
-            <DashboardPagination
-              page={page}
-              totalPages={totalPages}
-              total={total}
-              onPageChange={setPage}
-            />
-          </>
+          <Link href="/ho-so/thong-ke" className="client-widget__link fd-widget-action">
+            Xem thống kê hồ sơ
+          </Link>
         )}
       </div>
-    </section>
+    </DashboardWidget>
   );
 }
 
 export default function FreelancerDashboard() {
+  const router = useRouter();
   const [data, setData] = useState<FreelancerMeResponse | null>(null);
-  const [contracts, setContracts] = useState<ContractRow[]>([]);
+  const [billing, setBilling] = useState<FreelancerBillingOverview | null>(null);
+  const [workItems, setWorkItems] = useState<JobsListItem[]>([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    let cancelled = false;
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const [me, work, billingData] = await Promise.all([
+        getMe(),
+        getMyWork(),
+        getFreelancerBillingOverview().catch(() => null),
+      ]);
 
-    async function load() {
-      setLoading(true);
-      setError("");
-      try {
-        const [me, contractData] = await Promise.all([getMe(), listMyContracts()]);
-        if (cancelled) return;
-        if (!isFreelancerMeResponse(me)) {
-          setError("Tài khoản này không phải tài khoản chuyên gia.");
-          setData(null);
-          return;
-        }
-        setData(me);
-        setContracts(contractData.contracts ?? []);
-        if (me.user) {
-          persistStoredUser(
-            toStoredUser({
-              id: me.user.id,
-              email: me.user.email,
-              role: me.user.role,
-              fullName: me.user.fullName,
-              avatarUrl: me.user.avatarUrl,
-            }),
-          );
-        }
-      } catch (err) {
-        if (cancelled) return;
-        const message =
-          err && typeof err === "object" && "message" in err
-            ? String((err as { message: string }).message)
-            : "Không thể tải bảng tổng quan.";
-        setError(message);
-      } finally {
-        if (!cancelled) setLoading(false);
+      if (!isFreelancerMeResponse(me) || !isFreelancerRole(me.user?.role)) {
+        setError("Tài khoản này không phải tài khoản chuyên gia.");
+        setData(null);
+        setWorkItems([]);
+        setBilling(null);
+        return;
       }
-    }
 
+      setData(me);
+      setBilling(billingData);
+
+      if (me.user) {
+        persistStoredUser(
+          toStoredUser({
+            id: me.user.id,
+            email: me.user.email,
+            role: me.user.role,
+            fullName: me.user.fullName,
+            avatarUrl: me.user.avatarUrl,
+            completedJobs: me.user.completedJobs,
+          }),
+        );
+      }
+
+      if (work.role === "freelancer") {
+        const rows = (work.assignments ?? []).map(assignmentToListItem).filter(isJobOnlyContract);
+        setWorkItems(rows.filter(isActiveJobContract));
+      } else {
+        setWorkItems([]);
+      }
+    } catch (err) {
+      if (isUnauthorized(err)) {
+        router.replace("/login");
+        return;
+      }
+      setError(apiErrorMessage(err, "Không thể tải bảng tổng quan."));
+      setData(null);
+      setWorkItems([]);
+      setBilling(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [router]);
+
+  useEffect(() => {
     void load();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  }, [load]);
+
+  useEffect(() => {
+    const onUpdate = () => void load();
+    window.addEventListener(VLC_USER_UPDATED_EVENT, onUpdate);
+    return () => window.removeEventListener(VLC_USER_UPDATED_EVENT, onUpdate);
+  }, [load]);
+
+  const user = data?.user;
+  const profile = data?.freelancerProfile;
+  const services = data?.services ?? [];
+  const reviews = data?.reviews ?? [];
+  const displayName = user?.fullName?.trim() || user?.email || "—";
+  const avatarSrc = resolveAvatarSrc(user?.avatarUrl);
+  const completedJobs = user?.completedJobs ?? profile?.completed_jobs ?? 0;
+  const reviewCount = reviews.length;
+  const balance = billing?.account.balance ?? 0;
+  const pendingBalance = billing?.account.pendingBalance ?? 0;
+  const recentTransactions = billing?.transactions ?? [];
+
+  const profileSummary = useMemo(() => {
+    const parts: string[] = [];
+    if (data?.completionScore != null) parts.push(`Hồ sơ ${data.completionScore}%`);
+    if (completedJobs > 0) parts.push(`${completedJobs} đơn hoàn thành`);
+    const avg = profile ? Number(profile.rating_avg) : 0;
+    if (avg > 0) parts.push(`★ ${avg.toFixed(1)}`);
+    return parts.join(" · ") || null;
+  }, [completedJobs, data?.completionScore, profile]);
 
   return (
-    <div className="home-landing freelancer-dashboard min-h-screen text-gray-900">
-      <HomeNavbar />
-      <main id="main-content" className="freelancer-dashboard__inner">
-        <h1 className="freelancer-dashboard__title">Tổng quan</h1>
-
-        {loading ? (
-          <p className="text-gray-500">Đang tải dữ liệu...</p>
-        ) : error ? (
-          <p className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
-            {error}
-          </p>
-        ) : data ? (
-          <>
-            <div className="freelancer-dashboard__grid-top">
-              <BasicInfoPanel
-                user={data.user}
-                profile={data.freelancerProfile}
-                completionScore={data.completionScore}
+    <FreelancerShell wide>
+      {loading ? (
+        <p className="client-page__desc">Đang tải dữ liệu...</p>
+      ) : error ? (
+        <p className="rounded border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
+          {error}
+        </p>
+      ) : user && data ? (
+        <>
+          <header className="client-dashboard__header">
+            <div className="client-dashboard__profile">
+              <FreelancerAvatarFrame
+                completedJobs={completedJobs}
+                size={48}
+                src={avatarSrc}
+                alt={displayName}
+                fallback={getUserInitials(user.fullName ?? undefined, user.email ?? undefined)}
+                className="freelancer-dashboard__header-avatar"
               />
-              <SkillsPortfolioPanel skills={data.skills} portfolio={data.portfolio} />
-              <ServicesPanel services={data.services} />
+              <div>
+                <div className="client-dashboard__name">
+                  {displayName}
+                  <span className="client-dashboard__meta">
+                    {" "}
+                    (
+                    <Link href="/ho-so/thong-ke">Thống kê của tôi</Link>
+                    <span className="client-widget__sep">|</span>
+                    <Link href="/ho-so/phan-hoi">
+                      {reviewCount > 0 ? `${reviewCount} phản hồi` : "Chưa có phản hồi"}
+                    </Link>
+                    <span className="client-widget__sep">|</span>
+                    <Link href="/ho-so">Sửa hồ sơ</Link> )
+                  </span>
+                </div>
+                {user.tagline ? (
+                  <p className="client-dashboard__billing">{user.tagline}</p>
+                ) : null}
+                {profileSummary ? <p className="client-dashboard__billing">{profileSummary}</p> : null}
+                {profile?.title ? (
+                  <p className="client-dashboard__billing">
+                    {profile.title}
+                    {profile.hourly_rate != null ? ` · ${formatVnd(profile.hourly_rate)}/giờ` : ""}
+                  </p>
+                ) : null}
+              </div>
             </div>
-            <div className="freelancer-dashboard__grid-bottom">
-              <ReviewsPanel profile={data.freelancerProfile} reviews={data.reviews} />
-              <InvoicesPanel contracts={contracts} />
+            <div className="client-dashboard__cash">
+              <div className="client-dashboard__cash-row">
+                <FaWallet className="client-dashboard__cash-icon" aria-hidden />
+                <span>
+                  <strong>Số dư khả dụng:</strong>{" "}
+                  <span className="client-dashboard__cash-amount">{formatVnd(balance)}</span>
+                </span>
+              </div>
+              {pendingBalance > 0 ? (
+                <div className="client-dashboard__cash-row">
+                  <span>
+                    <strong>Đang chờ giải ngân:</strong>{" "}
+                    <span className="client-dashboard__cash-amount client-dashboard__cash-amount--secondary">
+                      {formatVnd(pendingBalance)}
+                    </span>
+                  </span>
+                </div>
+              ) : null}
+              <Link href="/payments" className="client-dashboard__cash-deposit">
+                <FaPlusCircle aria-hidden />
+                Xem thanh toán & rút tiền
+              </Link>
             </div>
-          </>
-        ) : null}
-      </main>
-      <HomeFooter />
-    </div>
+          </header>
+
+          <div className="client-dashboard__grid">
+            <DashboardWidget
+              title="Công việc đang làm"
+              alignLeft
+              headLinks={
+                <>
+                  <Link href="/findwork">Tìm việc</Link>
+                  <span className="client-widget__sep">|</span>
+                  <Link href="/jobs">Hợp đồng việc</Link>
+                  <span className="client-widget__sep">|</span>
+                  <Link href="/dich-vu/don-hang">Đơn dịch vụ</Link>
+                </>
+              }
+            >
+              {workItems.length > 0 ? (
+                <WidgetWorkList items={workItems} />
+              ) : (
+                <>
+                  <h3 className="client-widget__title">Sẵn sàng nhận việc?</h3>
+                  <Link href="/findwork" className="client-widget__link">
+                    Duyệt việc đang mở trên marketplace
+                  </Link>
+                  <Link href="/findwork/leads" className="client-widget__link">
+                    Xem lời mời & cơ hội từ client
+                  </Link>
+                  <Link href="/findwork/quotes" className="client-widget__link">
+                    Quản lý báo giá đã gửi
+                  </Link>
+                </>
+              )}
+            </DashboardWidget>
+
+            <DashboardWidget
+              title="Dịch vụ"
+              alignLeft
+              headLinks={
+                <>
+                  <Link href="/dich-vu/tao-moi">Tạo mới</Link>
+                  <span className="client-widget__sep">|</span>
+                  <Link href="/dich-vu/quan-ly">Quản lý</Link>
+                </>
+              }
+            >
+              {services.length > 0 ? (
+                <WidgetServiceList services={services} />
+              ) : (
+                <>
+                  <h3 className="client-widget__title">Chưa có dịch vụ nào</h3>
+                  <Link href="/dich-vu/tao-moi" className="client-widget__link">
+                    Tạo gói dịch vụ đầu tiên
+                  </Link>
+                  <Link href="/ho-so" className="client-widget__link">
+                    Hoàn thiện hồ sơ để thu hút khách hàng
+                  </Link>
+                </>
+              )}
+            </DashboardWidget>
+
+            <DashboardWidget
+              title="Thanh toán"
+              alignLeft
+              headLinks={<Link href="/payments">Thanh toán</Link>}
+            >
+              {recentTransactions.length > 0 ? (
+                <WidgetPaymentsList transactions={recentTransactions} />
+              ) : (
+                <>
+                  <p className="client-widget__muted">Chưa có giao dịch thu nhập hoặc rút tiền.</p>
+                  <Link href="/payments" className="client-widget__link">
+                    Thiết lập tài khoản nhận tiền
+                  </Link>
+                </>
+              )}
+            </DashboardWidget>
+          </div>
+
+          <div className="client-dashboard__grid client-dashboard__grid--duo">
+            <ReviewsHighlightPanel profile={profile} reviews={reviews} />
+            <ProfileQuickPanel
+              user={user}
+              profile={profile}
+              completionScore={data.completionScore}
+              skillsCount={data.skills.length}
+              portfolioCount={data.portfolio.length}
+            />
+          </div>
+        </>
+      ) : null}
+    </FreelancerShell>
   );
 }

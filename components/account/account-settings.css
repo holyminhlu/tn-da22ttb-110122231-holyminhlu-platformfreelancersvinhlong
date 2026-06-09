@@ -1,0 +1,250 @@
+.as-page .as-card + .as-card {
+  margin-top: 1.25rem;
+}
+
+.as-page .as-section-title {
+  margin: 0 0 0.35rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.as-page .as-section-desc {
+  margin: 0 0 1rem;
+  font-size: 0.8125rem;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+.as-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.as-toggle-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.as-toggle-row:first-child {
+  padding-top: 0;
+}
+
+.as-toggle-label {
+  font-size: 0.875rem;
+  color: #374151;
+}
+
+.as-toggle-hint {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+.as-theme-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.as-theme-btn {
+  flex: 1 1 7rem;
+  min-width: 7rem;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  background: #fff;
+  font-size: 0.8125rem;
+  color: #374151;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.as-theme-btn:hover {
+  border-color: #93c5fd;
+  color: #1d4ed8;
+}
+
+.as-theme-btn--active {
+  border-color: #2563eb;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-weight: 600;
+}
+
+.as-select {
+  width: 100%;
+  max-width: 18rem;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  color: #374151;
+  background: #fff;
+}
+
+.as-select:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgb(37 99 235 / 0.15);
+}
+
+.as-tier-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem 0.75rem;
+  width: 100%;
+  padding: 0.25rem 0 0.5rem;
+  box-sizing: border-box;
+}
+
+.as-tier-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  min-width: 0;
+  text-align: center;
+}
+
+.as-tier-frame-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.as-tier-frame-wrap--locked .fl-avatar-frame {
+  opacity: 0.55;
+  filter: grayscale(0.35) blur(0.4px);
+}
+
+.as-tier-lock-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  background: rgb(255 255 255 / 0.62);
+  backdrop-filter: blur(3px);
+  color: #6b7280;
+  font-size: 1.35rem;
+  pointer-events: none;
+}
+
+.as-tier-label {
+  margin: 0.55rem 0 0.2rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #374151;
+  line-height: 1.3;
+}
+
+.as-tier-progress {
+  margin: 0;
+  font-size: 0.6875rem;
+  color: #6b7280;
+  line-height: 1.3;
+}
+
+.as-tier-item--unlocked .as-tier-label {
+  color: #1d4ed8;
+}
+
+.as-tier-item--unlocked .as-tier-progress {
+  color: #2563eb;
+  font-weight: 600;
+}
+
+.as-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  background: #fff;
+  font-size: 0.875rem;
+  color: #374151;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.as-action-btn:hover:not(:disabled) {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.as-action-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.as-device-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+}
+
+.as-device-table th,
+.as-device-table td {
+  padding: 0.65rem 0.5rem;
+  text-align: left;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.as-device-table th {
+  font-weight: 600;
+  color: #6b7280;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.as-device-empty {
+  margin: 0;
+  padding: 1rem 0;
+  font-size: 0.875rem;
+  color: #9ca3af;
+}
+
+.as-danger-zone {
+  border-color: #fecaca;
+  background: #fffbfb;
+}
+
+.as-danger-zone .as-section-title {
+  color: #b91c1c;
+}
+
+.as-danger-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 1rem;
+  border: 1px solid #fca5a5;
+  border-radius: 0.5rem;
+  background: #fff;
+  font-size: 0.875rem;
+  color: #b91c1c;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.as-danger-btn:hover {
+  background: #fef2f2;
+}
+
+.as-feedback {
+  margin: 0.75rem 0 0;
+  font-size: 0.8125rem;
+  color: #059669;
+}

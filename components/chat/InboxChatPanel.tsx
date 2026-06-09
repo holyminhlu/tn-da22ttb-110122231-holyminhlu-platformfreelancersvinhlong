@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import {
   FaBriefcase,
@@ -15,7 +14,7 @@ import {
 import { useFreelancerChat } from "@/hooks/useFreelancerChat";
 import { useStoredUser } from "@/hooks/useStoredUser";
 import type { ChatConversation, ChatMessage } from "@/lib/api/chat";
-import { resolveAvatarSrc } from "@/lib/authSession";
+import ChatPeerAvatar from "./ChatPeerAvatar";
 import { formatDate } from "@/lib/format";
 
 export type InboxViewerRole = "client" | "freelancer";
@@ -123,9 +122,6 @@ export default function InboxChatPanel({
   const listRef = useRef<HTMLDivElement>(null);
 
   const topicTitle = conversation.contextTitle ?? conversation.jobTitle ?? null;
-  const avatarSrc = resolveAvatarSrc(conversation.peerAvatarUrl);
-  const peerInitial = (conversation.peerName || "?").charAt(0).toUpperCase();
-
   const peerLabel = viewerRole === "client" ? "freelancer" : "client";
 
   const { messages, loading, sending, error, send } = useFreelancerChat({
@@ -173,20 +169,13 @@ export default function InboxChatPanel({
               ←
             </button>
           ) : null}
-          <div className="fw-inbox-chat__avatar" aria-hidden>
-            {avatarSrc ? (
-              <Image
-                src={avatarSrc}
-                alt=""
-                width={40}
-                height={40}
-                className="fw-inbox-chat__avatar-img"
-                unoptimized
-              />
-            ) : (
-              <span className="fw-inbox-chat__avatar-fallback">{peerInitial}</span>
-            )}
-          </div>
+          <ChatPeerAvatar
+            conversation={conversation}
+            size={40}
+            className="fw-inbox-chat__avatar"
+            imgClassName="fw-inbox-chat__avatar-img"
+            fallbackClassName="fw-inbox-chat__avatar-fallback"
+          />
           <div className="fw-inbox-chat__head-text">
             <h2 className="fw-inbox-chat__name">{conversation.peerName}</h2>
             <p className="fw-inbox-chat__subtitle" title={contextSubtitle}>

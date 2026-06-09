@@ -16,6 +16,7 @@ export type ChatConversation = {
   peerId: string;
   peerName: string;
   peerAvatarUrl: string | null;
+  peerCompletedJobs?: number | null;
   lastMessageBody: string | null;
   lastMessageAt: string | null;
   lastMessageSenderId: string | null;

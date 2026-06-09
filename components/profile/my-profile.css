@@ -123,7 +123,7 @@
 
 .my-profile-page .mp-profile-card__identity {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 1rem;
   min-width: 0;
   flex: 1;
@@ -138,13 +138,15 @@
 }
 
 .my-profile-page .mp-avatar-wrap {
+  --mp-avatar-inner: 3rem;
   position: relative;
-  display: inline-block;
+  display: flex;
   flex-shrink: 0;
-  width: 8rem;
-  height: 8rem;
-  border-radius: 2px;
-  overflow: hidden;
+  align-items: center;
+  justify-content: center;
+  width: var(--mp-avatar-inner);
+  height: var(--mp-avatar-inner);
+  overflow: visible;
 }
 
 .my-profile-page .mp-avatar-wrap--loading .mp-avatar-overlay {
@@ -153,9 +155,9 @@
 }
 
 .my-profile-page .mp-avatar {
-  width: 8rem;
-  height: 8rem;
-  border-radius: 2px;
+  width: var(--mp-avatar-inner, 3rem);
+  height: var(--mp-avatar-inner, 3rem);
+  border-radius: 9999px;
   object-fit: cover;
   background: #e5e7eb;
 }
@@ -166,7 +168,11 @@
 
 .my-profile-page .mp-avatar-overlay {
   position: absolute;
-  inset: 0;
+  left: 50%;
+  top: 50%;
+  width: var(--mp-avatar-inner, 3rem);
+  height: var(--mp-avatar-inner, 3rem);
+  transform: translate(-50%, -50%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -174,12 +180,15 @@
   background: rgb(15 23 42 / 0.55);
   opacity: 0;
   transition: opacity 0.2s ease;
-  border-radius: 2px;
+  border-radius: 9999px;
+  z-index: 4;
+  pointer-events: none;
 }
 
 .my-profile-page .mp-avatar-wrap:hover .mp-avatar-overlay,
 .my-profile-page .mp-avatar-wrap:focus-within .mp-avatar-overlay {
   opacity: 1;
+  pointer-events: auto;
 }
 
 @media (hover: none) {

@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { FreelancerChatInlineButton } from "@/components/chat/FreelancerChatWidget";
@@ -13,6 +12,7 @@ import {
   FaTimes,
   FaUser,
 } from "react-icons/fa";
+import FreelancerAvatarFrame from "@/components/freelancer/FreelancerAvatarFrame";
 import type { JobQuoteRow } from "@/lib/api/jobQuotes";
 import { getUserInitials, resolveAvatarSrc } from "@/lib/authSession";
 import { formatDate, formatVnd } from "@/lib/format";
@@ -61,20 +61,14 @@ export default function HireQuoteCard({ quote, busy, onAccept, onDecline, onChat
       <div className="hire-quote-card__head">
         <div className="hire-quote-card__freelancer">
           <Link href={profileHref} className="hire-quote-card__avatar-link">
-            {avatarSrc ? (
-              <Image
-                src={avatarSrc}
-                alt={name}
-                width={52}
-                height={52}
-                className="hire-quote-card__avatar"
-                unoptimized
-              />
-            ) : (
-              <span className="hire-quote-card__avatar hire-quote-card__avatar--fallback" aria-hidden>
-                {getUserInitials(name)}
-              </span>
-            )}
+            <FreelancerAvatarFrame
+              completedJobs={quote.completed_jobs}
+              size={52}
+              src={avatarSrc}
+              alt={name}
+              fallback={getUserInitials(name)}
+              imgClassName="hire-quote-card__avatar"
+            />
           </Link>
           <div className="hire-quote-card__identity">
             <Link href={profileHref} className="hire-quote-card__name">

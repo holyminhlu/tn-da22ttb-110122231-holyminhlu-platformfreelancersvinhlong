@@ -113,4 +113,12 @@ export const apiPaths = {
     openConversation: "/api/chat/conversations/open",
     messages: (conversationId: string) => `/api/chat/conversations/${conversationId}/messages`,
   },
+  notifications: {
+    list: "/api/notifications",
+    unreadCount: "/api/notifications/unread-count",
+    readAll: "/api/notifications/read-all",
+    deleteRead: "/api/notifications/read",
+    read: (id: string) => `/api/notifications/${id}/read`,
+    delete: (id: string) => `/api/notifications/${id}`,
+  },
 } as const;

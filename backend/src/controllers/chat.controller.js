@@ -1,6 +1,7 @@
 const { pool } = require("../db/pool");
 const { verifyAccessToken } = require("../utils/authTokens");
 const { parseUuidParam } = require("../utils/validators");
+const { notifyChatMessage } = require("../utils/notificationService");
 
 async function assertConversationAccess(db, conversationId, userId) {
   const result = await db.query(
@@ -57,6 +58,7 @@ function mapConversationRow(row, viewerId) {
     peerId: isClient ? row.freelancer_id : row.client_id,
     peerName: isClient ? row.freelancer_name : row.client_name,
     peerAvatarUrl: isClient ? row.freelancer_avatar_url : row.client_avatar_url,
+    peerCompletedJobs: isClient ? Number(row.freelancer_completed_jobs) || 0 : null,
     lastMessageBody: row.last_message_body || null,
     lastMessageAt: row.last_message_at || null,
     lastMessageSenderId: row.last_message_sender_id || null,
@@ -150,7 +152,8 @@ const CONVERSATION_DETAIL_SELECT = `
   jq.status AS quote_status,
   lm.body AS last_message_body,
   lm.created_at AS last_message_at,
-  lm.sender_id AS last_message_sender_id
+  lm.sender_id AS last_message_sender_id,
+  COALESCE(ct_fl.completed_jobs, 0)::int AS freelancer_completed_jobs
 `;
 
 const CONVERSATION_DETAIL_JOINS = `
@@ -168,6 +171,12 @@ const CONVERSATION_DETAIL_JOINS = `
     ORDER BY m.created_at DESC
     LIMIT 1
   ) lm ON true
+  LEFT JOIN (
+    SELECT freelancer_id, COUNT(*)::int AS completed_jobs
+    FROM public.contracts
+    WHERE status = 'completed' AND deleted_at IS NULL
+    GROUP BY freelancer_id
+  ) ct_fl ON ct_fl.freelancer_id = c.freelancer_id
 `;
 
 async function listConversations(req, res) {
@@ -427,6 +436,10 @@ async function sendMessage(req, res) {
     );
 
     const message = mapMessageRow(insert.rows[0], payload.sub);
+
+    notifyChatMessage(dbClient, conversation, payload.sub, body).catch((err) =>
+      console.error("notifyChatMessage failed:", err.message),
+    );
 
     return res.status(201).json({ message });
   } catch (error) {

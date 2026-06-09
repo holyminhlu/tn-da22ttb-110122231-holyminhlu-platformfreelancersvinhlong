@@ -520,7 +520,8 @@ async function getMe(req, res) {
            COALESCE(rv.rating_avg, 0) AS rating_avg,
            COALESCE(rv.total_reviews, 0) AS total_reviews,
            fp.languages,
-           COALESCE((SELECT COUNT(*) FROM public.services sv WHERE sv.freelancer_id = u.id), 0) AS services_count
+           COALESCE((SELECT COUNT(*) FROM public.services sv WHERE sv.freelancer_id = u.id), 0) AS services_count,
+           COALESCE(ct.completed_jobs, 0)::int AS completed_jobs
          FROM public.users u
          LEFT JOIN public.freelancer_profiles fp ON fp.user_id = u.id
          LEFT JOIN (
@@ -528,6 +529,12 @@ async function getMe(req, res) {
            FROM public.contract_reviews
            GROUP BY freelancer_id
          ) rv ON rv.freelancer_id = u.id
+         LEFT JOIN (
+           SELECT freelancer_id, COUNT(*)::int AS completed_jobs
+           FROM public.contracts
+           WHERE status = 'completed' AND deleted_at IS NULL
+           GROUP BY freelancer_id
+         ) ct ON ct.freelancer_id = u.id
          WHERE u.id = $1 AND u.deleted_at IS NULL
          LIMIT 1`,
         [userId],
@@ -640,6 +647,7 @@ async function getMe(req, res) {
           districtCity: user.district_city,
           coverUrl: user.cover_url,
           locationWkt: user.location_wkt,
+          completedJobs: Number(freelancerResult.rows[0]?.completed_jobs) || 0,
         },
         completionScore,
         skills: skillsResult.rows,

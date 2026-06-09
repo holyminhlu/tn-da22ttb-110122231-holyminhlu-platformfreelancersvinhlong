@@ -3,6 +3,7 @@ const jwt = require("jsonwebtoken");
 const { pool } = require("../db/pool");
 const { ACCESS_SECRET } = require("../utils/authTokens");
 const { assertConversationAccess } = require("../controllers/chat.controller");
+const { notifyChatMessage } = require("../utils/notificationService");
 
 function initChatSocket(httpServer, frontendUrl) {
   const io = new Server(httpServer, {
@@ -28,6 +29,8 @@ function initChatSocket(httpServer, frontendUrl) {
   });
 
   io.on("connection", (socket) => {
+    socket.join(`user:${socket.userId}`);
+
     socket.on("chat:join", async ({ conversationId }, ack) => {
       try {
         const db = await pool.connect();
@@ -83,6 +86,9 @@ function initChatSocket(httpServer, frontendUrl) {
         };
 
         io.to(`conv:${conversationId}`).emit("chat:message", message);
+        notifyChatMessage(db, conversation, socket.userId, text).catch((err) =>
+          console.error("notifyChatMessage failed:", err.message),
+        );
         if (typeof ack === "function") ack({ ok: true, message });
       } catch (error) {
         console.error("chat:send socket failed:", error.message);

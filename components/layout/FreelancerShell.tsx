@@ -1,16 +1,22 @@
 import HomeFooter from "@/components/home/HomeFooter";
 import HomeNavbar from "@/components/home/HomeNavbar";
 import "@/components/home/home.css";
+import "@/components/dashboard/client-dashboard.css";
 
 type FreelancerShellProps = {
   children: React.ReactNode;
+  /** Bảng tổng quan: tràn full width hai bên */
+  wide?: boolean;
 };
 
-export default function FreelancerShell({ children }: FreelancerShellProps) {
+export default function FreelancerShell({ children, wide }: FreelancerShellProps) {
   return (
-    <div className="home-landing min-h-screen bg-white text-gray-900">
+    <div className="home-landing client-shell min-h-screen bg-white text-gray-900">
       <HomeNavbar />
-      <main id="main-content" className="mx-auto w-full max-w-6xl px-4 py-8 md:px-6">
+      <main
+        id="main-content"
+        className={`client-shell__main${wide ? " client-shell__main--wide" : ""}`}
+      >
         {children}
       </main>
       <HomeFooter />

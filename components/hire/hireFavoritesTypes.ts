@@ -11,6 +11,7 @@ export type HireFavoriteEntry = {
   ratingAvg: number | null;
   totalReviews: number | null;
   skills: string[];
+  completedJobs?: number;
   lastJobTitle: string | null;
   lastWorkedAt: string | null;
   sources: HireFavoriteSource[];

@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { useStoredUser } from "@/hooks/useStoredUser";
 import { FaEdit, FaSignInAlt } from "./icons";
+import NotificationBell from "@/components/notifications/NotificationBell";
 import UserAvatarMenu from "./UserAvatarMenu";
+import "@/components/notifications/notifications.css";
 
 export default function HomeNavbarAuth() {
   const { user, ready } = useStoredUser();
@@ -13,7 +15,12 @@ export default function HomeNavbarAuth() {
   }
 
   if (user) {
-    return <UserAvatarMenu user={user} />;
+    return (
+      <div className="notif-navbar-auth">
+        <NotificationBell />
+        <UserAvatarMenu user={user} />
+      </div>
+    );
   }
 
   return (

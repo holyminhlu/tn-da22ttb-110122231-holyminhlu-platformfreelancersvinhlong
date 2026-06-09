@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import {
   FaComment,
@@ -10,6 +9,7 @@ import {
   FaStar,
   FaUserTie,
 } from "react-icons/fa";
+import FreelancerAvatarFrame from "@/components/freelancer/FreelancerAvatarFrame";
 import { getUserInitials, resolveAvatarSrc } from "@/lib/authSession";
 import { formatDate, formatVnd } from "@/lib/format";
 import type { HireFavoriteEntry } from "./hireFavoritesTypes";
@@ -33,13 +33,15 @@ export default function HireFavoriteCard({
   return (
     <article className="hire-favorites__card">
       <div className="hire-favorites__card-main">
-        <div className="hire-favorites__avatar" aria-hidden>
-          {avatarSrc ? (
-            <Image src={avatarSrc} alt="" width={56} height={56} className="hire-favorites__avatar-img" unoptimized />
-          ) : (
-            <span className="hire-favorites__avatar-fallback">{initials}</span>
-          )}
-        </div>
+        <FreelancerAvatarFrame
+          completedJobs={entry.completedJobs}
+          size={56}
+          src={avatarSrc}
+          alt={entry.name}
+          fallback={initials}
+          imgClassName="hire-favorites__avatar-img"
+          className="hire-favorites__avatar"
+        />
 
         <div className="hire-favorites__card-body">
           <div className="hire-favorites__card-head">

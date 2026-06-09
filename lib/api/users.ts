@@ -22,6 +22,7 @@ export type FreelancerProfile = {
   total_reviews: number;
   languages: string[] | unknown;
   services_count: number;
+  completed_jobs?: number;
 };
 
 export type FreelancerService = {
@@ -101,6 +102,7 @@ export type MeUser = AuthUser & {
   districtCity?: string | null;
   coverUrl?: string | null;
   locationWkt?: string | null;
+  completedJobs?: number;
 };
 
 export type FreelancerMeResponse = {

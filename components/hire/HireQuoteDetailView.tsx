@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import FreelancerAvatarFrame from "@/components/freelancer/FreelancerAvatarFrame";
 import Link from "next/link";
 import { FreelancerChatInlineButton } from "@/components/chat/FreelancerChatWidget";
 import {
@@ -68,20 +68,15 @@ export default function HireQuoteDetailView({
       ) : null}
 
       <div className="hire-favorites__card-main">
-        <div className="hire-favorites__avatar" aria-hidden>
-          {avatarSrc ? (
-            <Image
-              src={avatarSrc}
-              alt=""
-              width={56}
-              height={56}
-              className="hire-favorites__avatar-img"
-              unoptimized
-            />
-          ) : (
-            <span className="hire-favorites__avatar-fallback">{getUserInitials(name)}</span>
-          )}
-        </div>
+        <FreelancerAvatarFrame
+          completedJobs={quote.completed_jobs}
+          size={56}
+          src={avatarSrc}
+          alt={name}
+          fallback={getUserInitials(name)}
+          imgClassName="hire-favorites__avatar-img"
+          className="hire-favorites__avatar"
+        />
 
         <div className="hire-favorites__card-body">
           <div className="hire-favorites__card-head">

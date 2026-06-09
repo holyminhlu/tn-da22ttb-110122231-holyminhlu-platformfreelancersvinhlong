@@ -65,6 +65,7 @@ export function applyFreelancerProfile(entry: HireFavoriteEntry, profile: Freela
     ratingAvg: profile.rating_avg ?? entry.ratingAvg,
     totalReviews: profile.total_reviews ?? entry.totalReviews,
     skills: profile.skills?.length ? profile.skills : entry.skills,
+    completedJobs: profile.completed_jobs ?? entry.completedJobs ?? 0,
   };
 }
 

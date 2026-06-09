@@ -10,6 +10,7 @@ import { FaCommentDots, FaStar, FaTimes } from "react-icons/fa";
 
 import type { JobQuoteRow, PatchJobQuoteAction } from "@/lib/api/jobQuotes";
 
+import FreelancerAvatarFrame from "@/components/freelancer/FreelancerAvatarFrame";
 import { getUserInitials, resolveAvatarSrc } from "@/lib/authSession";
 
 import { formatDate } from "@/lib/format";
@@ -96,33 +97,15 @@ export default function HireQuoteGridCard({
 
         </span>
 
-        <div className="hire-quote-product-card__avatar-wrap" aria-hidden>
-
-          {avatarSrc ? (
-
-            <Image
-
-              src={avatarSrc}
-
-              alt=""
-
-              width={56}
-
-              height={56}
-
-              className="hire-favorites__avatar-img"
-
-              unoptimized
-
-            />
-
-          ) : (
-
-            <span className="hire-favorites__avatar-fallback">{getUserInitials(name)}</span>
-
-          )}
-
-        </div>
+        <FreelancerAvatarFrame
+          completedJobs={quote.completed_jobs}
+          size={56}
+          src={avatarSrc}
+          alt={name}
+          fallback={getUserInitials(name)}
+          imgClassName="hire-favorites__avatar-img"
+          className="hire-quote-product-card__avatar-wrap"
+        />
 
       </div>
 

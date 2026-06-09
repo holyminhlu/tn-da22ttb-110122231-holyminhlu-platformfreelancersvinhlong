@@ -263,7 +263,7 @@ export default function ClientDashboard() {
   }, [stats]);
 
   return (
-    <ClientShell>
+    <ClientShell wide>
       {loading ? (
         <p className="client-page__desc">Đang tải dữ liệu...</p>
       ) : error ? (
@@ -279,7 +279,7 @@ export default function ClientDashboard() {
                   <AvatarImage src={avatarSrc} alt={displayName} />
                 ) : null}
                 <AvatarFallback className="bg-[#e8f1fb] text-[#0066cc]">
-                  {getUserInitials(user.fullName, user.email)}
+                  {getUserInitials(user.fullName ?? undefined, user.email ?? undefined)}
                 </AvatarFallback>
               </Avatar>
               <div>

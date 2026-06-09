@@ -38,7 +38,7 @@
 
 @media (min-width: 768px) {
   .edit-account-page .ea-sidebar {
-    width: 14rem;
+    width: var(--ea-sidebar-width, 17.5rem);
   }
 }
 
@@ -360,17 +360,37 @@
   color: #6b7280;
 }
 
-/* Layout: cột menu trái tách biệt + panel nội dung phải (menu sticky, không cuộn riêng) */
+/* Layout: menu trái cố định, chỉ panel phải cuộn */
 .edit-account-page {
-  --ea-nav-offset: 4.5rem;
+  --ea-sidebar-width: 17.5rem;
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+.edit-account-page .home-navbar {
+  position: relative;
+  top: auto;
+  flex-shrink: 0;
+}
+
+.edit-account-page > footer {
+  display: none;
 }
 
 .edit-account-page #main-content {
-  overflow-x: clip;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .edit-account-page .ea-shell {
   display: flex;
+  flex: 1;
+  min-height: 0;
   flex-direction: column;
   align-items: stretch;
   gap: 0;
@@ -378,54 +398,107 @@
   max-width: none;
   padding: 0;
   box-sizing: border-box;
+  overflow: hidden;
+}
+
+.edit-account-page .ea-shell__sidebar {
+  flex-shrink: 0;
+  width: 100%;
+  padding: 1rem clamp(0.75rem, 2vw, 1.25rem);
+  box-sizing: border-box;
+  background: #fff;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.edit-account-page .ea-shell__content {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  padding: 1rem clamp(0.75rem, 2vw, 1.5rem) 1.5rem;
+  box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+.edit-account-page .ea-shell__content > .ea-main {
+  padding: 0;
 }
 
 @media (min-width: 768px) {
   .edit-account-page .ea-shell {
     flex-direction: row;
     align-items: stretch;
-    min-height: calc(100vh - var(--ea-nav-offset));
   }
-}
 
-.edit-account-page .ea-shell__sidebar {
-  flex-shrink: 0;
-  width: 100%;
-  padding: 1.5rem clamp(0.75rem, 2vw, 1.25rem);
-  box-sizing: border-box;
-}
-
-@media (min-width: 768px) {
   .edit-account-page .ea-shell__sidebar {
-    width: 15rem;
-    position: sticky;
-    top: var(--ea-nav-offset);
-    align-self: flex-start;
-    z-index: 10;
-    overflow: visible;
-    background: #fff;
+    width: var(--ea-sidebar-width);
+    height: 100%;
+    padding: 2rem 1.25rem 2rem;
+    border-bottom: none;
     border-right: 1px solid #e5e7eb;
-    padding: 2rem 1.25rem 2.5rem;
+    overflow-y: auto;
+    overscroll-behavior: contain;
   }
 
   .edit-account-page .ea-shell__sidebar .ea-sidebar {
     width: 100%;
   }
-}
 
-.edit-account-page .ea-shell__content {
-  flex: 1;
-  min-width: 0;
-  padding: 1.5rem clamp(0.75rem, 2vw, 1.5rem) 2.5rem;
-  box-sizing: border-box;
-}
-
-@media (min-width: 768px) {
   .edit-account-page .ea-shell__content {
+    flex: 1;
+    min-height: 0;
+    height: 100%;
+    padding: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .edit-account-page .ea-shell__content > * {
     padding: 2rem clamp(1rem, 2.5vw, 2rem) 2.5rem;
+    box-sizing: border-box;
+  }
+
+  .edit-account-page .ea-shell__content > .ea-main {
+    padding: 2rem clamp(1rem, 2.5vw, 2rem) 2.5rem;
+  }
+
+  /* Header hồ sơ full-width trong vùng cuộn phải */
+  .edit-account-page .ea-shell__content > .mp-header,
+  .edit-account-page .ea-shell__content > .cp-header {
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-left: calc(-1 * clamp(1rem, 2.5vw, 2rem));
+    margin-right: calc(-1 * clamp(1rem, 2.5vw, 2rem));
+    padding-left: clamp(1rem, 2.5vw, 2rem);
+    padding-right: clamp(1rem, 2.5vw, 2rem);
+    width: calc(100% + 2 * clamp(1rem, 2.5vw, 2rem));
+    box-sizing: border-box;
+  }
+
+  .edit-account-page .ea-shell__content > .mp-body,
+  .edit-account-page .ea-shell__content > .cp-body {
+    padding-top: 0;
   }
 }
 
-.edit-account-page .ea-shell__content > .ea-main {
-  padding: 0;
+@media (max-width: 767px) {
+  .edit-account-page {
+    height: auto;
+    min-height: 100dvh;
+    overflow: auto;
+  }
+
+  .edit-account-page #main-content {
+    overflow: visible;
+    flex: none;
+  }
+
+  .edit-account-page .ea-shell {
+    overflow: visible;
+  }
+
+  .edit-account-page .ea-shell__content {
+    overflow: visible;
+  }
 }

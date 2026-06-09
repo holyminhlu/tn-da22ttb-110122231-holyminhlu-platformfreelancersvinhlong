@@ -1,6 +1,7 @@
 const { pool } = require("../db/pool");
 const { verifyAccessToken } = require("../utils/authTokens");
 const { parseUuidParam } = require("../utils/validators");
+const { notifyReviewReceived } = require("../utils/notificationService");
 
 async function listMyContracts(req, res) {
 
@@ -325,6 +326,9 @@ async function reviewContract(req, res) {
     );
 
     await dbClient.query("COMMIT");
+    notifyReviewReceived(dbClient, contract, rating, clientId).catch((err) =>
+      console.error("notifyReviewReceived failed:", err.message),
+    );
     return res.status(201).json({ message: "Đã lưu đánh giá freelancer.", review: upsert.rows[0] });
   } catch (error) {
     await dbClient.query("ROLLBACK").catch(() => {});

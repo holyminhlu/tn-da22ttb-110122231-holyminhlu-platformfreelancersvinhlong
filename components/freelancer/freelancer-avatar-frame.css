@@ -1,0 +1,84 @@
+.fl-avatar-frame {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.fl-avatar-frame__canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  border-radius: 50%;
+}
+
+.fl-avatar-frame__inner {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 50%;
+  user-select: none;
+}
+
+.fl-avatar-frame__inner--rounded-sm {
+  border-radius: 0.125rem;
+}
+
+.fl-avatar-frame__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+}
+
+.fl-avatar-frame__fallback {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  background: #e8f1fb;
+  color: #0066cc;
+  font-weight: 600;
+  border-radius: inherit;
+}
+
+/* Khung canvas lớn hơn avatar — không cắt hiệu ứng tại các vị trí legacy */
+.hire-favorites__avatar.fl-avatar-frame,
+.hire-search__logo.fl-avatar-frame,
+.hire-fl-detail__avatar.fl-avatar-frame,
+.hire-quote-product-card__avatar-wrap.fl-avatar-frame,
+.fw-inbox-sidebar__avatar.fl-avatar-frame,
+.fw-inbox-chat__avatar.fl-avatar-frame {
+  width: auto;
+  height: auto;
+  overflow: visible;
+  border: none;
+  background: transparent;
+}
+
+.hire-search__logo.fl-avatar-frame {
+  border-radius: 0;
+}
+
+.my-profile-page .mp-avatar-frame.fl-avatar-frame {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  overflow: visible;
+  border: none;
+  background: transparent;
+  pointer-events: none;
+}
+
+.my-profile-page .mp-avatar-frame .fl-avatar-frame__inner {
+  pointer-events: auto;
+}

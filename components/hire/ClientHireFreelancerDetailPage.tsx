@@ -16,6 +16,7 @@ import {
   FaStar,
   FaThumbsUp,
 } from "react-icons/fa";
+import FreelancerAvatarFrame from "@/components/freelancer/FreelancerAvatarFrame";
 import { getFreelancer, type FreelancerProfilePayload } from "@/lib/api/freelancers";
 import { getUserInitials, resolveAvatarSrc } from "@/lib/authSession";
 import {
@@ -24,6 +25,7 @@ import {
 } from "@/lib/hire/favoriteFreelancersStorage";
 import {
   displayMembershipBadges,
+  featuredServiceDescriptionText,
   formatHourlyRate,
   formatStartingPrice,
   formatYearlyEarnings,
@@ -31,8 +33,10 @@ import {
   parseLanguages,
   parsePortfolioImageUrls,
   parseProfileBadges,
+  resolveActiveService,
   resolveFreelancerMedia,
   satisfactionPercent,
+  serviceDescriptionPreview,
 } from "@/lib/hire/freelancerSearchDisplay";
 import { formatDate } from "@/lib/format";
 import FreelancerChatWidget from "@/components/chat/FreelancerChatWidget";
@@ -44,6 +48,31 @@ import "./hire-freelancer-detail.css";
 
 function formatPriceVndStyle(amount: string | number | null | undefined): string | null {
   return formatStartingPrice(amount);
+}
+
+function ServiceDescriptionBlock({ description }: { description: string }) {
+  const [expanded, setExpanded] = useState(false);
+  const { preview, needsExpand } = useMemo(
+    () => serviceDescriptionPreview(description),
+    [description],
+  );
+
+  return (
+    <div className="hire-fl-detail__featured-desc-block">
+      <p className="hire-fl-detail__featured-desc-label">Mô tả dịch vụ</p>
+      <p className="hire-fl-detail__featured-desc">{expanded ? description : preview}</p>
+      {needsExpand ? (
+        <button
+          type="button"
+          className="hire-fl-detail__desc-toggle"
+          onClick={() => setExpanded((value) => !value)}
+          aria-expanded={expanded}
+        >
+          {expanded ? "Thu gọn" : "Xem thêm"}
+        </button>
+      ) : null}
+    </div>
+  );
 }
 
 type ClientHireFreelancerDetailPageProps = {
@@ -66,6 +95,7 @@ export default function ClientHireFreelancerDetailPage({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [isFavorite, setIsFavorite] = useState(false);
+  const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     if (!freelancerId) {
@@ -103,6 +133,16 @@ export default function ClientHireFreelancerDetailPage({
     }
   }, [freelancerId]);
 
+  useEffect(() => {
+    if (!data) {
+      setSelectedServiceId(null);
+      return;
+    }
+    const initial =
+      serviceQuery || data.featuredService?.id || data.services[0]?.id || null;
+    setSelectedServiceId(initial);
+  }, [data, serviceQuery]);
+
   const fl = data?.freelancer;
   const satisfaction = fl ? satisfactionPercent(fl) : 0;
   const badges = useMemo(
@@ -112,17 +152,6 @@ export default function ClientHireFreelancerDetailPage({
   const languages = useMemo(() => parseLanguages(fl?.languages), [fl?.languages]);
   const avatarSrc = resolveAvatarSrc(fl?.avatar_url);
   const hourly = formatHourlyRate(fl?.hourly_rate);
-  const highlightServiceId = serviceQuery || data?.featuredService?.id;
-  const primaryServiceId =
-    highlightServiceId || data?.services?.[0]?.id || data?.featuredService?.id;
-  const hireQuotePath = primaryServiceId
-    ? `/hire/quote?serviceId=${encodeURIComponent(primaryServiceId)}&freelancerId=${encodeURIComponent(freelancerId)}`
-    : publicBrowse
-      ? `/freelancers/${freelancerId}`
-      : `/hire/search/${freelancerId}`;
-  const quoteHref = isGuest
-    ? `/dang-nhap?next=${encodeURIComponent(hireQuotePath)}`
-    : hireQuotePath;
   const backHref = publicBrowse ? "/freelancers" : "/hire/search";
 
   function serviceQuoteHref(serviceId: string) {
@@ -164,15 +193,19 @@ export default function ClientHireFreelancerDetailPage({
   }
 
   const ratingAvg = Number(fl.rating_avg);
-  const featured = data.featuredService;
-  const featuredThumb = resolveFreelancerMedia(featured?.thumbnail_url);
-  const chatService =
-    (highlightServiceId
-      ? data.services.find((svc) => svc.id === highlightServiceId)
-      : null) ??
-    featured ??
-    data.services[0] ??
-    null;
+  const activeService = resolveActiveService(data, selectedServiceId);
+  const activeServiceDescription = featuredServiceDescriptionText(activeService, fl.bio);
+  const featuredThumb = resolveFreelancerMedia(activeService?.thumbnail_url);
+  const activeQuoteHref = activeService
+    ? serviceQuoteHref(activeService.id)
+    : publicBrowse
+      ? `/freelancers/${freelancerId}`
+      : `/hire/search/${freelancerId}`;
+
+  function handleSelectService(serviceId: string) {
+    setSelectedServiceId(serviceId);
+    document.getElementById("fl-featured-heading")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 
   return (
     <PageShell>
@@ -214,20 +247,15 @@ export default function ClientHireFreelancerDetailPage({
         ) : null}
 
         <header className="hire-fl-detail__hero">
-          <div className="hire-fl-detail__avatar">
-            {avatarSrc ? (
-              <Image
-                src={avatarSrc}
-                alt=""
-                width={88}
-                height={88}
-                className="hire-fl-detail__avatar-img"
-                unoptimized
-              />
-            ) : (
-              getUserInitials(fl.full_name)
-            )}
-          </div>
+          <FreelancerAvatarFrame
+            completedJobs={fl.completed_jobs}
+            size={88}
+            src={avatarSrc}
+            alt={fl.full_name}
+            fallback={getUserInitials(fl.full_name)}
+            imgClassName="hire-fl-detail__avatar-img"
+            className="hire-fl-detail__avatar"
+          />
 
           <div className="hire-fl-detail__identity">
             <h1 className="hire-fl-detail__name">{fl.full_name}</h1>
@@ -284,7 +312,7 @@ export default function ClientHireFreelancerDetailPage({
           </div>
 
           <div className="hire-fl-detail__actions">
-            <Link href={quoteHref} className="hire-fl-detail__btn hire-fl-detail__btn--primary">
+            <Link href={activeQuoteHref} className="hire-fl-detail__btn hire-fl-detail__btn--primary">
               {isGuest ? "Đăng nhập để báo giá" : "Yêu cầu báo giá"}
             </Link>
             {canHire ? (
@@ -387,7 +415,7 @@ export default function ClientHireFreelancerDetailPage({
               ) : null}
             </section>
 
-            {featured ? (
+            {activeService ? (
               <section className="hire-fl-detail__section" aria-labelledby="fl-featured-heading">
                 <h2 id="fl-featured-heading" className="hire-fl-detail__section-title">
                   Dịch vụ nổi bật
@@ -408,15 +436,21 @@ export default function ClientHireFreelancerDetailPage({
                     )}
                   </div>
                   <div>
-                    <h3 className="hire-fl-detail__featured-title">{featured.title}</h3>
-                    {featured.description?.trim() ? (
-                      <p className="hire-fl-detail__featured-desc">{featured.description.trim()}</p>
-                    ) : null}
+                    <h3 className="hire-fl-detail__featured-title">{activeService.title}</h3>
+                    <ServiceDescriptionBlock
+                      key={activeService.id}
+                      description={activeServiceDescription}
+                    />
                     <div className="hire-fl-detail__featured-meta">
-                      {featured.category ? <span>{featured.category}</span> : null}
-                      {formatPriceVndStyle(featured.price) ? (
+                      {activeService.category ? <span>{activeService.category}</span> : null}
+                      {formatPriceVndStyle(activeService.price) ? (
                         <span className="hire-fl-detail__featured-price">
-                          {formatPriceVndStyle(featured.price)}
+                          {formatPriceVndStyle(activeService.price)}
+                        </span>
+                      ) : null}
+                      {activeService.delivery_days != null ? (
+                        <span>
+                          <FaClock aria-hidden /> {activeService.delivery_days} ngày
                         </span>
                       ) : null}
                     </div>
@@ -435,11 +469,11 @@ export default function ClientHireFreelancerDetailPage({
                 <ul className="hire-fl-detail__services-grid">
                   {data.services.map((svc) => {
                     const thumb = resolveFreelancerMedia(svc.thumbnail_url);
-                    const isHighlight = highlightServiceId === svc.id;
+                    const isSelected = selectedServiceId === svc.id;
                     return (
                       <li
                         key={svc.id}
-                        className={`hire-fl-detail__service-card${isHighlight ? " hire-fl-detail__service-card--highlight" : ""}`}
+                        className={`hire-fl-detail__service-card${isSelected ? " hire-fl-detail__service-card--highlight" : ""}`}
                       >
                         <div className="hire-fl-detail__service-thumb">
                           {thumb ? (
@@ -475,13 +509,22 @@ export default function ClientHireFreelancerDetailPage({
                               </span>
                             ) : null}
                           </div>
-                          <Link
-                            href={serviceQuoteHref(svc.id)}
-                            className="hire-fl-detail__btn hire-fl-detail__btn--primary"
-                            style={{ marginTop: "0.65rem", display: "inline-flex" }}
-                          >
-                            {isGuest ? "Đăng nhập để báo giá" : "Yêu cầu báo giá"}
-                          </Link>
+                          <div className="hire-fl-detail__service-actions">
+                            <button
+                              type="button"
+                              className={`hire-fl-detail__btn hire-fl-detail__btn--outline hire-fl-detail__service-select${isSelected ? " hire-fl-detail__service-select--active" : ""}`}
+                              onClick={() => handleSelectService(svc.id)}
+                              aria-pressed={isSelected}
+                            >
+                              {isSelected ? "Đang xem" : "Xem chi tiết"}
+                            </button>
+                            <Link
+                              href={serviceQuoteHref(svc.id)}
+                              className="hire-fl-detail__btn hire-fl-detail__btn--primary"
+                            >
+                              {isGuest ? "Đăng nhập để báo giá" : "Yêu cầu báo giá"}
+                            </Link>
+                          </div>
                         </div>
                       </li>
                     );
@@ -613,7 +656,7 @@ export default function ClientHireFreelancerDetailPage({
                 </li>
               </ul>
               <div className="hire-fl-detail__sidebar-actions">
-                <Link href={quoteHref} className="hire-fl-detail__btn hire-fl-detail__btn--primary">
+                <Link href={activeQuoteHref} className="hire-fl-detail__btn hire-fl-detail__btn--primary">
                   {isGuest ? "Đăng nhập để báo giá" : "Yêu cầu báo giá"}
                 </Link>
                 {canHire ? (
@@ -641,8 +684,8 @@ export default function ClientHireFreelancerDetailPage({
         <FreelancerChatWidget
           freelancerId={freelancerId}
           freelancerName={fl.full_name?.trim() || "Freelancer"}
-          serviceId={chatService?.id}
-          contextTitle={chatService?.title}
+          serviceId={activeService?.id}
+          contextTitle={activeService?.title}
         />
       ) : null}
     </PageShell>

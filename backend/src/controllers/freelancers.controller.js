@@ -262,6 +262,20 @@ async function listFreelancers(req, res) {
   }
 }
 
+function mapPublicServiceRow(row) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    title: row.title,
+    description: row.description,
+    price: row.price,
+    delivery_days: row.delivery_days,
+    category: row.category,
+    thumbnail_url: row.thumbnail_url,
+    response_time_hours: row.response_time_hours,
+  };
+}
+
 async function getFreelancer(req, res) {
 
   const freelancerId = parseUuidParam(req.params.freelancerId);
@@ -397,17 +411,8 @@ async function getFreelancer(req, res) {
 
     return res.json({
       freelancer: profileResult.rows[0],
-      featuredService,
-      services: servicesResult.rows.map((row) => ({
-        id: row.id,
-        title: row.title,
-        description: row.description,
-        price: row.price,
-        delivery_days: row.delivery_days,
-        category: row.category,
-        thumbnail_url: row.thumbnail_url,
-        response_time_hours: row.response_time_hours,
-      })),
+      featuredService: mapPublicServiceRow(featuredService),
+      services: servicesResult.rows.map((row) => mapPublicServiceRow(row)),
       portfolio: portfolioResult.rows,
       reviews: reviewsResult.rows,
     });

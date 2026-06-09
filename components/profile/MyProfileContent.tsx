@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  FaArrowLeft,
   FaBriefcase,
   FaCamera,
   FaExternalLinkAlt,
@@ -23,6 +22,7 @@ import {
   FaTools,
   FaUserEdit,
 } from "react-icons/fa";
+import FreelancerAvatarFrame from "@/components/freelancer/FreelancerAvatarFrame";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { uploadServiceThumbnail } from "@/lib/api/services";
 import {
@@ -193,6 +193,7 @@ export default function MyProfileContent() {
           role: data.user.role,
           fullName: data.user.fullName || "",
           avatarUrl: nextAvatar,
+          completedJobs: data.user.completedJobs ?? data.freelancerProfile?.completed_jobs ?? 0,
         }),
       );
       await load();
@@ -266,6 +267,7 @@ export default function MyProfileContent() {
       ? `/hire/search/${user.id}?service=${encodeURIComponent(services[0].id)}`
       : `/hire/search/${user.id}`;
   const freelancerTitle = data.freelancerProfile?.title ?? "";
+  const completedJobs = user.completedJobs ?? data.freelancerProfile?.completed_jobs ?? 0;
 
   async function handleShareProfile() {
     const url =
@@ -296,40 +298,21 @@ export default function MyProfileContent() {
 
   return (
     <>
-      <header className="mp-header">
-        <div className="mp-header__inner">
-          <div className="mp-header__left">
-            <Link href="/dashboard" className="mp-back" aria-label="Quay lại dashboard">
-              <FaArrowLeft aria-hidden />
-            </Link>
-            <h1 className="mp-header__title">Hồ sơ của tôi</h1>
-          </div>
-          <div className="mp-header__right">
-            <p className="mp-header__hint hidden sm:block">
-              Bạn cần điền và xuất bản ít nhất một Dịch vụ và mục Giới thiệu để hồ sơ hiển thị công khai.
-            </p>
-            <div className="mp-visibility">
-              <span>Hiển thị hồ sơ</span>
-              <span className="mp-toggle-off" aria-hidden />
-            </div>
-          </div>
-        </div>
-      </header>
-
       <div className="ea-main mp-body">
         <div className="ea-content mp-content">
           <div className="mp-profile-card">
             <div className="mp-profile-card__main">
               <div className="mp-profile-card__identity">
                 <div className={`mp-avatar-wrap${avatarUploading ? " mp-avatar-wrap--loading" : ""}`}>
-                  <Avatar className="mp-avatar size-32 rounded-sm">
-                    {avatarSrc ? (
-                      <AvatarImage src={avatarSrc} alt={user.fullName || ""} className="object-cover" />
-                    ) : null}
-                    <AvatarFallback className="rounded-sm text-lg">
-                      {getUserInitials(user.fullName, user.email)}
-                    </AvatarFallback>
-                  </Avatar>
+                  <FreelancerAvatarFrame
+                    completedJobs={completedJobs}
+                    size={48}
+                    shape="circle"
+                    src={avatarSrc}
+                    alt={user.fullName || ""}
+                    fallback={getUserInitials(user.fullName, user.email)}
+                    className="mp-avatar-frame"
+                  />
                   <div className="mp-avatar-overlay" aria-hidden={avatarUploading}>
                     <button
                       type="button"

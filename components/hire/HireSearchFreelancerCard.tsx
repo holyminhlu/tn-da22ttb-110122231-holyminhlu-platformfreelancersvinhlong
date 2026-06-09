@@ -21,6 +21,7 @@ import {
   type FreelancerProfilePayload,
   type FreelancerSearchRow,
 } from "@/lib/api/freelancers";
+import FreelancerAvatarFrame from "@/components/freelancer/FreelancerAvatarFrame";
 import { getUserInitials, resolveAvatarSrc } from "@/lib/authSession";
 import {
   displayMembershipBadges,
@@ -475,22 +476,15 @@ export default function HireSearchFreelancerCard({
         <div className="hire-search__card-content">
           <div className="hire-search__card-top">
             <div className="hire-search__identity">
-              <div className="hire-search__logo">
-                {avatarSrc ? (
-                  <Image
-                    src={avatarSrc}
-                    alt=""
-                    width={48}
-                    height={48}
-                    className="hire-search__logo-img"
-                    unoptimized
-                  />
-                ) : (
-                  <span className="hire-search__logo-fallback">
-                    {getUserInitials(row.full_name)}
-                  </span>
-                )}
-              </div>
+              <FreelancerAvatarFrame
+                completedJobs={row.completed_jobs}
+                size={48}
+                src={avatarSrc}
+                alt={row.full_name}
+                fallback={getUserInitials(row.full_name)}
+                imgClassName="hire-search__logo-img"
+                className="hire-search__logo"
+              />
               <div className="hire-search__identity-text">
                 <h2 className="hire-search__freelancer-name">
                   <Link href={profileHref(row.featured_service_id)}>

@@ -6,6 +6,7 @@ const {
   isClientIdentityVerified: checkClientIdentityVerified,
   IDV_VERIFY_SELECT,
 } = require("../utils/clientIdentityVerified");
+const { notifyQuoteAction } = require("../utils/notificationService");
 
 async function isClientIdentityVerified(db, userId) {
   const result = await db.query(
@@ -536,7 +537,7 @@ async function acceptJob(req, res) {
     await dbClient.query("BEGIN");
 
     const jobResult = await dbClient.query(
-      `SELECT id, client_id, budget, budget_type, budget_max, status FROM public.jobs
+      `SELECT id, client_id, title, budget, budget_type, budget_max, status FROM public.jobs
        WHERE id = $1 AND deleted_at IS NULL FOR UPDATE`,
       [jobId],
     );
@@ -622,6 +623,13 @@ async function acceptJob(req, res) {
     const quoteRow = insertResult.rows[0];
 
     await dbClient.query("COMMIT");
+
+    notifyQuoteAction(dbClient, {
+      action: "submitted",
+      quote: { id: quoteRow.id, job_id: jobId, client_id: job.client_id, freelancer_id: freelancerId },
+      jobTitle: job.title,
+      actorId: freelancerId,
+    }).catch((err) => console.error("notifyQuoteAction submitted:", err.message));
 
     return res.status(201).json({
       message: "Đã gửi báo giá thành công.",
@@ -883,8 +891,9 @@ async function patchFreelancerJobQuote(req, res, payload, quoteId, action) {
     await dbClient.query("BEGIN");
 
     const quoteResult = await dbClient.query(
-      `SELECT jq.id, jq.status, jq.freelancer_id
+      `SELECT jq.id, jq.job_id, jq.status, jq.freelancer_id, j.client_id, j.title AS job_title
        FROM public.job_quotes jq
+       INNER JOIN public.jobs j ON j.id = jq.job_id
        WHERE jq.id = $1
        FOR UPDATE`,
       [quoteId],
@@ -911,6 +920,12 @@ async function patchFreelancerJobQuote(req, res, payload, quoteId, action) {
       [quoteId],
     );
     await dbClient.query("COMMIT");
+    notifyQuoteAction(dbClient, {
+      action: "withdraw",
+      quote,
+      jobTitle: quote.job_title,
+      actorId: payload.sub,
+    }).catch((err) => console.error("notifyQuoteAction withdraw:", err.message));
     return res.json({ message: "Đã rút báo giá." });
   } catch (error) {
     await dbClient.query("ROLLBACK").catch(() => {});
@@ -952,7 +967,7 @@ async function patchJobQuote(req, res) {
 
     const quoteResult = await dbClient.query(
       `SELECT jq.id, jq.job_id, jq.freelancer_id, jq.amount, jq.message, jq.status,
-              j.client_id, j.status AS job_status, j.budget
+              j.client_id, j.title AS job_title, j.status AS job_status, j.budget
        FROM public.job_quotes jq
        INNER JOIN public.jobs j ON j.id = jq.job_id AND j.deleted_at IS NULL
        WHERE jq.id = $1
@@ -981,6 +996,12 @@ async function patchJobQuote(req, res) {
         [quoteId],
       );
       await dbClient.query("COMMIT");
+      notifyQuoteAction(dbClient, {
+        action: "decline",
+        quote,
+        jobTitle: quote.job_title,
+        actorId: payload.sub,
+      }).catch((err) => console.error("notifyQuoteAction decline:", err.message));
       return res.json({ message: "Đã từ chối báo giá." });
     }
 
@@ -994,6 +1015,12 @@ async function patchJobQuote(req, res) {
         [quoteId],
       );
       await dbClient.query("COMMIT");
+      notifyQuoteAction(dbClient, {
+        action: "shortlist",
+        quote,
+        jobTitle: quote.job_title,
+        actorId: payload.sub,
+      }).catch((err) => console.error("notifyQuoteAction shortlist:", err.message));
       return res.json({ message: "Đã đưa freelancer vào shortlist." });
     }
 
@@ -1007,6 +1034,12 @@ async function patchJobQuote(req, res) {
         [quoteId],
       );
       await dbClient.query("COMMIT");
+      notifyQuoteAction(dbClient, {
+        action: "interview",
+        quote,
+        jobTitle: quote.job_title,
+        actorId: payload.sub,
+      }).catch((err) => console.error("notifyQuoteAction interview:", err.message));
       return res.json({ message: "Đã chuyển hồ sơ sang trạng thái phỏng vấn." });
     }
 
@@ -1020,6 +1053,12 @@ async function patchJobQuote(req, res) {
         [quoteId],
       );
       await dbClient.query("COMMIT");
+      notifyQuoteAction(dbClient, {
+        action: "offer",
+        quote,
+        jobTitle: quote.job_title,
+        actorId: payload.sub,
+      }).catch((err) => console.error("notifyQuoteAction offer:", err.message));
       return res.json({ message: "Đã gửi offer cho freelancer." });
     }
 
@@ -1078,6 +1117,13 @@ async function patchJobQuote(req, res) {
     );
 
     await dbClient.query("COMMIT");
+
+    notifyQuoteAction(dbClient, {
+      action: "accept",
+      quote,
+      jobTitle: quote.job_title,
+      actorId: payload.sub,
+    }).catch((err) => console.error("notifyQuoteAction accept:", err.message));
 
     return res.json({
       message: "Đã chọn freelancer và tạo hợp đồng.",

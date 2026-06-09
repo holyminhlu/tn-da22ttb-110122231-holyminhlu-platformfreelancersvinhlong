@@ -2,19 +2,13 @@
 
 import Link from "next/link";
 import {
-  FaAt,
-  FaBolt,
   FaChartBar,
   FaCheckCircle,
-  FaCode,
-  FaDesktop,
-  FaEnvelope,
-  FaGem,
+  FaCog,
   FaKey,
   FaPhoneAlt,
   FaShieldAlt,
   FaThumbsUp,
-  FaTrashAlt,
   FaUser,
   FaWallet,
 } from "react-icons/fa";
@@ -58,7 +52,8 @@ export type AccountSidebarSection =
   | "stats"
   | "contact"
   | "verification"
-  | "credentials";
+  | "credentials"
+  | "settings";
 
 type EditAccountSidebarProps = {
   active?: AccountSidebarSection;
@@ -111,27 +106,18 @@ export default function EditAccountSidebar({ active = "contact" }: EditAccountSi
         href="/edit-account/ten-dang-nhap"
         active={active === "credentials"}
       />
-      <SidebarItem icon={<FaAt />} label="Đăng nhập mạng xã hội" disabled />
       <SidebarItem icon={<FaShieldAlt />} label="Bảo mật tài khoản" disabled />
 
       <SidebarGroup label="Gói & Thanh toán" />
-      {!hideClientMenus ? (
-        <>
-          <SidebarItem icon={<FaGem />} label="Gói thành viên" disabled />
-          <SidebarItem icon={<FaBolt />} label="Đơn chào giá" disabled />
-        </>
-      ) : null}
       <SidebarItem icon={<FaWallet />} label="Phương thức chuyển tiền" href="/payments" />
 
       <SidebarGroup label="Khác" />
-      {!hideClientMenus ? (
-        <>
-          <SidebarItem icon={<FaCode />} label="API" disabled />
-          <SidebarItem icon={<FaDesktop />} label="Nhật ký thiết bị" disabled />
-          <SidebarItem icon={<FaEnvelope />} label="Tùy chọn email" disabled />
-        </>
-      ) : null}
-      <SidebarItem icon={<FaTrashAlt />} label="Xóa tài khoản" disabled />
+      <SidebarItem
+        icon={<FaCog />}
+        label="Cài đặt"
+        href="/edit-account/cai-dat"
+        active={active === "settings"}
+      />
     </aside>
   );
 }

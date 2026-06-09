@@ -1,11 +1,10 @@
 "use client";
 
-import Image from "next/image";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { FaComments, FaEllipsisH, FaSearch } from "react-icons/fa";
 import { useStoredUser } from "@/hooks/useStoredUser";
 import { listChatConversations, type ChatConversation } from "@/lib/api/chat";
-import { resolveAvatarSrc } from "@/lib/authSession";
+import ChatPeerAvatar from "./ChatPeerAvatar";
 import InboxChatPanel, { type InboxViewerRole } from "./InboxChatPanel";
 import "./messages-inbox.css";
 
@@ -196,8 +195,6 @@ export default function MessagesInbox({ viewerRole, copy }: MessagesInboxProps) 
                 <ul className="fw-inbox-sidebar__items">
                   {filteredConversations.map((conv) => {
                     const active = conv.id === selectedId;
-                    const avatarSrc = resolveAvatarSrc(conv.peerAvatarUrl);
-                    const initial = (conv.peerName || "?").charAt(0).toUpperCase();
                     const topic = conv.contextTitle || conv.jobTitle;
 
                     return (
@@ -208,20 +205,13 @@ export default function MessagesInbox({ viewerRole, copy }: MessagesInboxProps) 
                           onClick={() => selectConversation(conv.id)}
                           aria-current={active ? "true" : undefined}
                         >
-                          <div className="fw-inbox-sidebar__avatar">
-                            {avatarSrc ? (
-                              <Image
-                                src={avatarSrc}
-                                alt=""
-                                width={48}
-                                height={48}
-                                className="fw-inbox-sidebar__avatar-img"
-                                unoptimized
-                              />
-                            ) : (
-                              <span className="fw-inbox-sidebar__avatar-fallback">{initial}</span>
-                            )}
-                          </div>
+                          <ChatPeerAvatar
+                            conversation={conv}
+                            size={48}
+                            className="fw-inbox-sidebar__avatar"
+                            imgClassName="fw-inbox-sidebar__avatar-img"
+                            fallbackClassName="fw-inbox-sidebar__avatar-fallback"
+                          />
                           <div className="fw-inbox-sidebar__item-body">
                             <div className="fw-inbox-sidebar__item-top">
                               <span className="fw-inbox-sidebar__item-name">{conv.peerName}</span>

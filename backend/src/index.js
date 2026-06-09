@@ -35,7 +35,9 @@ const servicesMeRoutes = require("./routes/services.me.routes");
 const servicesLegacyRoutes = require("./routes/services.legacy.routes");
 const paymentsRoutes = require("./routes/payments.routes");
 const chatRoutes = require("./routes/chat.routes");
+const notificationsRoutes = require("./routes/notifications.routes");
 const { initChatSocket } = require("./socket/chatSocket");
+const { setNotificationIo } = require("./utils/notificationService");
 const { runWorkflowSlaTick } = require("./utils/workflowSla");
 
 const app = express();
@@ -61,6 +63,7 @@ app.use("/api/services", servicesRoutes);
 app.use("/api/services/me", servicesMeRoutes);
 app.use("/api/payments", paymentsRoutes);
 app.use("/api/chat", chatRoutes);
+app.use("/api/notifications", notificationsRoutes);
 
 /** Legacy: /api/auth/me/*, /api/auth/freelancers, … */
 app.use("/api/auth", usersRoutes);
@@ -85,7 +88,8 @@ app.get("/health", async (_req, res) => {
 });
 
 const httpServer = http.createServer(app);
-initChatSocket(httpServer, frontendUrl);
+const io = initChatSocket(httpServer, frontendUrl);
+setNotificationIo(io);
 
 const server = httpServer.listen(PORT, async () => {
   console.log(`API listening on http://localhost:${PORT}`);

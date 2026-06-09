@@ -6,10 +6,10 @@ export type UserMenuEntry =
   | { type: "logout"; id: string; label: string };
 
 const FREELANCER_MENU: UserMenuEntry[] = [
-  { type: "item", id: "edit-account", label: "Edit Account", href: "/edit-account" },
-  { type: "item", id: "edit-profile", label: "Edit Profile", href: "/ho-so" },
-  { type: "item", id: "help", label: "Help", href: "/help" },
-  { type: "logout", id: "logout", label: "Log Out" },
+  { type: "item", id: "edit-account", label: "Chỉnh sửa tài khoản của tôi", href: "/edit-account" },
+  { type: "item", id: "edit-profile", label: "Chỉnh sửa hồ sơ", href: "/ho-so" },
+  { type: "item", id: "help", label: "Giúp đỡ", href: "/help" },
+  { type: "logout", id: "logout", label: "Đăng xuất" },
 ];
 
 const CLIENT_MENU: UserMenuEntry[] = [

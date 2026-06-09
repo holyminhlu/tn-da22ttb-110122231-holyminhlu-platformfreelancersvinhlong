@@ -14,6 +14,7 @@ function resolveActiveSection(pathname: string): AccountSidebarSection {
   if (pathname.startsWith("/ho-so")) return "profile";
   if (pathname.startsWith("/edit-account/xac-minh")) return "verification";
   if (pathname.startsWith("/edit-account/ten-dang-nhap")) return "credentials";
+  if (pathname.startsWith("/edit-account/cai-dat")) return "settings";
   if (pathname.startsWith("/edit-account")) return "contact";
   return "contact";
 }
@@ -29,7 +30,7 @@ export default function AccountSettingsLayout({ children }: AccountSettingsLayou
 
   return (
     <div
-      className={`home-landing edit-account-page min-h-screen text-gray-900${isProfile ? " my-profile-page" : ""}`}
+      className={`home-landing edit-account-page text-gray-900${isProfile ? " my-profile-page" : ""}`}
     >
       <HomeNavbar />
       <main id="main-content">

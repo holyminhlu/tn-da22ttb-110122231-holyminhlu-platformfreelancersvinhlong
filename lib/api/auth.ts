@@ -7,6 +7,7 @@ export type AuthUser = {
   role: string;
   fullName?: string | null;
   avatarUrl?: string | null;
+  completedJobs?: number | null;
 };
 
 export type AuthTokens = {
