@@ -100,6 +100,10 @@
 .pay-method-modal__field {
   display: grid;
   gap: 0.35rem;
+  border: none;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
 }
 
 .pay-method-modal__label-row {
@@ -327,4 +331,156 @@
 .pay-method-modal__wallet-logo {
   border-radius: 0.45rem;
   object-fit: contain;
+}
+
+.pay-method-modal--payout {
+  width: min(100%, 38rem);
+}
+
+.pay-method-modal__payout-preview {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  overflow: hidden;
+  padding: 1.1rem 1.15rem;
+  border-radius: 0.75rem;
+  background: linear-gradient(135deg, #0f2744 0%, #0066cc 55%, #1e40af 100%);
+  color: #fff;
+  box-shadow: 0 10px 28px rgb(15 39 68 / 0.28);
+}
+
+.pay-method-modal__payout-badge {
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.2);
+}
+
+.pay-method-modal__payout-preview-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.pay-method-modal__payout-preview-bank {
+  margin: 0 0 0.25rem;
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.pay-method-modal__payout-preview-num {
+  margin: 0 0 0.35rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
+.pay-method-modal__payout-preview-holder {
+  margin: 0;
+  font-size: 0.8125rem;
+  opacity: 0.88;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.pay-method-modal__payout-preview-watermark {
+  position: absolute;
+  right: -0.25rem;
+  bottom: -0.75rem;
+  width: 5.5rem;
+  height: 5.5rem;
+  opacity: 0.12;
+  pointer-events: none;
+}
+
+.pay-method-modal__payout-lead {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: #6b7280;
+}
+
+.pay-method-modal__bank-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.55rem;
+  max-height: 11.5rem;
+  overflow-y: auto;
+  padding-right: 0.15rem;
+}
+
+@media (max-width: 640px) {
+  .pay-method-modal__bank-options {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.pay-method-modal__bank-opt {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-height: 5.5rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 0.55rem;
+  padding: 0.55rem 0.35rem;
+  background: #f9fafb;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1.25;
+  text-align: center;
+  color: #374151;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.pay-method-modal__bank-opt:hover {
+  border-color: #93c5fd;
+  background: #f8fbff;
+}
+
+.pay-method-modal__bank-opt--active,
+.pay-method-modal__bank-opt:has(input:checked) {
+  border-color: #2563eb;
+  background: #eff6ff;
+  color: #1d4ed8;
+  box-shadow: 0 0 0 3px rgb(37 99 235 / 0.12);
+}
+
+.pay-method-modal__input--account {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  letter-spacing: 0.06em;
+}
+
+.pay-method-modal__field-hint {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: #9ca3af;
+}
+
+.pay-method-modal__notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0.65rem 0.75rem;
+  border-radius: 0.45rem;
+  border: 1px solid #fde68a;
+  background: #fffbeb;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: #92400e;
+}
+
+.pay-method-modal__notice-icon {
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+  color: #d97706;
+}
+
+.pay-method-modal__email-ref {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: #6b7280;
 }

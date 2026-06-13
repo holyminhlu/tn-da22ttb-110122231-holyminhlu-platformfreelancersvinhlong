@@ -1,4 +1,5 @@
-import { isClientRole } from "@/hooks/useStoredUser";
+import { isAdminRole, isClientRole } from "@/hooks/useStoredUser";
+import { ADMIN_HOME } from "@/lib/auth/roleRoutes";
 
 export type UserMenuEntry =
   | { type: "item"; id: string; label: string; href: string }
@@ -21,6 +22,12 @@ const CLIENT_MENU: UserMenuEntry[] = [
   { type: "logout", id: "logout", label: "Đăng xuất" },
 ];
 
+const ADMIN_MENU: UserMenuEntry[] = [
+  { type: "item", id: "admin", label: "Bảng quản trị", href: ADMIN_HOME },
+  { type: "logout", id: "logout", label: "Đăng xuất" },
+];
+
 export function getUserMenuItems(role?: string | null): UserMenuEntry[] {
+  if (isAdminRole(role)) return ADMIN_MENU;
   return isClientRole(role) ? CLIENT_MENU : FREELANCER_MENU;
 }

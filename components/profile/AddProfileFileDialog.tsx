@@ -87,12 +87,11 @@ export default function AddProfileFileDialog({ onClose, onSaved }: AddProfileFil
   }
 
   return (
-    <div className="mp-dialog-backdrop" role="presentation" onClick={() => !saving && !uploading && onClose()}>
+    <div className="mp-dialog-backdrop" role="presentation">
       <form
         className="mp-dialog mp-dialog--wide"
         role="dialog"
         aria-labelledby="add-file-title"
-        onClick={(e) => e.stopPropagation()}
         onSubmit={(e) => void handleSubmit(e)}
       >
         <div className="mp-dialog__head">

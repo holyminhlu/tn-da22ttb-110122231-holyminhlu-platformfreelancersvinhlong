@@ -52,12 +52,11 @@ export default function EditAboutDialog({
   }
 
   return (
-    <div className="mp-dialog-backdrop" role="presentation" onClick={() => !saving && onClose()}>
+    <div className="mp-dialog-backdrop" role="presentation">
       <form
         className="mp-dialog mp-dialog--wide"
         role="dialog"
         aria-labelledby="edit-about-title"
-        onClick={(e) => e.stopPropagation()}
         onSubmit={(e) => void handleSubmit(e)}
       >
         <div className="mp-dialog__head">

@@ -420,7 +420,7 @@ export default function FreelancerDashboard() {
       }
     } catch (err) {
       if (isUnauthorized(err)) {
-        router.replace("/login");
+        router.replace("/dang-nhap");
         return;
       }
       setError(apiErrorMessage(err, "Không thể tải bảng tổng quan."));

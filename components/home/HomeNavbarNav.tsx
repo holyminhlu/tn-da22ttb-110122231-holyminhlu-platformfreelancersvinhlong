@@ -26,10 +26,26 @@ const CLIENT_NAV = [
 
 export default function HomeNavbarNav() {
   const pathname = usePathname();
-  const { user, ready, isFreelancer, isClient } = useStoredUser({ refreshFromApi: false });
+  const { user, ready, isFreelancer, isClient, isAdmin } = useStoredUser({ refreshFromApi: false });
 
   if (!ready) {
     return <div className="hidden h-5 w-48 md:block" aria-hidden />;
+  }
+
+  if (user && isAdmin) {
+    const adminHref = "/admin/duyet-tai-khoan";
+    const active = isNavActive(pathname, adminHref);
+    return (
+      <div className="hidden space-x-6 font-medium text-gray-700 md:flex">
+        <Link
+          href={adminHref}
+          className={`home-navbar__nav-link${active ? " home-navbar__nav-link--active" : ""}`}
+          aria-current={active ? "page" : undefined}
+        >
+          Quản trị
+        </Link>
+      </div>
+    );
   }
 
   if (user && isClient) {

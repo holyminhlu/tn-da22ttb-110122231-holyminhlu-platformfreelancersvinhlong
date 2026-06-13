@@ -1,0 +1,4 @@
+export const MIN_WITHDRAW_VND = 10_000;
+export const MAX_WITHDRAW_VND = 500_000_000;
+
+export const WITHDRAW_AMOUNT_PRESETS = [50_000, 100_000, 500_000, 1_000_000] as const;

@@ -1,5 +1,28 @@
 const { pool } = require("../db/pool");
 const { verifyAccessToken } = require("../utils/authTokens");
+const { isPayosConfigured, getPayosClient } = require("../utils/payosClient");
+const { resolveBankBin } = require("../utils/vnBankBins");
+const {
+  createPayosPaymentLink,
+  completeWalletDeposit,
+  cancelWalletDepositOrder,
+  getWalletDepositOrderForUser,
+  syncWalletDepositFromPayos,
+  isMissingSchemaError: isWalletSchemaError,
+} = require("../services/walletDepositPayos.service");
+const {
+  createWithdrawalRequest,
+  confirmWithdrawal,
+  syncWithdrawalFromPayos,
+  handlePayoutWebhook,
+  isMissingSchemaError: isWithdrawSchemaError,
+} = require("../services/walletWithdrawPayos.service");
+const {
+  loadWithdrawalPinStatus,
+  saveWithdrawalPin,
+  verifyWithdrawalPin,
+  isMissingSchemaError: isPinSchemaError,
+} = require("../services/withdrawalPin.service");
 
 function isMissingSchemaError(err) {
   return err?.code === "42703" || err?.code === "42P01";
@@ -527,34 +550,181 @@ async function loadFreelancerEarningsSummary(db, userId) {
 }
 
 async function loadFreelancerPayoutProfile(db, userId) {
+  const base = await db.query(
+    `SELECT u.email, up.full_name, up.phone,
+            iv.legal_first_name, iv.legal_last_name, iv.admin_review_status
+     FROM public.users u
+     LEFT JOIN public.user_profiles up ON up.user_id = u.id
+     LEFT JOIN public.identity_verifications iv ON iv.user_id = u.id
+     WHERE u.id = $1
+     LIMIT 1`,
+    [userId],
+  );
+  const u = base.rows[0] || {};
+  const legalName = [u.legal_first_name, u.legal_last_name].filter(Boolean).join(" ").trim();
+  const identityApproved = String(u.admin_review_status || "").toLowerCase() === "approved";
+
+  const emptyProfile = {
+    contactName: u.full_name || legalName || "",
+    contactEmail: u.email || "",
+    contactPhone: u.phone || "",
+    accountHolderName: legalName || u.full_name || "",
+    bankName: "",
+    accountLast4: "",
+    accountMasked: "",
+    isConfigured: false,
+    isVerified: false,
+    linkedAt: null,
+  };
+
   try {
-    const row = await db.query(
-      `SELECT u.email, up.full_name, up.phone
-       FROM public.users u
-       LEFT JOIN public.user_profiles up ON up.user_id = u.id
-       WHERE u.id = $1
+    const payout = await db.query(
+      `SELECT bank_name, account_holder_name, account_number, linked_at
+       FROM public.freelancer_payout_accounts
+       WHERE user_id = $1
        LIMIT 1`,
       [userId],
     );
-    const u = row.rows[0];
+    const p = payout.rows[0];
+    if (!p) return emptyProfile;
+
+    const accountNumber = String(p.account_number || "").replace(/\D/g, "");
+    const last4 = accountNumber.slice(-4);
     return {
-      contactName: u?.full_name || "",
-      contactEmail: u?.email || "",
-      contactPhone: u?.phone || "",
-      bankName: "",
-      accountLast4: "",
-      isConfigured: false,
+      contactName: u.full_name || legalName || "",
+      contactEmail: u.email || "",
+      contactPhone: u.phone || "",
+      accountHolderName: p.account_holder_name || legalName || u.full_name || "",
+      bankName: p.bank_name || "",
+      accountLast4: last4,
+      accountMasked: last4 ? `******${last4}` : "",
+      isConfigured: Boolean(p.bank_name && accountNumber),
+      isVerified: identityApproved,
+      linkedAt: p.linked_at || null,
     };
   } catch (err) {
     if (!isMissingSchemaError(err)) throw err;
-    return {
-      contactName: "",
-      contactEmail: "",
-      contactPhone: "",
-      bankName: "",
-      accountLast4: "",
-      isConfigured: false,
-    };
+    return emptyProfile;
+  }
+}
+
+function normalizePersonName(value) {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+}
+
+async function loadFreelancerLegalName(db, userId) {
+  const result = await db.query(
+    `SELECT iv.legal_first_name, iv.legal_last_name, up.full_name
+     FROM public.users u
+     LEFT JOIN public.identity_verifications iv ON iv.user_id = u.id
+     LEFT JOIN public.user_profiles up ON up.user_id = u.id
+     WHERE u.id = $1
+     LIMIT 1`,
+    [userId],
+  );
+  const row = result.rows[0] || {};
+  const legal = [row.legal_first_name, row.legal_last_name].filter(Boolean).join(" ").trim();
+  return legal || row.full_name || "";
+}
+
+async function saveFreelancerPayoutAccount(req, res) {
+  const payload = verifyAccessToken(req, res);
+  if (!payload) return;
+
+  const userId = payload.sub;
+  if (String(payload.role || "").toLowerCase() !== "freelancer") {
+    return res.status(403).json({ message: "Chỉ freelancer được liên kết tài khoản nhận tiền." });
+  }
+
+  const bankName = String(req.body?.bankName || "").trim().slice(0, 120);
+  const accountNumber = String(req.body?.accountNumber || "").replace(/\D/g, "").slice(0, 32);
+  let accountHolderName = String(req.body?.accountHolderName || "").trim().slice(0, 255);
+
+  if (!bankName) {
+    return res.status(400).json({ message: "Vui lòng chọn ngân hàng." });
+  }
+  if (accountNumber.length < 6) {
+    return res.status(400).json({ message: "Số tài khoản phải có ít nhất 6 chữ số." });
+  }
+
+  const db = await pool.connect();
+  try {
+    const legalName = await loadFreelancerLegalName(db, userId);
+    if (!accountHolderName) accountHolderName = legalName;
+    if (!accountHolderName) {
+      return res.status(400).json({
+        message: "Thiếu tên chủ tài khoản. Hoàn thành xác minh danh tính hoặc nhập tên trùng CCCD/CMND.",
+      });
+    }
+    if (legalName && normalizePersonName(accountHolderName) !== normalizePersonName(legalName)) {
+      return res.status(400).json({
+        message: `Tên chủ tài khoản không khớp tên đã xác minh (${legalName}). Bạn có thể nhập IN HOA, không dấu như trên thẻ ngân hàng (vd: NGUYEN VAN A).`,
+      });
+    }
+
+    const bankBin = resolveBankBin(bankName);
+    await db.query(
+      `INSERT INTO public.freelancer_payout_accounts
+         (user_id, bank_name, bank_bin, account_holder_name, account_number, linked_at, updated_at)
+       VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
+       ON CONFLICT (user_id) DO UPDATE SET
+         bank_name = EXCLUDED.bank_name,
+         bank_bin = EXCLUDED.bank_bin,
+         account_holder_name = EXCLUDED.account_holder_name,
+         account_number = EXCLUDED.account_number,
+         updated_at = NOW()`,
+      [userId, bankName, bankBin, accountHolderName, accountNumber],
+    );
+
+    const payoutProfile = await loadFreelancerPayoutProfile(db, userId);
+    return res.json({
+      message: "Đã lưu tài khoản ngân hàng nhận tiền.",
+      payoutProfile,
+    });
+  } catch (error) {
+    console.error("saveFreelancerPayoutAccount failed:", error.message);
+    if (isMissingSchemaError(error)) {
+      return res.status(503).json({
+        message: "Thiếu schema tài khoản nhận tiền. Chạy backend/sql/freelancer_payout_accounts.sql.",
+      });
+    }
+    return res.status(500).json({ message: "Không thể lưu tài khoản ngân hàng." });
+  } finally {
+    db.release();
+  }
+}
+
+async function unlinkFreelancerPayoutAccount(req, res) {
+  const payload = verifyAccessToken(req, res);
+  if (!payload) return;
+
+  if (String(payload.role || "").toLowerCase() !== "freelancer") {
+    return res.status(403).json({ message: "Chỉ freelancer được thao tác tài khoản nhận tiền." });
+  }
+
+  const db = await pool.connect();
+  try {
+    await db.query(`DELETE FROM public.freelancer_payout_accounts WHERE user_id = $1`, [payload.sub]);
+    const payoutProfile = await loadFreelancerPayoutProfile(db, payload.sub);
+    return res.json({
+      message: "Đã hủy liên kết tài khoản ngân hàng.",
+      payoutProfile,
+    });
+  } catch (error) {
+    console.error("unlinkFreelancerPayoutAccount failed:", error.message);
+    if (isMissingSchemaError(error)) {
+      return res.status(503).json({
+        message: "Thiếu schema tài khoản nhận tiền. Chạy backend/sql/freelancer_payout_accounts.sql.",
+      });
+    }
+    return res.status(500).json({ message: "Không thể hủy liên kết tài khoản." });
+  } finally {
+    db.release();
   }
 }
 
@@ -582,6 +752,7 @@ async function getFreelancerBilling(req, res, userId) {
     const transactions = await loadFreelancerTransactions(db, userId);
     const filterOptions = await loadFreelancerFilterOptions(transactions);
     const payoutProfile = await loadFreelancerPayoutProfile(db, userId);
+    const withdrawalPin = await loadWithdrawalPinStatus(db, userId);
 
     return res.json({
       role: "freelancer",
@@ -592,6 +763,7 @@ async function getFreelancerBilling(req, res, userId) {
         totalEarned: earnings.totalEarned,
       },
       payoutProfile,
+      withdrawalPin,
       pendingItems,
       transactions,
       filterOptions,
@@ -999,7 +1171,7 @@ async function deleteBillingMethod(req, res) {
   }
 }
 
-async function depositFunds(req, res) {
+async function createPaymentLink(req, res) {
   const payload = verifyAccessToken(req, res);
   if (!payload) return;
 
@@ -1008,118 +1180,303 @@ async function depositFunds(req, res) {
     return res.status(403).json({ message: "Chỉ tài khoản khách hàng được nạp tiền." });
   }
 
+  if (!isPayosConfigured()) {
+    return res.status(503).json({
+      message:
+        "Cổng payOS chưa được cấu hình. Thêm PAYOS_CLIENT_ID, PAYOS_API_KEY, PAYOS_CHECKSUM_KEY vào .env.",
+    });
+  }
+
   const amount = Number(req.body?.amount);
   if (!Number.isFinite(amount) || amount < 10000 || amount > 500_000_000) {
     return res.status(400).json({ message: "Số tiền nạp phải từ 10.000 đến 500.000.000 VND." });
   }
 
-  const userId = payload.sub;
   const db = await pool.connect();
-
   try {
-    await db.query("BEGIN");
-    await ensureClientAccount(db, userId);
-
-    await db.query(
-      `UPDATE public.accounts
-       SET balance = balance + $1
-       WHERE user_id = $2 AND currency = 'VND'`,
-      [amount, userId],
-    );
-    try {
-      await db.query(
-        `UPDATE public.accounts SET updated_at = CURRENT_TIMESTAMP WHERE user_id = $1 AND currency = 'VND'`,
-        [userId],
-      );
-    } catch (updErr) {
-      if (!isMissingSchemaError(updErr)) throw updErr;
+    const result = await createPayosPaymentLink(db, payload.sub, amount);
+    if (!result.checkoutUrl) {
+      return res.status(502).json({ message: "payOS không trả về link thanh toán." });
     }
-
-    try {
-      await db.query(
-        `INSERT INTO public.transactions
-           (user_id, amount, currency, direction, category, description, occurred_at, status, type)
-         VALUES ($1, $2, 'VND', 'in', 'deposit', 'Nạp tiền vào ví', NOW(), 'completed', 'deposit')`,
-        [userId, amount],
-      );
-    } catch (txErr) {
-      if (!isMissingSchemaError(txErr)) throw txErr;
-    }
-
-    await db.query("COMMIT");
-    const account = await loadAccountBalances(db, userId);
-    return res.json({ message: "Đã nạp tiền vào ví.", account });
+    return res.json({
+      message: "Đã tạo link thanh toán payOS.",
+      orderCode: result.orderCode,
+      amount: result.amount,
+      checkoutUrl: result.checkoutUrl,
+    });
   } catch (error) {
-    await db.query("ROLLBACK").catch(() => {});
-    console.error("depositFunds failed:", error.message);
-    return res.status(500).json({ message: "Không thể nạp tiền lúc này." });
+    console.error("createPaymentLink failed:", error.message);
+    if (isWalletSchemaError(error)) {
+      return res.status(503).json({
+        message: "Thiếu bảng wallet_deposit_orders. Chạy backend/sql/wallet_deposit_payos.sql.",
+      });
+    }
+    return res.status(500).json({
+      message: error.message || "Không thể tạo link thanh toán payOS.",
+    });
   } finally {
     db.release();
   }
 }
 
-async function withdrawFreelancerFunds(req, res) {
+async function payosWebhook(req, res) {
+  if (!isPayosConfigured()) {
+    return res.status(503).json({ message: "payOS chưa được cấu hình." });
+  }
+
+  let webhookData;
+  try {
+    const payos = getPayosClient();
+    webhookData = await payos.webhooks.verify(req.body);
+  } catch (error) {
+    console.error("payosWebhook verify failed:", error.message);
+    return res.status(400).json({ message: "Webhook payOS không hợp lệ." });
+  }
+
+  const orderCode = Number(webhookData?.orderCode);
+  if (!Number.isFinite(orderCode)) {
+    return res.status(400).json({ message: "Thiếu orderCode trong webhook." });
+  }
+
+  const db = await pool.connect();
+  try {
+    const result = await completeWalletDeposit(db, orderCode, {
+      amount: webhookData?.amount,
+      reference: webhookData?.reference ?? null,
+    });
+
+    if (!result.ok && result.reason === "not_found") {
+      return res.status(404).json({ message: "Không tìm thấy đơn nạp tiền." });
+    }
+    if (!result.ok && result.reason === "amount_mismatch") {
+      return res.status(409).json({ message: "Số tiền webhook không khớp đơn hàng." });
+    }
+
+    return res.status(200).json({ success: true, orderCode, status: "SUCCESS" });
+  } catch (error) {
+    await db.query("ROLLBACK").catch(() => {});
+    console.error("payosWebhook complete failed:", error.message);
+    if (isWalletSchemaError(error)) {
+      return res.status(503).json({
+        message: "Thiếu bảng wallet_deposit_orders. Chạy backend/sql/wallet_deposit_payos.sql.",
+      });
+    }
+    return res.status(500).json({ message: "Không thể xử lý webhook payOS." });
+  } finally {
+    db.release();
+  }
+}
+
+async function getDepositOrderStatus(req, res) {
   const payload = verifyAccessToken(req, res);
   if (!payload) return;
 
   const role = String(payload.role || "").toLowerCase();
-  if (role !== "freelancer") {
+  if (role !== "client") {
+    return res.status(403).json({ message: "Chỉ client được xem trạng thái nạp tiền." });
+  }
+
+  const orderCode = Number(req.params.orderCode);
+  if (!Number.isFinite(orderCode)) {
+    return res.status(400).json({ message: "Mã đơn không hợp lệ." });
+  }
+
+  const db = await pool.connect();
+  try {
+    let order = await getWalletDepositOrderForUser(db, orderCode, payload.sub);
+    if (!order) {
+      return res.status(404).json({ message: "Không tìm thấy đơn nạp tiền." });
+    }
+
+    if (order.status === "PENDING" && isPayosConfigured()) {
+      await syncWalletDepositFromPayos(db, orderCode);
+      order = (await getWalletDepositOrderForUser(db, orderCode, payload.sub)) || order;
+    }
+
+    const account = await loadAccountBalances(db, payload.sub);
+    return res.json({
+      orderCode: Number(order.order_code),
+      amount: Number(order.amount),
+      status: order.status,
+      type: order.type,
+      paidAt: order.paid_at,
+      createdAt: order.created_at,
+      account,
+    });
+  } catch (error) {
+    console.error("getDepositOrderStatus failed:", error.message);
+    if (isWalletSchemaError(error)) {
+      return res.status(503).json({
+        message: "Thiếu bảng wallet_deposit_orders. Chạy backend/sql/wallet_deposit_payos.sql.",
+      });
+    }
+    return res.status(500).json({ message: "Không thể tải trạng thái đơn nạp tiền." });
+  } finally {
+    db.release();
+  }
+}
+
+async function cancelDepositOrder(req, res) {
+  const payload = verifyAccessToken(req, res);
+  if (!payload) return;
+
+  const role = String(payload.role || "").toLowerCase();
+  if (role !== "client") {
+    return res.status(403).json({ message: "Chỉ client được hủy đơn nạp tiền." });
+  }
+
+  const orderCode = Number(req.params.orderCode);
+  if (!Number.isFinite(orderCode)) {
+    return res.status(400).json({ message: "Mã đơn không hợp lệ." });
+  }
+
+  const db = await pool.connect();
+  try {
+    const order = await getWalletDepositOrderForUser(db, orderCode, payload.sub);
+    if (!order) {
+      return res.status(404).json({ message: "Không tìm thấy đơn nạp tiền." });
+    }
+    if (order.status === "SUCCESS") {
+      return res.status(409).json({ message: "Đơn đã thanh toán thành công, không thể hủy." });
+    }
+    await cancelWalletDepositOrder(db, orderCode, "Client hủy tại trang payOS");
+    return res.json({ message: "Đã hủy yêu cầu nạp tiền.", orderCode, status: "CANCELLED" });
+  } catch (error) {
+    console.error("cancelDepositOrder failed:", error.message);
+    return res.status(500).json({ message: "Không thể hủy đơn nạp tiền." });
+  } finally {
+    db.release();
+  }
+}
+
+async function requestWithdrawal(req, res) {
+  const payload = verifyAccessToken(req, res);
+  if (!payload) return;
+
+  if (String(payload.role || "").toLowerCase() !== "freelancer") {
     return res.status(403).json({ message: "Chỉ freelancer được rút tiền về tài khoản." });
   }
 
   const amount = Number(req.body?.amount);
-  if (!Number.isFinite(amount) || amount < 100000 || amount > 500_000_000) {
-    return res.status(400).json({ message: "Số tiền rút phải từ 100.000 đến 500.000.000 VND." });
-  }
-
-  const userId = payload.sub;
   const db = await pool.connect();
-
   try {
-    await db.query("BEGIN");
-    await ensureClientAccount(db, userId);
-
-    const acc = await db.query(
-      `SELECT balance FROM public.accounts WHERE user_id = $1 AND currency = 'VND' FOR UPDATE`,
-      [userId],
-    );
-    const balance = Number(acc.rows[0]?.balance) || 0;
-    if (balance < amount) {
-      await db.query("ROLLBACK");
-      return res.status(409).json({
-        message: `Số dư khả dụng không đủ (hiện có ${balance} VND).`,
+    const result = await createWithdrawalRequest(db, payload.sub, amount);
+    if (!result.ok) {
+      return res.status(result.status).json({ message: result.message });
+    }
+    return res.json({
+      message: "Đã tạo lệnh rút tiền. Vui lòng xác nhận bằng mật khẩu.",
+      order: result.order,
+    });
+  } catch (error) {
+    console.error("requestWithdrawal failed:", error.message);
+    if (isWithdrawSchemaError(error)) {
+      return res.status(503).json({
+        message: "Thiếu schema rút tiền. Chạy backend/sql/freelancer_withdrawal_payos.sql.",
       });
     }
+    return res.status(500).json({ message: "Không thể tạo lệnh rút tiền." });
+  } finally {
+    db.release();
+  }
+}
 
-    await db.query(
-      `UPDATE public.accounts SET balance = balance - $1 WHERE user_id = $2 AND currency = 'VND'`,
-      [amount, userId],
-    );
-    try {
-      await db.query(
-        `UPDATE public.accounts SET updated_at = CURRENT_TIMESTAMP WHERE user_id = $1 AND currency = 'VND'`,
-        [userId],
-      );
-    } catch (updErr) {
-      if (!isMissingSchemaError(updErr)) throw updErr;
+async function getWithdrawalPinSettings(req, res) {
+  const payload = verifyAccessToken(req, res);
+  if (!payload) return;
+
+  if (String(payload.role || "").toLowerCase() !== "freelancer") {
+    return res.status(403).json({ message: "Chỉ freelancer được quản lý PIN rút tiền." });
+  }
+
+  const db = await pool.connect();
+  try {
+    const withdrawalPin = await loadWithdrawalPinStatus(db, payload.sub);
+    return res.json({ withdrawalPin });
+  } catch (error) {
+    console.error("getWithdrawalPinSettings failed:", error.message);
+    if (isPinSchemaError(error)) {
+      return res.status(503).json({
+        message: "Thiếu schema PIN rút tiền. Chạy backend/sql/freelancer_withdrawal_pin.sql.",
+      });
+    }
+    return res.status(500).json({ message: "Không thể tải cài đặt PIN rút tiền." });
+  } finally {
+    db.release();
+  }
+}
+
+async function saveWithdrawalPinSettings(req, res) {
+  const payload = verifyAccessToken(req, res);
+  if (!payload) return;
+
+  if (String(payload.role || "").toLowerCase() !== "freelancer") {
+    return res.status(403).json({ message: "Chỉ freelancer được thiết lập PIN rút tiền." });
+  }
+
+  const db = await pool.connect();
+  try {
+    const result = await saveWithdrawalPin(db, payload.sub, {
+      pin: req.body?.pin,
+      confirmPin: req.body?.confirmPin,
+      currentPassword: req.body?.currentPassword,
+      newPassword: req.body?.newPassword,
+      confirmNewPassword: req.body?.confirmNewPassword,
+    });
+    if (!result.ok) {
+      return res.status(result.status).json({ message: result.message });
+    }
+    return res.json({ message: result.message, withdrawalPin: result.withdrawalPin });
+  } catch (error) {
+    console.error("saveWithdrawalPinSettings failed:", error.message);
+    if (isPinSchemaError(error)) {
+      return res.status(503).json({
+        message: "Thiếu schema PIN rút tiền. Chạy backend/sql/freelancer_withdrawal_pin.sql.",
+      });
+    }
+    return res.status(500).json({ message: "Không thể lưu PIN rút tiền." });
+  } finally {
+    db.release();
+  }
+}
+
+async function confirmWithdrawalOrder(req, res) {
+  const payload = verifyAccessToken(req, res);
+  if (!payload) return;
+
+  if (String(payload.role || "").toLowerCase() !== "freelancer") {
+    return res.status(403).json({ message: "Chỉ freelancer được rút tiền về tài khoản." });
+  }
+
+  const orderId = String(req.params.orderId || "").trim();
+  const pin = String(req.body?.pin || "");
+  if (!orderId) {
+    return res.status(400).json({ message: "Thiếu mã lệnh rút tiền." });
+  }
+  if (!pin) {
+    return res.status(400).json({ message: "Vui lòng nhập mã PIN 6 số để xác nhận." });
+  }
+
+  const db = await pool.connect();
+  try {
+    const auth = await verifyWithdrawalPin(db, payload.sub, pin);
+    if (!auth.ok) {
+      return res.status(auth.status).json({ message: auth.message });
     }
 
-    try {
-      await db.query(
-        `INSERT INTO public.transactions
-           (user_id, amount, currency, direction, category, description, occurred_at, status, type)
-         VALUES ($1, $2, 'VND', 'out', 'withdraw', 'Rút tiền về tài khoản ngân hàng', NOW(), 'completed', 'withdraw')`,
-        [userId, amount],
-      );
-    } catch (txErr) {
-      if (!isMissingSchemaError(txErr)) throw txErr;
+    const result = await confirmWithdrawal(db, orderId, payload.sub);
+    if (!result.ok) {
+      return res.status(result.status).json({ message: result.message });
     }
 
-    await db.query("COMMIT");
-    const accountRow = await loadAccountBalances(db, userId);
-    const earnings = await loadFreelancerEarningsSummary(db, userId);
+    const accountRow = await loadAccountBalances(db, payload.sub);
+    const earnings = await loadFreelancerEarningsSummary(db, payload.sub);
     return res.json({
-      message: "Đã ghi nhận yêu cầu rút tiền. Tiền sẽ chuyển trong 1–3 ngày làm việc.",
+      message:
+        result.order.status === "SUCCEEDED"
+          ? "Rút tiền thành công."
+          : "Đang xử lý lệnh rút. Tiền sẽ chuyển vào tài khoản ngân hàng trong giây lát.",
+      order: result.order,
       account: {
         balance: accountRow.balance,
         currency: accountRow.currency,
@@ -1128,12 +1485,98 @@ async function withdrawFreelancerFunds(req, res) {
       },
     });
   } catch (error) {
-    await db.query("ROLLBACK").catch(() => {});
-    console.error("withdrawFreelancerFunds failed:", error.message);
-    return res.status(500).json({ message: "Không thể rút tiền lúc này." });
+    console.error("confirmWithdrawalOrder failed:", error.message);
+    if (isWithdrawSchemaError(error)) {
+      return res.status(503).json({
+        message: "Thiếu schema rút tiền. Chạy backend/sql/freelancer_withdrawal_payos.sql.",
+      });
+    }
+    return res.status(500).json({ message: "Không thể xác nhận lệnh rút tiền." });
   } finally {
     db.release();
   }
+}
+
+async function getWithdrawalOrderStatus(req, res) {
+  const payload = verifyAccessToken(req, res);
+  if (!payload) return;
+
+  if (String(payload.role || "").toLowerCase() !== "freelancer") {
+    return res.status(403).json({ message: "Chỉ freelancer được xem lệnh rút tiền." });
+  }
+
+  const orderId = String(req.params.orderId || "").trim();
+  if (!orderId) {
+    return res.status(400).json({ message: "Thiếu mã lệnh rút tiền." });
+  }
+
+  const db = await pool.connect();
+  try {
+    const owned = await db.query(
+      `SELECT id FROM public.freelancer_withdrawal_orders
+       WHERE id = $1 AND user_id = $2 LIMIT 1`,
+      [orderId, payload.sub],
+    );
+    if (owned.rowCount === 0) {
+      return res.status(404).json({ message: "Không tìm thấy lệnh rút tiền." });
+    }
+
+    const order = await syncWithdrawalFromPayos(db, orderId);
+
+    const accountRow = await loadAccountBalances(db, payload.sub);
+    const earnings = await loadFreelancerEarningsSummary(db, payload.sub);
+    return res.json({
+      order,
+      account: {
+        balance: accountRow.balance,
+        currency: accountRow.currency,
+        pendingBalance: earnings.pendingBalance,
+        totalEarned: earnings.totalEarned,
+      },
+    });
+  } catch (error) {
+    console.error("getWithdrawalOrderStatus failed:", error.message);
+    if (isWithdrawSchemaError(error)) {
+      return res.status(503).json({
+        message: "Thiếu schema rút tiền. Chạy backend/sql/freelancer_withdrawal_payos.sql.",
+      });
+    }
+    return res.status(500).json({ message: "Không thể tải trạng thái lệnh rút tiền." });
+  } finally {
+    db.release();
+  }
+}
+
+async function payosPayoutWebhook(req, res) {
+  if (!isPayosConfigured()) {
+    return res.status(503).json({ message: "payOS chưa được cấu hình." });
+  }
+
+  const db = await pool.connect();
+  try {
+    const result = await handlePayoutWebhook(db, req.body);
+    if (!result.ok) {
+      return res.status(result.status).json({ message: result.message });
+    }
+    return res.status(200).json({ success: true, referenceId: result.referenceId, status: result.status });
+  } catch (error) {
+    await db.query("ROLLBACK").catch(() => {});
+    console.error("payosPayoutWebhook failed:", error.message);
+    if (isWithdrawSchemaError(error)) {
+      return res.status(503).json({
+        message: "Thiếu schema rút tiền. Chạy backend/sql/freelancer_withdrawal_payos.sql.",
+      });
+    }
+    return res.status(500).json({ message: "Không thể xử lý webhook chi hộ payOS." });
+  } finally {
+    db.release();
+  }
+}
+
+async function withdrawFreelancerFunds(req, res) {
+  return res.status(400).json({
+    message: "Vui lòng dùng luồng rút tiền mới: tạo lệnh rồi xác nhận bằng mật khẩu.",
+  });
 }
 
 module.exports = {
@@ -1142,6 +1585,17 @@ module.exports = {
   addBillingMethod,
   setDefaultBillingMethod,
   deleteBillingMethod,
-  depositFunds,
+  createPaymentLink,
+  payosWebhook,
+  getDepositOrderStatus,
+  cancelDepositOrder,
   withdrawFreelancerFunds,
+  requestWithdrawal,
+  confirmWithdrawalOrder,
+  getWithdrawalOrderStatus,
+  getWithdrawalPinSettings,
+  saveWithdrawalPinSettings,
+  payosPayoutWebhook,
+  saveFreelancerPayoutAccount,
+  unlinkFreelancerPayoutAccount,
 };

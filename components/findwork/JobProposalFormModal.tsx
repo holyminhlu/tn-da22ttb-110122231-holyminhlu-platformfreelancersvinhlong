@@ -152,17 +152,12 @@ export default function JobProposalFormModal({
   const clientBudget = formatJobBudgetLine(job);
 
   return (
-    <div
-      className="job-proposal-modal"
-      role="presentation"
-      onClick={submitting ? undefined : onClose}
-    >
+    <div className="job-proposal-modal" role="presentation">
       <div
         className="job-proposal-modal__dialog"
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        onClick={(e) => e.stopPropagation()}
       >
         <button
           type="button"

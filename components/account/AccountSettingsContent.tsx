@@ -33,6 +33,7 @@ import {
   type NotificationPrefs,
   type ThemePreference,
 } from "@/lib/userPreferences";
+import WithdrawalPinSettings from "@/components/account/WithdrawalPinSettings";
 import "./account-settings.css";
 
 const TIER_FRAME_SIZE = 52;
@@ -103,7 +104,7 @@ export default function AccountSettingsContent() {
     try {
       const data = await getMe();
       if (!data?.user) {
-        router.replace("/login");
+        router.replace("/dang-nhap");
         return;
       }
       setFullName(data.user.fullName || "");
@@ -198,6 +199,8 @@ export default function AccountSettingsContent() {
         </p>
       ) : (
         <div className="ea-content">
+          {isFreelancer ? <WithdrawalPinSettings /> : null}
+
           <section className="ea-card as-card">
             <h2 className="as-section-title">
               <FaBell className="mr-2 inline text-[#2563eb]" aria-hidden />

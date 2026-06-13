@@ -9,11 +9,11 @@ import { useStoredUser } from "@/hooks/useStoredUser";
 import {
   freelancerTransactionCategoryLabel,
   getFreelancerBillingOverview,
-  withdrawFreelancerFunds,
   type FreelancerBillingOverview,
   type FreelancerTransaction,
 } from "@/lib/api/payments";
 import { formatDate, formatVnd } from "@/lib/format";
+import { maskAccountNumber } from "@/lib/payments/bankDisplay";
 import {
   contractDetailHref,
   filterFreelancerTransactions,
@@ -21,15 +21,23 @@ import {
   type FreelancerTxFilter,
 } from "@/lib/payments/freelancerPaymentsDisplay";
 import PaymentsBalanceCard from "@/components/payments/PaymentsBalanceCard";
+import PaymentsMoneyInput from "@/components/payments/PaymentsMoneyInput";
 import PaymentsSectionTitle from "@/components/payments/PaymentsSectionTitle";
+import BankBadgeIcon from "@/components/payments/BankBadgeIcon";
+import FreelancerPayoutAccountPanel from "@/components/payments/FreelancerPayoutAccountPanel";
+import FreelancerWithdrawModal from "@/components/payments/FreelancerWithdrawModal";
 import { FaChartLine, FaHistory } from "react-icons/fa";
 import "@/components/hire/hire.css";
 import "@/components/dashboard/dashboardPagination.css";
 import "./payments.css";
 import "./freelancer-payments.css";
 
+import {
+  MIN_WITHDRAW_VND,
+  WITHDRAW_AMOUNT_PRESETS,
+} from "@/lib/payments/withdrawLimits";
+
 const TX_PAGE_SIZE = 8;
-const WITHDRAW_PRESETS = [500_000, 1_000_000, 2_000_000, 5_000_000];
 
 const TX_FILTERS: { value: FreelancerTxFilter; label: string }[] = [
   { value: "all", label: "Tất cả" },
@@ -76,9 +84,8 @@ export default function FreelancerPaymentsPage() {
   const [data, setData] = useState<FreelancerBillingOverview | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [withdrawBusy, setWithdrawBusy] = useState(false);
-  const [withdrawAmount, setWithdrawAmount] = useState(String(WITHDRAW_PRESETS[0]));
-  const [withdrawMessage, setWithdrawMessage] = useState("");
+  const [withdrawOpen, setWithdrawOpen] = useState(false);
+  const [withdrawAmount, setWithdrawAmount] = useState(String(WITHDRAW_AMOUNT_PRESETS[1]));
   const [txFilter, setTxFilter] = useState<FreelancerTxFilter>("all");
   const [searchInput, setSearchInput] = useState("");
   const [filterJobId, setFilterJobId] = useState("");
@@ -128,36 +135,36 @@ export default function FreelancerPaymentsPage() {
   const txResetKey = `${txFilter}|${searchInput}|${filterJobId}|${filterClientId}|${filterMonth}`;
   const txPage = usePagedList(filteredTransactions, TX_PAGE_SIZE, txResetKey);
 
-  async function handleWithdraw() {
-    const amount = Number(withdrawAmount.replace(/\D/g, ""));
-    if (!Number.isFinite(amount) || amount < 100000) {
-      alert("Số tiền rút tối thiểu 100.000 VND.");
+  const withdrawNumeric = Number(withdrawAmount.replace(/\D/g, "") || 0);
+  const activeWithdrawPreset = WITHDRAW_AMOUNT_PRESETS.includes(
+    withdrawNumeric as (typeof WITHDRAW_AMOUNT_PRESETS)[number],
+  )
+    ? withdrawNumeric
+    : null;
+
+  function openWithdrawFlow() {
+    if (!data?.payoutProfile.isConfigured) {
+      alert("Bạn chưa liên kết tài khoản ngân hàng. Vui lòng liên kết trước khi rút tiền.");
       return;
     }
-    if (!data?.payoutProfile.isConfigured) {
-      const ok = window.confirm(
-        "Bạn chưa thiết lập tài khoản nhận tiền. Vẫn tiếp tục ghi nhận yêu cầu rút (demo)?",
-      );
-      if (!ok) return;
+    if (withdrawNumeric < MIN_WITHDRAW_VND) {
+      alert(`Số tiền rút tối thiểu ${formatVnd(MIN_WITHDRAW_VND)}.`);
+      return;
     }
-    setWithdrawBusy(true);
-    setWithdrawMessage("");
-    try {
-      const result = await withdrawFreelancerFunds(amount);
-      setData((prev) =>
-        prev ? { ...prev, account: result.account } : prev,
-      );
-      setWithdrawMessage(result.message);
-      await load();
-    } catch (err) {
-      const message =
-        err && typeof err === "object" && "message" in err
-          ? String((err as { message: string }).message)
-          : "Không thể rút tiền.";
-      alert(message);
-    } finally {
-      setWithdrawBusy(false);
+    if (!data.withdrawalPin?.isConfigured) {
+      alert("Bạn chưa thiết lập mã PIN rút tiền. Vào Cài đặt tài khoản để tạo PIN.");
+      return;
     }
+    if (data && withdrawNumeric > data.account.balance) {
+      alert(`Số dư khả dụng không đủ (hiện có ${formatVnd(data.account.balance)}).`);
+      return;
+    }
+    setWithdrawOpen(true);
+  }
+
+  function handleWithdrawCompleted(account: FreelancerBillingOverview["account"]) {
+    setData((prev) => (prev ? { ...prev, account } : prev));
+    void load();
   }
 
   return (
@@ -171,7 +178,7 @@ export default function FreelancerPaymentsPage() {
               rút tiền.
             </p>
           </div>
-          <Link href="/edit-account" className="hire-page__post-btn">
+          <Link href="/payments#payout-account" className="hire-page__post-btn">
             Tài khoản nhận tiền
           </Link>
         </header>
@@ -225,69 +232,109 @@ export default function FreelancerPaymentsPage() {
                 />
               </div>
 
-              <div className="payments-deposit fl-payments__withdraw">
-                <label className="payments-deposit__label" htmlFor="withdraw-amount">
-                  Rút tiền về tài khoản (VND)
-                </label>
-                <div className="payments-deposit__row">
-                  <input
+              <div className="payments-deposit-card fl-payments__withdraw-card">
+                <div className="payments-deposit-card__head">
+                  <h3 className="payments-deposit-card__title">Rút tiền về tài khoản ngân hàng</h3>
+                  <p className="payments-deposit-card__hint">
+                    Chi hộ qua payOS Napas 24/7 — xác nhận bằng PIN 6 số, tối thiểu {formatVnd(MIN_WITHDRAW_VND)}.
+                  </p>
+                </div>
+
+                <div className="payments-deposit__controls">
+                  <label className="payments-deposit__label sr-only" htmlFor="withdraw-amount">
+                    Số tiền rút
+                  </label>
+                  <PaymentsMoneyInput
                     id="withdraw-amount"
-                    type="text"
-                    inputMode="numeric"
-                    className="payments-deposit__input"
+                    className="payments-money-input--deposit"
                     value={withdrawAmount}
-                    onChange={(e) => setWithdrawAmount(e.target.value.replace(/[^\d]/g, ""))}
+                    onChange={setWithdrawAmount}
+                    disabled={data.account.balance < MIN_WITHDRAW_VND}
+                    aria-label="Số tiền rút về ngân hàng"
                   />
+                  <div className="payments-deposit__presets">
+                    {WITHDRAW_AMOUNT_PRESETS.map((preset) => (
+                      <button
+                        key={preset}
+                        type="button"
+                        className={
+                          activeWithdrawPreset === preset
+                            ? "payments-chip payments-chip--active"
+                            : "payments-chip"
+                        }
+                        aria-pressed={activeWithdrawPreset === preset}
+                        disabled={preset > data.account.balance}
+                        onClick={() => setWithdrawAmount(String(preset))}
+                      >
+                        {formatVnd(preset)}
+                      </button>
+                    ))}
+                  </div>
                   <button
                     type="button"
-                    className="payments-btn payments-btn--primary"
-                    disabled={withdrawBusy || data.account.balance < 100000}
-                    onClick={() => void handleWithdraw()}
+                    className="payments-btn payments-btn--primary payments-deposit__submit"
+                    disabled={data.account.balance < MIN_WITHDRAW_VND}
+                    onClick={openWithdrawFlow}
                   >
-                    {withdrawBusy ? "Đang xử lý..." : "Rút tiền"}
+                    Rút tiền
                   </button>
                 </div>
-                <div className="payments-deposit__presets">
-                  {WITHDRAW_PRESETS.map((preset) => (
-                    <button
-                      key={preset}
-                      type="button"
-                      className="payments-chip"
-                      onClick={() => setWithdrawAmount(String(preset))}
-                    >
-                      {formatVnd(preset)}
-                    </button>
-                  ))}
-                </div>
-                {withdrawMessage ? (
-                  <p className="payments-form-message" role="status">
-                    {withdrawMessage}
+
+                {data.payoutProfile.isConfigured ? (
+                  <div className="fl-payments__withdraw-bank">
+                    <BankBadgeIcon bankName={data.payoutProfile.bankName} size={36} />
+                    <div>
+                      <p className="fl-payments__withdraw-bank-name">{data.payoutProfile.bankName}</p>
+                      <p className="fl-payments__withdraw-bank-meta">
+                        {data.payoutProfile.accountHolderName}
+                        {" · "}
+                        {maskAccountNumber("", data.payoutProfile.accountLast4)}
+                      </p>
+                    </div>
+                    <Link href="/payments#payout-account" className="fl-payments__withdraw-bank-link">
+                      Đổi TK
+                    </Link>
+                  </div>
+                ) : (
+                  <p className="fl-payments__withdraw-unlinked">
+                    Chưa liên kết tài khoản nhận tiền.{" "}
+                    <Link href="/payments#payout-account">Liên kết ngay</Link>
+                  </p>
+                )}
+
+                {!data.withdrawalPin?.isConfigured ? (
+                  <p className="fl-payments__withdraw-pin-hint">
+                    Chưa có PIN rút tiền.{" "}
+                    <Link href="/edit-account/cai-dat">Thiết lập tại Cài đặt</Link>
+                    {data.withdrawalPin?.requiresAppPasswordSetup
+                      ? " (tài khoản Google cần đặt mật khẩu ứng dụng khi tạo PIN)."
+                      : "."}
                   </p>
                 ) : null}
-                <p className="payments-muted fl-payments__note">{data.platformFeeNote}</p>
+
+                <p className="payments-muted fl-payments__note">
+                  Tiền chuyển vào tài khoản đã liên kết sau khi payOS xác nhận thành công.
+                </p>
               </div>
+
+              <p className="payments-muted fl-payments__fee-note">{data.platformFeeNote}</p>
             </section>
 
-            <section className="payments-panel">
+            <FreelancerWithdrawModal
+              open={withdrawOpen}
+              balance={data.account.balance}
+              initialAmount={withdrawAmount}
+              payoutProfile={data.payoutProfile}
+              withdrawalPin={data.withdrawalPin}
+              onClose={() => setWithdrawOpen(false)}
+              onCompleted={handleWithdrawCompleted}
+            />
+
+            <section className="payments-panel" id="payout-account">
               <div className="payments-panel__head">
                 <h2 className="payments-panel__title">Tài khoản nhận tiền</h2>
-                <Link href="/edit-account" className="payments-link-btn">
-                  Cập nhật
-                </Link>
               </div>
-              {data.payoutProfile.isConfigured ? (
-                <p className="payments-muted">
-                  {data.payoutProfile.bankName} • **** {data.payoutProfile.accountLast4}
-                </p>
-              ) : (
-                <p className="payments-muted">
-                  Chưa liên kết tài khoản ngân hàng. Cập nhật tại{" "}
-                  <Link href="/edit-account">Chỉnh sửa tài khoản</Link> để nhận tiền rút.
-                  {data.payoutProfile.contactEmail
-                    ? ` Liên hệ: ${data.payoutProfile.contactEmail}.`
-                    : ""}
-                </p>
-              )}
+              <FreelancerPayoutAccountPanel profile={data.payoutProfile} onUpdated={load} />
             </section>
 
             {data.pendingItems.length > 0 ? (

@@ -57,12 +57,11 @@ export default function AddSkillDialog({ existing, onClose, onSaved }: AddSkillD
   }
 
   return (
-    <div className="mp-dialog-backdrop" role="presentation" onClick={() => !saving && onClose()}>
+    <div className="mp-dialog-backdrop" role="presentation">
       <form
         className="mp-dialog"
         role="dialog"
         aria-labelledby="add-skill-title"
-        onClick={(e) => e.stopPropagation()}
         onSubmit={(e) => void handleSubmit(e)}
       >
         <div className="mp-dialog__head">

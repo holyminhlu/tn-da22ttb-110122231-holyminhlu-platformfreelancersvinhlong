@@ -24,6 +24,9 @@ router.post("/me/identity-verification/id-back", identityVerification.uploadIdBa
 router.post("/me/identity-verification/address-proof", identityVerification.uploadAddressProof);
 router.post("/me/identity-verification/card", identityVerification.addCreditCard);
 router.post("/me/identity-verification/card/verify-charge", identityVerification.verifyCardCharge);
+router.post("/me/identity-verification/card/payment-link", identityVerification.createCardVerifyPaymentLink);
+router.get("/me/identity-verification/card/payment-status/:orderCode", identityVerification.getCardVerifyPaymentStatus);
+router.post("/me/identity-verification/card/payment-status/:orderCode/cancel", identityVerification.cancelCardVerifyPayment);
 router.patch("/me/avatar", users.updateAvatar);
 router.post("/me/avatar", users.updateAvatar);
 router.patch("/me/profile", users.updateProfile);

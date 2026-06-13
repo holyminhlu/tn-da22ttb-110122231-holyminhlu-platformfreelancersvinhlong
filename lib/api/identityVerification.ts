@@ -43,6 +43,9 @@ export type IdentityVerificationRecord = {
   card_charge_cents: number | null;
   card_added_at: string | null;
   card_verified_at: string | null;
+  admin_review_status?: "pending" | "approved" | "rejected" | null;
+  admin_reviewed_at?: string | null;
+  admin_review_note?: string | null;
 };
 
 export type AddCreditCardPayload = {
@@ -141,6 +144,41 @@ export async function verifyCardCharge(chargeAmount: number | string) {
     auth: true,
     body: { chargeAmount },
   });
+  return data;
+}
+
+export async function createCardVerifyPaymentLink() {
+  const { data } = await fetchApi<{
+    message?: string;
+    orderCode: number;
+    amount: number;
+    checkoutUrl: string;
+  }>(apiPaths.users.identityCardPaymentLink, {
+    method: "POST",
+    auth: true,
+    body: {},
+  });
+  return data;
+}
+
+export async function getCardVerifyPaymentStatus(orderCode: number) {
+  const { data } = await fetchApi<{
+    orderCode: number;
+    amount: number;
+    status: string;
+    type: string;
+    paidAt: string | null;
+    balance: number;
+    verification: IdentityVerificationRecord;
+  }>(apiPaths.users.identityCardPaymentStatus(orderCode), { auth: true });
+  return data;
+}
+
+export async function cancelCardVerifyPayment(orderCode: number) {
+  const { data } = await fetchApi<{ message?: string; orderCode: number; status: string }>(
+    apiPaths.users.identityCardPaymentCancel(orderCode),
+    { method: "POST", auth: true, body: {} },
+  );
   return data;
 }
 

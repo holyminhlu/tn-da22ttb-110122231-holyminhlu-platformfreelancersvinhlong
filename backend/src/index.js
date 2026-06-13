@@ -21,6 +21,17 @@ if (
   );
 }
 
+if (
+  !process.env.PAYOS_CLIENT_ID ||
+  !process.env.PAYOS_API_KEY ||
+  !process.env.PAYOS_CHECKSUM_KEY ||
+  process.env.PAYOS_CLIENT_ID === "your-payos-client-id"
+) {
+  console.warn(
+    "[payments] payOS chưa cấu hình — nạp tiền ví cần PAYOS_CLIENT_ID, PAYOS_API_KEY, PAYOS_CHECKSUM_KEY.",
+  );
+}
+
 const { pool, query } = require("./db/pool");
 const authRoutes = require("./routes/auth.routes");
 const usersRoutes = require("./routes/users.routes");
@@ -36,6 +47,7 @@ const servicesLegacyRoutes = require("./routes/services.legacy.routes");
 const paymentsRoutes = require("./routes/payments.routes");
 const chatRoutes = require("./routes/chat.routes");
 const notificationsRoutes = require("./routes/notifications.routes");
+const adminRoutes = require("./routes/admin.routes");
 const { initChatSocket } = require("./socket/chatSocket");
 const { setNotificationIo } = require("./utils/notificationService");
 const { runWorkflowSlaTick } = require("./utils/workflowSla");
@@ -62,6 +74,7 @@ app.use("/api/jobs/me", jobsMeRoutes);
 app.use("/api/services", servicesRoutes);
 app.use("/api/services/me", servicesMeRoutes);
 app.use("/api/payments", paymentsRoutes);
+app.use("/api/admin", adminRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/notifications", notificationsRoutes);
 

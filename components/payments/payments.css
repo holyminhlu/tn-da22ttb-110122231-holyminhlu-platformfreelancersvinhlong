@@ -1188,6 +1188,49 @@
   margin-bottom: 0.85rem;
 }
 
+.payments-result-card {
+  max-width: 32rem;
+  margin: 2rem auto;
+  padding: 1.75rem 1.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: var(--card-radius);
+  background: #fff;
+  text-align: center;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
+}
+
+.payments-result-card__title {
+  margin: 0 0 0.75rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.payments-result-card__message {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: #4b5563;
+  line-height: 1.5;
+}
+
+.payments-result-card__amount {
+  margin: 1rem 0 0;
+  font-size: 0.9375rem;
+  color: #111827;
+}
+
+.payments-result-card__meta {
+  margin: 0.5rem 0 0;
+  font-size: 0.8125rem;
+  color: #9ca3af;
+}
+
+.payments-result-card__actions {
+  margin-top: 1.25rem;
+  display: flex;
+  justify-content: center;
+}
+
 .payments-tx-panel__head .payments-section-title {
   margin-bottom: 0;
 }

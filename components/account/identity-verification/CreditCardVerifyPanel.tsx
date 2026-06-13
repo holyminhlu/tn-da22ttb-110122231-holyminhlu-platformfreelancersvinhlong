@@ -1,18 +1,24 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
-import { FaCreditCard, FaLock } from "react-icons/fa";
+import { useEffect, useMemo, useState } from "react";
+import { FaCreditCard, FaLock, FaSpinner } from "react-icons/fa";
 import {
   addCreditCard,
-  verifyCardCharge,
+  createCardVerifyPaymentLink,
+  getCardVerifyPaymentStatus,
   type IdentityVerificationResponse,
 } from "@/lib/api/identityVerification";
 import { formatVnd } from "@/lib/format";
 
+const VERIFY_AMOUNT = 10_000;
+
 type CreditCardVerifyPanelProps = {
   data: IdentityVerificationResponse;
   onSaved: () => void;
+  /** Poll trạng thái payOS sau khi quay lại từ cổng thanh toán */
+  pendingOrderCode?: number | null;
+  onPaymentPollComplete?: () => void;
 };
 
 type WizardStep = "add" | "verify";
@@ -36,16 +42,21 @@ function defaultCardholder(data: IdentityVerificationResponse) {
   return legal || splitName(data.profile.full_name) || "";
 }
 
-export default function CreditCardVerifyPanel({ data, onSaved }: CreditCardVerifyPanelProps) {
+export default function CreditCardVerifyPanel({
+  data,
+  onSaved,
+  pendingOrderCode,
+  onPaymentPollComplete,
+}: CreditCardVerifyPanelProps) {
   const v = data.verification;
   const cardAdded = Boolean(v?.card_added_at);
   const cardVerified = Boolean(v?.card_verified_at);
 
-  const [view, setView] = useState<ViewMode>("intro");
-  const [wizardStep, setWizardStep] = useState<WizardStep>("add");
+  const [view, setView] = useState<ViewMode>(cardAdded && !cardVerified ? "wizard" : "intro");
+  const [wizardStep, setWizardStep] = useState<WizardStep>(cardAdded ? "verify" : "add");
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
-  const [chargeHint, setChargeHint] = useState<string | null>(null);
+  const [polling, setPolling] = useState(false);
 
   const [cardNumber, setCardNumber] = useState("");
   const [expiry, setExpiry] = useState(v?.card_expiry ?? "");
@@ -74,8 +85,6 @@ export default function CreditCardVerifyPanel({ data, onSaved }: CreditCardVerif
   const [billingCurrency, setBillingCurrency] = useState(
     v?.billing_currency ?? "Vietnamese Đồng",
   );
-
-  const [chargeAmount, setChargeAmount] = useState("");
 
   const maskedCard = useMemo(() => {
     if (!v?.card_last4) return null;
@@ -111,12 +120,9 @@ export default function CreditCardVerifyPanel({ data, onSaved }: CreditCardVerif
         billingPhone: billingPhone.trim(),
         billingCurrency: billingCurrency.trim(),
       });
-      if (result.chargeAmountVnd) {
-        setChargeHint(result.chargeAmountVnd);
-      }
       setMessage(
         result.message ??
-          `Đã trừ tạm ${formatVnd(result.chargeAmountVnd ?? 0)}. Chuyển sang bước xác minh số tiền.`,
+          "Đã lưu thẻ. Chuyển sang bước xác minh số tiền — thanh toán 10.000 VND qua payOS.",
       );
       setCvv("");
       setCardNumber("");
@@ -133,33 +139,80 @@ export default function CreditCardVerifyPanel({ data, onSaved }: CreditCardVerif
     }
   }
 
-  async function handleVerifyCharge() {
-    if (!chargeAmount.trim()) {
-      setMessage("Nhập số tiền đã thanh toán (VND).");
-      return;
-    }
+  async function handlePayWithPayos() {
     setSaving(true);
     setMessage("");
     try {
-      const result = await verifyCardCharge(chargeAmount.trim());
-      setMessage(result.message ?? "Đã xác minh thẻ thành công.");
-      onSaved();
+      const result = await createCardVerifyPaymentLink();
+      if (!result.checkoutUrl) {
+        setMessage("Không nhận được link thanh toán payOS.");
+        return;
+      }
+      window.location.href = result.checkoutUrl;
     } catch (err) {
       const msg =
         err && typeof err === "object" && "message" in err
           ? String((err as { message: string }).message)
-          : "Không thể xác minh.";
+          : "Không thể tạo link thanh toán.";
       setMessage(msg);
-    } finally {
       setSaving(false);
     }
   }
+
+  // Poll payOS khi quay lại từ cổng thanh toán
+  useEffect(() => {
+    if (!pendingOrderCode || cardVerified) return;
+
+    let stopped = false;
+    setPolling(true);
+    setView("wizard");
+    setWizardStep("verify");
+    setMessage("Đang xác nhận thanh toán với payOS…");
+
+    void (async () => {
+      for (let i = 0; i < 30 && !stopped; i += 1) {
+        try {
+          const status = await getCardVerifyPaymentStatus(pendingOrderCode);
+          if (status.status === "SUCCESS") {
+            setMessage(
+              `Thanh toán thành công. ${formatVnd(status.amount)} đã được cộng vào số dư ví. Bước xác minh thẻ đã hoàn tất.`,
+            );
+            onSaved();
+            onPaymentPollComplete?.();
+            setPolling(false);
+            return;
+          }
+          if (status.status === "CANCELLED") {
+            setMessage("Thanh toán đã bị hủy. Bạn có thể thử lại.");
+            onPaymentPollComplete?.();
+            setPolling(false);
+            return;
+          }
+        } catch {
+          /* retry */
+        }
+        await new Promise((r) => window.setTimeout(r, 2000));
+      }
+      if (!stopped) {
+        setMessage(
+          "Chưa nhận được xác nhận từ payOS. Nếu đã chuyển khoản, vui lòng đợi thêm hoặc bấm Thanh toán lại.",
+        );
+        onPaymentPollComplete?.();
+        setPolling(false);
+      }
+    })();
+
+    return () => {
+      stopped = true;
+    };
+  }, [pendingOrderCode, cardVerified, onSaved, onPaymentPollComplete]);
 
   if (view === "intro") {
     return (
       <div className="idv-cc">
         <p className="idv-intro" style={{ marginBottom: "1.5rem" }}>
-          Thêm thẻ và xác nhận số tiền bạn bị trừ.
+          Thêm thẻ và thanh toán {formatVnd(VERIFY_AMOUNT)} qua payOS để xác minh. Số tiền này sẽ
+          trở thành số dư đầu tiên trong ví của bạn.
         </p>
 
         <div className="idv-cc-actions">
@@ -171,7 +224,7 @@ export default function CreditCardVerifyPanel({ data, onSaved }: CreditCardVerif
             <FaCreditCard className="idv-cc-action-card__icon" aria-hidden />
             <h3 className="idv-cc-action-card__title">Thêm thẻ</h3>
             <p className="idv-cc-action-card__desc">
-              Nhập thông tin thẻ. Một khoản phí tạm thời sẽ được trừ.
+              Nhập thông tin thẻ tín dụng / ghi nợ liên kết.
             </p>
           </button>
           <button
@@ -181,9 +234,9 @@ export default function CreditCardVerifyPanel({ data, onSaved }: CreditCardVerif
             disabled={!cardAdded}
           >
             <FaLock className="idv-cc-action-card__icon" aria-hidden />
-            <h3 className="idv-cc-action-card__title">Xác minh số tiền đã tính phí</h3>
+            <h3 className="idv-cc-action-card__title">Xác minh số tiền</h3>
             <p className="idv-cc-action-card__desc">
-              Xác minh bằng cách nhập số tiền đã thanh toán.
+              Thanh toán {formatVnd(VERIFY_AMOUNT)} qua payOS để hoàn tất xác minh thẻ.
             </p>
           </button>
         </div>
@@ -191,7 +244,7 @@ export default function CreditCardVerifyPanel({ data, onSaved }: CreditCardVerif
         {cardAdded && maskedCard ? (
           <p className="idv-msg idv-msg--ok" style={{ marginTop: "1rem" }}>
             Thẻ đã thêm: {maskedCard}
-            {cardVerified ? " — Đã xác minh số tiền." : " — Chưa xác minh số tiền."}
+            {cardVerified ? " — Đã xác minh." : " — Chưa xác minh số tiền."}
           </p>
         ) : null}
 
@@ -382,13 +435,15 @@ export default function CreditCardVerifyPanel({ data, onSaved }: CreditCardVerif
           </label>
 
           <p className="idv-cc-charge-note">
-            Để xác minh, chúng tôi sẽ trừ ngẫu nhiên một khoản tiền từ 1.000 đến 100.000 VND vào thẻ
-            của bạn. Bạn cần nhập chính xác số tiền này để xác minh thẻ.{" "}
+            Sau khi thêm thẻ, bạn sẽ thanh toán {formatVnd(VERIFY_AMOUNT)} qua payOS ở bước tiếp
+            theo. Số tiền này được cộng vào số dư ví và hoàn tất xác minh thẻ.{" "}
             <Link href="/help">Tìm hiểu thêm</Link>
           </p>
 
           {message ? (
-            <p className={`idv-msg${message.includes("thành công") || message.includes("Đã trừ") || message.includes("Đã thêm") ? " idv-msg--ok" : ""}`}>
+            <p
+              className={`idv-msg${message.includes("thành công") || message.includes("Đã lưu") || message.includes("Chuyển sang") ? " idv-msg--ok" : ""}`}
+            >
               {message}
             </p>
           ) : null}
@@ -410,28 +465,32 @@ export default function CreditCardVerifyPanel({ data, onSaved }: CreditCardVerif
         <div className="idv-cc-form">
           <h2 className="idv-detail__title">Xác minh số tiền</h2>
           <p className="idv-detail__lead">
-            Nhập chính xác số tiền (VND) đã bị trừ tạm thời trên thẻ của bạn.
+            Thanh toán <strong>{formatVnd(VERIFY_AMOUNT)}</strong> qua payOS để xác minh thẻ tín
+            dụng. Số tiền sẽ được cộng vào số dư ví của bạn ngay sau khi thanh toán thành công.
             {maskedCard ? ` Thẻ: ${maskedCard}.` : null}
           </p>
-          {process.env.NODE_ENV === "development" && chargeHint ? (
-            <p className="idv-msg">
-              Dev: số tiền vừa trừ là <strong>{formatVnd(chargeHint)}</strong>.
+
+          {cardVerified ? (
+            <p className="idv-msg idv-msg--ok">
+              Đã xác minh thẻ tín dụng thành công. Số dư ví đã được cập nhật.
             </p>
           ) : null}
 
-          <label className="idv-field">
-            <span className="idv-field__label">Số tiền đã thanh toán (VND)</span>
-            <input
-              className="idv-field__input"
-              type="text"
-              inputMode="numeric"
-              placeholder="VD: 25000"
-              value={chargeAmount}
-              onChange={(e) => setChargeAmount(e.target.value)}
-            />
-          </label>
-
-          {message ? <p className="idv-msg">{message}</p> : null}
+          {message ? (
+            <p
+              className={`idv-msg${message.includes("thành công") || message.includes("hoàn tất") ? " idv-msg--ok" : ""}`}
+              role="status"
+            >
+              {polling ? (
+                <>
+                  <FaSpinner className="inline animate-spin mr-2" aria-hidden />
+                  {message}
+                </>
+              ) : (
+                message
+              )}
+            </p>
+          ) : null}
 
           <div className="idv-detail__actions idv-detail__actions--row">
             <button type="button" className="idv-btn idv-btn--ghost" onClick={() => setView("intro")}>
@@ -440,10 +499,14 @@ export default function CreditCardVerifyPanel({ data, onSaved }: CreditCardVerif
             <button
               type="button"
               className="idv-btn idv-btn--primary"
-              disabled={saving || cardVerified}
-              onClick={() => void handleVerifyCharge()}
+              disabled={saving || polling || cardVerified}
+              onClick={() => void handlePayWithPayos()}
             >
-              {cardVerified ? "Đã xác minh" : saving ? "Đang xác minh..." : "Xác minh số tiền"}
+              {cardVerified
+                ? "Đã xác minh"
+                : saving
+                  ? "Đang chuyển payOS…"
+                  : `Thanh toán ${formatVnd(VERIFY_AMOUNT)} qua payOS`}
             </button>
           </div>
         </div>

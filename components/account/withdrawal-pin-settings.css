@@ -1,0 +1,137 @@
+.wdp-card {
+  border-color: #bfdbfe;
+}
+
+.wdp-loading {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.wdp-status {
+  margin: 0 0 0.85rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 0.45rem;
+  font-size: 0.8125rem;
+}
+
+.wdp-status--ok {
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
+.wdp-status--warn {
+  background: #fffbeb;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+
+.wdp-google-note {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid #dbeafe;
+  background: #eff6ff;
+  color: #1e40af;
+  font-size: 0.8125rem;
+}
+
+.wdp-google-note--plain {
+  background: #f9fafb;
+  border-color: #e5e7eb;
+  color: #374151;
+}
+
+.wdp-google-note__title {
+  margin: 0 0 0.25rem;
+  font-weight: 700;
+}
+
+.wdp-google-note__text {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.wdp-form {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.wdp-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.wdp-input {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 0.35rem;
+  padding: 0.55rem 0.65rem;
+  font-size: 0.9rem;
+}
+
+.wdp-error {
+  margin: 0;
+  color: #dc2626;
+  font-size: 0.8125rem;
+}
+
+.wdp-success {
+  margin: 0;
+  color: #047857;
+  font-size: 0.8125rem;
+}
+
+.wdp-actions {
+  margin-top: 0.35rem;
+}
+
+.wdp-footnote {
+  margin: 0.85rem 0 0;
+  font-size: 0.8125rem;
+  color: #6b7280;
+}
+
+.wdp-footnote a {
+  color: #2563eb;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.wdp-footnote a:hover {
+  text-decoration: underline;
+}
+
+.pin-input {
+  display: flex;
+  gap: 0.45rem;
+  justify-content: flex-start;
+}
+
+.pin-input__cell {
+  width: 2.5rem;
+  height: 2.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.4rem;
+  text-align: center;
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.pin-input__cell:focus {
+  outline: 2px solid #93c5fd;
+  border-color: #2563eb;
+}
+
+@media (max-width: 480px) {
+  .pin-input__cell {
+    width: 2.25rem;
+    height: 2.5rem;
+  }
+}

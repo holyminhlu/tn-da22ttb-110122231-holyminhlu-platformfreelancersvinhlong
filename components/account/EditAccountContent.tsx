@@ -378,12 +378,11 @@ export default function EditAccountContent() {
       ) : null}
 
       {dialog ? (
-        <div className="ea-dialog-backdrop" role="presentation" onClick={() => !saving && setDialog(null)}>
+        <div className="ea-dialog-backdrop" role="presentation">
           <div
             className={`ea-dialog${dialog.field === "address" ? " ea-dialog--wide" : ""}`}
             role="dialog"
             aria-labelledby="ea-dialog-title"
-            onClick={(e) => e.stopPropagation()}
           >
             <h3 id="ea-dialog-title">{dialog.title}</h3>
             {dialog.field === "address" ? (

@@ -7,6 +7,7 @@ const {
   IDV_VERIFY_SELECT,
 } = require("../utils/clientIdentityVerified");
 const { notifyQuoteAction } = require("../utils/notificationService");
+const { ensureFreelancerCanWork } = require("../utils/freelancerIdentityVerified");
 
 async function isClientIdentityVerified(db, userId) {
   const result = await db.query(
@@ -534,6 +535,10 @@ async function acceptJob(req, res) {
   const dbClient = await pool.connect();
 
   try {
+    if (!(await ensureFreelancerCanWork(dbClient, freelancerId, res))) {
+      return;
+    }
+
     await dbClient.query("BEGIN");
 
     const jobResult = await dbClient.query(
@@ -895,6 +900,10 @@ async function patchFreelancerJobQuote(req, res, payload, quoteId, action) {
 
   const dbClient = await pool.connect();
   try {
+    if (!(await ensureFreelancerCanWork(dbClient, payload.sub, res))) {
+      return;
+    }
+
     await dbClient.query("BEGIN");
 
     const quoteResult = await dbClient.query(
@@ -1748,6 +1757,10 @@ async function saveJob(req, res) {
 
   const db = await pool.connect();
   try {
+    if (!(await ensureFreelancerCanWork(db, payload.sub, res))) {
+      return;
+    }
+
     const jobCheck = await db.query(
       `SELECT j.id, j.client_id, j.status
        FROM public.jobs j

@@ -9,5 +9,6 @@ router.post("/refresh", auth.refresh);
 router.post("/logout", auth.logout);
 router.get("/google", auth.googleAuth);
 router.get("/google/callback", auth.googleCallback);
+router.get("/google/complete", auth.completeGoogleAuth);
 
 module.exports = router;

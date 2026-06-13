@@ -8,7 +8,7 @@ import UserAvatarMenu from "./UserAvatarMenu";
 import "@/components/notifications/notifications.css";
 
 export default function HomeNavbarAuth() {
-  const { user, ready } = useStoredUser();
+  const { user, ready, isAdmin } = useStoredUser({ refreshFromApi: false });
 
   if (!ready) {
     return <div className="h-10 w-10 shrink-0 rounded-full bg-gray-100" aria-hidden />;
@@ -17,7 +17,7 @@ export default function HomeNavbarAuth() {
   if (user) {
     return (
       <div className="notif-navbar-auth">
-        <NotificationBell />
+        {!isAdmin ? <NotificationBell /> : null}
         <UserAvatarMenu user={user} />
       </div>
     );

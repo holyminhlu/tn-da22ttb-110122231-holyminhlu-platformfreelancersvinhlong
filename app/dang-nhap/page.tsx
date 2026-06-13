@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import LoginForm from "@/components/auth/LoginForm";
+import DangNhapEntry from "@/components/auth/DangNhapEntry";
 
 export const metadata: Metadata = {
   title: "Đăng nhập | Vĩnh Long Connected",
@@ -18,7 +18,7 @@ function LoginFallback() {
 export default function LoginPage() {
   return (
     <Suspense fallback={<LoginFallback />}>
-      <LoginForm />
+      <DangNhapEntry />
     </Suspense>
   );
 }

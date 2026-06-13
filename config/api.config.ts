@@ -23,6 +23,7 @@ export function apiUrl(path: string, base: string = getApiBaseUrl()): string {
 export const apiPaths = {
   auth: {
     google: "/api/auth/google",
+    googleComplete: "/api/auth/google/complete",
     login: "/api/auth/login",
     register: "/api/auth/register",
     logout: "/api/auth/logout",
@@ -39,6 +40,11 @@ export const apiPaths = {
     identityAddressProof: "/api/users/me/identity-verification/address-proof",
     identityCard: "/api/users/me/identity-verification/card",
     identityCardVerifyCharge: "/api/users/me/identity-verification/card/verify-charge",
+    identityCardPaymentLink: "/api/users/me/identity-verification/card/payment-link",
+    identityCardPaymentStatus: (orderCode: string | number) =>
+      `/api/users/me/identity-verification/card/payment-status/${encodeURIComponent(String(orderCode))}`,
+    identityCardPaymentCancel: (orderCode: string | number) =>
+      `/api/users/me/identity-verification/card/payment-status/${encodeURIComponent(String(orderCode))}/cancel`,
     profile: "/api/users/me/profile",
     changeEmail: "/api/users/me/email",
     changePassword: "/api/users/me/password",
@@ -113,7 +119,29 @@ export const apiPaths = {
       `/api/payments/billing-methods/${methodId}/default`,
     billingMethod: (methodId: string) => `/api/payments/billing-methods/${methodId}`,
     deposit: "/api/payments/deposit",
+    createPaymentLink: "/api/payments/create-payment-link",
+    payosWebhook: "/api/payments/payos-webhook",
+    depositOrder: (orderCode: string | number) =>
+      `/api/payments/deposit-orders/${encodeURIComponent(String(orderCode))}`,
+    cancelDepositOrder: (orderCode: string | number) =>
+      `/api/payments/deposit-orders/${encodeURIComponent(String(orderCode))}/cancel`,
     withdraw: "/api/payments/withdraw",
+    withdrawRequest: "/api/payments/withdraw/request",
+    withdrawConfirm: (orderId: string) =>
+      `/api/payments/withdraw/${encodeURIComponent(orderId)}/confirm`,
+    withdrawStatus: (orderId: string) =>
+      `/api/payments/withdraw/${encodeURIComponent(orderId)}/status`,
+    withdrawalPin: "/api/payments/withdrawal-pin",
+    payosPayoutWebhook: "/api/payments/payos-payout-webhook",
+    payoutAccount: "/api/payments/payout-account",
+  },
+  admin: {
+    freelancerApprovals: "/api/admin/freelancer-approvals",
+    freelancerApproval: (userId: string) => `/api/admin/freelancer-approvals/${encodeURIComponent(userId)}`,
+    approveFreelancer: (userId: string) =>
+      `/api/admin/freelancer-approvals/${encodeURIComponent(userId)}/approve`,
+    rejectFreelancer: (userId: string) =>
+      `/api/admin/freelancer-approvals/${encodeURIComponent(userId)}/reject`,
   },
   chat: {
     listConversations: "/api/chat/conversations",

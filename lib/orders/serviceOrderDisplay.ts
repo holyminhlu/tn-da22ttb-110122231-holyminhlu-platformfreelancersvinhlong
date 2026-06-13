@@ -91,6 +91,110 @@ export function orderStatusHint(order: ServiceOrderListItem, asFreelancer: boole
   return workflowStageLabel(stage);
 }
 
+export type OrderCardStatusTone =
+  | "success"
+  | "danger"
+  | "warning"
+  | "active"
+  | "delivery"
+  | "escrow"
+  | "waiting"
+  | "neutral";
+
+/** Màu badge/chip chính trên card đơn dịch vụ. */
+export function orderCardStatusTone(
+  order: ServiceOrderListItem,
+  asFreelancer: boolean,
+): OrderCardStatusTone {
+  if (isOrderExpiredOrCancelled(order.status, order.cancel_type)) {
+    return "danger";
+  }
+
+  const stage = String(order.workflow_stage || "").toLowerCase();
+  const escrow = String(order.escrow_status || "").toLowerCase();
+
+  if (stage === "completion") {
+    return escrow === "released" ? "success" : "warning";
+  }
+  if (stage === "execution") return "active";
+  if (stage === "delivery") return "delivery";
+
+  if (stage === "escrow") {
+    if (escrow === "funded") return "escrow";
+    return asFreelancer ? "waiting" : "warning";
+  }
+
+  if (stage === "selection") {
+    if (asFreelancer && !order.proposal_text) return "warning";
+    if (!asFreelancer && order.proposal_text) return "warning";
+    return "waiting";
+  }
+
+  return "neutral";
+}
+
+export function workflowStageTone(
+  stage: string,
+  order?: Pick<ServiceOrderListItem, "status" | "cancel_type" | "escrow_status">,
+): OrderCardStatusTone {
+  if (order && isOrderExpiredOrCancelled(order.status, order.cancel_type)) {
+    return "danger";
+  }
+
+  const s = String(stage || "").toLowerCase();
+  const escrow = String(order?.escrow_status || "").toLowerCase();
+
+  if (s === "completion") return escrow === "released" ? "success" : "warning";
+  if (s === "execution") return "active";
+  if (s === "delivery") return "delivery";
+  if (s === "escrow") return escrow === "funded" ? "escrow" : "waiting";
+  if (s === "selection") return "waiting";
+  return "neutral";
+}
+
+export function escrowStatusTone(status: string | null | undefined): OrderCardStatusTone {
+  const s = String(status || "none").toLowerCase();
+  if (s === "released") return "success";
+  if (s === "funded") return "active";
+  if (s === "refunded") return "danger";
+  if (s === "pending" || s === "none" || !s) return "waiting";
+  return "escrow";
+}
+
+export function orderDeadlineTone(deadlineLine: string | null | undefined): OrderCardStatusTone {
+  if (!deadlineLine) return "warning";
+  if (deadlineLine.includes("Hết hạn")) return "danger";
+  return "warning";
+}
+
+export function orderBucketTone(bucket: string): OrderCardStatusTone {
+  switch (bucket) {
+    case "completed":
+      return "success";
+    case "cancelled":
+      return "danger";
+    case "new":
+    case "awaiting_review":
+      return "warning";
+    case "in_progress":
+      return "active";
+    default:
+      return "neutral";
+  }
+}
+
+export function orderStatusBadgeClass(tone: OrderCardStatusTone): string {
+  return `fw-orders__card-badge fw-orders__card-badge--${tone}`;
+}
+
+export function orderStatusChipClass(tone: OrderCardStatusTone): string {
+  return `fw-orders__card-chip fw-orders__card-chip--${tone}`;
+}
+
+export function orderCardToneClass(tone: OrderCardStatusTone): string {
+  return `fw-orders__card--tone-${tone}`;
+}
+
 export type OrderListFilter = "all" | "action" | "active" | "done";
 
 export function filterServiceOrders(

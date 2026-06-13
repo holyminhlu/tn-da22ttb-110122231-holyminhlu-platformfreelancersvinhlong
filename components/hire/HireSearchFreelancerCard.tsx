@@ -604,17 +604,12 @@ export default function HireSearchFreelancerCard({
       </div>
 
       {activeModal ? (
-        <div
-          className="hire-search__detail-modal-backdrop"
-          role="presentation"
-          onClick={closeModal}
-        >
+        <div className="hire-search__detail-modal-backdrop" role="presentation">
           <div
             className="hire-search__detail-modal"
             role="dialog"
             aria-modal="true"
             aria-label={`${MODAL_META[activeModal].title} — ${row.full_name}`}
-            onClick={(event) => event.stopPropagation()}
           >
             <header className="hire-modal-simple-head">
               <h3 className="hire-modal-simple-head__title">

@@ -42,13 +42,12 @@ export default function ClientCannotQuoteModal({
   const manageHref = jobId ? `/hire/joblist/${jobId}` : "/hire/joblist";
 
   return (
-    <div className="job-proposal-modal" role="presentation" onClick={onClose}>
+    <div className="job-proposal-modal" role="presentation">
       <div
         className="job-proposal-modal__dialog job-proposal-modal__dialog--notice"
         role="alertdialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        onClick={(e) => e.stopPropagation()}
       >
         <button
           type="button"

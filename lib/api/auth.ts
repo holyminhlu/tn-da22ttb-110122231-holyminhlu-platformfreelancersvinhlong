@@ -69,3 +69,17 @@ export async function refreshSession(refreshToken: string) {
   });
   return data;
 }
+
+export type GoogleCompleteResponse = {
+  accessToken: string;
+  refreshToken: string;
+  user: AuthUser;
+  next: string;
+};
+
+export async function completeGoogleOAuth(ticket: string) {
+  const { data } = await fetchApi<GoogleCompleteResponse>(
+    `${apiPaths.auth.googleComplete}?ticket=${encodeURIComponent(ticket)}`,
+  );
+  return data;
+}

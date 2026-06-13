@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { freelancerPageMetadata } from "@/components/layout/FreelancerPlaceholderPage";
 import IdentityVerificationContent from "@/components/account/IdentityVerificationContent";
 
@@ -9,7 +10,9 @@ export const metadata = freelancerPageMetadata(
 export default function XacMinhDanhTinhPage() {
   return (
     <div className="ea-main">
-      <IdentityVerificationContent />
+      <Suspense fallback={<p className="idv-loading">Đang tải...</p>}>
+        <IdentityVerificationContent />
+      </Suspense>
     </div>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   FaCamera,
@@ -15,9 +15,13 @@ import { getMe, type MeUser } from "@/lib/api/users";
 import {
   getIdentityVerification,
   patchIdentityVerification,
+  cancelCardVerifyPayment,
   type IdentityVerificationResponse,
 } from "@/lib/api/identityVerification";
 import CreditCardVerifyPanel from "./identity-verification/CreditCardVerifyPanel";
+import IdentityReviewStatusBanner, {
+  getAdminReviewStatus,
+} from "./identity-verification/IdentityReviewStatusBanner";
 import VerifyDetailPanel from "./identity-verification/VerifyDetailPanel";
 import {
   buildVerifyItems,
@@ -54,6 +58,7 @@ const CARD_ICONS: Record<VerifyItemId, (done: boolean) => React.ReactNode> = {
 
 export default function IdentityVerificationContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [user, setUser] = useState<MeUser | null>(null);
   const [idvData, setIdvData] = useState<IdentityVerificationResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -61,6 +66,10 @@ export default function IdentityVerificationContent() {
   const [selectedId, setSelectedId] = useState<VerifyItemId>("contact");
   const [submitting, setSubmitting] = useState(false);
   const [loadError, setLoadError] = useState("");
+  const [pendingOrderCode, setPendingOrderCode] = useState<number | null>(null);
+
+  const verifyPayment = searchParams.get("verifyPayment");
+  const returnOrderCode = Number(searchParams.get("orderCode"));
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -94,17 +103,49 @@ export default function IdentityVerificationContent() {
     void load();
   }, [load, router]);
 
+  useEffect(() => {
+    if (!Number.isFinite(returnOrderCode)) return;
+
+    if (verifyPayment === "success") {
+      setActiveStep(2);
+      setPendingOrderCode(returnOrderCode);
+      return;
+    }
+
+    if (verifyPayment === "cancel") {
+      setActiveStep(2);
+      void cancelCardVerifyPayment(returnOrderCode).catch(() => {});
+      router.replace("/edit-account/xac-minh");
+    }
+  }, [verifyPayment, returnOrderCode, router]);
+
+  const clearPaymentQuery = useCallback(() => {
+    setPendingOrderCode(null);
+    router.replace("/edit-account/xac-minh");
+  }, [router]);
+
+  useEffect(() => {
+    if (!idvData?.verification?.submitted_for_review_at) return;
+    setActiveStep(3);
+  }, [idvData]);
+
   const items = useMemo(() => buildVerifyItems(user, idvData), [user, idvData]);
   const completedCount = items.filter((i) => i.completed).length;
   const totalCount = items.length;
   const ringOffset = RING_CIRCUMFERENCE * (1 - completedCount / totalCount);
+
+  const reviewStatus = getAdminReviewStatus(idvData);
+  const submittedForReview = Boolean(idvData?.verification?.submitted_for_review_at);
+  const isApproved = reviewStatus === "approved";
+  const isPendingReview = submittedForReview && reviewStatus === "pending";
+  const isRejected = reviewStatus === "rejected";
 
   async function handleSubmitReview() {
     setSubmitting(true);
     try {
       await patchIdentityVerification({ submitForReview: true });
       await load();
-      window.alert("Hồ sơ của bạn đã được gửi xem xét. Thời gian xử lý 2–5 ngày làm việc.");
+      setActiveStep(3);
     } catch (err) {
       const msg =
         err && typeof err === "object" && "message" in err
@@ -151,6 +192,8 @@ export default function IdentityVerificationContent() {
 
   return (
     <div className="idv-page">
+      <IdentityReviewStatusBanner data={idvData} />
+
       <div className="idv-steps" role="list" aria-label="Các bước xác minh">
         {STEPS.map((step) => {
           const isActive = step.id === activeStep;
@@ -234,23 +277,54 @@ export default function IdentityVerificationContent() {
       ) : activeStep === 2 ? (
         <div className="idv-panel">
           <h1 className="idv-panel__title">Xác minh thẻ tín dụng</h1>
-          <CreditCardVerifyPanel data={idvData} onSaved={() => void load()} />
+          <CreditCardVerifyPanel
+            data={idvData}
+            onSaved={() => void load()}
+            pendingOrderCode={pendingOrderCode}
+            onPaymentPollComplete={clearPaymentQuery}
+          />
         </div>
       ) : (
         <div className="idv-panel">
           <h1 className="idv-panel__title">Gửi để xem xét</h1>
-          <p className="idv-intro">
-            Hoàn thành 5 mục xác minh trước khi gửi. Bạn đã hoàn thành {completedCount}/
-            {totalCount} mục.
-          </p>
-          <button
-            type="button"
-            className="idv-start"
-            disabled={completedCount < totalCount || submitting}
-            onClick={() => void handleSubmitReview()}
-          >
-            {submitting ? "Đang gửi..." : "Gửi để xem xét"}
-          </button>
+
+          {isApproved ? (
+            <>
+              <p className="idv-intro">
+                Hồ sơ xác minh của bạn đã được admin phê duyệt. Không cần gửi lại trừ khi có yêu
+                cầu cập nhật từ hệ thống.
+              </p>
+              <Link href="/findwork" className="idv-start idv-start--inline">
+                Đi tìm việc ngay
+              </Link>
+            </>
+          ) : isPendingReview ? (
+            <p className="idv-intro">
+              Hồ sơ của bạn đang trong hàng đợi duyệt. Bạn sẽ nhận thông báo khi admin xử lý xong.
+              Hoàn thành {completedCount}/{totalCount} mục xác minh.
+            </p>
+          ) : (
+            <>
+              <p className="idv-intro">
+                {isRejected
+                  ? "Admin đã từ chối hồ sơ trước đó. Vui lòng kiểm tra ghi chú ở trên, cập nhật thông tin rồi gửi lại."
+                  : "Hoàn thành 5 mục xác minh trước khi gửi."}{" "}
+                Bạn đã hoàn thành {completedCount}/{totalCount} mục.
+              </p>
+              <button
+                type="button"
+                className="idv-start"
+                disabled={completedCount < totalCount || submitting}
+                onClick={() => void handleSubmitReview()}
+              >
+                {submitting
+                  ? "Đang gửi..."
+                  : isRejected
+                    ? "Gửi lại để xem xét"
+                    : "Gửi để xem xét"}
+              </button>
+            </>
+          )}
         </div>
       )}
     </div>

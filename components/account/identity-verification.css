@@ -1020,3 +1020,106 @@
 .edit-account-page .idv-address-picker__hint {
   margin-top: 0.5rem;
 }
+
+.edit-account-page .idv-status {
+  display: flex;
+  gap: 0.875rem;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+  padding: 1rem 1.125rem;
+  border-radius: 0.625rem;
+  border: 1px solid transparent;
+}
+
+.edit-account-page .idv-status__icon {
+  flex-shrink: 0;
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-top: 0.125rem;
+}
+
+.edit-account-page .idv-status__title {
+  margin: 0 0 0.35rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.edit-account-page .idv-status__text {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.edit-account-page .idv-status__note {
+  margin: 0.625rem 0 0;
+  padding: 0.625rem 0.75rem;
+  border-radius: 0.375rem;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+.edit-account-page .idv-status__hint {
+  margin: 0.5rem 0 0;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+.edit-account-page .idv-status__link {
+  display: inline-block;
+  margin-top: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.edit-account-page .idv-status--approved {
+  border-color: #bbf7d0;
+  background: #f0fdf4;
+  color: #14532d;
+}
+
+.edit-account-page .idv-status--approved .idv-status__icon {
+  color: #16a34a;
+}
+
+.edit-account-page .idv-status--approved .idv-status__link {
+  color: #15803d;
+}
+
+.edit-account-page .idv-status--approved .idv-status__link:hover {
+  text-decoration: underline;
+}
+
+.edit-account-page .idv-status--pending {
+  border-color: #fde68a;
+  background: #fffbeb;
+  color: #78350f;
+}
+
+.edit-account-page .idv-status--pending .idv-status__icon {
+  color: #d97706;
+}
+
+.edit-account-page .idv-status--rejected {
+  border-color: #fecaca;
+  background: #fef2f2;
+  color: #7f1d1d;
+}
+
+.edit-account-page .idv-status--rejected .idv-status__icon {
+  color: #dc2626;
+}
+
+.edit-account-page .idv-status--rejected .idv-status__note {
+  background: rgb(255 255 255 / 0.65);
+  border: 1px solid #fecaca;
+}
+
+.edit-account-page .idv-start--inline {
+  display: inline-flex;
+  width: auto;
+  margin-top: 0.5rem;
+  text-decoration: none;
+  justify-content: center;
+  align-items: center;
+}

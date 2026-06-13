@@ -584,17 +584,12 @@ export default function MyProfileContent() {
       </div>
 
       {avatarPreviewOpen && avatarSrc ? (
-        <div
-          className="mp-dialog-backdrop"
-          role="presentation"
-          onClick={() => setAvatarPreviewOpen(false)}
-        >
+        <div className="mp-dialog-backdrop" role="presentation">
           <div
             className="mp-avatar-preview"
             role="dialog"
             aria-modal="true"
             aria-label="Ảnh đại diện"
-            onClick={(e) => e.stopPropagation()}
           >
             <button
               type="button"

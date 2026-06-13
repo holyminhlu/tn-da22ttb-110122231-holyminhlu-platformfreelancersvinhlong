@@ -395,6 +395,50 @@ async function notifyReviewReceived(db, contract, rating, actorId) {
   });
 }
 
+async function notifyIdentityReviewApproved(db, userId, actorId) {
+  return notifyUser(db, {
+    recipientId: userId,
+    actorId,
+    category: "system",
+    action: "identity_review_approved",
+    title: "Tài khoản đã được duyệt",
+    body: "Xác minh danh tính của bạn đã được admin phê duyệt. Bạn có thể báo giá và thao tác với job.",
+    href: "/edit-account/xac-minh",
+    entityType: "identity_verification",
+    entityId: userId,
+  });
+}
+
+async function notifyIdentityReviewRejected(db, userId, actorId, note) {
+  const trimmed = String(note || "").trim();
+  return notifyUser(db, {
+    recipientId: userId,
+    actorId,
+    category: "system",
+    action: "identity_review_rejected",
+    title: "Hồ sơ xác minh chưa được duyệt",
+    body: trimmed
+      ? `Admin từ chối hồ sơ: ${trimmed}`
+      : "Admin từ chối hồ sơ xác minh. Vui lòng cập nhật thông tin và gửi lại.",
+    href: "/edit-account/xac-minh",
+    entityType: "identity_verification",
+    entityId: userId,
+  });
+}
+
+async function notifyIdentityReviewSubmitted(db, userId) {
+  return notifyUser(db, {
+    recipientId: userId,
+    category: "system",
+    action: "identity_review_submitted",
+    title: "Hồ sơ đã gửi xem xét",
+    body: "Hồ sơ xác minh danh tính của bạn đã được gửi. Admin sẽ duyệt trong 2–5 ngày làm việc.",
+    href: "/edit-account/xac-minh",
+    entityType: "identity_verification",
+    entityId: userId,
+  });
+}
+
 module.exports = {
   setNotificationIo,
   mapNotificationRow,
@@ -405,4 +449,7 @@ module.exports = {
   notifyServiceOrderCreated,
   notifyChatMessage,
   notifyReviewReceived,
+  notifyIdentityReviewApproved,
+  notifyIdentityReviewRejected,
+  notifyIdentityReviewSubmitted,
 };

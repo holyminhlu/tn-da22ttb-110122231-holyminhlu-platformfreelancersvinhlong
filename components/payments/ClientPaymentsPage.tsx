@@ -8,7 +8,9 @@ import { usePagedList } from "@/hooks/usePagedList";
 import {
   billingMethodTypeLabel,
   deleteBillingMethod,
-  depositFunds,
+  createPaymentLink,
+  cancelDepositOrder,
+  getDepositOrderStatus,
   getClientBillingOverview,
   setDefaultBillingMethod,
   transactionCategoryLabel,
@@ -198,17 +200,17 @@ export default function ClientPaymentsPage() {
     }
     setDepositBusy(true);
     try {
-      const result = await depositFunds(amount);
-      setData((prev) =>
-        prev ? { ...prev, account: result.account } : prev,
-      );
-      await load();
-      setToast({ message: result.message, variant: "success" });
+      const result = await createPaymentLink(amount);
+      if (!result.checkoutUrl) {
+        setToast({ message: "Không nhận được link thanh toán payOS.", variant: "error" });
+        return;
+      }
+      window.location.href = result.checkoutUrl;
     } catch (err) {
       const message =
         err && typeof err === "object" && "message" in err
           ? String((err as { message: string }).message)
-          : "Không thể nạp tiền.";
+          : "Không thể tạo link nạp tiền.";
       setToast({ message, variant: "error" });
     } finally {
       setDepositBusy(false);
@@ -313,7 +315,7 @@ export default function ClientPaymentsPage() {
                   <div className="payments-deposit-card__head">
                     <h3 className="payments-deposit-card__title">Nạp tiền vào ví</h3>
                     <p className="payments-deposit-card__hint">
-                      Tiền nạp được cộng vào số dư khả dụng ngay sau khi xử lý.
+                      Thanh toán qua payOS (QR ngân hàng). Số dư được cộng sau khi webhook xác nhận thành công.
                     </p>
                   </div>
                   <div className="payments-deposit__controls">
@@ -358,7 +360,7 @@ export default function ClientPaymentsPage() {
                           Đang xử lý...
                         </>
                       ) : (
-                        "Nạp tiền"
+                        "Thanh toán payOS"
                       )}
                     </button>
                   </div>

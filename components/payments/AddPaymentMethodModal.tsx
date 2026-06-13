@@ -115,17 +115,12 @@ export default function AddPaymentMethodModal({ onClose, onSaved }: AddPaymentMe
   }
 
   return (
-    <div
-      className="pay-method-modal__backdrop"
-      role="presentation"
-      onClick={() => !saving && onClose()}
-    >
+    <div className="pay-method-modal__backdrop" role="presentation">
       <form
         className="pay-method-modal pay-method-modal--with-card"
         role="dialog"
         aria-modal="true"
         aria-labelledby="pay-method-modal-title"
-        onClick={(e) => e.stopPropagation()}
         onSubmit={(e) => void handleSubmit(e)}
       >
         <header className="pay-method-modal__header">

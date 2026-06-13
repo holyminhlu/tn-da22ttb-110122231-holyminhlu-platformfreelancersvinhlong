@@ -1,6 +1,16 @@
 const { pool } = require("../db/pool");
 const { verifyAccessToken } = require("../utils/authTokens");
 const { uploadIdentityFile } = require("../middleware/identityUpload");
+const { isPayosConfigured } = require("../utils/payosClient");
+const {
+  createIdentityVerifyPaymentLink,
+  getWalletDepositOrderForUser,
+  syncWalletDepositFromPayos,
+  cancelWalletDepositOrder,
+  ORDER_TYPE_IDENTITY_VERIFY,
+  isMissingSchemaError: isWalletSchemaError,
+} = require("../services/walletDepositPayos.service");
+const { notifyIdentityReviewSubmitted } = require("../utils/notificationService");
 
 function detectCardBrand(digits) {
   if (/^4/.test(digits)) return "visa";
@@ -38,10 +48,6 @@ function parseExpiry(expiry) {
   return `${m[1]}/${m[2]}`;
 }
 
-/** Số tiền VND ngẫu nhiên (lưu vào card_charge_cents — đơn vị đồng). */
-function randomChargeVnd() {
-  return Math.floor(Math.random() * 99_000) + 1_000;
-}
 
 function mapRow(row) {
   if (!row) return null;
@@ -87,6 +93,9 @@ function mapRow(row) {
     card_charge_cents: row.card_charge_cents,
     card_added_at: row.card_added_at,
     card_verified_at: row.card_verified_at,
+    admin_review_status: row.admin_review_status,
+    admin_reviewed_at: row.admin_reviewed_at,
+    admin_review_note: row.admin_review_note,
   };
 }
 
@@ -250,6 +259,18 @@ async function patchIdentityVerification(req, res) {
     }
 
     if (body.submitForReview === true) {
+      const userRow = await db.query(
+        `SELECT role FROM public.users WHERE id = $1 AND deleted_at IS NULL LIMIT 1`,
+        [userId],
+      );
+      const role = String(userRow.rows[0]?.role || "").toLowerCase();
+      if (role === "freelancer") {
+        sets.push(`admin_review_status = 'pending'`);
+        await db.query(
+          `UPDATE public.users SET status = 'pending', updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
+          [userId],
+        );
+      }
       sets.push(`submitted_for_review_at = CURRENT_TIMESTAMP`);
     }
 
@@ -284,6 +305,10 @@ async function patchIdentityVerification(req, res) {
           [userId, fullName, districtCity],
         );
       }
+    }
+
+    if (body.submitForReview === true) {
+      await notifyIdentityReviewSubmitted(db, userId);
     }
 
     await db.query("COMMIT");
@@ -399,7 +424,6 @@ async function addCreditCard(req, res) {
 
   const last4 = digits.slice(-4);
   const brand = detectCardBrand(digits);
-  const chargeVnd = randomChargeVnd();
   const userId = payload.sub;
   const db = await pool.connect();
 
@@ -419,7 +443,7 @@ async function addCreditCard(req, res) {
            billing_postal = $11,
            billing_phone = $12,
            billing_currency = $13,
-           card_charge_cents = $14,
+           card_charge_cents = NULL,
            card_added_at = CURRENT_TIMESTAMP,
            card_verified_at = NULL,
            updated_at = CURRENT_TIMESTAMP
@@ -438,7 +462,6 @@ async function addCreditCard(req, res) {
         billing.postal || null,
         billing.phone || null,
         billing.currency,
-        chargeVnd,
       ],
     );
 
@@ -449,8 +472,7 @@ async function addCreditCard(req, res) {
 
     return res.json({
       message:
-        "Đã thêm thẻ. Một khoản phí tạm thời đã được trừ — vui lòng xác minh số tiền ở bước tiếp theo.",
-      chargeAmountVnd: String(chargeVnd),
+        "Đã lưu thẻ. Chuyển sang bước xác minh số tiền — thanh toán 10.000 VND qua payOS để hoàn tất.",
       verification: mapRow(result.rows[0]),
     });
   } catch (error) {
@@ -462,6 +484,140 @@ async function addCreditCard(req, res) {
       });
     }
     return res.status(500).json({ message: "Không thể lưu thẻ." });
+  } finally {
+    db.release();
+  }
+}
+
+async function createCardVerifyPaymentLink(req, res) {
+  const payload = verifyAccessToken(req, res);
+  if (!payload) return;
+
+  if (!isPayosConfigured()) {
+    return res.status(503).json({
+      message:
+        "Cổng payOS chưa được cấu hình. Thêm PAYOS_CLIENT_ID, PAYOS_API_KEY, PAYOS_CHECKSUM_KEY vào .env.",
+    });
+  }
+
+  const userId = payload.sub;
+  const db = await pool.connect();
+
+  try {
+    await ensureRow(db, userId);
+    const idv = await db.query(
+      `SELECT card_added_at, card_verified_at FROM public.identity_verifications WHERE user_id = $1`,
+      [userId],
+    );
+    const row = idv.rows[0];
+    if (!row?.card_added_at) {
+      return res.status(400).json({ message: "Hãy thêm thẻ trước khi xác minh số tiền." });
+    }
+    if (row.card_verified_at) {
+      return res.status(409).json({ message: "Thẻ đã được xác minh." });
+    }
+
+    const result = await createIdentityVerifyPaymentLink(db, userId);
+    if (!result.checkoutUrl) {
+      return res.status(502).json({ message: "payOS không trả về link thanh toán." });
+    }
+
+    return res.json({
+      message: "Đã tạo link thanh toán xác minh.",
+      orderCode: result.orderCode,
+      amount: result.amount,
+      checkoutUrl: result.checkoutUrl,
+    });
+  } catch (error) {
+    console.error("createCardVerifyPaymentLink failed:", error.message);
+    if (isWalletSchemaError(error)) {
+      return res.status(503).json({
+        message: "Thiếu bảng wallet_deposit_orders. Chạy backend/sql/wallet_deposit_payos.sql.",
+      });
+    }
+    return res.status(500).json({ message: error.message || "Không thể tạo link thanh toán." });
+  } finally {
+    db.release();
+  }
+}
+
+async function getCardVerifyPaymentStatus(req, res) {
+  const payload = verifyAccessToken(req, res);
+  if (!payload) return;
+
+  const orderCode = Number(req.params.orderCode);
+  if (!Number.isFinite(orderCode)) {
+    return res.status(400).json({ message: "Mã đơn không hợp lệ." });
+  }
+
+  const userId = payload.sub;
+  const db = await pool.connect();
+
+  try {
+    let order = await getWalletDepositOrderForUser(db, orderCode, userId);
+    if (!order || String(order.type) !== ORDER_TYPE_IDENTITY_VERIFY) {
+      return res.status(404).json({ message: "Không tìm thấy đơn xác minh thẻ." });
+    }
+
+    if (order.status === "PENDING" && isPayosConfigured()) {
+      await syncWalletDepositFromPayos(db, orderCode);
+      order = (await getWalletDepositOrderForUser(db, orderCode, userId)) || order;
+    }
+
+    const idvRes = await db.query(
+      `SELECT * FROM public.identity_verifications WHERE user_id = $1 LIMIT 1`,
+      [userId],
+    );
+    const accountRes = await db.query(
+      `SELECT balance FROM public.accounts WHERE user_id = $1 AND currency = 'VND' LIMIT 1`,
+      [userId],
+    );
+
+    return res.json({
+      orderCode: Number(order.order_code),
+      amount: Number(order.amount),
+      status: order.status,
+      type: order.type,
+      paidAt: order.paid_at,
+      balance: Number(accountRes.rows[0]?.balance) || 0,
+      verification: mapRow(idvRes.rows[0]),
+    });
+  } catch (error) {
+    console.error("getCardVerifyPaymentStatus failed:", error.message);
+    if (isWalletSchemaError(error)) {
+      return res.status(503).json({
+        message: "Thiếu bảng wallet_deposit_orders. Chạy backend/sql/wallet_deposit_payos.sql.",
+      });
+    }
+    return res.status(500).json({ message: "Không thể tải trạng thái xác minh." });
+  } finally {
+    db.release();
+  }
+}
+
+async function cancelCardVerifyPayment(req, res) {
+  const payload = verifyAccessToken(req, res);
+  if (!payload) return;
+
+  const orderCode = Number(req.params.orderCode);
+  if (!Number.isFinite(orderCode)) {
+    return res.status(400).json({ message: "Mã đơn không hợp lệ." });
+  }
+
+  const db = await pool.connect();
+  try {
+    const order = await getWalletDepositOrderForUser(db, orderCode, payload.sub);
+    if (!order || String(order.type) !== ORDER_TYPE_IDENTITY_VERIFY) {
+      return res.status(404).json({ message: "Không tìm thấy đơn xác minh thẻ." });
+    }
+    if (order.status === "SUCCESS") {
+      return res.status(409).json({ message: "Đơn đã thanh toán thành công." });
+    }
+    await cancelWalletDepositOrder(db, orderCode, "Hủy tại trang xác minh thẻ");
+    return res.json({ message: "Đã hủy yêu cầu thanh toán.", orderCode, status: "CANCELLED" });
+  } catch (error) {
+    console.error("cancelCardVerifyPayment failed:", error.message);
+    return res.status(500).json({ message: "Không thể hủy đơn thanh toán." });
   } finally {
     db.release();
   }
@@ -487,7 +643,9 @@ async function verifyCardCharge(req, res) {
     );
     const row = result.rows[0];
     if (!row?.card_added_at || !row.card_charge_cents) {
-      return res.status(400).json({ message: "Hãy thêm thẻ trước khi xác minh số tiền." });
+      return res.status(400).json({
+        message: "Hãy hoàn tất thanh toán 10.000 VND qua payOS ở bước xác minh số tiền.",
+      });
     }
     if (row.card_verified_at) {
       return res.status(400).json({ message: "Thẻ đã được xác minh." });
@@ -544,6 +702,9 @@ module.exports = {
   patchIdentityVerification,
   addCreditCard,
   verifyCardCharge,
+  createCardVerifyPaymentLink,
+  getCardVerifyPaymentStatus,
+  cancelCardVerifyPayment,
   uploadSelfie: uploadField("selfie_url", "photo_submitted_at"),
   uploadIdFront: uploadField("id_front_url", "id_submitted_at"),
   uploadIdBack: uploadField("id_back_url", "id_submitted_at"),

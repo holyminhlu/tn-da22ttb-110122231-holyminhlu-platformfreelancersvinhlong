@@ -18,6 +18,11 @@
   margin-top: 0.65rem;
 }
 
+.fl-payments__fee-note {
+  margin: 0.85rem 0 0;
+  font-size: 0.8125rem;
+}
+
 .fl-payments__guest {
   padding: 2rem 1.5rem;
   border: 1px solid #dbeafe;
@@ -148,4 +153,347 @@
 
 .fl-payments .payments-table__project a:hover {
   text-decoration: underline;
+}
+
+.fl-payout--empty {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.fl-payout-empty-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.65rem;
+  padding: 2rem 1.5rem;
+  border: 2px dashed #cbd5e1;
+  border-radius: var(--card-radius);
+  background: linear-gradient(180deg, #f8fafc 0%, #fff 100%);
+}
+
+.fl-payout-empty-card__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: 9999px;
+  background: #e8f1fb;
+  color: #0066cc;
+  font-size: 1.35rem;
+}
+
+.fl-payout-empty-card__title {
+  margin: 0.15rem 0 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.fl-payout-empty-card__text {
+  margin: 0;
+  max-width: 28rem;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: #6b7280;
+}
+
+.fl-payout__cta {
+  margin-top: 0.35rem;
+}
+
+.fl-payout__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.fl-payout__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: 9999px;
+  padding: 0.25rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.fl-payout__badge--verified {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.fl-payout__badge-icon {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.fl-payout__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.fl-payout__unlink {
+  color: #b91c1c !important;
+}
+
+.fl-payout__card {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+  padding: 1rem 1.1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: var(--card-radius);
+  background: linear-gradient(135deg, #f8fafc 0%, #fff 100%);
+}
+
+.fl-payout__details {
+  flex: 1;
+  min-width: 0;
+}
+
+.fl-payout__bank {
+  margin: 0 0 0.65rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.fl-payout__meta {
+  margin: 0;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.fl-payout__meta div {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.fl-payout__meta dt {
+  margin: 0;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #9ca3af;
+}
+
+.fl-payout__meta dd {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: #1f2937;
+}
+
+.fl-payout__account-num {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  letter-spacing: 0.06em;
+}
+
+.fl-payout__email {
+  margin: 0.85rem 0 0;
+  font-size: 0.8125rem;
+  color: #6b7280;
+}
+
+.fl-payments__withdraw-card {
+  margin-top: 1.25rem;
+}
+
+.fl-payments__withdraw-bank {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.9rem;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.45rem;
+  background: #fff;
+}
+
+.fl-payments__withdraw-bank-name {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.fl-payments__withdraw-bank-meta {
+  margin: 0.15rem 0 0;
+  font-size: 0.8125rem;
+  color: #6b7280;
+}
+
+.fl-payments__withdraw-bank-link {
+  margin-left: auto;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #2563eb;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.fl-payments__withdraw-bank-link:hover {
+  text-decoration: underline;
+}
+
+.fl-payments__withdraw-unlinked {
+  margin: 0.85rem 0 0;
+  font-size: 0.8125rem;
+  color: #6b7280;
+}
+
+.fl-payments__withdraw-unlinked a {
+  color: #2563eb;
+  font-weight: 600;
+}
+
+.fl-payments__withdraw-pin-hint {
+  margin: 0.75rem 0 0;
+  padding: 0.65rem 0.85rem;
+  border-radius: 0.45rem;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  font-size: 0.8125rem;
+  color: #92400e;
+}
+
+.fl-payments__withdraw-pin-hint a {
+  color: #2563eb;
+  font-weight: 600;
+}
+
+.fl-payments__withdraw-btn {
+  margin-top: 0.75rem;
+}
+
+.fl-payout__footnote {
+  margin: 0.65rem 0 0;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: #9ca3af;
+}
+
+/* Withdraw modal */
+.fl-withdraw-modal__subtitle {
+  margin: 0.25rem 0 0;
+  font-size: 0.8125rem;
+  color: #6b7280;
+}
+
+.fl-withdraw-modal__form {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.fl-withdraw-modal__presets {
+  margin-top: -0.25rem;
+}
+
+.fl-withdraw-modal__bank-card {
+  padding: 0.85rem 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  background: #f8fafc;
+}
+
+.fl-withdraw-modal__bank-head {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.65rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.fl-withdraw-modal__bank-body {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.fl-withdraw-modal__bank-name {
+  margin: 0;
+  font-weight: 600;
+  color: #111827;
+}
+
+.fl-withdraw-modal__bank-meta {
+  margin: 0.15rem 0 0;
+  font-size: 0.8125rem;
+  color: #6b7280;
+}
+
+.fl-withdraw-modal__summary {
+  padding: 0.75rem 0.9rem;
+  border-radius: 0.45rem;
+  background: #eff6ff;
+  font-size: 0.875rem;
+  color: #1e3a8a;
+}
+
+.fl-withdraw-modal__summary p {
+  margin: 0.2rem 0;
+}
+
+.fl-withdraw-modal__hint {
+  margin: -0.25rem 0 0;
+}
+
+.fl-withdraw-modal__status {
+  display: grid;
+  gap: 0.65rem;
+  justify-items: center;
+  text-align: center;
+  padding: 0.5rem 0 0.25rem;
+}
+
+.fl-withdraw-modal__status-title {
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.fl-withdraw-modal__spinner {
+  font-size: 2rem;
+  color: #2563eb;
+  animation: fl-withdraw-spin 0.9s linear infinite;
+}
+
+.fl-withdraw-modal__icon {
+  font-size: 2.5rem;
+}
+
+.fl-withdraw-modal__icon--ok {
+  color: #16a34a;
+}
+
+.fl-withdraw-modal__icon--fail {
+  color: #dc2626;
+}
+
+.fl-withdraw-modal__ref {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: #6b7280;
+}
+
+.fl-withdraw-modal__ref code {
+  font-size: 0.75rem;
+}
+
+@keyframes fl-withdraw-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }

@@ -310,12 +310,11 @@ export default function CredentialsContent() {
       </aside>
 
       {dialog ? (
-        <div className="cred-modal-backdrop" role="presentation" onClick={closeDialog}>
+        <div className="cred-modal-backdrop" role="presentation">
           <div
             className="cred-modal"
             role="dialog"
             aria-labelledby={dialog === "email" ? "cred-email-title" : "cred-pwd-title"}
-            onClick={(e) => e.stopPropagation()}
           >
             <div className="cred-modal__header">
               <div className="cred-modal__header-main">

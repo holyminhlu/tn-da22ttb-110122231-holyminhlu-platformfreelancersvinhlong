@@ -6,8 +6,8 @@ import { FormEvent, useEffect, useState } from "react";
 import AuthLayout from "./AuthLayout";
 import GoogleButton from "./GoogleButton";
 import { login } from "@/lib/api/auth";
-import { isClientRole, isFreelancerRole } from "@/hooks/useStoredUser";
 import { persistAuthTokens, persistStoredUser, toStoredUser } from "@/lib/authSession";
+import { resolvePostLoginPath } from "@/lib/auth/roleRoutes";
 import styles from "./auth.module.css";
 
 function safeNextPath(raw: string | null): string | null {
@@ -50,11 +50,7 @@ export default function LoginForm() {
       }
 
       setSuccess("Đăng nhập thành công. Đang chuyển hướng…");
-      const role = data.user?.role;
-      const destination =
-        nextPath ??
-        (isFreelancerRole(role) || isClientRole(role) ? "/dashboard" : "/");
-      router.push(destination);
+      router.push(resolvePostLoginPath(data.user?.role, nextPath));
       router.refresh();
     } catch (err) {
       const message =

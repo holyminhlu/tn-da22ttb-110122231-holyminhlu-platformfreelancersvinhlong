@@ -958,7 +958,11 @@ async function changePassword(req, res) {
 
     const passwordHash = await bcrypt.hash(newPassword, 10);
     await db.query(
-      `UPDATE public.users SET password_hash = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
+      `UPDATE public.users
+       SET password_hash = $2,
+           password_user_set_at = COALESCE(password_user_set_at, NOW()),
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id = $1`,
       [payload.sub, passwordHash],
     );
 

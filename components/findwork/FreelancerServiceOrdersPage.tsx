@@ -6,12 +6,19 @@ import { listServiceOrders, type ServiceOrderListItem } from "@/lib/api/contract
 import { formatPackagePrice } from "@/lib/hire/servicePackages";
 import {
   escrowStatusLabel,
+  escrowStatusTone,
   filterServiceOrders,
   orderCardPreviewText,
+  orderCardStatusTone,
   orderCardTitle,
+  orderCardToneClass,
+  orderDeadlineTone,
+  orderStatusBadgeClass,
+  orderStatusChipClass,
   orderStatusHint,
   parsePackageName,
   workflowStageLabel,
+  workflowStageTone,
   type OrderListFilter,
 } from "@/lib/orders/serviceOrderDisplay";
 import { orderDeadlineSubtitle } from "@/lib/orders/workflowSlaDisplay";
@@ -119,22 +126,23 @@ export default function FreelancerServiceOrdersPage() {
                 (order.workflow_stage === "delivery" && !order.delivered_at);
 
               const briefPreview = orderCardPreviewText(order.client_brief);
+              const statusTone = orderCardStatusTone(order, true);
+              const stageTone = workflowStageTone(order.workflow_stage, order);
+              const escrowTone = escrowStatusTone(order.escrow_status);
+              const deadlineTone = orderDeadlineTone(deadlineLine);
+              const badgeTone = urgent ? "warning" : statusTone;
 
               return (
                 <li key={order.id}>
                   <Link
                     href={`/findwork/orders/${order.id}`}
-                    className={`fw-orders__card${urgent ? " fw-orders__card--urgent" : ""}`}
+                    className={`fw-orders__card ${orderCardToneClass(statusTone)}${urgent ? " fw-orders__card--urgent" : ""}`}
                   >
                     <div className="fw-orders__card-top">
                       <h2 className="fw-orders__card-title">
                         {orderCardTitle(order.service_title, order.job_title, "Hợp đồng")}
                       </h2>
-                      <span
-                        className={`fw-orders__card-badge${urgent ? "" : " fw-orders__card-badge--stage"}`}
-                      >
-                        {hint}
-                      </span>
+                      <span className={orderStatusBadgeClass(badgeTone)}>{hint}</span>
                     </div>
                     <p className="fw-orders__card-meta">
                       Khách hàng: <strong>{order.counterparty_name || "—"}</strong>
@@ -147,12 +155,18 @@ export default function FreelancerServiceOrdersPage() {
                       <p className="fw-orders__card-preview">{briefPreview}</p>
                     ) : null}
                     <div className="fw-orders__card-foot">
-                      <span>{workflowStageLabel(order.workflow_stage)}</span>
-                      <span>Ký quỹ: {escrowStatusLabel(order.escrow_status)}</span>
+                      <span className={orderStatusChipClass(stageTone)}>
+                        {workflowStageLabel(order.workflow_stage)}
+                      </span>
+                      <span className={orderStatusChipClass(escrowTone)}>
+                        Ký quỹ: {escrowStatusLabel(order.escrow_status)}
+                      </span>
                       {deadlineLine ? (
-                        <span className="fw-orders__card-deadline">{deadlineLine}</span>
+                        <span className={orderStatusChipClass(deadlineTone)}>{deadlineLine}</span>
                       ) : null}
-                      <span>Cập nhật: {formatDate(order.updated_at || order.created_at)}</span>
+                      <span className="fw-orders__card-foot-date">
+                        Cập nhật: {formatDate(order.updated_at || order.created_at)}
+                      </span>
                     </div>
                   </Link>
                 </li>

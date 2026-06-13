@@ -491,12 +491,8 @@ export default function ClientProfileContent() {
       ) : null}
 
       {avatarPreviewOpen && avatarSrc ? (
-        <div
-          className="cp-preview-backdrop"
-          role="presentation"
-          onClick={() => setAvatarPreviewOpen(false)}
-        >
-          <div className="cp-preview" role="dialog" aria-label="Xem ảnh đại diện" onClick={(e) => e.stopPropagation()}>
+        <div className="cp-preview-backdrop" role="presentation">
+          <div className="cp-preview" role="dialog" aria-label="Xem ảnh đại diện">
             <Image src={avatarSrc} alt="" width={320} height={320} className="cp-preview__img" unoptimized />
             <button type="button" className="cp-preview__close" onClick={() => setAvatarPreviewOpen(false)}>
               Đóng

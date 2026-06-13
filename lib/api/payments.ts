@@ -66,9 +66,13 @@ export type FreelancerPayoutProfile = {
   contactName: string;
   contactEmail: string;
   contactPhone: string;
+  accountHolderName: string;
   bankName: string;
   accountLast4: string;
+  accountMasked: string;
   isConfigured: boolean;
+  isVerified: boolean;
+  linkedAt: string | null;
 };
 
 export type FreelancerPendingEarning = {
@@ -95,6 +99,13 @@ export type FreelancerTransaction = {
   contractId: string | null;
 };
 
+export type FreelancerWithdrawalPinStatus = {
+  isConfigured: boolean;
+  isGoogleAccount: boolean;
+  hasAppPassword: boolean;
+  requiresAppPasswordSetup: boolean;
+};
+
 export type FreelancerBillingOverview = {
   role: "freelancer";
   account: {
@@ -104,6 +115,7 @@ export type FreelancerBillingOverview = {
     totalEarned: number;
   };
   payoutProfile: FreelancerPayoutProfile;
+  withdrawalPin: FreelancerWithdrawalPinStatus;
   pendingItems: FreelancerPendingEarning[];
   transactions: FreelancerTransaction[];
   filterOptions: {
@@ -189,6 +201,47 @@ export async function deleteBillingMethod(methodId: string) {
   return data;
 }
 
+export async function createPaymentLink(amount: number) {
+  const { data } = await fetchApi<{
+    message: string;
+    orderCode: number;
+    amount: number;
+    checkoutUrl: string;
+  }>(apiPaths.payments.createPaymentLink, {
+    method: "POST",
+    auth: true,
+    body: { amount },
+  });
+  return data;
+}
+
+export type DepositOrderStatus = {
+  orderCode: number;
+  amount: number;
+  status: "PENDING" | "SUCCESS" | "CANCELLED";
+  type: string;
+  paidAt: string | null;
+  createdAt: string;
+  account: BillingOverview["account"];
+};
+
+export async function getDepositOrderStatus(orderCode: number) {
+  const { data } = await fetchApi<DepositOrderStatus>(
+    apiPaths.payments.depositOrder(orderCode),
+    { auth: true },
+  );
+  return data;
+}
+
+export async function cancelDepositOrder(orderCode: number) {
+  const { data } = await fetchApi<{ message: string; orderCode: number; status: string }>(
+    apiPaths.payments.cancelDepositOrder(orderCode),
+    { method: "POST", auth: true },
+  );
+  return data;
+}
+
+/** @deprecated Dùng createPaymentLink + payOS */
 export async function depositFunds(amount: number) {
   const { data } = await fetchApi<{ message: string; account: BillingOverview["account"] }>(
     apiPaths.payments.deposit,
@@ -222,6 +275,87 @@ export function transactionCategoryLabel(category: string) {
   }
 }
 
+export type FreelancerWithdrawalOrder = {
+  id: string;
+  referenceId: string;
+  amount: number;
+  status: "PENDING_AUTH" | "PROCESSING" | "SUCCEEDED" | "FAILED" | "CANCELLED";
+  bankName: string;
+  accountHolderName: string;
+  accountLast4: string;
+  payosPayoutId: string | null;
+  payosTxState: string | null;
+  failureReason: string | null;
+  paidAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export async function requestFreelancerWithdrawal(amount: number) {
+  const { data } = await fetchApi<{
+    message: string;
+    order: FreelancerWithdrawalOrder;
+  }>(apiPaths.payments.withdrawRequest, {
+    method: "POST",
+    auth: true,
+    body: { amount },
+  });
+  return data;
+}
+
+export async function confirmFreelancerWithdrawal(orderId: string, pin: string) {
+  const { data } = await fetchApi<{
+    message: string;
+    order: FreelancerWithdrawalOrder;
+    account: FreelancerBillingOverview["account"];
+  }>(apiPaths.payments.withdrawConfirm(orderId), {
+    method: "POST",
+    auth: true,
+    body: { pin },
+  });
+  return data;
+}
+
+export type SaveWithdrawalPinPayload = {
+  pin: string;
+  confirmPin: string;
+  currentPassword?: string;
+  newPassword?: string;
+  confirmNewPassword?: string;
+};
+
+export async function getWithdrawalPinSettings() {
+  const { data } = await fetchApi<{ withdrawalPin: FreelancerWithdrawalPinStatus }>(
+    apiPaths.payments.withdrawalPin,
+    { auth: true },
+  );
+  return data;
+}
+
+export async function saveWithdrawalPinSettings(payload: SaveWithdrawalPinPayload) {
+  const { data } = await fetchApi<{
+    message: string;
+    withdrawalPin: FreelancerWithdrawalPinStatus;
+  }>(apiPaths.payments.withdrawalPin, {
+    method: "PUT",
+    auth: true,
+    body: payload,
+  });
+  return data;
+}
+
+export async function getFreelancerWithdrawalStatus(orderId: string) {
+  const { data } = await fetchApi<{
+    order: FreelancerWithdrawalOrder;
+    account: FreelancerBillingOverview["account"];
+  }>(apiPaths.payments.withdrawStatus(orderId), {
+    method: "GET",
+    auth: true,
+  });
+  return data;
+}
+
+/** @deprecated Dùng requestFreelancerWithdrawal + confirmFreelancerWithdrawal */
 export async function withdrawFreelancerFunds(amount: number) {
   const { data } = await fetchApi<{
     message: string;
@@ -231,6 +365,35 @@ export async function withdrawFreelancerFunds(amount: number) {
     auth: true,
     body: { amount },
   });
+  return data;
+}
+
+export type SavePayoutAccountPayload = {
+  bankName: string;
+  accountNumber: string;
+  accountHolderName: string;
+};
+
+export async function saveFreelancerPayoutAccount(payload: SavePayoutAccountPayload) {
+  const { data } = await fetchApi<{ message: string; payoutProfile: FreelancerPayoutProfile }>(
+    apiPaths.payments.payoutAccount,
+    {
+      method: "PUT",
+      auth: true,
+      body: payload,
+    },
+  );
+  return data;
+}
+
+export async function unlinkFreelancerPayoutAccount() {
+  const { data } = await fetchApi<{ message: string; payoutProfile: FreelancerPayoutProfile }>(
+    apiPaths.payments.payoutAccount,
+    {
+      method: "DELETE",
+      auth: true,
+    },
+  );
   return data;
 }
 

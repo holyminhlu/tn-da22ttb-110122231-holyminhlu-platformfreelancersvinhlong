@@ -11,7 +11,20 @@ import {
   filterOrdersByBucket,
   type ServiceOrderBucket,
 } from "@/lib/services/servicesDisplay";
-import { orderCardTitle } from "@/lib/orders/serviceOrderDisplay";
+import {
+  escrowStatusLabel,
+  escrowStatusTone,
+  orderBucketTone,
+  orderCardStatusTone,
+  orderCardTitle,
+  orderCardToneClass,
+  orderDeadlineTone,
+  orderStatusBadgeClass,
+  orderStatusChipClass,
+  workflowStageLabel,
+  workflowStageTone,
+} from "@/lib/orders/serviceOrderDisplay";
+import { orderDeadlineSubtitle } from "@/lib/orders/workflowSlaDisplay";
 import { formatDate } from "@/lib/format";
 import ServicesShell from "./ServicesShell";
 import "../findwork/findwork-orders.css";
@@ -106,18 +119,23 @@ export default function ServiceOrdersPage() {
               const bucketKey = classifyServiceOrder(order);
               const deadlineLine = orderDeadlineSubtitle(order);
               const urgent = bucketKey === "new" || bucketKey === "awaiting_review";
+              const statusTone = orderCardStatusTone(order, true);
+              const badgeTone = orderBucketTone(bucketKey);
+              const stageTone = workflowStageTone(order.workflow_stage, order);
+              const escrowTone = escrowStatusTone(order.escrow_status);
+              const deadlineTone = orderDeadlineTone(deadlineLine);
 
               return (
                 <li key={order.id}>
                   <Link
                     href={`/findwork/orders/${order.id}`}
-                    className={`fw-orders__card${urgent ? " fw-orders__card--urgent" : ""}`}
+                    className={`fw-orders__card ${orderCardToneClass(statusTone)}${urgent ? " fw-orders__card--urgent" : ""}`}
                   >
                     <div className="fw-orders__card-top">
                       <h2 className="fw-orders__card-title">
                         {orderCardTitle(order.service_title, order.job_title)}
                       </h2>
-                      <span className="fw-orders__card-badge">
+                      <span className={orderStatusBadgeClass(badgeTone)}>
                         {ORDER_BUCKET_LABELS[bucketKey]}
                       </span>
                     </div>
@@ -128,10 +146,18 @@ export default function ServiceOrdersPage() {
                         : ""}
                     </p>
                     <div className="fw-orders__card-foot">
+                      <span className={orderStatusChipClass(stageTone)}>
+                        {workflowStageLabel(order.workflow_stage)}
+                      </span>
+                      <span className={orderStatusChipClass(escrowTone)}>
+                        Ký quỹ: {escrowStatusLabel(order.escrow_status)}
+                      </span>
                       {deadlineLine ? (
-                        <span className="fw-orders__card-deadline">{deadlineLine}</span>
+                        <span className={orderStatusChipClass(deadlineTone)}>{deadlineLine}</span>
                       ) : null}
-                      <span>Cập nhật: {formatDate(order.updated_at || order.created_at)}</span>
+                      <span className="fw-orders__card-foot-date">
+                        Cập nhật: {formatDate(order.updated_at || order.created_at)}
+                      </span>
                     </div>
                   </Link>
                 </li>

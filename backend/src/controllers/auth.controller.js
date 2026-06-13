@@ -13,6 +13,10 @@ const {
   verifyAccessToken,
   persistRefreshToken,
 } = require("../utils/authTokens");
+const {
+  createGoogleOAuthTicket,
+  consumeGoogleOAuthTicket,
+} = require("../utils/googleOAuthTickets");
 
 function getFrontendUrl() {
   return (process.env.FRONTEND_URL || "http://localhost:3000").replace(/\/+$/, "");
@@ -84,20 +88,48 @@ function encodeUserPayload(user) {
 }
 
 function redirectGoogleError(res, message) {
-  const target = new URL("/auth/google/callback", getFrontendUrl());
+  const target = new URL("/dang-nhap", getFrontendUrl());
   target.searchParams.set("error", message);
   return res.redirect(target.toString());
 }
 
 function redirectGoogleSuccess(res, { accessToken, refreshToken, user, next }) {
-  const target = new URL("/auth/google/callback", getFrontendUrl());
-  target.hash = new URLSearchParams({
+  const ticket = createGoogleOAuthTicket({
     accessToken,
     refreshToken,
-    user: encodeUserPayload(user),
+    user,
     next: safeNextPath(next),
-  }).toString();
+  });
+  const target = new URL("/dang-nhap", getFrontendUrl());
+  target.searchParams.set("ticket", ticket);
   return res.redirect(target.toString());
+}
+
+async function completeGoogleAuth(req, res) {
+  const ticket = String(req.query.ticket || "").trim();
+  if (!ticket) {
+    return res.status(400).json({ message: "Thiếu mã phiên đăng nhập Google." });
+  }
+
+  const session = consumeGoogleOAuthTicket(ticket);
+  if (!session) {
+    return res.status(410).json({
+      message: "Phiên đăng nhập Google đã hết hạn hoặc đã dùng. Vui lòng thử lại.",
+    });
+  }
+
+  return res.json({
+    accessToken: session.accessToken,
+    refreshToken: session.refreshToken,
+    user: {
+      id: session.user.id,
+      email: session.user.email,
+      role: session.user.role,
+      fullName: session.user.fullName || null,
+      avatarUrl: session.user.avatarUrl || null,
+    },
+    next: session.next,
+  });
 }
 
 async function logLoginAttempt(client, { email, ip, success }) {
@@ -245,15 +277,15 @@ async function register(req, res) {
   const normalizedRole = String(role || "").trim().toLowerCase();
 
   if (!normalizedEmail || !password || !fullName) {
-    return res.status(400).json({ message: "Email, m?t kh?u v� h? t�n l� b?t bu?c." });
+    return res.status(400).json({ message: "Email, mật khẩu và họ tên là bắt buộc." });
   }
 
   if (!["client", "freelancer"].includes(normalizedRole)) {
-    return res.status(400).json({ message: "Vai tr� ph?i l� client ho?c freelancer." });
+    return res.status(400).json({ message: "Vai trò phải là client hoặc freelancer." });
   }
 
   if (String(password).length < 8) {
-    return res.status(400).json({ message: "M?t kh?u t?i thi?u 8 k� t?." });
+    return res.status(400).json({ message: "Mật khẩu tối thiểu 8 ký tự." });
   }
 
   const client = await pool.connect();
@@ -268,14 +300,14 @@ async function register(req, res) {
 
     if (existsResult.rowCount > 0) {
       await client.query("ROLLBACK");
-      return res.status(409).json({ message: "Email ?� t?n t?i." });
+      return res.status(409).json({ message: "Email đã tồn tại." });
     }
 
     const passwordHash = await bcrypt.hash(String(password), 10);
 
     const userResult = await client.query(
-      `INSERT INTO public.users (email, password_hash, role)
-       VALUES ($1, $2, $3)
+      `INSERT INTO public.users (email, password_hash, role, password_user_set_at)
+       VALUES ($1, $2, $3, NOW())
        RETURNING id, email, role, created_at`,
       [normalizedEmail, passwordHash, normalizedRole],
     );
@@ -309,7 +341,7 @@ async function register(req, res) {
     await client.query("COMMIT");
 
     return res.status(201).json({
-      message: "??ng k� th�nh c�ng.",
+      message: "Đăng ký thành công.",
       user: {
         id: user.id,
         email: user.email,
@@ -326,7 +358,7 @@ async function register(req, res) {
   } catch (error) {
     await client.query("ROLLBACK");
     console.error("Register failed:", error.message);
-    return res.status(500).json({ message: "Kh�ng th? ??ng k� t�i kho?n l�c n�y." });
+    return res.status(500).json({ message: "Không thể đăng ký tài khoản lúc này." });
   } finally {
     client.release();
   }
@@ -339,7 +371,7 @@ async function login(req, res) {
   const ipAddress = getClientIp(req);
 
   if (!email || !password) {
-    return res.status(400).json({ message: "Email v� m?t kh?u l� b?t bu?c." });
+    return res.status(400).json({ message: "Email và mật khẩu là bắt buộc." });
   }
 
   const client = await pool.connect();
@@ -356,7 +388,7 @@ async function login(req, res) {
 
     if (userResult.rowCount === 0) {
       await logLoginAttempt(client, { email, ip: ipAddress, success: false });
-      return res.status(401).json({ message: "Sai th�ng tin ??ng nh?p." });
+      return res.status(401).json({ message: "Sai thông tin đăng nhập." });
     }
 
     const user = userResult.rows[0];
@@ -364,7 +396,7 @@ async function login(req, res) {
 
     if (!isValidPassword) {
       await logLoginAttempt(client, { email, ip: ipAddress, success: false });
-      return res.status(401).json({ message: "Sai th�ng tin ??ng nh?p." });
+      return res.status(401).json({ message: "Sai thông tin đăng nhập." });
     }
 
     const { accessToken, refreshToken } = signTokens(user);
@@ -380,7 +412,7 @@ async function login(req, res) {
     await client.query("COMMIT");
 
     return res.json({
-      message: "??ng nh?p th�nh c�ng.",
+      message: "Đăng nhập thành công.",
       user: {
         id: user.id,
         email: user.email,
@@ -398,7 +430,7 @@ async function login(req, res) {
   } catch (error) {
     await client.query("ROLLBACK").catch(() => {});
     console.error("Login failed:", error.message);
-    return res.status(500).json({ message: "Kh�ng th? ??ng nh?p l�c n�y." });
+    return res.status(500).json({ message: "Không thể đăng nhập lúc này." });
   } finally {
     client.release();
   }
@@ -408,14 +440,14 @@ async function refresh(req, res) {
 
   const refreshToken = String(req.body?.refreshToken || "").trim();
   if (!refreshToken) {
-    return res.status(400).json({ message: "Thi?u refresh token." });
+    return res.status(400).json({ message: "Thiếu refresh token." });
   }
 
   let payload;
   try {
     payload = jwt.verify(refreshToken, REFRESH_SECRET);
   } catch {
-    return res.status(401).json({ message: "Refresh token kh�ng h?p l? ho?c ?� h?t h?n." });
+    return res.status(401).json({ message: "Refresh token không hợp lệ hoặc đã hết hạn." });
   }
 
   const client = await pool.connect();
@@ -429,7 +461,7 @@ async function refresh(req, res) {
     );
 
     if (tokenResult.rowCount === 0) {
-      return res.status(401).json({ message: "Phi�n ??ng nh?p ?� h?t h?n. Vui l�ng ??ng nh?p l?i." });
+      return res.status(401).json({ message: "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại." });
     }
 
     const userResult = await client.query(
@@ -440,7 +472,7 @@ async function refresh(req, res) {
       [payload.sub],
     );
     if (userResult.rowCount === 0) {
-      return res.status(401).json({ message: "Ng??i d�ng kh�ng c�n hi?u l?c." });
+      return res.status(401).json({ message: "Người dùng không còn hiệu lực." });
     }
 
     const user = userResult.rows[0];
@@ -455,7 +487,7 @@ async function refresh(req, res) {
     );
 
     return res.json({
-      message: "L�m m?i phi�n th�nh c�ng.",
+      message: "Làm mới phiên thành công.",
       tokens: {
         accessToken,
         refreshToken,
@@ -465,7 +497,7 @@ async function refresh(req, res) {
     });
   } catch (error) {
     console.error("Refresh failed:", error.message);
-    return res.status(500).json({ message: "Kh�ng th? l�m m?i phi�n l�c n�y." });
+    return res.status(500).json({ message: "Không thể làm mới phiên lúc này." });
   } finally {
     client.release();
   }
@@ -478,7 +510,7 @@ async function logout(req, res) {
 
   const refreshToken = String(req.body?.refreshToken || "").trim();
   if (!refreshToken) {
-    return res.status(400).json({ message: "Thi?u refresh token." });
+    return res.status(400).json({ message: "Thiếu refresh token." });
   }
 
   const client = await pool.connect();
@@ -489,10 +521,10 @@ async function logout(req, res) {
       [payload.sub, refreshToken],
     );
 
-    return res.json({ message: "??ng xu?t th�nh c�ng." });
+    return res.json({ message: "Đăng xuất thành công." });
   } catch (error) {
     console.error("Logout failed:", error.message);
-    return res.status(500).json({ message: "Kh�ng th? ??ng xu?t l�c n�y." });
+    return res.status(500).json({ message: "Không thể đăng xuất lúc này." });
   } finally {
     client.release();
   }
@@ -580,4 +612,5 @@ module.exports = {
   logout,
   googleAuth,
   googleCallback,
+  completeGoogleAuth,
 };

@@ -82,12 +82,11 @@ export default function AddExclusiveResourceDialog({ onClose, onSaved }: AddExcl
   }
 
   return (
-    <div className="mp-dialog-backdrop" role="presentation" onClick={() => !saving && !uploading && onClose()}>
+    <div className="mp-dialog-backdrop" role="presentation">
       <form
         className="mp-dialog mp-dialog--wide"
         role="dialog"
         aria-labelledby="add-resource-title"
-        onClick={(e) => e.stopPropagation()}
         onSubmit={(e) => void handleSubmit(e)}
       >
         <div className="mp-dialog__head">

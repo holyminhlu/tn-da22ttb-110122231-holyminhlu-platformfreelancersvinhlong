@@ -76,12 +76,11 @@ export default function AddPortfolioDialog({ onClose, onSaved }: AddPortfolioDia
   }
 
   return (
-    <div className="mp-dialog-backdrop" role="presentation" onClick={() => !saving && !uploadingImages && onClose()}>
+    <div className="mp-dialog-backdrop" role="presentation">
       <form
         className="mp-dialog mp-dialog--wide"
         role="dialog"
         aria-labelledby="add-portfolio-title"
-        onClick={(e) => e.stopPropagation()}
         onSubmit={(e) => void handleSubmit(e)}
       >
         <div className="mp-dialog__head">
