@@ -27,7 +27,6 @@ import {
   getMe,
   isClientMeResponse,
   updateAvatar,
-  updateProfile,
   type ClientMeResponse,
   type MeUser,
 } from "@/lib/api/users";
@@ -63,7 +62,6 @@ const COMPLETION_ITEMS: { key: keyof MeUser | "phone"; label: string; href?: str
 
 export default function ClientProfileContent() {
   const router = useRouter();
-  const coverInputRef = useRef<HTMLInputElement>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
   const [data, setData] = useState<ClientMeResponse | null>(null);
@@ -71,9 +69,7 @@ export default function ClientProfileContent() {
   const [error, setError] = useState("");
   const [aboutOpen, setAboutOpen] = useState(false);
   const [avatarPreviewOpen, setAvatarPreviewOpen] = useState(false);
-  const [coverUploading, setCoverUploading] = useState(false);
   const [avatarUploading, setAvatarUploading] = useState(false);
-  const [coverError, setCoverError] = useState("");
   const [avatarError, setAvatarError] = useState("");
 
   const load = useCallback(async () => {
@@ -144,36 +140,6 @@ export default function ClientProfileContent() {
     }
   }
 
-  async function handleCoverChange(event: React.ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    event.target.value = "";
-    if (!file || !data?.user) return;
-
-    if (!file.type.startsWith("image/")) {
-      setCoverError("Vui lòng chọn file ảnh (JPG, PNG, WebP...).");
-      return;
-    }
-
-    setCoverUploading(true);
-    setCoverError("");
-    try {
-      const url = await uploadServiceThumbnail(file);
-      await updateProfile({
-        fullName: (data.user.fullName || "").trim(),
-        coverUrl: url,
-      });
-      await load();
-    } catch (err) {
-      const message =
-        err && typeof err === "object" && "message" in err
-          ? String((err as { message: string }).message)
-          : "Không thể tải ảnh bìa.";
-      setCoverError(message);
-    } finally {
-      setCoverUploading(false);
-    }
-  }
-
   if (loading) {
     return <p className="ea-loading px-4 py-12">Đang tải hồ sơ...</p>;
   }
@@ -188,7 +154,6 @@ export default function ClientProfileContent() {
 
   const user = data.user;
   const avatarSrc = resolveAvatarSrc(user.avatarUrl);
-  const coverSrc = resolveAvatarSrc(user.coverUrl);
   const locationLine = [user.districtCity, "Việt Nam"].filter(Boolean).join(", ");
   const stats = data.clientStats;
   const totalJobs = Number(stats?.total_jobs) || 0;
@@ -318,43 +283,6 @@ export default function ClientProfileContent() {
           {avatarError ? (
             <p className="cp-inline-error" role="alert">
               {avatarError}
-            </p>
-          ) : null}
-
-          <div
-            className={`cp-cover${coverSrc ? " cp-cover--has-image" : ""}`}
-            style={
-              coverSrc
-                ? {
-                    backgroundImage: `linear-gradient(rgb(0 0 0 / 0.35), rgb(0 0 0 / 0.35)), url("${coverSrc}")`,
-                  }
-                : undefined
-            }
-          >
-            <input
-              ref={coverInputRef}
-              type="file"
-              accept="image/*"
-              className="cp-cover__input"
-              aria-hidden
-              tabIndex={-1}
-              onChange={(e) => void handleCoverChange(e)}
-            />
-            <div className="cp-cover__overlay">
-              <button
-                type="button"
-                className="cp-cover-btn"
-                disabled={coverUploading}
-                onClick={() => coverInputRef.current?.click()}
-              >
-                <FaCamera aria-hidden />
-                {coverUploading ? "Đang tải..." : coverSrc ? "Đổi ảnh bìa" : "Thêm ảnh bìa"}
-              </button>
-            </div>
-          </div>
-          {coverError ? (
-            <p className="cp-inline-error" role="alert">
-              {coverError}
             </p>
           ) : null}
 

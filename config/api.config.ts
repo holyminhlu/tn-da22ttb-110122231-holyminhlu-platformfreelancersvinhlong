@@ -79,6 +79,9 @@ export const apiPaths = {
     accept: (jobId: string) => `/api/jobs/me/jobs/${jobId}/accept`,
     quotes: "/api/jobs/me/quotes",
     quote: (quoteId: string) => `/api/jobs/me/quotes/${quoteId}`,
+    savedJobs: "/api/jobs/me/saved-jobs",
+    savedJobIds: "/api/jobs/me/saved-jobs/ids",
+    savedJob: (jobId: string) => `/api/jobs/me/saved-jobs/${jobId}`,
     /** Legacy */
     createLegacy: "/api/auth/me/job",
     imagesLegacy: "/api/auth/me/job-images",
@@ -105,12 +108,21 @@ export const apiPaths = {
   payments: {
     billing: "/api/payments/billing",
     billingProfile: "/api/payments/billing-profile",
+    billingMethods: "/api/payments/billing-methods",
+    billingMethodDefault: (methodId: string) =>
+      `/api/payments/billing-methods/${methodId}/default`,
+    billingMethod: (methodId: string) => `/api/payments/billing-methods/${methodId}`,
     deposit: "/api/payments/deposit",
     withdraw: "/api/payments/withdraw",
   },
   chat: {
     listConversations: "/api/chat/conversations",
     openConversation: "/api/chat/conversations/open",
+    conversation: (conversationId: string) => `/api/chat/conversations/${conversationId}`,
+    read: (conversationId: string) => `/api/chat/conversations/${conversationId}/read`,
+    block: (conversationId: string) => `/api/chat/conversations/${conversationId}/block`,
+    attachments: (conversationId: string) =>
+      `/api/chat/conversations/${conversationId}/attachments`,
     messages: (conversationId: string) => `/api/chat/conversations/${conversationId}/messages`,
   },
   notifications: {

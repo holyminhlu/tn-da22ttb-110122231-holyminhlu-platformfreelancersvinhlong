@@ -18,12 +18,21 @@ type HireFavoriteCardProps = {
   entry: HireFavoriteEntry;
   isFavorite: boolean;
   onToggleFavorite: (id: string) => void;
+  onMessage: (entry: HireFavoriteEntry) => void;
 };
+
+function requestQuoteHref(entry: HireFavoriteEntry) {
+  if (entry.featuredServiceId) {
+    return `/hire/quote?serviceId=${encodeURIComponent(entry.featuredServiceId)}&freelancerId=${encodeURIComponent(entry.id)}`;
+  }
+  return `/hire/search/${entry.id}`;
+}
 
 export default function HireFavoriteCard({
   entry,
   isFavorite,
   onToggleFavorite,
+  onMessage,
 }: HireFavoriteCardProps) {
   const avatarSrc = resolveAvatarSrc(entry.avatarUrl);
   const initials = getUserInitials(entry.name, entry.email);
@@ -122,20 +131,19 @@ export default function HireFavoriteCard({
       </div>
 
       <div className="hire-favorites__actions">
-        <Link href="/hire/joblist" className="hire-favorites__action hire-favorites__action--primary">
+        <Link href="/hire/post" className="hire-favorites__action hire-favorites__action--primary">
           <FaUserTie aria-hidden />
           Hire
         </Link>
         <button
           type="button"
           className="hire-favorites__action"
-          disabled
-          title="Tính năng nhắn tin đang được phát triển"
+          onClick={() => onMessage(entry)}
         >
           <FaComment aria-hidden />
           Message
         </button>
-        <Link href="/hire/quotes" className="hire-favorites__action">
+        <Link href={requestQuoteHref(entry)} className="hire-favorites__action">
           <FaEnvelope aria-hidden />
           Request Quote
         </Link>

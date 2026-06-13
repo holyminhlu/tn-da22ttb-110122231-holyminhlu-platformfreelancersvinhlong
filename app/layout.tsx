@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Be_Vietnam_Pro, Geist, Inter } from "next/font/google";
 import UserPreferencesInit from "@/components/providers/UserPreferencesInit";
+import ScrollNavButtons from "@/components/ui/ScrollNavButtons";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 
@@ -44,6 +45,7 @@ export default function RootLayout({
           Bỏ qua đến nội dung chính
         </a>
         {children}
+        <ScrollNavButtons />
       </body>
     </html>
   );

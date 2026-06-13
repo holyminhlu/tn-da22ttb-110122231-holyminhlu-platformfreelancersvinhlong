@@ -3,22 +3,36 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   listChatMessages,
+  markChatConversationRead,
   openChatConversation,
   sendChatMessage,
   type ChatConversation,
   type ChatMessage,
+  type SendChatMessagePayload,
 } from "@/lib/api/chat";
-import { emitChatMessage, getChatSocket, joinChatRoom } from "@/lib/chat/socketClient";
+import {
+  applyReadStatusToMessages,
+  mergePeerLastReadAt,
+} from "@/lib/chat/readStatus";
+import {
+  emitChatMessage,
+  emitChatRead,
+  getChatSocket,
+  joinChatRoom,
+  type ChatReadEvent,
+} from "@/lib/chat/socketClient";
 
 type UseFreelancerChatOptions = {
   freelancerId?: string;
   clientId?: string;
   conversationId?: string;
   currentUserId?: string | null;
+  peerId?: string | null;
   jobQuoteId?: string | null;
   serviceId?: string | null;
   contextTitle?: string | null;
   enabled?: boolean;
+  onMarkedRead?: (conversationId: string) => void;
 };
 
 export function useFreelancerChat({
@@ -26,18 +40,32 @@ export function useFreelancerChat({
   clientId,
   conversationId,
   currentUserId,
+  peerId,
   jobQuoteId,
   serviceId,
   contextTitle,
   enabled = true,
+  onMarkedRead,
 }: UseFreelancerChatOptions) {
   const [conversation, setConversation] = useState<ChatConversation | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [peerLastReadAt, setPeerLastReadAt] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
   const joinedRef = useRef(false);
   const lastMessageAtRef = useRef<string | null>(null);
+  const markReadTimerRef = useRef<number | null>(null);
+  const peerIdRef = useRef<string | null>(peerId ?? null);
+  const currentUserIdRef = useRef<string | null>(currentUserId ?? null);
+
+  useEffect(() => {
+    currentUserIdRef.current = currentUserId ?? null;
+  }, [currentUserId]);
+
+  useEffect(() => {
+    if (peerId) peerIdRef.current = peerId;
+  }, [peerId]);
 
   const withMine = useCallback(
     (message: ChatMessage): ChatMessage => ({
@@ -49,17 +77,52 @@ export function useFreelancerChat({
     [currentUserId],
   );
 
+  const applyReadStatus = useCallback(
+    (rows: ChatMessage[], readAt: string | null) =>
+      applyReadStatusToMessages(rows.map(withMine), readAt),
+    [withMine],
+  );
+
   const appendMessage = useCallback(
     (message: ChatMessage) => {
       const normalized = withMine(message);
       lastMessageAtRef.current = normalized.createdAt;
       setMessages((prev) => {
         if (prev.some((m) => m.id === normalized.id)) return prev;
-        return [...prev, normalized];
+        return applyReadStatusToMessages([...prev, normalized], peerLastReadAt);
       });
     },
-    [withMine],
+    [peerLastReadAt, withMine],
   );
+
+  const markRead = useCallback(async () => {
+    if (!conversation?.id || !enabled) return false;
+    const socket = getChatSocket();
+    try {
+      if (socket?.connected) {
+        const result = await emitChatRead(socket, conversation.id);
+        if (result.ok) {
+          onMarkedRead?.(conversation.id);
+          return true;
+        }
+      } else {
+        await markChatConversationRead(conversation.id);
+        onMarkedRead?.(conversation.id);
+        return true;
+      }
+    } catch {
+      // best-effort
+    }
+    return false;
+  }, [conversation?.id, enabled, onMarkedRead]);
+
+  const scheduleMarkRead = useCallback(() => {
+    if (!conversation?.id || !enabled) return;
+    if (markReadTimerRef.current) window.clearTimeout(markReadTimerRef.current);
+    markReadTimerRef.current = window.setTimeout(() => {
+      void markRead();
+    }, 350);
+  }, [conversation?.id, enabled, markRead]);
 
   const bootstrap = useCallback(async () => {
     if (!enabled) return;
@@ -73,7 +136,12 @@ export function useFreelancerChat({
       let contextMessage: ChatMessage | undefined;
 
       if (conversationId) {
-        conv = { id: conversationId } as ChatConversation;
+        conv = {
+          id: conversationId,
+          peerId: peerId ?? undefined,
+          clientId: clientId ?? undefined,
+          freelancerId: freelancerId ?? undefined,
+        } as ChatConversation;
       } else if (freelancerId) {
         const opened = await openChatConversation({
           freelancerId,
@@ -95,11 +163,15 @@ export function useFreelancerChat({
       }
 
       setConversation(conv);
-      const rows = await listChatMessages(conv.id);
-      const normalized = rows.map(withMine);
+      peerIdRef.current =
+        peerId ?? conv.peerId ?? (freelancerId ? freelancerId : clientId) ?? peerIdRef.current;
+
+      const { messages: rows, peerLastReadAt: readAt } = await listChatMessages(conv.id);
+      let normalized = applyReadStatus(rows, readAt);
+      setPeerLastReadAt(readAt);
 
       if (contextMessage && !normalized.some((m) => m.id === contextMessage.id)) {
-        normalized.push(withMine(contextMessage));
+        normalized = applyReadStatus([...normalized, withMine(contextMessage)], readAt);
         normalized.sort(
           (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
         );
@@ -115,24 +187,34 @@ export function useFreelancerChat({
       setError(message);
       setConversation(null);
       setMessages([]);
+      setPeerLastReadAt(null);
     } finally {
       setLoading(false);
     }
   }, [
+    applyReadStatus,
     clientId,
     contextTitle,
     conversationId,
     enabled,
     freelancerId,
     jobQuoteId,
+    peerId,
     serviceId,
     withMine,
   ]);
 
   useEffect(() => {
     joinedRef.current = false;
+    setPeerLastReadAt(null);
     void bootstrap();
   }, [bootstrap]);
+
+  useEffect(() => {
+    if (!loading && conversation?.id && enabled) {
+      scheduleMarkRead();
+    }
+  }, [conversation?.id, enabled, loading, scheduleMarkRead]);
 
   useEffect(() => {
     if (!conversation?.id || !enabled) return;
@@ -143,9 +225,25 @@ export function useFreelancerChat({
     const onMessage = (payload: ChatMessage) => {
       if (payload.conversationId !== conversation.id) return;
       appendMessage(payload);
+      if (!withMine(payload).mine) {
+        scheduleMarkRead();
+      }
+    };
+
+    const onRead = (payload: ChatReadEvent) => {
+      if (payload.conversationId !== conversation.id) return;
+      if (String(payload.userId) === String(currentUserIdRef.current)) return;
+      const expectedPeer = peerIdRef.current ?? conversation.peerId;
+      if (!expectedPeer || String(payload.userId) !== String(expectedPeer)) return;
+      setPeerLastReadAt((prev) => {
+        const merged = mergePeerLastReadAt(prev, payload.readAt);
+        setMessages((current) => applyReadStatusToMessages(current, merged));
+        return merged;
+      });
     };
 
     socket.on("chat:message", onMessage);
+    socket.on("chat:read", onRead);
 
     if (!joinedRef.current) {
       void joinChatRoom(socket, conversation.id).then((result) => {
@@ -156,17 +254,27 @@ export function useFreelancerChat({
     const poll = window.setInterval(() => {
       const after = lastMessageAtRef.current ?? undefined;
       void listChatMessages(conversation.id, after)
-        .then((rows) => {
-          if (rows.length === 0) return;
-          setMessages((prev) => {
-            const map = new Map(prev.map((m) => [m.id, m]));
-            for (const row of rows.map(withMine)) {
-              map.set(row.id, row);
-              lastMessageAtRef.current = row.createdAt;
+        .then(({ messages: rows, peerLastReadAt: readAt }) => {
+          setPeerLastReadAt((prev) => {
+            const merged = mergePeerLastReadAt(prev, readAt);
+            if (rows.length > 0) {
+              setMessages((current) => {
+                const map = new Map(current.map((m) => [m.id, m]));
+                for (const row of rows.map(withMine)) {
+                  map.set(row.id, row);
+                  lastMessageAtRef.current = row.createdAt;
+                }
+                return applyReadStatusToMessages(
+                  [...map.values()].sort(
+                    (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+                  ),
+                  merged,
+                );
+              });
+            } else if (merged !== prev) {
+              setMessages((current) => applyReadStatusToMessages(current, merged));
             }
-            return [...map.values()].sort(
-              (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
-            );
+            return merged;
           });
         })
         .catch(() => {});
@@ -174,19 +282,34 @@ export function useFreelancerChat({
 
     return () => {
       socket.off("chat:message", onMessage);
+      socket.off("chat:read", onRead);
       window.clearInterval(poll);
+      if (markReadTimerRef.current) window.clearTimeout(markReadTimerRef.current);
     };
-  }, [appendMessage, conversation?.id, enabled, withMine]);
+  }, [
+    appendMessage,
+    conversation?.id,
+    conversation?.peerId,
+    enabled,
+    scheduleMarkRead,
+    withMine,
+  ]);
 
   const send = useCallback(
-    async (body: string) => {
-      const text = body.trim();
-      if (!text || !conversation?.id) return false;
+    async (payload: string | SendChatMessagePayload) => {
+      const normalized: SendChatMessagePayload =
+        typeof payload === "string" ? { body: payload.trim(), kind: "text" } : payload;
+
+      const text = String(normalized.body || "").trim();
+      const hasAttachment = Boolean(normalized.attachmentUrl);
+      if ((!text && !hasAttachment) || !conversation?.id) return false;
+
       setSending(true);
       setError("");
       try {
+        const isPlainText = normalized.kind === "text" || !normalized.kind;
         const socket = getChatSocket();
-        if (socket?.connected) {
+        if (isPlainText && text && socket?.connected) {
           const result = await emitChatMessage(socket, conversation.id, text);
           if (result.ok && result.message) {
             appendMessage(result.message);
@@ -194,7 +317,7 @@ export function useFreelancerChat({
           }
           if (result.error) setError(result.error);
         }
-        const message = await sendChatMessage(conversation.id, text);
+        const message = await sendChatMessage(conversation.id, normalized);
         appendMessage(message);
         return true;
       } catch (err) {
@@ -214,10 +337,12 @@ export function useFreelancerChat({
   return {
     conversation,
     messages,
+    peerLastReadAt,
     loading,
     sending,
     error,
     send,
+    markRead,
     reload: bootstrap,
   };
 }

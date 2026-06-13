@@ -157,7 +157,10 @@
   border-top: 3px solid #059669;
 }
 
-.fw-quotes__card--offered,
+.fw-quotes__card--offered {
+  border-top: 3px solid #d97706;
+}
+
 .fw-quotes__card--interviewing,
 .fw-quotes__card--shortlisted {
   border-top: 3px solid #0073b1;
@@ -196,6 +199,12 @@
 .fw-quotes__badge--hot {
   background: #e8f4fc;
   color: #0073b1;
+}
+
+.fw-quotes__badge--offered {
+  background: #fef3c7;
+  color: #b45309;
+  border: 1px solid #fcd34d;
 }
 
 .fw-quotes__badge--accepted {

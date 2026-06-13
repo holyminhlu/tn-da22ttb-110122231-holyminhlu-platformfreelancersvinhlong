@@ -388,6 +388,93 @@
   cursor: not-allowed;
 }
 
+.job-proposal-modal__dialog--notice {
+  width: min(100%, 28rem);
+  text-align: center;
+}
+
+.job-proposal-notice__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.25rem;
+  height: 3.25rem;
+  margin: 1.25rem auto 0;
+  border-radius: 50%;
+  background: #eff6ff;
+  color: #2563eb;
+  font-size: 1.35rem;
+}
+
+.job-proposal-notice__header {
+  padding: 0.85rem 1.5rem 0;
+}
+
+.job-proposal-notice__title {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.35;
+}
+
+.job-proposal-notice__subtitle {
+  margin: 0.35rem 0 0;
+  font-size: 0.8125rem;
+  color: #64748b;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.job-proposal-notice__body {
+  padding: 0.85rem 1.5rem 0.25rem;
+  text-align: left;
+}
+
+.job-proposal-notice__body p {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: #475569;
+}
+
+.job-proposal-notice__tips {
+  margin: 0.85rem 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.job-proposal-notice__tips li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  color: #334155;
+  line-height: 1.45;
+}
+
+.job-proposal-notice__tips svg {
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+  color: #0066cc;
+}
+
+.job-proposal-notice__footer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem 1.5rem 1.25rem;
+}
+
+.job-proposal-notice__footer .job-proposal-btn {
+  justify-content: center;
+  text-decoration: none;
+}
+
 @media (max-width: 480px) {
   .job-proposal-modal {
     padding: 0;

@@ -138,10 +138,13 @@ export function useNotifications({ enabled = true }: UseNotificationsOptions = {
         notification.body.toLowerCase().includes(q);
 
       if (matchesRead && matchesCategory && matchesSearch) {
-        setNotifications((prev) => {
-          if (prev.some((n) => n.id === notification.id)) return prev;
-          return [notification, ...prev];
-        });
+        const offset = currentFilters.offset || 0;
+        if (offset === 0) {
+          setNotifications((prev) => {
+            if (prev.some((n) => n.id === notification.id)) return prev;
+            return [notification, ...prev].slice(0, currentFilters.limit || 50);
+          });
+        }
         setTotal((t) => t + 1);
       }
     }

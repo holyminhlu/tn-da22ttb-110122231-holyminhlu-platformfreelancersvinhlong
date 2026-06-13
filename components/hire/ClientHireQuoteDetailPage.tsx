@@ -71,6 +71,9 @@ export default function ClientHireQuoteDetailPage() {
         return;
       }
       await load();
+      if (action === "interview") {
+        setChatOpen(true);
+      }
     } catch (err) {
       const message =
         err && typeof err === "object" && "message" in err
@@ -103,7 +106,6 @@ export default function ClientHireQuoteDetailPage() {
             quote={quote}
             busy={busy}
             actionError={actionError}
-            onShortlist={() => void handleQuoteAction("shortlist")}
             onInterview={() => void handleQuoteAction("interview")}
             onOffer={() => void handleQuoteAction("offer")}
             onAccept={() => void handleQuoteAction("accept")}

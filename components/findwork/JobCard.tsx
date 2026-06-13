@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { FaCheckCircle, FaListUl, FaMapMarkerAlt, FaStar } from "react-icons/fa";
+import { FaCheckCircle, FaListUl, FaMapMarkerAlt } from "react-icons/fa";
 import { type JobListing } from "@/lib/api/jobs";
 import { getUserInitials, resolveAvatarSrc } from "@/lib/authSession";
 import { formatDate, formatVnd } from "@/lib/format";
@@ -13,22 +13,32 @@ import {
   proposalCountLabel,
   relativePosted,
 } from "@/lib/jobsDisplay";
+import {
+  blocksNewJobQuote,
+  resolveFreelancerJobQuotePhase,
+} from "@/lib/findwork/workDetailQuote";
+import ClientCannotQuoteModal from "./ClientCannotQuoteModal";
 import JobCardMedia from "./JobCardMedia";
 import JobProposalFormModal from "./JobProposalFormModal";
+import SaveJobButton from "./SaveJobButton";
+import { useStoredUser } from "@/hooks/useStoredUser";
 
 type JobCardProps = {
   job: JobListing;
   onAccepted?: (jobId: string) => void;
+  onSavedChange?: (saved: boolean) => void;
   /** Khách chưa đăng nhập — chỉ xem, không gửi báo giá trực tiếp. */
   guestMode?: boolean;
 };
 
-export default function JobCard({ job, onAccepted, guestMode = false }: JobCardProps) {
+export default function JobCard({ job, onAccepted, onSavedChange, guestMode = false }: JobCardProps) {
+  const { user, isClient } = useStoredUser({ refreshFromApi: false });
   const [proposalOpen, setProposalOpen] = useState(false);
-  const [accepted, setAccepted] = useState(Boolean(job.has_my_pending_quote));
-  useEffect(() => {
-    setAccepted(Boolean(job.has_my_pending_quote));
-  }, [job.has_my_pending_quote]);
+  const [clientNoticeOpen, setClientNoticeOpen] = useState(false);
+  const isOwnJob = Boolean(user?.id && job.client_id && String(user.id) === String(job.client_id));
+  const quotePhase = resolveFreelancerJobQuotePhase(job);
+  const hasActiveQuote = blocksNewJobQuote(job);
+  const canSubmit = String(job.status).toLowerCase() === "open" && !hasActiveQuote;
 
   const budgetText = job.budget != null ? formatVnd(job.budget) : "Thỏa thuận";
   const tags = parseJobTags(job.tags);
@@ -40,8 +50,49 @@ export default function JobCard({ job, onAccepted, guestMode = false }: JobCardP
   const categoryLabel = job.category?.trim() || null;
 
   function handleProposalSuccess() {
-    setAccepted(true);
     onAccepted?.(job.id);
+  }
+
+  function quoteStatusChip() {
+    if (quotePhase === "offered") {
+      return (
+        <span className="rounded border border-amber-300 bg-amber-50 px-4 py-1.5 text-sm font-semibold text-amber-800">
+          Nhận offer
+        </span>
+      );
+    }
+    if (quotePhase === "interviewing") {
+      return (
+        <span className="rounded border border-violet-200 bg-violet-50 px-4 py-1.5 text-sm font-semibold text-violet-800">
+          Phỏng vấn
+        </span>
+      );
+    }
+    if (quotePhase === "pending") {
+      return (
+        <span className="rounded border border-green-200 bg-green-50 px-4 py-1.5 text-sm font-semibold text-green-700">
+          Đã gửi báo giá
+        </span>
+      );
+    }
+    if (quotePhase === "accepted") {
+      return (
+        <span className="rounded border border-green-200 bg-green-50 px-4 py-1.5 text-sm font-semibold text-green-700">
+          Đã được chọn
+        </span>
+      );
+    }
+    return null;
+  }
+
+  const quoteChip = quoteStatusChip();
+
+  function openQuoteFlow() {
+    if (isClient) {
+      setClientNoticeOpen(true);
+      return;
+    }
+    setProposalOpen(true);
   }
 
   return (
@@ -148,13 +199,9 @@ export default function JobCard({ job, onAccepted, guestMode = false }: JobCardP
 
         <div className="fw-card__aside flex flex-col items-end">
           <div className="mb-3 flex space-x-2">
-            <button
-              type="button"
-              className="rounded border p-2 text-gray-400 hover:text-blue-600"
-              aria-label="Lưu việc"
-            >
-              <FaStar />
-            </button>
+            {!isOwnJob ? (
+              <SaveJobButton jobId={job.id} onToggled={onSavedChange} />
+            ) : null}
             {guestMode ? (
               <Link
                 href="/dang-nhap?next=/findwork"
@@ -162,15 +209,14 @@ export default function JobCard({ job, onAccepted, guestMode = false }: JobCardP
               >
                 Đăng nhập để báo giá
               </Link>
-            ) : accepted ? (
-              <span className="rounded border border-green-200 bg-green-50 px-4 py-1.5 text-sm font-semibold text-green-700">
-                Đã gửi báo giá
-              </span>
+            ) : quoteChip ? (
+              quoteChip
             ) : (
               <button
                 type="button"
-                onClick={() => setProposalOpen(true)}
-                className="fw-btn-primary rounded px-4 py-1.5 text-sm font-semibold text-white"
+                disabled={!canSubmit}
+                onClick={openQuoteFlow}
+                className="fw-btn-primary rounded px-4 py-1.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-55"
               >
                 Gửi báo giá
               </button>
@@ -199,6 +245,19 @@ export default function JobCard({ job, onAccepted, guestMode = false }: JobCardP
         open={proposalOpen}
         onClose={() => setProposalOpen(false)}
         onSuccess={handleProposalSuccess}
+        isOwnJob={isOwnJob}
+        onClientBlocked={() => {
+          setProposalOpen(false);
+          setClientNoticeOpen(true);
+        }}
+      />
+
+      <ClientCannotQuoteModal
+        open={clientNoticeOpen}
+        onClose={() => setClientNoticeOpen(false)}
+        jobTitle={job.title}
+        jobId={job.id}
+        isOwnJob={isOwnJob}
       />
     </article>
   );

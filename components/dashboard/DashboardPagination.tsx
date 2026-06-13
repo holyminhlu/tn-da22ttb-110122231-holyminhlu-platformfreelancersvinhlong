@@ -6,6 +6,9 @@ type DashboardPaginationProps = {
   total: number;
   onPageChange: (page: number) => void;
   className?: string;
+  /** Hiển thị cả khi chỉ có 1 trang (ví dụ bảng giao dịch). */
+  alwaysShow?: boolean;
+  pageSize?: number;
 };
 
 export default function DashboardPagination({
@@ -14,8 +17,15 @@ export default function DashboardPagination({
   total,
   onPageChange,
   className = "",
+  alwaysShow = false,
+  pageSize,
 }: DashboardPaginationProps) {
-  if (totalPages <= 1) return null;
+  if (total === 0) return null;
+  if (totalPages <= 1 && !alwaysShow) return null;
+
+  const rangeStart = total === 0 ? 0 : (page - 1) * (pageSize ?? 0) + 1;
+  const rangeEnd =
+    pageSize != null ? Math.min(page * pageSize, total) : total;
 
   return (
     <nav
@@ -31,7 +41,9 @@ export default function DashboardPagination({
         Trước
       </button>
       <span className="dashboard-pagination__info">
-        Trang {page}/{totalPages} · {total} mục
+        {pageSize != null && total > 0
+          ? `Hiển thị ${rangeStart}–${rangeEnd} / ${total} · Trang ${page}/${totalPages}`
+          : `Trang ${page}/${totalPages} · ${total} mục`}
       </span>
       <button
         type="button"

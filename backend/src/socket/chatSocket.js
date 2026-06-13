@@ -2,7 +2,13 @@ const { Server } = require("socket.io");
 const jwt = require("jsonwebtoken");
 const { pool } = require("../db/pool");
 const { ACCESS_SECRET } = require("../utils/authTokens");
-const { assertConversationAccess } = require("../controllers/chat.controller");
+const {
+  assertConversationAccess,
+  persistChatMessage,
+  markConversationRead,
+  isMessagingBlocked,
+  mapMessageRow,
+} = require("../controllers/chat.controller");
 const { notifyChatMessage } = require("../utils/notificationService");
 
 function initChatSocket(httpServer, frontendUrl) {
@@ -50,6 +56,35 @@ function initChatSocket(httpServer, frontendUrl) {
       }
     });
 
+    socket.on("chat:read", async ({ conversationId }, ack) => {
+      if (!conversationId) {
+        if (typeof ack === "function") ack({ ok: false, error: "Thiếu mã cuộc trò chuyện." });
+        return;
+      }
+
+      const db = await pool.connect();
+      try {
+        const conversation = await assertConversationAccess(db, conversationId, socket.userId);
+        if (!conversation) {
+          if (typeof ack === "function") ack({ ok: false, error: "Không có quyền." });
+          return;
+        }
+
+        const readAt = await markConversationRead(db, conversationId, socket.userId);
+        io.to(`conv:${conversationId}`).emit("chat:read", {
+          conversationId,
+          userId: socket.userId,
+          readAt,
+        });
+        if (typeof ack === "function") ack({ ok: true, readAt });
+      } catch (error) {
+        console.error("chat:read socket failed:", error.message);
+        if (typeof ack === "function") ack({ ok: false, error: "Không thể cập nhật đã xem." });
+      } finally {
+        db.release();
+      }
+    });
+
     socket.on("chat:send", async ({ conversationId, body }, ack) => {
       const text = String(body || "").trim();
       if (!conversationId || !text || text.length > 4000) {
@@ -65,25 +100,26 @@ function initChatSocket(httpServer, frontendUrl) {
           return;
         }
 
-        const insert = await db.query(
-          `INSERT INTO public.chat_messages (conversation_id, sender_id, body)
-           VALUES ($1, $2, $3)
-           RETURNING id, conversation_id, sender_id, body, created_at`,
-          [conversationId, socket.userId, text],
-        );
+        const peerId =
+          String(conversation.client_id) === String(socket.userId)
+            ? conversation.freelancer_id
+            : conversation.client_id;
 
-        await db.query(`UPDATE public.chat_conversations SET updated_at = NOW() WHERE id = $1`, [
+        if (await isMessagingBlocked(db, socket.userId, peerId)) {
+          if (typeof ack === "function") {
+            ack({ ok: false, error: "Không thể gửi tin nhắn. Cuộc trò chuyện đã bị chặn." });
+          }
+          return;
+        }
+
+        const row = await persistChatMessage(db, {
           conversationId,
-        ]);
+          senderId: socket.userId,
+          body: text,
+          kind: "text",
+        });
 
-        const row = insert.rows[0];
-        const message = {
-          id: row.id,
-          conversationId: row.conversation_id,
-          senderId: row.sender_id,
-          body: row.body,
-          createdAt: row.created_at,
-        };
+        const message = mapMessageRow(row, socket.userId);
 
         io.to(`conv:${conversationId}`).emit("chat:message", message);
         notifyChatMessage(db, conversation, socket.userId, text).catch((err) =>

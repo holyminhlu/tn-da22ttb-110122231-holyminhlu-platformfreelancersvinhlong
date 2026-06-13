@@ -143,6 +143,52 @@ export async function updateBillingProfile(payload: UpdateBillingProfilePayload)
   return data;
 }
 
+export type AddBillingMethodPayload = {
+  variant: "intl_card" | "domestic_atm" | "ewallet";
+  cardNumber: string;
+  cardholderName?: string;
+  expMonth?: number;
+  expYear?: number;
+  bankName?: string;
+  walletProvider?: "momo" | "zalopay";
+  walletPhone?: string;
+  isDefault: boolean;
+};
+
+export async function addBillingMethod(payload: AddBillingMethodPayload) {
+  const { data } = await fetchApi<{ message: string; method: BillingMethod }>(
+    apiPaths.payments.billingMethods,
+    {
+      method: "POST",
+      auth: true,
+      body: payload,
+    },
+  );
+  return data;
+}
+
+export async function setDefaultBillingMethod(methodId: string) {
+  const { data } = await fetchApi<{ message: string; method: BillingMethod }>(
+    apiPaths.payments.billingMethodDefault(methodId),
+    {
+      method: "PATCH",
+      auth: true,
+    },
+  );
+  return data;
+}
+
+export async function deleteBillingMethod(methodId: string) {
+  const { data } = await fetchApi<{ message: string }>(
+    apiPaths.payments.billingMethod(methodId),
+    {
+      method: "DELETE",
+      auth: true,
+    },
+  );
+  return data;
+}
+
 export async function depositFunds(amount: number) {
   const { data } = await fetchApi<{ message: string; account: BillingOverview["account"] }>(
     apiPaths.payments.deposit,

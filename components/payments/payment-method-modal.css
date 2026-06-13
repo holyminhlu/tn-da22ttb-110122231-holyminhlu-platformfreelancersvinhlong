@@ -1,0 +1,330 @@
+.pay-method-modal__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgb(15 23 42 / 0.45);
+  backdrop-filter: blur(2px);
+}
+
+.pay-method-modal {
+  width: min(100%, 32rem);
+  max-height: min(92vh, 44rem);
+  overflow: auto;
+  border-radius: 0.65rem;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  box-shadow: 0 20px 50px rgb(0 0 0 / 0.18);
+}
+
+.pay-method-modal--with-card {
+  width: min(100%, 38rem);
+}
+
+.pay-method-modal__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1.1rem 1.25rem 0.85rem;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.pay-method-modal__title {
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.pay-method-modal__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  border-radius: 0.35rem;
+  background: #f3f4f6;
+  color: #4b5563;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.pay-method-modal__close:hover {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+.pay-method-modal__body {
+  padding: 1rem 1.25rem;
+  display: grid;
+  gap: 0.9rem;
+}
+
+.pay-method-modal__tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.4rem;
+}
+
+@media (max-width: 640px) {
+  .pay-method-modal__tabs {
+    grid-template-columns: 1fr;
+  }
+}
+
+.pay-method-modal__tab {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.45rem;
+  padding: 0.55rem 0.5rem;
+  background: #f9fafb;
+  color: #4b5563;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+}
+
+.pay-method-modal__tab--active {
+  border-color: #2563eb;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.pay-method-modal__field {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.pay-method-modal__label-row {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.pay-method-modal__label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.pay-method-modal__input-wrap {
+  position: relative;
+}
+
+.pay-method-modal__input,
+.pay-method-modal__select {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 0.4rem;
+  padding: 0.55rem 0.7rem;
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.pay-method-modal__input--card {
+  padding-right: 3.5rem;
+  letter-spacing: 0.02em;
+}
+
+.pay-method-modal__card-entry {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.pay-method-modal__card-preview {
+  display: flex;
+  justify-content: center;
+  margin: 0.15rem 0 0.35rem;
+}
+
+.pay-method-modal__card-preview .rccs {
+  margin: 0 auto;
+}
+
+.pay-method-modal__card-type-icon {
+  position: absolute;
+  top: 50%;
+  right: 0.65rem;
+  transform: translateY(-50%);
+  width: 2rem;
+  height: auto;
+  pointer-events: none;
+}
+
+.pay-method-modal__input:focus,
+.pay-method-modal__select:focus {
+  outline: 2px solid #93c5fd;
+  outline-offset: 0;
+  border-color: #2563eb;
+}
+
+.pay-method-modal__row-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.pay-method-modal__cvv-wrap {
+  position: relative;
+}
+
+.pay-method-modal__cvv-wrap .pay-method-modal__input {
+  padding-right: 4.5rem;
+}
+
+.pay-method-modal__cvv-toggle {
+  position: absolute;
+  top: 50%;
+  right: 2rem;
+  transform: translateY(-50%);
+  border: none;
+  background: none;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 0.15rem;
+}
+
+.pay-method-modal__cvv-help {
+  position: relative;
+  display: inline-flex;
+}
+
+.pay-method-modal__cvv-help-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 999px;
+  background: #fff;
+  color: #6b7280;
+  font-size: 0.65rem;
+  font-weight: 700;
+  cursor: help;
+}
+
+.pay-method-modal__cvv-help-pop {
+  position: absolute;
+  bottom: calc(100% + 0.35rem);
+  right: 0;
+  z-index: 2;
+  width: 11rem;
+  padding: 0.5rem 0.6rem;
+  border-radius: 0.35rem;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  box-shadow: 0 8px 20px rgb(0 0 0 / 0.12);
+  font-size: 0.7rem;
+  line-height: 1.45;
+  color: #555555;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.15s ease, visibility 0.15s ease;
+}
+
+.pay-method-modal__cvv-help:hover .pay-method-modal__cvv-help-pop,
+.pay-method-modal__cvv-help:focus-within .pay-method-modal__cvv-help-pop {
+  opacity: 1;
+  visibility: visible;
+}
+
+.pay-method-modal__check {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  color: #374151;
+  cursor: pointer;
+}
+
+.pay-method-modal__check input {
+  margin-top: 0.15rem;
+}
+
+.pay-method-modal__trust {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: #555555;
+}
+
+.pay-method-modal__trust-icon {
+  flex-shrink: 0;
+  margin-top: 0.05rem;
+  color: #047857;
+}
+
+.pay-method-modal__error {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: #dc2626;
+}
+
+.pay-method-modal__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.55rem;
+  padding: 0.85rem 1.25rem 1.1rem;
+  border-top: 1px solid #f3f4f6;
+}
+
+.pay-method-modal__wallet-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.pay-method-modal__wallet-opt {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: 6.5rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 0.65rem;
+  padding: 0.75rem 0.5rem;
+  background: #f9fafb;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.pay-method-modal__wallet-opt:hover {
+  border-color: #93c5fd;
+  background: #f8fbff;
+}
+
+.pay-method-modal__wallet-opt--active,
+.pay-method-modal__wallet-opt:has(input:checked) {
+  border-color: #2563eb;
+  background: #eff6ff;
+  color: #1d4ed8;
+  box-shadow: 0 0 0 3px rgb(37 99 235 / 0.12);
+}
+
+.pay-method-modal__wallet-radio {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.pay-method-modal__wallet-logo {
+  border-radius: 0.45rem;
+  object-fit: contain;
+}

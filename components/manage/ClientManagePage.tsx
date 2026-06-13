@@ -10,7 +10,9 @@ import {
   FaUserTie,
 } from "react-icons/fa";
 import ClientShell from "@/components/layout/ClientShell";
+import DashboardPagination from "@/components/dashboard/DashboardPagination";
 import { getMyWork } from "@/lib/api/contracts";
+import { usePagedList } from "@/hooks/usePagedList";
 import {
   clientJobToListItem,
   isWorkspaceArchived,
@@ -20,7 +22,10 @@ import {
 } from "@/components/jobs/jobs-filter";
 import ManageWorkspaceCard from "./ManageWorkspaceCard";
 import "@/components/hire/hire.css";
+import "@/components/dashboard/dashboardPagination.css";
 import "./manage.css";
+
+const PAGE_SIZE = 5;
 
 type ManageTab = "phong-lam-viec" | "quan-ly-cua-toi";
 type DisplayFilter = "all" | "active" | "archived";
@@ -104,6 +109,14 @@ export default function ClientManagePage() {
     list = searchJobsItems(list, searchQuery);
     return sortJobsItems(list, recentActivity ? "recent" : "title");
   }, [items, displayFilter, searchQuery, recentActivity]);
+
+  const {
+    items: pagedItems,
+    page,
+    totalPages,
+    total: filteredTotal,
+    setPage,
+  } = usePagedList(filteredItems, PAGE_SIZE);
 
   function applySearch() {
     setSearchQuery(searchInput.trim());
@@ -221,9 +234,10 @@ export default function ClientManagePage() {
 
             {!loading && !error && items.length > 0 ? (
               <p className="manage-page__summary" aria-live="polite">
-                Hiển thị <strong>{filteredItems.length}</strong>
-                {filteredItems.length === 1 ? " phòng làm việc" : " phòng làm việc"}
+                Hiển thị <strong>{filteredTotal}</strong>
+                {filteredTotal === 1 ? " phòng làm việc" : " phòng làm việc"}
                 {searchQuery ? ` cho “${searchQuery}”` : ""}
+                {totalPages > 1 ? ` · trang ${page}/${totalPages}` : ""}
               </p>
             ) : null}
 
@@ -277,13 +291,22 @@ export default function ClientManagePage() {
                 ) : null}
               </div>
             ) : (
-              <ul className="manage-page__list">
-                {filteredItems.map((item) => (
-                  <li key={`${item.jobId}-${item.id}`}>
-                    <ManageWorkspaceCard item={item} onChanged={load} />
-                  </li>
-                ))}
-              </ul>
+              <>
+                <ul className="manage-page__list">
+                  {pagedItems.map((item) => (
+                    <li key={`${item.jobId}-${item.id}`}>
+                      <ManageWorkspaceCard item={item} onChanged={load} />
+                    </li>
+                  ))}
+                </ul>
+                <DashboardPagination
+                  page={page}
+                  totalPages={totalPages}
+                  total={filteredTotal}
+                  onPageChange={setPage}
+                  className="manage-page__pagination"
+                />
+              </>
             )}
           </>
         ) : (

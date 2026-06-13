@@ -17,6 +17,7 @@ import { getUserInitials, resolveAvatarSrc } from "@/lib/authSession";
 import { formatDate } from "@/lib/format";
 import {
   formatQuoteAmount,
+  quoteClientActions,
   quoteRatingPercent,
   quoteStatusBadgeClass,
   quoteStatusLabel,
@@ -26,7 +27,6 @@ type HireQuoteDetailViewProps = {
   quote: JobQuoteRow;
   busy?: boolean;
   actionError?: string;
-  onShortlist?: (quoteId: string) => void;
   onInterview?: (quoteId: string) => void;
   onOffer?: (quoteId: string) => void;
   onAccept?: (quoteId: string) => void;
@@ -38,7 +38,6 @@ export default function HireQuoteDetailView({
   quote,
   busy,
   actionError,
-  onShortlist,
   onInterview,
   onOffer,
   onAccept,
@@ -51,12 +50,7 @@ export default function HireQuoteDetailView({
   const location = quote.freelancer_location?.trim() || "—";
   const ratingPct = quoteRatingPercent(quote);
   const message = quote.message?.trim() || "";
-  const status = String(quote.status).toLowerCase();
-  const canShortlist = ["pending", "interviewing", "offered"].includes(status);
-  const canInterview = ["pending", "shortlisted", "offered"].includes(status);
-  const canOffer = ["pending", "shortlisted", "interviewing"].includes(status);
-  const canDecline = ["pending", "shortlisted", "interviewing", "offered"].includes(status);
-  const canHire = status === "offered";
+  const { canInterview, canOffer, canDecline, canHire } = quoteClientActions(quote.status);
   const profileHref = `/hire/search/${quote.freelancer_id}`;
 
   return (
@@ -170,16 +164,6 @@ export default function HireQuoteDetailView({
           Xem hồ sơ
         </Link>
         {onChat ? <FreelancerChatInlineButton onClick={onChat} /> : null}
-        {canShortlist ? (
-          <button
-            type="button"
-            className="hire-favorites__action"
-            disabled={busy}
-            onClick={() => onShortlist?.(quote.id)}
-          >
-            Shortlist
-          </button>
-        ) : null}
         {canInterview ? (
           <button
             type="button"

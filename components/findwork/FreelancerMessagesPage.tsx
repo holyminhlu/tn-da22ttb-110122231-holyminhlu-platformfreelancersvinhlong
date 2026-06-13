@@ -1,11 +1,13 @@
 "use client";
 
+import { Suspense } from "react";
 import MessagesInbox from "@/components/chat/MessagesInbox";
 import FreelancerWorkShell from "./FreelancerWorkShell";
 
 export default function FreelancerMessagesPage() {
   return (
     <FreelancerWorkShell>
+      <Suspense fallback={<p className="fw-messages-inbox__state">Đang tải tin nhắn...</p>}>
       <MessagesInbox
         viewerRole="freelancer"
         copy={{
@@ -16,6 +18,7 @@ export default function FreelancerMessagesPage() {
             "Khi client nhắn từ báo giá hoặc hồ sơ của bạn, hội thoại sẽ hiện ở đây.",
         }}
       />
+      </Suspense>
     </FreelancerWorkShell>
   );
 }

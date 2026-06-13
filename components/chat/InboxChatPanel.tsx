@@ -1,21 +1,34 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import {
   FaBriefcase,
   FaEllipsisH,
+  FaFileAlt,
   FaImage,
   FaPaperclip,
   FaRegSmile,
   FaSearch,
   FaStore,
   FaThumbsUp,
+  FaTimes,
 } from "react-icons/fa";
 import { useFreelancerChat } from "@/hooks/useFreelancerChat";
 import { useStoredUser } from "@/hooks/useStoredUser";
-import type { ChatConversation, ChatMessage } from "@/lib/api/chat";
-import ChatPeerAvatar from "./ChatPeerAvatar";
+import {
+  blockChatConversation,
+  deleteChatConversation,
+  resolveChatAssetUrl,
+  unblockChatConversation,
+  uploadChatAttachment,
+  type ChatConversation,
+  type ChatMessage,
+} from "@/lib/api/chat";
 import { formatDate } from "@/lib/format";
+import ChatActionMenu from "./ChatActionMenu";
+import ChatEmojiPicker from "./ChatEmojiPicker";
+import ChatPeerAvatar from "./ChatPeerAvatar";
 
 export type InboxViewerRole = "client" | "freelancer";
 
@@ -24,6 +37,9 @@ type InboxChatPanelProps = {
   viewerRole: InboxViewerRole;
   onBack?: () => void;
   showBack?: boolean;
+  onConversationDeleted?: (conversationId: string) => void;
+  onConversationUpdated?: (conversation: ChatConversation) => void;
+  onConversationRead?: (conversationId: string) => void;
 };
 
 function formatChatTime(iso: string) {
@@ -73,7 +89,21 @@ function groupMessagesByDate(messages: ChatMessage[]) {
   return groups;
 }
 
-function InboxMessage({ msg }: { msg: ChatMessage }) {
+function highlightText(text: string, query: string) {
+  if (!query.trim()) return text;
+  const parts = text.split(new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "gi"));
+  return parts.map((part, index) =>
+    part.toLowerCase() === query.toLowerCase() ? (
+      <mark key={index} className="fw-inbox-search-hit">
+        {part}
+      </mark>
+    ) : (
+      part
+    ),
+  );
+}
+
+function InboxMessage({ msg, searchQuery }: { msg: ChatMessage; searchQuery: string }) {
   if (msg.kind === "context") {
     const isService = msg.contextType === "service";
     return (
@@ -86,7 +116,7 @@ function InboxMessage({ msg }: { msg: ChatMessage }) {
             <span className="fw-inbox-context-card__label">
               {isService ? "Đang thảo luận dịch vụ" : "Đang thảo luận công việc"}
             </span>
-            <p className="fw-inbox-context-card__title">{msg.body}</p>
+            <p className="fw-inbox-context-card__title">{highlightText(msg.body, searchQuery)}</p>
           </div>
           <span className="fw-inbox-context-card__time">{formatChatTime(msg.createdAt)}</span>
         </div>
@@ -94,15 +124,37 @@ function InboxMessage({ msg }: { msg: ChatMessage }) {
     );
   }
 
+  const assetUrl = resolveChatAssetUrl(msg.attachmentUrl);
+
   return (
     <div className={`fw-inbox-msg ${msg.mine ? "fw-inbox-msg--mine" : "fw-inbox-msg--theirs"}`}>
       <div className={`fw-inbox-bubble ${msg.mine ? "fw-inbox-bubble--sent" : "fw-inbox-bubble--received"}`}>
-        <p className="fw-inbox-bubble__text">{msg.body}</p>
+        {msg.kind === "image" && assetUrl ? (
+          <a href={assetUrl} target="_blank" rel="noopener noreferrer" className="fw-inbox-bubble__image-link">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={assetUrl} alt={msg.attachmentName || "Ảnh"} className="fw-inbox-bubble__image" />
+          </a>
+        ) : null}
+        {msg.kind === "file" && assetUrl ? (
+          <a href={assetUrl} target="_blank" rel="noopener noreferrer" className="fw-inbox-bubble__file">
+            <FaFileAlt aria-hidden />
+            <span>{highlightText(msg.attachmentName || msg.body, searchQuery)}</span>
+          </a>
+        ) : null}
+        {(msg.kind === "text" || !msg.kind || (msg.body && msg.kind !== "file")) && msg.kind !== "image" ? (
+          <p className="fw-inbox-bubble__text">{highlightText(msg.body, searchQuery)}</p>
+        ) : null}
+        {msg.kind === "image" && msg.body && msg.body !== "Đã gửi ảnh" ? (
+          <p className="fw-inbox-bubble__text">{highlightText(msg.body, searchQuery)}</p>
+        ) : null}
         <div className="fw-inbox-bubble__meta">
           <span className="fw-inbox-bubble__time">{formatChatTime(msg.createdAt)}</span>
-          {msg.mine ? (
-            <span className="fw-inbox-bubble__status">
-              <span aria-hidden>✓</span> Đã gửi
+          {msg.mine && msg.kind !== "context" ? (
+            <span
+              className={`fw-inbox-bubble__status${msg.readByPeer ? " fw-inbox-bubble__status--read" : ""}`}
+            >
+              <span aria-hidden>{msg.readByPeer ? "✓✓" : "✓"}</span>
+              {msg.readByPeer ? "Đã xem" : "Đã gửi"}
             </span>
           ) : null}
         </div>
@@ -116,44 +168,191 @@ export default function InboxChatPanel({
   viewerRole,
   onBack,
   showBack = false,
+  onConversationDeleted,
+  onConversationUpdated,
+  onConversationRead,
 }: InboxChatPanelProps) {
+  const router = useRouter();
   const { user } = useStoredUser({ refreshFromApi: false });
   const [draft, setDraft] = useState("");
+  const [convState, setConvState] = useState(conversation);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [messageSearch, setMessageSearch] = useState("");
+  const [emojiOpen, setEmojiOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [actionBusy, setActionBusy] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
+  const emojiBtnRef = useRef<HTMLButtonElement>(null);
+  const menuBtnRef = useRef<HTMLButtonElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const topicTitle = conversation.contextTitle ?? conversation.jobTitle ?? null;
+  useEffect(() => {
+    setConvState(conversation);
+  }, [conversation]);
+
+  const topicTitle = convState.contextTitle ?? convState.jobTitle ?? null;
   const peerLabel = viewerRole === "client" ? "freelancer" : "client";
+  const isBlocked = Boolean(convState.blockedByMe || convState.blockedByPeer);
 
   const { messages, loading, sending, error, send } = useFreelancerChat({
-    conversationId: conversation.id,
+    conversationId: convState.id,
+    peerId: convState.peerId,
     ...(viewerRole === "freelancer"
-      ? { clientId: conversation.clientId }
-      : { freelancerId: conversation.freelancerId }),
+      ? { clientId: convState.clientId }
+      : { freelancerId: convState.freelancerId }),
     currentUserId: user?.id,
-    jobQuoteId: conversation.jobQuoteId,
-    serviceId: conversation.serviceId,
+    jobQuoteId: convState.jobQuoteId,
+    serviceId: convState.serviceId,
     contextTitle: topicTitle,
     enabled: Boolean(user?.id),
+    onMarkedRead: onConversationRead,
   });
 
-  const messageGroups = useMemo(() => groupMessagesByDate(messages), [messages]);
+  const filteredMessages = useMemo(() => {
+    const q = messageSearch.trim().toLowerCase();
+    if (!q) return messages;
+    return messages.filter((msg) => {
+      const haystack = [msg.body, msg.attachmentName].filter(Boolean).join(" ").toLowerCase();
+      return haystack.includes(q);
+    });
+  }, [messageSearch, messages]);
+
+  const messageGroups = useMemo(() => groupMessagesByDate(filteredMessages), [filteredMessages]);
 
   useEffect(() => {
     if (!listRef.current) return;
     listRef.current.scrollTop = listRef.current.scrollHeight;
-  }, [messages, conversation.id]);
+  }, [filteredMessages, convState.id, searchOpen]);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
+    if (isBlocked) return;
     const text = draft.trim();
     if (!text) return;
     const ok = await send(text);
     if (ok) setDraft("");
   }
 
+  async function handleUpload(file: File, preferImage: boolean) {
+    if (isBlocked || !convState.id) return;
+    setUploading(true);
+    try {
+      const attachment = await uploadChatAttachment(convState.id, file);
+      const ok = await send({
+        body: preferImage ? "" : attachment.name,
+        kind: attachment.kind,
+        attachmentUrl: attachment.url,
+        attachmentName: attachment.name,
+        attachmentMime: attachment.mime,
+      });
+      if (!ok) return;
+    } catch (err) {
+      const message =
+        err && typeof err === "object" && "message" in err
+          ? String((err as { message: string }).message)
+          : "Không thể gửi tệp đính kèm.";
+      alert(message);
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  async function handleDeleteConversation() {
+    if (!window.confirm("Xóa hội thoại này khỏi danh sách? Tin nhắn vẫn được lưu nếu đối phương gửi lại.")) {
+      return;
+    }
+    setActionBusy(true);
+    try {
+      await deleteChatConversation(convState.id);
+      onConversationDeleted?.(convState.id);
+    } catch (err) {
+      const message =
+        err && typeof err === "object" && "message" in err
+          ? String((err as { message: string }).message)
+          : "Không thể xóa hội thoại.";
+      alert(message);
+    } finally {
+      setActionBusy(false);
+    }
+  }
+
+  async function handleToggleBlock() {
+    const nextBlock = !convState.blockedByMe;
+    const confirmMsg = nextBlock
+      ? `Chặn tin nhắn từ ${convState.peerName}? Bạn sẽ không nhận tin nhắn mới từ người này.`
+      : `Bỏ chặn ${convState.peerName}?`;
+    if (!window.confirm(confirmMsg)) return;
+
+    setActionBusy(true);
+    try {
+      if (nextBlock) {
+        await blockChatConversation(convState.id);
+      } else {
+        await unblockChatConversation(convState.id);
+      }
+      const updated = {
+        ...convState,
+        blockedByMe: nextBlock,
+        blockedByPeer: nextBlock ? convState.blockedByPeer : false,
+      };
+      setConvState(updated);
+      onConversationUpdated?.(updated);
+    } catch (err) {
+      const message =
+        err && typeof err === "object" && "message" in err
+          ? String((err as { message: string }).message)
+          : "Không thể cập nhật trạng thái chặn.";
+      alert(message);
+    } finally {
+      setActionBusy(false);
+    }
+  }
+
+  const peerProfileHref =
+    viewerRole === "client"
+      ? `/hire/search/${convState.freelancerId}`
+      : null;
+
+  const menuItems = [
+    ...(peerProfileHref
+      ? [
+          {
+            id: "profile",
+            label: "Xem hồ sơ",
+            onClick: () => {
+              router.push(peerProfileHref);
+            },
+          },
+        ]
+      : []),
+    {
+      id: "search",
+      label: searchOpen ? "Đóng tìm kiếm" : "Tìm trong hội thoại",
+      onClick: () => setSearchOpen((prev) => !prev),
+    },
+    {
+      id: "block",
+      label: convState.blockedByMe ? "Bỏ chặn tin nhắn" : "Chặn tin nhắn",
+      danger: !convState.blockedByMe,
+      disabled: actionBusy,
+      onClick: () => void handleToggleBlock(),
+    },
+    {
+      id: "delete",
+      label: "Xóa hội thoại",
+      danger: true,
+      disabled: actionBusy,
+      onClick: () => void handleDeleteConversation(),
+    },
+  ];
+
   const contextSubtitle = topicTitle
-    ? `${conversation.contextType === "service" ? "Dịch vụ" : "Công việc"}: ${topicTitle}`
+    ? `${convState.contextType === "service" ? "Dịch vụ" : "Công việc"}: ${topicTitle}`
     : `Trao đổi trực tiếp với ${peerLabel}`;
+
+  const composerDisabled = loading || sending || uploading || isBlocked;
 
   return (
     <div className="fw-inbox-chat">
@@ -170,28 +369,88 @@ export default function InboxChatPanel({
             </button>
           ) : null}
           <ChatPeerAvatar
-            conversation={conversation}
+            conversation={convState}
             size={40}
             className="fw-inbox-chat__avatar"
             imgClassName="fw-inbox-chat__avatar-img"
             fallbackClassName="fw-inbox-chat__avatar-fallback"
           />
           <div className="fw-inbox-chat__head-text">
-            <h2 className="fw-inbox-chat__name">{conversation.peerName}</h2>
+            <h2 className="fw-inbox-chat__name">{convState.peerName}</h2>
             <p className="fw-inbox-chat__subtitle" title={contextSubtitle}>
               {contextSubtitle}
             </p>
           </div>
         </div>
         <div className="fw-inbox-chat__head-actions">
-          <button type="button" className="fw-inbox-chat__icon-btn" aria-label="Tìm trong hội thoại">
+          <button
+            type="button"
+            className={`fw-inbox-chat__icon-btn${searchOpen ? " fw-inbox-chat__icon-btn--active" : ""}`}
+            aria-label="Tìm trong hội thoại"
+            aria-pressed={searchOpen}
+            onClick={() => setSearchOpen((prev) => !prev)}
+          >
             <FaSearch />
           </button>
-          <button type="button" className="fw-inbox-chat__icon-btn" aria-label="Tùy chọn">
-            <FaEllipsisH />
-          </button>
+          <div className="fw-inbox-chat__menu-wrap">
+            <button
+              ref={menuBtnRef}
+              type="button"
+              className="fw-inbox-chat__icon-btn"
+              aria-label="Tùy chọn"
+              aria-expanded={menuOpen}
+              onClick={() => setMenuOpen((prev) => !prev)}
+            >
+              <FaEllipsisH />
+            </button>
+            <ChatActionMenu
+              open={menuOpen}
+              items={menuItems}
+              onClose={() => setMenuOpen(false)}
+              anchorRef={menuBtnRef}
+              align="right"
+            />
+          </div>
         </div>
       </header>
+
+      {searchOpen ? (
+        <div className="fw-inbox-chat__search-bar">
+          <FaSearch aria-hidden className="fw-inbox-chat__search-icon" />
+          <input
+            type="search"
+            className="fw-inbox-chat__search-input"
+            placeholder="Tìm tin nhắn trong hội thoại..."
+            value={messageSearch}
+            onChange={(e) => setMessageSearch(e.target.value)}
+            autoFocus
+          />
+          <button
+            type="button"
+            className="fw-inbox-chat__search-clear"
+            aria-label="Đóng tìm kiếm"
+            onClick={() => {
+              setSearchOpen(false);
+              setMessageSearch("");
+            }}
+          >
+            <FaTimes />
+          </button>
+        </div>
+      ) : null}
+
+      {isBlocked ? (
+        <p className="fw-inbox-chat__blocked-banner" role="status">
+          {convState.blockedByMe
+            ? `Bạn đã chặn tin nhắn từ ${convState.peerName}.`
+            : `${convState.peerName} đã chặn tin nhắn. Bạn không thể gửi tin nhắn mới.`}
+          {convState.blockedByMe ? (
+            <button type="button" className="fw-inbox-chat__blocked-action" onClick={() => void handleToggleBlock()}>
+              Bỏ chặn
+            </button>
+          ) : null}
+        </p>
+      ) : null}
 
       {error ? (
         <p className="fw-inbox-chat__error" role="alert">
@@ -202,8 +461,10 @@ export default function InboxChatPanel({
       <div ref={listRef} className="fw-inbox-chat__messages">
         {loading ? (
           <p className="fw-inbox-chat__loading">Đang tải tin nhắn...</p>
-        ) : messages.length === 0 ? (
-          <p className="fw-inbox-chat__empty">Chưa có tin nhắn. Hãy bắt đầu trò chuyện!</p>
+        ) : filteredMessages.length === 0 ? (
+          <p className="fw-inbox-chat__empty">
+            {messageSearch ? "Không tìm thấy tin nhắn phù hợp." : "Chưa có tin nhắn. Hãy bắt đầu trò chuyện!"}
+          </p>
         ) : (
           messageGroups.map((group) => (
             <div key={group.label} className="fw-inbox-chat__day-group">
@@ -211,7 +472,7 @@ export default function InboxChatPanel({
                 <span>{group.label}</span>
               </div>
               {group.items.map((msg) => (
-                <InboxMessage key={msg.id} msg={msg} />
+                <InboxMessage key={msg.id} msg={msg} searchQuery={messageSearch} />
               ))}
             </div>
           ))
@@ -220,36 +481,94 @@ export default function InboxChatPanel({
 
       <footer className="fw-inbox-chat__composer">
         <div className="fw-inbox-chat__toolbar">
-          <button type="button" className="fw-inbox-chat__tool" aria-label="Biểu cảm" disabled>
-            <FaRegSmile />
-          </button>
-          <button type="button" className="fw-inbox-chat__tool" aria-label="Gửi ảnh" disabled>
+          <div className="fw-inbox-chat__tool-wrap">
+            <button
+              ref={emojiBtnRef}
+              type="button"
+              className={`fw-inbox-chat__tool${emojiOpen ? " fw-inbox-chat__tool--active" : ""}`}
+              aria-label="Biểu cảm"
+              disabled={composerDisabled}
+              onClick={() => setEmojiOpen((prev) => !prev)}
+            >
+              <FaRegSmile />
+            </button>
+            <ChatEmojiPicker
+              open={emojiOpen}
+              onClose={() => setEmojiOpen(false)}
+              onPick={(emoji) => {
+                setDraft((prev) => `${prev}${emoji}`);
+                setEmojiOpen(false);
+              }}
+              anchorRef={emojiBtnRef}
+            />
+          </div>
+          <button
+            type="button"
+            className="fw-inbox-chat__tool"
+            aria-label="Gửi ảnh"
+            disabled={composerDisabled}
+            onClick={() => imageInputRef.current?.click()}
+          >
             <FaImage />
           </button>
-          <button type="button" className="fw-inbox-chat__tool" aria-label="Đính kèm" disabled>
+          <button
+            type="button"
+            className="fw-inbox-chat__tool"
+            aria-label="Đính kèm tệp"
+            disabled={composerDisabled}
+            onClick={() => fileInputRef.current?.click()}
+          >
             <FaPaperclip />
           </button>
+          <input
+            ref={imageInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            className="fw-inbox-chat__file-input"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              e.target.value = "";
+              if (file) void handleUpload(file, true);
+            }}
+          />
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.txt,image/*"
+            className="fw-inbox-chat__file-input"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              e.target.value = "";
+              if (file) void handleUpload(file, false);
+            }}
+          />
+          {uploading ? <span className="fw-inbox-chat__uploading">Đang tải lên...</span> : null}
         </div>
         <form className="fw-inbox-chat__input-row" onSubmit={(e) => void handleSubmit(e)}>
           <input
             type="text"
             className="fw-inbox-chat__input"
-            placeholder={`Nhập tin nhắn tới ${conversation.peerName}`}
+            placeholder={
+              isBlocked
+                ? "Không thể gửi tin nhắn"
+                : `Nhập tin nhắn tới ${convState.peerName}`
+            }
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
-            disabled={loading || sending}
+            disabled={composerDisabled}
             maxLength={4000}
           />
           <button
             type="submit"
             className="fw-inbox-chat__send-like"
-            disabled={loading || sending || !draft.trim()}
+            disabled={composerDisabled || !draft.trim()}
             aria-label="Gửi tin nhắn"
           >
             <FaThumbsUp />
           </button>
         </form>
       </footer>
+
     </div>
   );
 }

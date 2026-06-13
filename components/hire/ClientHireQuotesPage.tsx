@@ -19,14 +19,13 @@ import HireShell from "./HireShell";
 import { sortJobQuotes, type QuoteSort } from "@/lib/hire/quoteDisplay";
 import "./hire.css";
 
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 18;
 
 type QuoteFilter = "all" | JobQuoteStatus;
 
 const QUOTE_FILTER_OPTIONS: { value: QuoteFilter; label: string }[] = [
   { value: "all", label: "Tất cả báo giá" },
   { value: "pending", label: "Đang chờ" },
-  { value: "shortlisted", label: "Shortlist" },
   { value: "interviewing", label: "Phỏng vấn" },
   { value: "offered", label: "Đã gửi offer" },
   { value: "accepted", label: "Đã tuyển" },
@@ -34,6 +33,7 @@ const QUOTE_FILTER_OPTIONS: { value: QuoteFilter; label: string }[] = [
 ];
 
 const QUOTE_SORT_OPTIONS: { value: QuoteSort; label: string }[] = [
+  { value: "priority", label: "Ưu tiên xử lý" },
   { value: "newest", label: "Mới nhất" },
   { value: "price_asc", label: "Giá thấp → cao" },
   { value: "rating_desc", label: "Đánh giá cao nhất" },
@@ -50,7 +50,7 @@ export default function ClientHireQuotesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [quoteFilter, setQuoteFilter] = useState<QuoteFilter>("all");
   const [quoteFilterOpen, setQuoteFilterOpen] = useState(false);
-  const [quoteSort, setQuoteSort] = useState<QuoteSort>("newest");
+  const [quoteSort, setQuoteSort] = useState<QuoteSort>("priority");
   const [quoteSortOpen, setQuoteSortOpen] = useState(false);
   const [page, setPage] = useState(1);
   const [actionBusyId, setActionBusyId] = useState("");
@@ -176,7 +176,12 @@ export default function ClientHireQuotesPage() {
     setActionBusyId(quoteId);
     try {
       await patchJobQuote(quoteId, action);
-      await loadQuotes();
+      const rows = await listMyJobQuotes();
+      setQuotes(rows);
+      if (action === "interview") {
+        const row = rows.find((q) => q.id === quoteId);
+        if (row) setChatQuote(row);
+      }
     } catch (err) {
       const message =
         err && typeof err === "object" && "message" in err

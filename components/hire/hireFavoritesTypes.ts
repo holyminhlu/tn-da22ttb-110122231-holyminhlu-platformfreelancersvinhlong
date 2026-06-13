@@ -14,5 +14,6 @@ export type HireFavoriteEntry = {
   completedJobs?: number;
   lastJobTitle: string | null;
   lastWorkedAt: string | null;
+  featuredServiceId: string | null;
   sources: HireFavoriteSource[];
 };

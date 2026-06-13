@@ -5,9 +5,11 @@ import { FaHome, FaMapMarkerAlt } from "react-icons/fa";
 import AddressSearchPicker, { type AddressFormSlice } from "@/components/account/identity-verification/AddressSearchPicker";
 import { VINH_LONG_PROVINCE } from "@/lib/geo/vinhLongCommunes2025";
 
+import { REMOTE_WORK_LOCATION_LABEL } from "@/lib/hire/workLocation";
+
 export type WorkLocationMode = "onsite" | "remote";
 
-export const REMOTE_WORK_LOCATION_LABEL = "Làm tại nhà — làm sản phẩm tại nhà (remote)";
+export { REMOTE_WORK_LOCATION_LABEL };
 
 type JobWorkLocationFieldProps = {
   mode: WorkLocationMode;

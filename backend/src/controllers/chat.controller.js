@@ -1,7 +1,9 @@
+const path = require("path");
 const { pool } = require("../db/pool");
 const { verifyAccessToken } = require("../utils/authTokens");
 const { parseUuidParam } = require("../utils/validators");
 const { notifyChatMessage } = require("../utils/notificationService");
+const { uploadChatAttachment, imageMime } = require("../middleware/chatAttachmentUpload");
 
 async function assertConversationAccess(db, conversationId, userId) {
   const result = await db.query(
@@ -36,8 +38,74 @@ function mapMessageRow(row, viewerId) {
     body: row.body,
     kind,
     contextType: row.context_type || null,
+    attachmentUrl: row.attachment_url || null,
+    attachmentName: row.attachment_name || null,
+    attachmentMime: row.attachment_mime || null,
     createdAt: row.created_at,
     mine: String(row.sender_id) === String(viewerId),
+  };
+}
+
+async function isMessagingBlocked(db, userA, userB) {
+  const result = await db.query(
+    `SELECT 1
+     FROM public.chat_blocks
+     WHERE (blocker_id = $1 AND blocked_id = $2)
+        OR (blocker_id = $2 AND blocked_id = $1)
+     LIMIT 1`,
+    [userA, userB],
+  );
+  return result.rowCount > 0;
+}
+
+function getPeerIdFromConversation(conversation, viewerId) {
+  return String(conversation.client_id) === String(viewerId)
+    ? conversation.freelancer_id
+    : conversation.client_id;
+}
+
+async function getPeerLastReadAt(db, conversation, viewerId) {
+  const peerId = getPeerIdFromConversation(conversation, viewerId);
+  const result = await db.query(
+    `SELECT last_read_at
+     FROM public.chat_conversation_user_state
+     WHERE conversation_id = $1 AND user_id = $2
+     LIMIT 1`,
+    [conversation.id, peerId],
+  );
+  return result.rows[0]?.last_read_at || null;
+}
+
+async function markConversationRead(db, conversationId, userId) {
+  const upsert = await db.query(
+    `INSERT INTO public.chat_conversation_user_state (conversation_id, user_id, last_read_at, hidden_at)
+     VALUES ($1, $2, NOW(), NULL)
+     ON CONFLICT (conversation_id, user_id)
+     DO UPDATE SET
+       last_read_at = GREATEST(
+         COALESCE(public.chat_conversation_user_state.last_read_at, '-infinity'::timestamptz),
+         NOW()
+       ),
+       hidden_at = NULL
+     RETURNING last_read_at`,
+    [conversationId, userId],
+  );
+  return upsert.rows[0]?.last_read_at || new Date().toISOString();
+}
+
+async function getPeerBlockState(db, viewerId, peerId) {
+  const blockedByMe = await db.query(
+    `SELECT 1 FROM public.chat_blocks WHERE blocker_id = $1 AND blocked_id = $2 LIMIT 1`,
+    [viewerId, peerId],
+  );
+  const blockedByPeer = await db.query(
+    `SELECT 1 FROM public.chat_blocks WHERE blocker_id = $1 AND blocked_id = $2 LIMIT 1`,
+    [peerId, viewerId],
+  );
+  return {
+    blockedByMe: blockedByMe.rowCount > 0,
+    blockedByPeer: blockedByPeer.rowCount > 0,
+    isBlocked: blockedByMe.rowCount > 0 || blockedByPeer.rowCount > 0,
   };
 }
 
@@ -59,9 +127,12 @@ function mapConversationRow(row, viewerId) {
     peerName: isClient ? row.freelancer_name : row.client_name,
     peerAvatarUrl: isClient ? row.freelancer_avatar_url : row.client_avatar_url,
     peerCompletedJobs: isClient ? Number(row.freelancer_completed_jobs) || 0 : null,
+    blockedByMe: Boolean(row.blocked_by_me),
+    blockedByPeer: Boolean(row.blocked_by_peer),
     lastMessageBody: row.last_message_body || null,
     lastMessageAt: row.last_message_at || null,
     lastMessageSenderId: row.last_message_sender_id || null,
+    hasUnread: Boolean(row.has_unread),
     updatedAt: row.updated_at,
     createdAt: row.created_at,
   };
@@ -153,7 +224,25 @@ const CONVERSATION_DETAIL_SELECT = `
   lm.body AS last_message_body,
   lm.created_at AS last_message_at,
   lm.sender_id AS last_message_sender_id,
-  COALESCE(ct_fl.completed_jobs, 0)::int AS freelancer_completed_jobs
+  COALESCE(ct_fl.completed_jobs, 0)::int AS freelancer_completed_jobs,
+  EXISTS (
+    SELECT 1 FROM public.chat_blocks cb
+    WHERE cb.blocker_id = $1
+      AND cb.blocked_id = CASE WHEN c.client_id = $1 THEN c.freelancer_id ELSE c.client_id END
+  ) AS blocked_by_me,
+  EXISTS (
+    SELECT 1 FROM public.chat_blocks cb
+    WHERE cb.blocker_id = CASE WHEN c.client_id = $1 THEN c.freelancer_id ELSE c.client_id END
+      AND cb.blocked_id = $1
+  ) AS blocked_by_peer,
+  (
+    lm.sender_id IS NOT NULL
+    AND lm.sender_id <> $1
+    AND (
+      cus.last_read_at IS NULL
+      OR lm.created_at > cus.last_read_at
+    )
+  ) AS has_unread
 `;
 
 const CONVERSATION_DETAIL_JOINS = `
@@ -177,6 +266,8 @@ const CONVERSATION_DETAIL_JOINS = `
     WHERE status = 'completed' AND deleted_at IS NULL
     GROUP BY freelancer_id
   ) ct_fl ON ct_fl.freelancer_id = c.freelancer_id
+  LEFT JOIN public.chat_conversation_user_state cus
+    ON cus.conversation_id = c.id AND cus.user_id = $1
 `;
 
 async function listConversations(req, res) {
@@ -190,7 +281,8 @@ async function listConversations(req, res) {
       `SELECT ${CONVERSATION_DETAIL_SELECT}
        FROM public.chat_conversations c
        ${CONVERSATION_DETAIL_JOINS}
-       WHERE c.client_id = $1 OR c.freelancer_id = $1
+       WHERE (c.client_id = $1 OR c.freelancer_id = $1)
+         AND (cus.hidden_at IS NULL OR lm.created_at IS NULL OR lm.created_at > cus.hidden_at)
        ORDER BY COALESCE(lm.created_at, c.updated_at) DESC`,
       [userId],
     );
@@ -329,9 +421,9 @@ async function openConversation(req, res) {
       `SELECT ${CONVERSATION_DETAIL_SELECT}
        FROM public.chat_conversations c
        ${CONVERSATION_DETAIL_JOINS}
-       WHERE c.id = $1
+       WHERE c.id = $2
        LIMIT 1`,
-      [conversationId],
+      [userId, conversationId],
     );
 
     return res.json({
@@ -361,6 +453,7 @@ async function listMessages(req, res) {
   }
 
   const after = req.query.after ? String(req.query.after) : null;
+  const search = String(req.query.q || "").trim().toLowerCase();
   const limit = Math.min(Math.max(Number.parseInt(String(req.query.limit || ""), 10) || 80, 1), 200);
 
   const dbClient = await pool.connect();
@@ -376,19 +469,29 @@ async function listMessages(req, res) {
       params.push(after);
       afterSql = `AND m.created_at > $${params.length}::timestamptz`;
     }
+    let searchSql = "";
+    if (search) {
+      params.push(`%${search}%`);
+      searchSql = `AND (LOWER(m.body) LIKE $${params.length} OR LOWER(COALESCE(m.attachment_name, '')) LIKE $${params.length})`;
+    }
 
     const result = await dbClient.query(
-      `SELECT m.id, m.conversation_id, m.sender_id, m.body, m.kind, m.context_type, m.created_at
+      `SELECT m.id, m.conversation_id, m.sender_id, m.body, m.kind, m.context_type,
+              m.attachment_url, m.attachment_name, m.attachment_mime, m.created_at
        FROM public.chat_messages m
        WHERE m.conversation_id = $1
          ${afterSql}
+         ${searchSql}
        ORDER BY m.created_at ASC
        LIMIT $2`,
       params,
     );
 
+    const peerLastReadAt = await getPeerLastReadAt(dbClient, conversation, payload.sub);
+
     return res.json({
       messages: result.rows.map((row) => mapMessageRow(row, payload.sub)),
+      peerLastReadAt,
     });
   } catch (error) {
     console.error("listMessages failed:", error.message);
@@ -403,18 +506,73 @@ async function listMessages(req, res) {
   }
 }
 
+async function persistChatMessage(
+  db,
+  {
+    conversationId,
+    senderId,
+    body,
+    kind = "text",
+    attachmentUrl = null,
+    attachmentName = null,
+    attachmentMime = null,
+  },
+) {
+  const insert = await db.query(
+    `INSERT INTO public.chat_messages (
+       conversation_id, sender_id, body, kind,
+       attachment_url, attachment_name, attachment_mime
+     )
+     VALUES ($1, $2, $3, $4, $5, $6, $7)
+     RETURNING id, conversation_id, sender_id, body, kind, context_type,
+               attachment_url, attachment_name, attachment_mime, created_at`,
+    [conversationId, senderId, body, kind, attachmentUrl, attachmentName, attachmentMime],
+  );
+
+  await db.query(`UPDATE public.chat_conversations SET updated_at = NOW() WHERE id = $1`, [
+    conversationId,
+  ]);
+
+  await db.query(
+    `INSERT INTO public.chat_conversation_user_state (conversation_id, user_id, hidden_at)
+     VALUES ($1, $2, NULL)
+     ON CONFLICT (conversation_id, user_id)
+     DO UPDATE SET hidden_at = NULL`,
+    [conversationId, senderId],
+  );
+
+  return insert.rows[0];
+}
+
 async function sendMessage(req, res) {
   const payload = verifyAccessToken(req, res);
   if (!payload) return;
 
   const conversationId = parseUuidParam(req.params.conversationId);
   const body = String(req.body?.body || "").trim();
+  const kindParam = String(req.body?.kind || "text").toLowerCase();
+  const attachmentUrl = String(req.body?.attachmentUrl || "").trim() || null;
+  const attachmentName = String(req.body?.attachmentName || "").trim() || null;
+  const attachmentMime = String(req.body?.attachmentMime || "").trim() || null;
+
   if (!conversationId) {
     return res.status(400).json({ message: "Mã cuộc trò chuyện không hợp lệ." });
   }
-  if (!body || body.length > 4000) {
+
+  let kind = "text";
+  if (kindParam === "image" && attachmentUrl) kind = "image";
+  else if (kindParam === "file" && attachmentUrl) kind = "file";
+
+  if (kind === "text" && (!body || body.length > 4000)) {
     return res.status(400).json({ message: "Nội dung tin nhắn không hợp lệ (tối đa 4000 ký tự)." });
   }
+  if ((kind === "image" || kind === "file") && !attachmentUrl) {
+    return res.status(400).json({ message: "Thiếu tệp đính kèm." });
+  }
+
+  const displayBody =
+    body ||
+    (kind === "image" ? "Đã gửi ảnh" : kind === "file" ? attachmentName || "Đã gửi tệp" : "");
 
   const dbClient = await pool.connect();
   try {
@@ -423,21 +581,28 @@ async function sendMessage(req, res) {
       return res.status(404).json({ message: "Cuộc trò chuyện không tồn tại hoặc bạn không có quyền." });
     }
 
-    const insert = await dbClient.query(
-      `INSERT INTO public.chat_messages (conversation_id, sender_id, body, kind)
-       VALUES ($1, $2, $3, 'text')
-       RETURNING id, conversation_id, sender_id, body, kind, context_type, created_at`,
-      [conversationId, payload.sub, body],
-    );
+    const peerId =
+      String(conversation.client_id) === String(payload.sub)
+        ? conversation.freelancer_id
+        : conversation.client_id;
 
-    await dbClient.query(
-      `UPDATE public.chat_conversations SET updated_at = NOW() WHERE id = $1`,
-      [conversationId],
-    );
+    if (await isMessagingBlocked(dbClient, payload.sub, peerId)) {
+      return res.status(403).json({ message: "Không thể gửi tin nhắn. Cuộc trò chuyện đã bị chặn." });
+    }
 
-    const message = mapMessageRow(insert.rows[0], payload.sub);
+    const row = await persistChatMessage(dbClient, {
+      conversationId,
+      senderId: payload.sub,
+      body: displayBody,
+      kind,
+      attachmentUrl,
+      attachmentName,
+      attachmentMime,
+    });
 
-    notifyChatMessage(dbClient, conversation, payload.sub, body).catch((err) =>
+    const message = mapMessageRow(row, payload.sub);
+
+    notifyChatMessage(dbClient, conversation, payload.sub, displayBody).catch((err) =>
       console.error("notifyChatMessage failed:", err.message),
     );
 
@@ -455,10 +620,221 @@ async function sendMessage(req, res) {
   }
 }
 
+async function markConversationReadHandler(req, res) {
+  const payload = verifyAccessToken(req, res);
+  if (!payload) return;
+
+  const conversationId = parseUuidParam(req.params.conversationId);
+  if (!conversationId) {
+    return res.status(400).json({ message: "Mã cuộc trò chuyện không hợp lệ." });
+  }
+
+  const dbClient = await pool.connect();
+  try {
+    const conversation = await assertConversationAccess(dbClient, conversationId, payload.sub);
+    if (!conversation) {
+      return res.status(404).json({ message: "Cuộc trò chuyện không tồn tại hoặc bạn không có quyền." });
+    }
+
+    const readAt = await markConversationRead(dbClient, conversationId, payload.sub);
+    return res.json({ ok: true, readAt });
+  } catch (error) {
+    console.error("markConversationRead failed:", error.message);
+    if (error.code === "42P01") {
+      return res.status(503).json({
+        message: "Thiếu bảng chat. Chạy backend/sql/chat_features.sql trên PostgreSQL.",
+      });
+    }
+    return res.status(500).json({ message: "Không thể cập nhật trạng thái đã xem." });
+  } finally {
+    dbClient.release();
+  }
+}
+
+async function hideConversation(req, res) {
+  const payload = verifyAccessToken(req, res);
+  if (!payload) return;
+
+  const conversationId = parseUuidParam(req.params.conversationId);
+  if (!conversationId) {
+    return res.status(400).json({ message: "Mã cuộc trò chuyện không hợp lệ." });
+  }
+
+  const dbClient = await pool.connect();
+  try {
+    const conversation = await assertConversationAccess(dbClient, conversationId, payload.sub);
+    if (!conversation) {
+      return res.status(404).json({ message: "Cuộc trò chuyện không tồn tại hoặc bạn không có quyền." });
+    }
+
+    await dbClient.query(
+      `INSERT INTO public.chat_conversation_user_state (conversation_id, user_id, hidden_at)
+       VALUES ($1, $2, NOW())
+       ON CONFLICT (conversation_id, user_id)
+       DO UPDATE SET hidden_at = NOW()`,
+      [conversationId, payload.sub],
+    );
+
+    return res.json({ ok: true });
+  } catch (error) {
+    console.error("hideConversation failed:", error.message);
+    if (error.code === "42P01") {
+      return res.status(503).json({
+        message: "Thiếu bảng chat. Chạy backend/sql/chat_features.sql trên PostgreSQL.",
+      });
+    }
+    return res.status(500).json({ message: "Không thể xóa hội thoại." });
+  } finally {
+    dbClient.release();
+  }
+}
+
+async function blockPeer(req, res) {
+  const payload = verifyAccessToken(req, res);
+  if (!payload) return;
+
+  const conversationId = parseUuidParam(req.params.conversationId);
+  if (!conversationId) {
+    return res.status(400).json({ message: "Mã cuộc trò chuyện không hợp lệ." });
+  }
+
+  const dbClient = await pool.connect();
+  try {
+    const conversation = await assertConversationAccess(dbClient, conversationId, payload.sub);
+    if (!conversation) {
+      return res.status(404).json({ message: "Cuộc trò chuyện không tồn tại hoặc bạn không có quyền." });
+    }
+
+    const peerId =
+      String(conversation.client_id) === String(payload.sub)
+        ? conversation.freelancer_id
+        : conversation.client_id;
+
+    await dbClient.query(
+      `INSERT INTO public.chat_blocks (blocker_id, blocked_id)
+       VALUES ($1, $2)
+       ON CONFLICT (blocker_id, blocked_id) DO NOTHING`,
+      [payload.sub, peerId],
+    );
+
+    return res.json({ ok: true, blocked: true });
+  } catch (error) {
+    console.error("blockPeer failed:", error.message);
+    if (error.code === "42P01") {
+      return res.status(503).json({
+        message: "Thiếu bảng chat. Chạy backend/sql/chat_features.sql trên PostgreSQL.",
+      });
+    }
+    return res.status(500).json({ message: "Không thể chặn tin nhắn." });
+  } finally {
+    dbClient.release();
+  }
+}
+
+async function unblockPeer(req, res) {
+  const payload = verifyAccessToken(req, res);
+  if (!payload) return;
+
+  const conversationId = parseUuidParam(req.params.conversationId);
+  if (!conversationId) {
+    return res.status(400).json({ message: "Mã cuộc trò chuyện không hợp lệ." });
+  }
+
+  const dbClient = await pool.connect();
+  try {
+    const conversation = await assertConversationAccess(dbClient, conversationId, payload.sub);
+    if (!conversation) {
+      return res.status(404).json({ message: "Cuộc trò chuyện không tồn tại hoặc bạn không có quyền." });
+    }
+
+    const peerId =
+      String(conversation.client_id) === String(payload.sub)
+        ? conversation.freelancer_id
+        : conversation.client_id;
+
+    await dbClient.query(
+      `DELETE FROM public.chat_blocks WHERE blocker_id = $1 AND blocked_id = $2`,
+      [payload.sub, peerId],
+    );
+
+    return res.json({ ok: true, blocked: false });
+  } catch (error) {
+    console.error("unblockPeer failed:", error.message);
+    if (error.code === "42P01") {
+      return res.status(503).json({
+        message: "Thiếu bảng chat. Chạy backend/sql/chat_features.sql trên PostgreSQL.",
+      });
+    }
+    return res.status(500).json({ message: "Không thể bỏ chặn." });
+  } finally {
+    dbClient.release();
+  }
+}
+
+function uploadAttachment(req, res) {
+  const payload = verifyAccessToken(req, res);
+  if (!payload) return;
+
+  const conversationId = parseUuidParam(req.params.conversationId);
+  if (!conversationId) {
+    return res.status(400).json({ message: "Mã cuộc trò chuyện không hợp lệ." });
+  }
+
+  const handler = uploadChatAttachment.single("file");
+  handler(req, res, async (uploadErr) => {
+    if (uploadErr) {
+      return res.status(400).json({ message: uploadErr.message || "Không thể tải tệp lên." });
+    }
+
+    const file = req.file;
+    if (!file) {
+      return res.status(400).json({ message: "Thiếu tệp đính kèm." });
+    }
+
+    const dbClient = await pool.connect();
+    try {
+      const conversation = await assertConversationAccess(dbClient, conversationId, payload.sub);
+      if (!conversation) {
+        return res.status(404).json({ message: "Cuộc trò chuyện không tồn tại hoặc bạn không có quyền." });
+      }
+
+      const mime = String(file.mimetype || "").toLowerCase();
+      const kind = imageMime.has(mime) || mime.startsWith("image/") ? "image" : "file";
+      const url = `/uploads/chat/${file.filename}`;
+
+      return res.status(201).json({
+        attachment: {
+          url,
+          name: file.originalname || file.filename,
+          mime,
+          kind,
+        },
+      });
+    } catch (error) {
+      console.error("uploadAttachment failed:", error.message);
+      return res.status(500).json({ message: "Không thể tải tệp lên." });
+    } finally {
+      dbClient.release();
+    }
+  });
+}
+
 module.exports = {
   listConversations,
   openConversation,
   listMessages,
   sendMessage,
+  markConversationReadHandler,
+  hideConversation,
+  blockPeer,
+  unblockPeer,
+  uploadAttachment,
   assertConversationAccess,
+  persistChatMessage,
+  markConversationRead,
+  getPeerLastReadAt,
+  getPeerIdFromConversation,
+  isMessagingBlocked,
+  mapMessageRow,
+  getPeerBlockState,
 };

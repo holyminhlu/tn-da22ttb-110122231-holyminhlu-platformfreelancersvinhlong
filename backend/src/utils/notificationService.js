@@ -270,16 +270,6 @@ async function notifyQuoteAction(db, { action, quote, jobTitle, actorId }) {
       entityType: "job_quote",
       entityId: quote.id,
     },
-    shortlist: {
-      recipientId: quote.freelancer_id,
-      category: "quote",
-      action: "quote_shortlisted",
-      title: "Bạn vào shortlist",
-      body: `Hồ sơ của bạn cho «${title}» đã được đưa vào shortlist.`,
-      href: "/findwork/quotes",
-      entityType: "job_quote",
-      entityId: quote.id,
-    },
     interview: {
       recipientId: quote.freelancer_id,
       category: "quote",

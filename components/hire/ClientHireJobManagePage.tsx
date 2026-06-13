@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { FaArrowLeft, FaCheckCircle, FaEnvelope, FaPhone, FaVideo } from "react-icons/fa";
+import { FaArrowLeft, FaBriefcase, FaCheckCircle, FaCommentDots } from "react-icons/fa";
+import FreelancerChatWidget from "@/components/chat/FreelancerChatWidget";
+import FreelancerAvatarFrame from "@/components/freelancer/FreelancerAvatarFrame";
 import { listMyContracts } from "@/lib/api/contracts";
 import {
   listMyJobQuotes,
@@ -12,12 +14,26 @@ import {
   type PatchJobQuoteAction,
 } from "@/lib/api/jobQuotes";
 import { getJob, type JobListing } from "@/lib/api/jobs";
+import { getUserInitials, resolveAvatarSrc } from "@/lib/authSession";
 import { formatDate, formatVnd } from "@/lib/format";
-import { formatQuoteAmount, quoteStatusLabel } from "@/lib/hire/quoteDisplay";
+import { jobStatusLabel, jobStatusTone } from "@/lib/jobsDisplay";
+import {
+  formatQuoteAmount,
+  quoteClientActions,
+  quoteRatingPercent,
+  quoteStatusBadgeClass,
+  quoteStatusLabel,
+} from "@/lib/hire/quoteDisplay";
 import HireShell from "./HireShell";
 import "./hire.css";
 
 type ManageTab = "proposals" | "contract" | "job";
+
+const MANAGE_TABS: { value: ManageTab; label: string }[] = [
+  { value: "proposals", label: "Báo giá" },
+  { value: "contract", label: "Hợp đồng" },
+  { value: "job", label: "Mô tả công việc" },
+];
 
 function recommendationScore(quote: JobQuoteRow): number {
   const rating = quote.rating_avg ?? 0;
@@ -39,6 +55,7 @@ export default function ClientHireJobManagePage() {
   const [tab, setTab] = useState<ManageTab>("proposals");
   const [busyQuoteId, setBusyQuoteId] = useState("");
   const [actionError, setActionError] = useState("");
+  const [chatQuote, setChatQuote] = useState<JobQuoteRow | null>(null);
 
   const load = useCallback(async () => {
     if (!jobId) {
@@ -79,9 +96,8 @@ export default function ClientHireJobManagePage() {
     () => [...quotes].sort((a, b) => recommendationScore(b) - recommendationScore(a)),
     [quotes],
   );
-  const shortlist = sortedQuotes
-    .filter((q) => ["shortlisted", "interviewing", "offered", "pending"].includes(q.status))
-    .slice(0, 3);
+
+  const pendingCount = quotes.filter((q) => String(q.status).toLowerCase() === "pending").length;
 
   async function handleQuoteAction(quoteId: string, action: PatchJobQuoteAction) {
     setActionError("");
@@ -91,6 +107,10 @@ export default function ClientHireJobManagePage() {
       if (action === "accept" && result.contract?.id) {
         setContractId(result.contract.id);
         setTab("contract");
+      }
+      if (action === "interview") {
+        const row = quotes.find((q) => q.id === quoteId);
+        if (row) setChatQuote(row);
       }
       await load();
     } catch (err) {
@@ -106,49 +126,79 @@ export default function ClientHireJobManagePage() {
 
   return (
     <HireShell>
-      <div className="hire-page hire-manage">
-        <Link href="/hire/joblist" className="hire-favorites__empty-link hire-manage__back">
+      <div className="hire-page hire-manage hire-manage--full-width">
+        <Link href="/hire/joblist" className="hire-manage__back">
           <FaArrowLeft aria-hidden />
           Quay lại danh sách công việc
         </Link>
 
         {loading ? (
-          <p className="hire-page__state">Đang tải quản lý dự án...</p>
+          <p className="hire-page__state">Đang tải quản lý tuyển dụng...</p>
         ) : error ? (
           <p className="hire-page__state hire-page__state--error" role="alert">
             {error}
           </p>
         ) : job ? (
           <>
-            <header className="hire-manage__head">
-              <h1 className="hire-page__title">Quản lý tuyển dụng · {job.title}</h1>
-              <p className="hire-page__lead">
-                Theo dõi toàn bộ pipeline: nhận hồ sơ, phỏng vấn, gửi offer, hợp đồng và triển khai.
-              </p>
+            <header className="hire-page__head hire-manage__head">
+              <div className="hire-manage__head-text">
+                <div className="hire-manage__title-row">
+                  <h1 className="hire-page__title">{job.title}</h1>
+                  <span className={`hire-joblist__status hire-joblist__status--${jobStatusTone(job.status)}`}>
+                    {jobStatusLabel(job.status)}
+                  </span>
+                </div>
+                <p className="hire-page__lead">
+                  Quản lý báo giá, phỏng vấn, gửi offer và theo dõi hợp đồng cho công việc này.
+                </p>
+                <dl className="hire-manage__head-meta">
+                  <div>
+                    <dt>Ngân sách</dt>
+                    <dd>
+                      {job.budget != null ? formatVnd(job.budget) : "Thỏa thuận"}
+                      {job.budget_type === "hourly" ? "/giờ" : ""}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Báo giá</dt>
+                    <dd>
+                      {quotes.length} hồ sơ
+                      {pendingCount > 0 ? ` · ${pendingCount} chờ xử lý` : ""}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Đăng ngày</dt>
+                    <dd>{formatDate(job.created_at)}</dd>
+                  </div>
+                </dl>
+              </div>
+              <div className="hire-manage__head-actions">
+                <Link href={`/work/detail/${job.id}`} className="hire-page__post-btn hire-page__post-btn--ghost">
+                  Xem tin công khai
+                </Link>
+                <Link href="/hire/quotes" className="hire-page__post-btn">
+                  Tất cả báo giá
+                </Link>
+              </div>
             </header>
 
-            <nav className="hire-manage__tabs" aria-label="Điều hướng quản lý dự án">
-              <button
-                type="button"
-                className={`hire-manage__tab${tab === "proposals" ? " is-active" : ""}`}
-                onClick={() => setTab("proposals")}
-              >
-                View Proposals ({quotes.length})
-              </button>
-              <button
-                type="button"
-                className={`hire-manage__tab${tab === "contract" ? " is-active" : ""}`}
-                onClick={() => setTab("contract")}
-              >
-                Active Contract
-              </button>
-              <button
-                type="button"
-                className={`hire-manage__tab${tab === "job" ? " is-active" : ""}`}
-                onClick={() => setTab("job")}
-              >
-                Job Description
-              </button>
+            <nav className="hire-manage__tabs" aria-label="Điều hướng quản lý tuyển dụng">
+              {MANAGE_TABS.map((item) => (
+                <button
+                  key={item.value}
+                  type="button"
+                  className={`hire-manage__tab${tab === item.value ? " is-active" : ""}`}
+                  onClick={() => setTab(item.value)}
+                >
+                  {item.label}
+                  {item.value === "proposals" ? (
+                    <span className="hire-manage__tab-count">{quotes.length}</span>
+                  ) : null}
+                  {item.value === "contract" && contractId ? (
+                    <span className="hire-manage__tab-dot" aria-label="Đã có hợp đồng" />
+                  ) : null}
+                </button>
+              ))}
             </nav>
 
             {actionError ? (
@@ -159,199 +209,240 @@ export default function ClientHireJobManagePage() {
 
             {tab === "proposals" ? (
               <section className="hire-manage__panel">
-                <h2 className="hire-manage__panel-title">Screening & Interview</h2>
-                <p className="hire-manage__panel-note">
-                  Shortlist tự động dựa trên rating, số job hoàn thành và lịch sử review.
-                </p>
-
-                {shortlist.length > 0 ? (
-                  <div className="hire-manage__shortlist">
-                    <span>Shortlist đề xuất:</span>
-                    <strong>{shortlist.map((q) => q.freelancer_name || "Freelancer").join(" · ")}</strong>
-                  </div>
-                ) : null}
+                <div className="hire-manage__panel-intro">
+                  <h2 className="hire-manage__panel-title">Báo giá từ freelancer</h2>
+                  <p className="hire-manage__panel-note">
+                    Xem hồ sơ, mời phỏng vấn, gửi offer và chốt tuyển để tạo hợp đồng.
+                  </p>
+                </div>
 
                 {quotes.length === 0 ? (
-                  <p className="hire-page__state">Chưa có freelancer nộp hồ sơ cho công việc này.</p>
+                  <div className="hire-manage__empty">
+                    <p>Chưa có freelancer gửi báo giá cho công việc này.</p>
+                    <Link href="/hire/search" className="hire-manage__empty-link">
+                      Mời freelancer từ danh sách
+                    </Link>
+                  </div>
                 ) : (
-                  <div className="hire-manage__quote-list">
+                  <ul className="hire-manage__quote-grid">
                     {sortedQuotes.map((quote) => {
                       const freelancerName = quote.freelancer_name?.trim() || "Freelancer";
-                      const interviewSubject = encodeURIComponent(
-                        `[Interview] ${job.title} - ${freelancerName}`,
-                      );
-                      const interviewBody = encodeURIComponent(
-                        `Chào ${freelancerName},\n\nMình mời bạn phỏng vấn cho job: ${job.title}.\nBạn có thể chọn 1 khung giờ phù hợp nhé.`,
-                      );
+                      const avatarSrc = resolveAvatarSrc(quote.freelancer_avatar_url);
                       const isBusy = busyQuoteId === quote.id;
-                      const canShortlist = ["pending", "interviewing", "offered"].includes(quote.status);
-                      const canInterview = ["pending", "shortlisted", "offered"].includes(quote.status);
-                      const canOffer = ["pending", "shortlisted", "interviewing"].includes(quote.status);
-                      const canHire = quote.status === "offered";
-                      const canDecline = ["pending", "shortlisted", "interviewing", "offered"].includes(
+                      const { canInterview, canOffer, canHire, canDecline } = quoteClientActions(
                         quote.status,
                       );
+                      const ratingPct = quoteRatingPercent(quote);
+                      const detailHref = `/hire/quotes/${quote.id}`;
+
                       return (
-                        <article key={quote.id} className="hire-manage__quote-item">
-                          <div className="hire-manage__quote-main">
-                            <h3>{freelancerName}</h3>
-                            <p>
-                              {formatQuoteAmount(quote)} · {quote.pricing_type === "hourly" ? "Theo giờ" : "Trọn gói"}{" "}
-                              · {quoteStatusLabel(quote.status)}
+                        <li key={quote.id}>
+                          <article className="hire-manage__quote-card">
+                            <div className="hire-manage__quote-card-top">
+                              <span className={`hire-favorites__badge ${quoteStatusBadgeClass(quote.status)}`}>
+                                {quoteStatusLabel(quote.status)}
+                              </span>
+                              <FreelancerAvatarFrame
+                                completedJobs={quote.completed_jobs}
+                                size={48}
+                                src={avatarSrc}
+                                alt={freelancerName}
+                                fallback={getUserInitials(freelancerName)}
+                                imgClassName="hire-favorites__avatar-img"
+                                className="hire-manage__quote-avatar"
+                              />
+                            </div>
+
+                            <h3 className="hire-manage__quote-name">
+                              <Link href={detailHref}>{freelancerName}</Link>
+                            </h3>
+                            <p className="hire-manage__quote-title">
+                              {quote.freelancer_title?.trim() || "Freelancer"}
                             </p>
-                            <p className="hire-manage__quote-meta">
-                              Rating: {quote.rating_avg ? quote.rating_avg.toFixed(1) : "N/A"} · Reviews:{" "}
-                              {quote.total_reviews} · Completed: {quote.completed_jobs}
+                            <p className="hire-manage__quote-price">
+                              {formatQuoteAmount(quote)}
+                              <span>
+                                {" · "}
+                                {quote.pricing_type === "hourly" ? "Theo giờ" : "Trọn gói"}
+                              </span>
                             </p>
+                            {ratingPct > 0 ? (
+                              <p className="hire-manage__quote-rating">
+                                {quote.rating_avg != null && quote.rating_avg > 0
+                                  ? `${Number(quote.rating_avg).toFixed(1)}/5`
+                                  : `${ratingPct}%`}
+                                {quote.total_reviews > 0 ? ` · ${quote.total_reviews} đánh giá` : ""}
+                                {quote.completed_jobs > 0 ? ` · ${quote.completed_jobs} việc` : ""}
+                              </p>
+                            ) : null}
                             <p className="hire-manage__quote-message">
-                              {quote.message?.trim() || "Freelancer chưa để lại thư đề xuất."}
+                              {quote.message?.trim() || "Freelancer chưa gửi thư đề xuất."}
                             </p>
-                          </div>
-                          <div className="hire-manage__quote-actions">
-                            <Link href={`/hire/search/${quote.freelancer_id}`} className="hire-joblist__link-btn">
-                              Portfolio
-                            </Link>
-                            {quote.freelancer_email ? (
-                              <a
-                                href={`mailto:${quote.freelancer_email}?subject=${interviewSubject}&body=${interviewBody}`}
-                                className="hire-joblist__link-btn"
-                              >
-                                <FaEnvelope aria-hidden />
-                                Chat
-                              </a>
-                            ) : null}
-                            <a href={`tel:+84`} className="hire-joblist__link-btn">
-                              <FaPhone aria-hidden />
-                              Call
-                            </a>
-                            <a
-                              href={`mailto:${quote.freelancer_email || ""}?subject=${interviewSubject}&body=${interviewBody}`}
-                              className="hire-joblist__link-btn"
+
+                            <div className="hire-manage__quote-actions">
+                              <Link href={detailHref} className="hire-manage__quote-btn">
+                                Xem chi tiết
+                              </Link>
+                              {canInterview ? (
+                                <button
+                                  type="button"
+                                  className="hire-manage__quote-btn"
+                                  disabled={isBusy}
+                                  onClick={() => void handleQuoteAction(quote.id, "interview")}
+                                >
+                                  {isBusy ? "Đang xử lý..." : "Phỏng vấn"}
+                                </button>
+                              ) : canOffer ? (
+                                <button
+                                  type="button"
+                                  className="hire-manage__quote-btn"
+                                  disabled={isBusy}
+                                  onClick={() => void handleQuoteAction(quote.id, "offer")}
+                                >
+                                  {isBusy ? "Đang xử lý..." : "Gửi Offer"}
+                                </button>
+                              ) : canHire ? (
+                                <button
+                                  type="button"
+                                  className="hire-manage__quote-btn hire-manage__quote-btn--primary"
+                                  disabled={isBusy}
+                                  onClick={() => void handleQuoteAction(quote.id, "accept")}
+                                >
+                                  {isBusy ? "Đang xử lý..." : "Chốt tuyển"}
+                                </button>
+                              ) : (
+                                <span className="hire-manage__quote-btn hire-manage__quote-btn--placeholder" aria-hidden>
+                                  —
+                                </span>
+                              )}
+                              {canDecline ? (
+                                <button
+                                  type="button"
+                                  className="hire-manage__quote-btn hire-manage__quote-btn--decline"
+                                  disabled={isBusy}
+                                  onClick={() => void handleQuoteAction(quote.id, "decline")}
+                                >
+                                  Từ chối
+                                </button>
+                              ) : (
+                                <span className="hire-manage__quote-btn hire-manage__quote-btn--placeholder" aria-hidden>
+                                  —
+                                </span>
+                              )}
+                            </div>
+
+                            <button
+                              type="button"
+                              className="hire-manage__quote-chat"
+                              onClick={() => setChatQuote(quote)}
                             >
-                              <FaVideo aria-hidden />
-                              Video Invite
-                            </a>
-                            {canShortlist ? (
-                              <button
-                                type="button"
-                                className="hire-joblist__link-btn"
-                                disabled={isBusy}
-                                onClick={() => void handleQuoteAction(quote.id, "shortlist")}
-                              >
-                                Shortlist
-                              </button>
-                            ) : null}
-                            {canInterview ? (
-                              <button
-                                type="button"
-                                className="hire-joblist__link-btn"
-                                disabled={isBusy}
-                                onClick={() => void handleQuoteAction(quote.id, "interview")}
-                              >
-                                Phỏng vấn
-                              </button>
-                            ) : null}
-                            {canOffer ? (
-                              <button
-                                type="button"
-                                className="hire-joblist__link-btn"
-                                disabled={isBusy}
-                                onClick={() => void handleQuoteAction(quote.id, "offer")}
-                              >
-                                Gửi Offer
-                              </button>
-                            ) : null}
-                            {canDecline ? (
-                              <button
-                                type="button"
-                                className="hire-joblist__link-btn"
-                                disabled={isBusy}
-                                onClick={() => void handleQuoteAction(quote.id, "decline")}
-                              >
-                                Từ chối
-                              </button>
-                            ) : null}
-                            {canHire ? (
-                              <button
-                                type="button"
-                                className="hire-joblist__link-btn hire-manage__hire-btn"
-                                disabled={isBusy}
-                                onClick={() => void handleQuoteAction(quote.id, "accept")}
-                              >
-                                {isBusy ? "Đang tạo hợp đồng..." : "Chốt tuyển (Hire)"}
-                              </button>
-                            ) : null}
-                          </div>
-                        </article>
+                              <FaCommentDots aria-hidden />
+                              Nhắn tin
+                            </button>
+                          </article>
+                        </li>
                       );
                     })}
-                  </div>
+                  </ul>
                 )}
               </section>
             ) : null}
 
             {tab === "contract" ? (
               <section className="hire-manage__panel">
-                <h2 className="hire-manage__panel-title">Offer & Escrow / Execution</h2>
+                <h2 className="hire-manage__panel-title">Hợp đồng & triển khai</h2>
                 {contractId ? (
                   <>
                     <p className="hire-manage__panel-note">
-                      Offer đã được chấp nhận và hợp đồng đã tạo. Vào workflow để quản lý escrow,
-                      milestones, tiến độ và nghiệm thu.
+                      Đã chốt tuyển freelancer. Vào workspace để theo dõi tiến độ, ký quỹ và nghiệm thu.
                     </p>
                     <div className="hire-manage__contract-cta">
                       <FaCheckCircle aria-hidden />
-                      <span>Contract ID: {contractId.slice(0, 8).toUpperCase()}</span>
+                      <div>
+                        <p className="hire-manage__contract-label">Mã hợp đồng</p>
+                        <p className="hire-manage__contract-id">{contractId.slice(0, 8).toUpperCase()}</p>
+                      </div>
                       <button
                         type="button"
-                        className="hire-joblist__link-btn hire-manage__hire-btn"
+                        className="hire-manage__hire-btn"
                         onClick={() => router.push(`/hire/orders/${contractId}`)}
                       >
-                        Mở Active Contract
+                        Mở workspace
                       </button>
                     </div>
                   </>
                 ) : (
-                  <p className="hire-page__state">
-                    Chưa có hợp đồng cho job này. Hãy chọn một proposal ở tab View Proposals để gửi offer.
-                  </p>
+                  <div className="hire-manage__empty">
+                    <p>Chưa có hợp đồng. Hãy chọn báo giá phù hợp, gửi offer và chốt tuyển freelancer.</p>
+                    <button
+                      type="button"
+                      className="hire-manage__empty-link"
+                      onClick={() => setTab("proposals")}
+                    >
+                      Xem báo giá
+                    </button>
+                  </div>
                 )}
               </section>
             ) : null}
 
             {tab === "job" ? (
               <section className="hire-manage__panel">
-                <h2 className="hire-manage__panel-title">Job Description</h2>
-                <div className="hire-manage__job-block">
-                  <p>
-                    <strong>Ngân sách:</strong>{" "}
-                    {job.budget != null ? formatVnd(job.budget) : "Thỏa thuận"}
-                    {job.budget_type === "hourly" ? "/giờ" : ""}
-                    {job.budget_max != null ? ` - ${formatVnd(job.budget_max)}` : ""}
-                  </p>
-                  <p>
-                    <strong>Hạn hoàn thành:</strong>{" "}
-                    {job.due_at ? formatDate(job.due_at) : "Không giới hạn"}
-                  </p>
-                  <p>
-                    <strong>Trạng thái:</strong> {job.status}
-                  </p>
+                <h2 className="hire-manage__panel-title">Mô tả công việc</h2>
+                <dl className="hire-manage__job-stats">
+                  <div>
+                    <dt>Ngân sách</dt>
+                    <dd>
+                      {job.budget != null ? formatVnd(job.budget) : "Thỏa thuận"}
+                      {job.budget_type === "hourly" ? "/giờ" : ""}
+                      {job.budget_max != null ? ` – ${formatVnd(job.budget_max)}` : ""}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Hạn hoàn thành</dt>
+                    <dd>{job.due_at ? formatDate(job.due_at) : "Không giới hạn"}</dd>
+                  </div>
+                  <div>
+                    <dt>Trạng thái</dt>
+                    <dd>{jobStatusLabel(job.status)}</dd>
+                  </div>
+                  <div>
+                    <dt>Vị trí</dt>
+                    <dd>{job.location_label?.trim() || "—"}</dd>
+                  </div>
+                </dl>
+                <div className="hire-manage__job-desc-block">
+                  <h3 className="hire-manage__job-desc-title">
+                    <FaBriefcase aria-hidden />
+                    Nội dung chi tiết
+                  </h3>
+                  <p className="hire-manage__job-desc">{job.description?.trim() || "Chưa có mô tả chi tiết."}</p>
                 </div>
-                <p className="hire-manage__job-desc">{job.description?.trim() || "—"}</p>
                 <div className="hire-manage__job-links">
                   <Link href={`/work/detail/${job.id}`} className="hire-joblist__link-btn">
-                    Xem trang job public
+                    Xem trang tuyển dụng công khai
                   </Link>
-                  <Link href="/hire/joblist" className="hire-joblist__link-btn">
-                    Quay lại joblist
+                  <Link href="/hire/joblist" className="hire-joblist__link-btn hire-joblist__link-btn--muted">
+                    Quay lại danh sách việc
                   </Link>
                 </div>
               </section>
             ) : null}
           </>
         ) : null}
+
+        {chatQuote ? (
+          <FreelancerChatWidget
+            key={chatQuote.id}
+            freelancerId={chatQuote.freelancer_id}
+            freelancerName={chatQuote.freelancer_name?.trim() || "Freelancer"}
+            jobQuoteId={chatQuote.id}
+            contextTitle={job?.title ?? chatQuote.job_title}
+            initialOpen
+            onClose={() => setChatQuote(null)}
+          />
+        ) : null}
       </div>
     </HireShell>
   );
 }
-

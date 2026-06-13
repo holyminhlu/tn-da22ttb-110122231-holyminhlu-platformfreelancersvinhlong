@@ -1,9 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { FaComments, FaEllipsisH, FaSearch } from "react-icons/fa";
+import { useMessagesScrollLock } from "@/hooks/useMessagesScrollLock";
 import { useStoredUser } from "@/hooks/useStoredUser";
-import { listChatConversations, type ChatConversation } from "@/lib/api/chat";
+import { listChatConversations, type ChatConversation, type ChatMessage } from "@/lib/api/chat";
+import { getChatSocket } from "@/lib/chat/socketClient";
+import ChatActionMenu from "./ChatActionMenu";
 import ChatPeerAvatar from "./ChatPeerAvatar";
 import InboxChatPanel, { type InboxViewerRole } from "./InboxChatPanel";
 import "./messages-inbox.css";
@@ -55,10 +59,14 @@ function hasJobContext(conv: ChatConversation) {
 }
 
 export default function MessagesInbox({ viewerRole, copy }: MessagesInboxProps) {
+  const searchParams = useSearchParams();
+  const deepLinkConversationId = searchParams.get("c");
   const { user, ready, isFreelancer, isClient } = useStoredUser({ refreshFromApi: false });
   const isGuest = ready && !user;
   const canAccess =
     viewerRole === "freelancer" ? Boolean(user && isFreelancer) : Boolean(user && isClient);
+
+  useMessagesScrollLock(canAccess);
 
   const [conversations, setConversations] = useState<ChatConversation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -67,6 +75,14 @@ export default function MessagesInbox({ viewerRole, copy }: MessagesInboxProps) 
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState<InboxTab>("all");
   const [mobileShowThread, setMobileShowThread] = useState(false);
+  const [sidebarMenuOpen, setSidebarMenuOpen] = useState(false);
+  const sidebarMenuRef = useRef<HTMLButtonElement>(null);
+  const deepLinkHandled = useRef(false);
+  const selectedIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    selectedIdRef.current = selectedId;
+  }, [selectedId]);
 
   const load = useCallback(async () => {
     if (!canAccess) {
@@ -82,6 +98,9 @@ export default function MessagesInbox({ viewerRole, copy }: MessagesInboxProps) 
       setConversations(rows);
       setSelectedId((prev) => {
         if (prev && rows.some((r) => r.id === prev)) return prev;
+        if (deepLinkConversationId && rows.some((r) => r.id === deepLinkConversationId)) {
+          return deepLinkConversationId;
+        }
         return rows[0]?.id ?? null;
       });
     } catch (err) {
@@ -95,11 +114,20 @@ export default function MessagesInbox({ viewerRole, copy }: MessagesInboxProps) 
     } finally {
       setLoading(false);
     }
-  }, [canAccess]);
+  }, [canAccess, deepLinkConversationId]);
 
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    if (!deepLinkConversationId || deepLinkHandled.current || conversations.length === 0) return;
+    if (conversations.some((c) => c.id === deepLinkConversationId)) {
+      setSelectedId(deepLinkConversationId);
+      setMobileShowThread(true);
+      deepLinkHandled.current = true;
+    }
+  }, [conversations, deepLinkConversationId]);
 
   useEffect(() => {
     if (!canAccess) return;
@@ -110,6 +138,50 @@ export default function MessagesInbox({ viewerRole, copy }: MessagesInboxProps) 
     }, 12000);
     return () => window.clearInterval(timer);
   }, [canAccess]);
+
+  useEffect(() => {
+    if (!canAccess || !user?.id) return;
+
+    const socket = getChatSocket();
+    if (!socket) return;
+
+    function onMessage(payload: ChatMessage) {
+      const fromPeer = String(payload.senderId) !== String(user.id);
+      const isOpen = payload.conversationId === selectedIdRef.current;
+
+      setConversations((prev) => {
+        const exists = prev.some((c) => c.id === payload.conversationId);
+        if (!exists) {
+          void listChatConversations()
+            .then((rows) => setConversations(rows))
+            .catch(() => {});
+          return prev;
+        }
+
+        const next = prev.map((c) => {
+          if (c.id !== payload.conversationId) return c;
+          return {
+            ...c,
+            lastMessageBody: payload.body,
+            lastMessageAt: payload.createdAt,
+            lastMessageSenderId: payload.senderId,
+            hasUnread: fromPeer && !isOpen,
+          };
+        });
+
+        return [...next].sort(
+          (a, b) =>
+            new Date(b.lastMessageAt ?? b.updatedAt).getTime() -
+            new Date(a.lastMessageAt ?? a.updatedAt).getTime(),
+        );
+      });
+    }
+
+    socket.on("chat:message", onMessage);
+    return () => {
+      socket.off("chat:message", onMessage);
+    };
+  }, [canAccess, user?.id]);
 
   const filteredConversations = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -129,7 +201,50 @@ export default function MessagesInbox({ viewerRole, copy }: MessagesInboxProps) 
   function selectConversation(id: string) {
     setSelectedId(id);
     setMobileShowThread(true);
+    setConversations((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, hasUnread: false } : c)),
+    );
   }
+
+  function handleConversationRead(conversationId: string) {
+    setConversations((prev) =>
+      prev.map((c) => (c.id === conversationId ? { ...c, hasUnread: false } : c)),
+    );
+  }
+
+  function handleConversationDeleted(conversationId: string) {
+    setConversations((prev) => {
+      const remaining = prev.filter((c) => c.id !== conversationId);
+      setSelectedId((current) => {
+        if (current !== conversationId) return current;
+        return remaining[0]?.id ?? null;
+      });
+      return remaining;
+    });
+    setMobileShowThread(false);
+  }
+
+  function handleConversationUpdated(updated: ChatConversation) {
+    setConversations((prev) => prev.map((c) => (c.id === updated.id ? { ...c, ...updated } : c)));
+  }
+
+  const sidebarMenuItems = [
+    {
+      id: "refresh",
+      label: "Làm mới danh sách",
+      onClick: () => void load(),
+    },
+    {
+      id: "all-tab",
+      label: "Hiển thị: Tất cả",
+      onClick: () => setActiveTab("all"),
+    },
+    {
+      id: "jobs-tab",
+      label: "Hiển thị: Có việc",
+      onClick: () => setActiveTab("jobs"),
+    },
+  ];
 
   return (
     <div className="fw-messages-inbox">
@@ -153,19 +268,38 @@ export default function MessagesInbox({ viewerRole, copy }: MessagesInboxProps) 
                 <input
                   type="search"
                   className="fw-inbox-sidebar__search-input"
-                  placeholder="Tìm kiếm"
+                  placeholder="Tìm kiếm cuộc hội thoại"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
+                  aria-label="Tìm kiếm cuộc hội thoại"
                 />
               </div>
-              <button type="button" className="fw-inbox-sidebar__action" aria-label="Tùy chọn">
-                <FaEllipsisH />
-              </button>
+              <div className="fw-inbox-sidebar__menu-wrap">
+                <button
+                  ref={sidebarMenuRef}
+                  type="button"
+                  className="fw-inbox-sidebar__action"
+                  aria-label="Tùy chọn danh sách"
+                  aria-expanded={sidebarMenuOpen}
+                  onClick={() => setSidebarMenuOpen((prev) => !prev)}
+                >
+                  <FaEllipsisH />
+                </button>
+                <ChatActionMenu
+                  open={sidebarMenuOpen}
+                  items={sidebarMenuItems}
+                  onClose={() => setSidebarMenuOpen(false)}
+                  anchorRef={sidebarMenuRef}
+                  align="right"
+                />
+              </div>
             </div>
 
-            <div className="fw-inbox-sidebar__tabs">
+            <div className="fw-inbox-sidebar__tabs" role="tablist" aria-label="Lọc hội thoại">
               <button
                 type="button"
+                role="tab"
+                aria-selected={activeTab === "all"}
                 className={`fw-inbox-sidebar__tab${activeTab === "all" ? " fw-inbox-sidebar__tab--active" : ""}`}
                 onClick={() => setActiveTab("all")}
               >
@@ -173,6 +307,8 @@ export default function MessagesInbox({ viewerRole, copy }: MessagesInboxProps) 
               </button>
               <button
                 type="button"
+                role="tab"
+                aria-selected={activeTab === "jobs"}
                 className={`fw-inbox-sidebar__tab${activeTab === "jobs" ? " fw-inbox-sidebar__tab--active" : ""}`}
                 onClick={() => setActiveTab("jobs")}
               >
@@ -186,8 +322,8 @@ export default function MessagesInbox({ viewerRole, copy }: MessagesInboxProps) 
               ) : filteredConversations.length === 0 ? (
                 <div className="fw-inbox-sidebar__empty">
                   <FaComments aria-hidden />
-                  <p>{search ? "Không tìm thấy hội thoại." : copy.emptyListMessage}</p>
-                  {!search ? (
+                  <p>{search || activeTab === "jobs" ? "Không tìm thấy hội thoại." : copy.emptyListMessage}</p>
+                  {!search && activeTab === "all" ? (
                     <p className="fw-inbox-sidebar__empty-hint">{copy.emptyListHint}</p>
                   ) : null}
                 </div>
@@ -196,25 +332,39 @@ export default function MessagesInbox({ viewerRole, copy }: MessagesInboxProps) 
                   {filteredConversations.map((conv) => {
                     const active = conv.id === selectedId;
                     const topic = conv.contextTitle || conv.jobTitle;
+                    const showUnread = Boolean(conv.hasUnread) && !active;
 
                     return (
                       <li key={conv.id}>
                         <button
                           type="button"
-                          className={`fw-inbox-sidebar__item${active ? " fw-inbox-sidebar__item--active" : ""}`}
+                          className={`fw-inbox-sidebar__item${active ? " fw-inbox-sidebar__item--active" : ""}${showUnread ? " fw-inbox-sidebar__item--unread" : ""}`}
                           onClick={() => selectConversation(conv.id)}
                           aria-current={active ? "true" : undefined}
                         >
-                          <ChatPeerAvatar
-                            conversation={conv}
-                            size={48}
-                            className="fw-inbox-sidebar__avatar"
-                            imgClassName="fw-inbox-sidebar__avatar-img"
-                            fallbackClassName="fw-inbox-sidebar__avatar-fallback"
-                          />
+                          <div className="fw-inbox-sidebar__avatar-wrap">
+                            <ChatPeerAvatar
+                              conversation={conv}
+                              size={48}
+                              className="fw-inbox-sidebar__avatar"
+                              imgClassName="fw-inbox-sidebar__avatar-img"
+                              fallbackClassName="fw-inbox-sidebar__avatar-fallback"
+                            />
+                            {showUnread ? (
+                              <span
+                                className="fw-inbox-sidebar__unread-dot"
+                                aria-label="Có tin nhắn chưa đọc"
+                              />
+                            ) : null}
+                          </div>
                           <div className="fw-inbox-sidebar__item-body">
                             <div className="fw-inbox-sidebar__item-top">
-                              <span className="fw-inbox-sidebar__item-name">{conv.peerName}</span>
+                              <span className="fw-inbox-sidebar__item-name">
+                                {conv.peerName}
+                                {conv.blockedByMe ? (
+                                  <span className="fw-inbox-sidebar__blocked-tag">Đã chặn</span>
+                                ) : null}
+                              </span>
                               <span className="fw-inbox-sidebar__item-time">
                                 {formatRelativeTime(conv.lastMessageAt ?? conv.updatedAt)}
                               </span>
@@ -248,6 +398,9 @@ export default function MessagesInbox({ viewerRole, copy }: MessagesInboxProps) 
                 viewerRole={viewerRole}
                 showBack
                 onBack={() => setMobileShowThread(false)}
+                onConversationDeleted={handleConversationDeleted}
+                onConversationUpdated={handleConversationUpdated}
+                onConversationRead={handleConversationRead}
               />
             ) : (
               <div className="fw-inbox-main__empty">

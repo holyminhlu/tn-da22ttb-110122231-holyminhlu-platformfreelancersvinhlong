@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-export function usePagedList<T>(items: T[], pageSize: number) {
+export function usePagedList<T>(items: T[], pageSize: number, resetKey?: string) {
   const [page, setPage] = useState(1);
 
   const total = items.length;
@@ -10,7 +10,7 @@ export function usePagedList<T>(items: T[], pageSize: number) {
 
   useEffect(() => {
     setPage(1);
-  }, [total, pageSize]);
+  }, [total, pageSize, resetKey]);
 
   useEffect(() => {
     if (page > totalPages) setPage(totalPages);

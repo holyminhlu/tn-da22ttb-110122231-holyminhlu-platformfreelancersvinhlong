@@ -20,6 +20,9 @@ import {
   pendingStageLabel,
   type FreelancerTxFilter,
 } from "@/lib/payments/freelancerPaymentsDisplay";
+import PaymentsBalanceCard from "@/components/payments/PaymentsBalanceCard";
+import PaymentsSectionTitle from "@/components/payments/PaymentsSectionTitle";
+import { FaChartLine, FaHistory } from "react-icons/fa";
 import "@/components/hire/hire.css";
 import "@/components/dashboard/dashboardPagination.css";
 import "./payments.css";
@@ -122,7 +125,8 @@ export default function FreelancerPaymentsPage() {
     );
   }, [data, txFilter, searchInput, filterJobId, filterClientId, filterMonth]);
 
-  const txPage = usePagedList(filteredTransactions, TX_PAGE_SIZE);
+  const txResetKey = `${txFilter}|${searchInput}|${filterJobId}|${filterClientId}|${filterMonth}`;
+  const txPage = usePagedList(filteredTransactions, TX_PAGE_SIZE, txResetKey);
 
   async function handleWithdraw() {
     const amount = Number(withdrawAmount.replace(/\D/g, ""));
@@ -196,31 +200,29 @@ export default function FreelancerPaymentsPage() {
         ) : data ? (
           <>
             <section className="payments-panel">
-              <h2 className="payments-panel__title">Thu nhập &amp; số dư</h2>
+              <PaymentsSectionTitle icon={<FaChartLine />}>
+                Thu nhập &amp; số dư
+              </PaymentsSectionTitle>
               <div className="payments-balance-grid fl-payments__balance-grid">
-                <article className="payments-balance-card payments-balance-card--primary">
-                  <p className="payments-balance-card__label">Số dư khả dụng</p>
-                  <p className="payments-balance-card__amount">
-                    {formatVnd(data.account.balance)}
-                  </p>
-                  <p className="payments-balance-card__hint">Có thể rút về tài khoản ngân hàng</p>
-                </article>
-                <article className="payments-balance-card fl-payments__balance-card--pending">
-                  <p className="payments-balance-card__label">Chờ giải ngân</p>
-                  <p className="payments-balance-card__amount">
-                    {formatVnd(data.account.pendingBalance)}
-                  </p>
-                  <p className="payments-balance-card__hint">
-                    Escrow đã nạp, chưa chuyển vào ví của bạn
-                  </p>
-                </article>
-                <article className="payments-balance-card">
-                  <p className="payments-balance-card__label">Tổng đã nhận</p>
-                  <p className="payments-balance-card__amount">
-                    {formatVnd(data.account.totalEarned)}
-                  </p>
-                  <p className="payments-balance-card__hint">Tích lũy từ các hợp đồng đã giải ngân</p>
-                </article>
+                <PaymentsBalanceCard
+                  variant="available"
+                  featured
+                  label="Số dư khả dụng"
+                  amount={formatVnd(data.account.balance)}
+                  hint="Có thể rút về tài khoản ngân hàng"
+                />
+                <PaymentsBalanceCard
+                  variant="pending"
+                  label="Chờ giải ngân"
+                  amount={formatVnd(data.account.pendingBalance)}
+                  hint="Escrow đã nạp, chưa chuyển vào ví của bạn"
+                />
+                <PaymentsBalanceCard
+                  variant="earned"
+                  label="Tổng đã nhận"
+                  amount={formatVnd(data.account.totalEarned)}
+                  hint="Tích lũy từ các hợp đồng đã giải ngân"
+                />
               </div>
 
               <div className="payments-deposit fl-payments__withdraw">
@@ -321,8 +323,10 @@ export default function FreelancerPaymentsPage() {
             ) : null}
 
             <section className="payments-panel">
-              <div className="payments-panel__head">
-                <h2 className="payments-panel__title">Lịch sử giao dịch</h2>
+              <div className="payments-panel__head payments-tx-panel__head">
+                <PaymentsSectionTitle icon={<FaHistory />}>
+                  Lịch sử giao dịch
+                </PaymentsSectionTitle>
                 <button
                   type="button"
                   className="payments-btn payments-btn--secondary"
@@ -435,6 +439,9 @@ export default function FreelancerPaymentsPage() {
                     </table>
                   </div>
                   <DashboardPagination
+                    className="payments-pagination"
+                    alwaysShow
+                    pageSize={TX_PAGE_SIZE}
                     page={txPage.page}
                     totalPages={txPage.totalPages}
                     total={txPage.total}

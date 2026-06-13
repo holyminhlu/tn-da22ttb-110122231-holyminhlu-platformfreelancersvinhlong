@@ -4,7 +4,7 @@ import { formatVnd } from "@/lib/format";
 export function quoteStatusLabel(status: string): string {
   const s = String(status).toLowerCase();
   if (s === "pending") return "Đang chờ";
-  if (s === "shortlisted") return "Shortlist";
+  if (s === "shortlisted") return "Đang chờ";
   if (s === "interviewing") return "Phỏng vấn";
   if (s === "offered") return "Đã gửi offer";
   if (s === "accepted") return "Đã tuyển";
@@ -13,23 +13,70 @@ export function quoteStatusLabel(status: string): string {
   return status;
 }
 
-export type QuoteSort = "newest" | "price_asc" | "rating_desc";
+const CLIENT_STATUS_PRIORITY: Record<string, number> = {
+  pending: 0,
+  shortlisted: 1,
+  interviewing: 2,
+  offered: 3,
+  accepted: 4,
+  declined: 5,
+  withdrawn: 6,
+};
+
+function clientQuoteStatusPriority(status: string): number {
+  return CLIENT_STATUS_PRIORITY[String(status).toLowerCase()] ?? 99;
+}
+
+function isTerminalClientQuote(status: string): boolean {
+  const s = String(status).toLowerCase();
+  return s === "declined" || s === "withdrawn";
+}
+
+export function quoteRecommendationScore(quote: JobQuoteRow): number {
+  const rating = quote.rating_avg ?? 0;
+  const reviews = Math.min(quote.total_reviews, 20) / 20;
+  const completed = Math.min(quote.completed_jobs, 30) / 30;
+  return rating * 0.7 + reviews * 2 + completed * 2;
+}
+
+function pinDeclinedLast(quotes: JobQuoteRow[]): JobQuoteRow[] {
+  const active = quotes.filter((q) => !isTerminalClientQuote(q.status));
+  const terminal = quotes.filter((q) => isTerminalClientQuote(q.status));
+  return [...active, ...terminal];
+}
+
+export type QuoteSort = "priority" | "newest" | "price_asc" | "rating_desc";
 
 export function sortJobQuotes(quotes: JobQuoteRow[], sort: QuoteSort): JobQuoteRow[] {
   const list = [...quotes];
-  if (sort === "price_asc") {
+
+  if (sort === "priority") {
     return list.sort((a, b) => {
+      const pa = clientQuoteStatusPriority(a.status);
+      const pb = clientQuoteStatusPriority(b.status);
+      if (pa !== pb) return pa - pb;
+      const scoreDiff = quoteRecommendationScore(b) - quoteRecommendationScore(a);
+      if (scoreDiff !== 0) return scoreDiff;
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
+  }
+
+  let sorted: JobQuoteRow[];
+  if (sort === "price_asc") {
+    sorted = list.sort((a, b) => {
       const pa = a.amount != null ? Number(a.amount) : Number.POSITIVE_INFINITY;
       const pb = b.amount != null ? Number(b.amount) : Number.POSITIVE_INFINITY;
       return pa - pb;
     });
+  } else if (sort === "rating_desc") {
+    sorted = list.sort((a, b) => quoteRatingPercent(b) - quoteRatingPercent(a));
+  } else {
+    sorted = list.sort(
+      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+    );
   }
-  if (sort === "rating_desc") {
-    return list.sort((a, b) => quoteRatingPercent(b) - quoteRatingPercent(a));
-  }
-  return list.sort(
-    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
-  );
+
+  return pinDeclinedLast(sorted);
 }
 
 export function quoteStatusBadgeClass(status: string): string {
@@ -57,4 +104,24 @@ export function quoteRatingPercent(quote: JobQuoteRow): number {
     return Math.min(100, Math.round((quote.rating_avg / 5) * 100));
   }
   return 0;
+}
+
+export type QuoteClientActions = {
+  canInterview: boolean;
+  canOffer: boolean;
+  canDecline: boolean;
+  canHire: boolean;
+  isPending: boolean;
+};
+
+/** Quy tắc hiển thị nút client — khớp PATCH /api/jobs/me/quotes/:id */
+export function quoteClientActions(status: string): QuoteClientActions {
+  const s = String(status).toLowerCase();
+  return {
+    canInterview: ["pending", "shortlisted", "offered"].includes(s),
+    canOffer: ["pending", "shortlisted", "interviewing"].includes(s),
+    canDecline: ["pending", "shortlisted", "interviewing", "offered"].includes(s),
+    canHire: s === "offered",
+    isPending: s === "pending" || s === "shortlisted",
+  };
 }

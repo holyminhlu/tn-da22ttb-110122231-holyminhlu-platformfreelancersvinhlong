@@ -1,3 +1,16 @@
+/** Chỉ giữ chữ số từ chuỗi nhập tiền. */
+export function parseMoneyInputDigits(value: string): string {
+  return value.replace(/\D/g, "");
+}
+
+/** Định dạng chuỗi chữ số thành số có dấu ngăn cách hàng nghìn (vi-VN). */
+export function formatMoneyInputDigits(digits: string): string {
+  if (!digits) return "";
+  const n = Number(digits);
+  if (!Number.isFinite(n)) return "";
+  return new Intl.NumberFormat("vi-VN").format(n);
+}
+
 export function formatVnd(amount: string | number | null | undefined): string {
   const n = Number(amount);
   if (!Number.isFinite(n)) return "—";

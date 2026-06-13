@@ -22,6 +22,7 @@ function mergeEntry(
     skills: patch.skills?.length ? patch.skills : (prev?.skills ?? []),
     lastJobTitle: patch.lastJobTitle ?? prev?.lastJobTitle ?? null,
     lastWorkedAt: patch.lastWorkedAt ?? prev?.lastWorkedAt ?? null,
+    featuredServiceId: patch.featuredServiceId ?? prev?.featuredServiceId ?? null,
     sources: [...sources],
   });
 }
@@ -66,6 +67,7 @@ export function applyFreelancerProfile(entry: HireFavoriteEntry, profile: Freela
     totalReviews: profile.total_reviews ?? entry.totalReviews,
     skills: profile.skills?.length ? profile.skills : entry.skills,
     completedJobs: profile.completed_jobs ?? entry.completedJobs ?? 0,
+    featuredServiceId: profile.featured_service_id ?? entry.featuredServiceId,
   };
 }
 
@@ -97,6 +99,7 @@ export function mergeFavoriteIds(
         skills: [],
         lastJobTitle: null,
         lastWorkedAt: null,
+        featuredServiceId: null,
         sources: ["favorite"],
       });
     }

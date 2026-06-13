@@ -1,15 +1,31 @@
 /* —— Inbox layout (Zalo-style, theo chat.html) —— */
+body.vlc-messages-scroll-lock {
+  overflow: hidden;
+  height: 100%;
+}
+
 .find-work-page .fw-main:has(.fw-messages-inbox),
 .client-shell__main:has(.fw-messages-inbox) {
   padding: 0;
   max-width: none;
+  overflow: hidden;
+}
+
+.find-work-page:has(.fw-messages-inbox) .home-footer,
+.client-shell:has(.fw-messages-inbox) .home-footer {
+  display: none;
 }
 
 .fw-messages-inbox {
   display: flex;
-  min-height: calc(100vh - 9.5rem);
+  height: calc(100dvh - 8.75rem);
+  min-height: 0;
+  max-height: calc(100dvh - 8.75rem);
   background: #fff;
   border-top: 1px solid #e5e7eb;
+  overflow: hidden;
+  position: relative;
+  overscroll-behavior: contain;
 }
 
 .fw-messages-inbox__state {
@@ -34,7 +50,13 @@
   flex-direction: column;
   border-right: 1px solid #e5e7eb;
   background: #fff;
-  height: calc(100vh - 9.5rem);
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.fw-inbox-sidebar__menu-wrap {
+  position: relative;
 }
 
 .fw-inbox-sidebar__search-row {
@@ -109,8 +131,18 @@
 
 .fw-inbox-sidebar__list {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
+  overscroll-behavior: contain;
   scrollbar-width: thin;
+}
+
+.fw-inbox-sidebar__blocked-tag {
+  margin-left: 0.35rem;
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: #b91c1c;
+  text-transform: uppercase;
 }
 
 .fw-inbox-sidebar__list::-webkit-scrollbar {
@@ -164,12 +196,60 @@
   background: #e5efff;
 }
 
-.fw-inbox-sidebar__avatar {
+.fw-inbox-sidebar__avatar-wrap {
+  position: relative;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3rem;
+  height: 3rem;
+}
+
+/* Khung freelancer (canvas ~77–89px khi size=48) cần chỗ rộng hơn để không đè chữ */
+.fw-inbox-sidebar__avatar-wrap:has(.fl-avatar-frame) {
+  width: 5.625rem;
+  height: 5.625rem;
+}
+
+.fw-inbox-sidebar__avatar:not(.fl-avatar-frame) {
   flex-shrink: 0;
   width: 3rem;
   height: 3rem;
   border-radius: 9999px;
   overflow: hidden;
+}
+
+.fw-inbox-sidebar__unread-dot {
+  position: absolute;
+  top: 0.125rem;
+  right: 0.125rem;
+  z-index: 5;
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: 9999px;
+  background: #ef4444;
+  border: 2px solid #fff;
+  pointer-events: none;
+}
+
+.fw-inbox-sidebar__avatar-wrap:has(.fl-avatar-frame) .fw-inbox-sidebar__unread-dot {
+  top: 0.625rem;
+  right: 0.625rem;
+}
+
+.fw-inbox-sidebar__item--active .fw-inbox-sidebar__unread-dot {
+  border-color: #e5efff;
+}
+
+.fw-inbox-sidebar__item--unread .fw-inbox-sidebar__item-name {
+  font-weight: 700;
+  color: #111827;
+}
+
+.fw-inbox-sidebar__item--unread .fw-inbox-sidebar__item-preview {
+  color: #374151;
+  font-weight: 500;
 }
 
 .fw-inbox-sidebar__avatar-img {
@@ -243,10 +323,12 @@
 .fw-inbox-main {
   flex: 1;
   min-width: 0;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   background: #f4f5f7;
-  height: calc(100vh - 9.5rem);
+  height: 100%;
+  overflow: hidden;
 }
 
 .fw-inbox-main__empty {
@@ -355,6 +437,10 @@
   color: #6b7280;
 }
 
+.fw-inbox-chat__menu-wrap {
+  position: relative;
+}
+
 .fw-inbox-chat__icon-btn {
   border: none;
   background: transparent;
@@ -362,6 +448,64 @@
   color: inherit;
   cursor: pointer;
   padding: 0.25rem;
+}
+
+.fw-inbox-chat__icon-btn--active {
+  color: #2563eb;
+}
+
+.fw-inbox-chat__search-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #fff;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.fw-inbox-chat__search-icon {
+  color: #9ca3af;
+  flex-shrink: 0;
+}
+
+.fw-inbox-chat__search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 0.875rem;
+  background: transparent;
+}
+
+.fw-inbox-chat__search-clear {
+  border: none;
+  background: transparent;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 0.25rem;
+}
+
+.fw-inbox-chat__blocked-banner {
+  margin: 0;
+  padding: 0.5rem 1rem;
+  background: #fff7ed;
+  color: #9a3412;
+  font-size: 0.8125rem;
+  border-bottom: 1px solid #fed7aa;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.fw-inbox-chat__blocked-action {
+  border: none;
+  background: transparent;
+  color: #c2410c;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  font-size: 0.8125rem;
 }
 
 .fw-inbox-chat__error {
@@ -374,7 +518,9 @@
 
 .fw-inbox-chat__messages {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
@@ -453,6 +599,40 @@
   white-space: pre-wrap;
 }
 
+.fw-inbox-bubble__image-link {
+  display: block;
+  margin-bottom: 0.35rem;
+}
+
+.fw-inbox-bubble__image {
+  display: block;
+  max-width: min(100%, 16rem);
+  max-height: 14rem;
+  border-radius: 0.5rem;
+  object-fit: cover;
+}
+
+.fw-inbox-bubble__file {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #1d4ed8;
+  text-decoration: none;
+  font-size: 0.875rem;
+  word-break: break-word;
+}
+
+.fw-inbox-bubble__file:hover {
+  text-decoration: underline;
+}
+
+.fw-inbox-search-hit {
+  background: #fef08a;
+  color: inherit;
+  padding: 0 0.1rem;
+  border-radius: 0.15rem;
+}
+
 .fw-inbox-bubble__meta {
   display: flex;
   align-items: center;
@@ -471,10 +651,14 @@
   align-items: center;
   gap: 0.2rem;
   font-size: 0.625rem;
-  color: #fff;
-  background: rgb(209 213 219 / 0.65);
-  border-radius: 9999px;
-  padding: 0.15rem 0.5rem;
+  font-weight: 500;
+  color: #111827;
+  background: transparent;
+  padding: 0;
+}
+
+.fw-inbox-bubble__status--read {
+  color: #111827;
 }
 
 .fw-inbox-context-card {
@@ -548,14 +732,135 @@
   color: #6b7280;
 }
 
+.fw-inbox-chat__tool-wrap {
+  position: relative;
+}
+
 .fw-inbox-chat__tool {
   border: none;
   background: transparent;
   font-size: 1rem;
   color: inherit;
-  cursor: not-allowed;
-  opacity: 0.55;
+  cursor: pointer;
   padding: 0;
+}
+
+.fw-inbox-chat__tool:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.fw-inbox-chat__tool--active {
+  color: #2563eb;
+}
+
+.fw-inbox-chat__file-input {
+  display: none;
+}
+
+.fw-inbox-chat__uploading {
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.fw-chat-emoji-picker {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 0.35rem);
+  z-index: 30;
+  width: min(18rem, 70vw);
+  max-height: 14rem;
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.12);
+  padding: 0.5rem;
+}
+
+.fw-chat-emoji-picker__quick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid #f3f4f6;
+  margin-bottom: 0.35rem;
+}
+
+.fw-chat-emoji-picker__group + .fw-chat-emoji-picker__group {
+  margin-top: 0.35rem;
+}
+
+.fw-chat-emoji-picker__label {
+  margin: 0 0 0.25rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.fw-chat-emoji-picker__grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 0.15rem;
+}
+
+.fw-chat-emoji-picker__btn {
+  border: none;
+  background: transparent;
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 0.35rem;
+  padding: 0.2rem;
+}
+
+.fw-chat-emoji-picker__btn:hover {
+  background: #f3f4f6;
+}
+
+.fw-chat-menu {
+  position: absolute;
+  top: calc(100% + 0.35rem);
+  z-index: 40;
+  min-width: 11rem;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.12);
+  padding: 0.35rem 0;
+}
+
+.fw-chat-menu--right {
+  right: 0;
+}
+
+.fw-chat-menu--left {
+  left: 0;
+}
+
+.fw-chat-menu__item {
+  display: block;
+  width: 100%;
+  border: none;
+  background: transparent;
+  text-align: left;
+  padding: 0.55rem 0.9rem;
+  font-size: 0.8125rem;
+  color: #374151;
+  cursor: pointer;
+}
+
+.fw-chat-menu__item:hover:not(:disabled) {
+  background: #f9fafb;
+}
+
+.fw-chat-menu__item--danger {
+  color: #b91c1c;
+}
+
+.fw-chat-menu__item:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 .fw-inbox-chat__input-row {
@@ -592,12 +897,13 @@
 /* —— Mobile —— */
 @media (max-width: 768px) {
   .fw-messages-inbox {
-    min-height: calc(100vh - 8.5rem);
+    height: calc(100dvh - 7.5rem);
+    max-height: calc(100dvh - 7.5rem);
   }
 
   .fw-inbox-sidebar,
   .fw-inbox-main {
-    height: calc(100vh - 8.5rem);
+    height: 100%;
   }
 
   .fw-inbox-sidebar {

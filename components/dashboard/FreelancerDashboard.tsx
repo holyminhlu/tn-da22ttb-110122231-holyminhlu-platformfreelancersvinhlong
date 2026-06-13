@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
@@ -124,21 +123,8 @@ function WidgetServiceList({ services }: { services: FreelancerService[] }) {
       <ul className="client-widget__list">
         {items.map((service) => (
           <li key={service.id} className="client-widget__list-item">
-            <Link
-              href={`/dich-vu/quan-ly/${service.id}`}
-              className="client-widget__list-title freelancer-dashboard__service-link"
-            >
-              {service.thumbnail_url ? (
-                <Image
-                  src={service.thumbnail_url}
-                  alt=""
-                  width={28}
-                  height={28}
-                  className="freelancer-dashboard__service-thumb"
-                  unoptimized
-                />
-              ) : null}
-              <span>{service.title}</span>
+            <Link href={`/dich-vu/quan-ly/${service.id}`} className="client-widget__list-title">
+              {service.title}
             </Link>
             <p className="client-widget__list-meta">
               {formatVnd(service.price)}

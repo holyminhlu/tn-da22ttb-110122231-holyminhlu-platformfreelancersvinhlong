@@ -140,9 +140,24 @@
   align-items: flex-start;
 }
 
+.vlc-chat-bubble-row__meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .vlc-chat-bubble-time {
   font-size: 0.6875rem;
   color: #9ca3af;
+}
+
+.vlc-chat-bubble-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 0.625rem;
+  font-weight: 500;
+  color: #111827;
 }
 
 .vlc-chat-bubble {
@@ -323,4 +338,18 @@
   font-size: 0.625rem;
   color: #9ca3af;
   margin-top: 0.1rem;
+}
+
+.vlc-chat-bubble__image {
+  display: block;
+  max-width: min(100%, 12rem);
+  max-height: 10rem;
+  border-radius: 0.5rem;
+  object-fit: cover;
+}
+
+.vlc-chat-bubble__file {
+  color: #1d4ed8;
+  text-decoration: underline;
+  word-break: break-word;
 }

@@ -1,100 +1,47 @@
 "use client";
 
-
-
-import Image from "next/image";
-
 import Link from "next/link";
-
-import { FaCommentDots, FaStar, FaTimes } from "react-icons/fa";
-
+import { FaStar } from "react-icons/fa";
 import type { JobQuoteRow, PatchJobQuoteAction } from "@/lib/api/jobQuotes";
-
 import FreelancerAvatarFrame from "@/components/freelancer/FreelancerAvatarFrame";
 import { getUserInitials, resolveAvatarSrc } from "@/lib/authSession";
-
 import { formatDate } from "@/lib/format";
-
 import {
-
   formatQuoteAmount,
-
+  quoteClientActions,
   quoteRatingPercent,
-
   quoteStatusBadgeClass,
-
   quoteStatusLabel,
-
 } from "@/lib/hire/quoteDisplay";
 
-
-
 type HireQuoteGridCardProps = {
-
   quote: JobQuoteRow;
-
   showJobTitle?: boolean;
-
   busy?: boolean;
-
   onAction?: (quoteId: string, action: PatchJobQuoteAction) => void;
-
   onChat?: (quote: JobQuoteRow) => void;
-
 };
 
-
-
 export default function HireQuoteGridCard({
-
   quote,
-
   showJobTitle = false,
-
   busy = false,
-
   onAction,
-
   onChat,
-
 }: HireQuoteGridCardProps) {
-
   const avatarSrc = resolveAvatarSrc(quote.freelancer_avatar_url);
-
   const name = quote.freelancer_name?.trim() || "Freelancer";
-
   const title = quote.freelancer_title?.trim() || "Freelancer";
-
   const message = quote.message?.trim() || "";
-
   const ratingPct = quoteRatingPercent(quote);
-
   const href = `/hire/quotes/${quote.id}`;
-
-  const profileHref = `/hire/search/${quote.freelancer_id}`;
-
-  const status = String(quote.status).toLowerCase();
-
-  const canOffer = ["pending", "shortlisted", "interviewing"].includes(status);
-
-  const canHire = status === "offered";
-
-  const canDecline = ["pending", "shortlisted", "interviewing", "offered"].includes(status);
-
-  const isPending = status === "pending";
-
-
+  const { canInterview, canDecline } = quoteClientActions(quote.status);
 
   return (
-
     <article className={`hire-quote-product-card hire-quote-product-card--${quote.status}`}>
-
       <div className="hire-quote-product-card__media">
-
         <span className={`hire-favorites__badge ${quoteStatusBadgeClass(quote.status)}`}>
-
           {quoteStatusLabel(quote.status)}
-
         </span>
 
         <FreelancerAvatarFrame
@@ -106,192 +53,94 @@ export default function HireQuoteGridCard({
           imgClassName="hire-favorites__avatar-img"
           className="hire-quote-product-card__avatar-wrap"
         />
-
       </div>
 
-
-
       <div className="hire-quote-product-card__body">
-
         {showJobTitle && quote.job_title ? (
-
           <p className="hire-quote-product-card__job" title={quote.job_title}>
-
             {quote.job_title}
-
           </p>
-
         ) : null}
 
         <h3 className="hire-quote-product-card__name">
-
           <Link href={href} title={name}>
-
             {name}
-
           </Link>
-
         </h3>
 
         <p className="hire-quote-product-card__title" title={title}>
-
           {title}
-
         </p>
 
         {message ? (
-
           <p className="hire-quote-product-card__message" title={message}>
-
             {message}
-
           </p>
-
         ) : null}
 
-        <p className="hire-quote-product-card__meta-time">
-
-          Gửi lúc {formatDate(quote.created_at)}
-
-        </p>
+        <p className="hire-quote-product-card__meta-time">Gửi lúc {formatDate(quote.created_at)}</p>
 
         <p className="hire-quote-product-card__price">
-
           {formatQuoteAmount(quote)}
-
           <span className="hire-quote-product-card__price-type">
-
             {" · "}
-
             {quote.pricing_type === "hourly" ? "Theo giờ" : "Trọn gói"}
-
           </span>
-
         </p>
 
         {ratingPct > 0 ? (
-
           <p className="hire-quote-product-card__rating">
-
             <FaStar className="hire-favorites__meta-icon hire-favorites__meta-icon--star" aria-hidden />
-
             {ratingPct}%
-
           </p>
-
-        ) : null}
-
-        {isPending && onAction ? (
-          <div className="hire-quote-product-card__quick" aria-label="Thao tác nhanh">
-            <button
-              type="button"
-              className="hire-quote-product-card__icon-btn hire-quote-product-card__icon-btn--accept"
-              disabled={busy}
-              title="Gửi offer"
-              aria-label="Gửi offer"
-              onClick={() => onAction(quote.id, "offer")}
-            >
-              ✓
-            </button>
-            <button
-              type="button"
-              className="hire-quote-product-card__icon-btn hire-quote-product-card__icon-btn--decline"
-              disabled={busy}
-              title="Từ chối báo giá"
-              aria-label="Từ chối báo giá"
-              onClick={() => onAction(quote.id, "decline")}
-            >
-              <FaTimes aria-hidden />
-            </button>
-          </div>
         ) : null}
 
         <div className="hire-quote-product-card__actions">
-
-          <button
-            type="button"
-            className="hire-quote-product-card__icon-btn hire-quote-product-card__icon-btn--chat"
-            title="Chat với freelancer"
-            aria-label="Chat với freelancer"
-            onClick={() => onChat?.(quote)}
-          >
-            <FaCommentDots aria-hidden />
-          </button>
-
           <Link href={href} className="hire-quote-product-card__action">
-
             Xem chi tiết
-
           </Link>
 
-          {canOffer ? (
-
+          {canInterview ? (
             <button
-
               type="button"
-
               className="hire-quote-product-card__action"
-
               disabled={busy}
-
-              onClick={() => onAction?.(quote.id, "offer")}
-
+              onClick={() => onAction?.(quote.id, "interview")}
             >
-
-              {busy ? "Đang xử lý..." : "Gửi Offer"}
-
+              {busy ? "Đang xử lý..." : "Phỏng vấn"}
             </button>
+          ) : (
+            <span className="hire-quote-product-card__action hire-quote-product-card__action--placeholder" aria-hidden>
+              —
+            </span>
+          )}
 
-          ) : null}
-
-          {canDecline && !isPending ? (
-
+          {canDecline ? (
             <button
-
               type="button"
-
-              className="hire-quote-product-card__action"
-
+              className="hire-quote-product-card__action hire-quote-product-card__action--decline"
               disabled={busy}
-
               onClick={() => onAction?.(quote.id, "decline")}
-
             >
-
               Từ chối
-
             </button>
-
-          ) : null}
-
-          {canHire ? (
-
-            <button
-
-              type="button"
-
-              className="hire-quote-product-card__action hire-quote-product-card__action--primary"
-
-              disabled={busy}
-
-              onClick={() => onAction?.(quote.id, "accept")}
-
-            >
-
-              {busy ? "Đang xử lý..." : "Chốt tuyển"}
-
-            </button>
-
-          ) : null}
-
+          ) : (
+            <span className="hire-quote-product-card__action hire-quote-product-card__action--placeholder" aria-hidden>
+              —
+            </span>
+          )}
         </div>
 
+        {onChat ? (
+          <button
+            type="button"
+            className="hire-quote-product-card__chat-link"
+            onClick={() => onChat(quote)}
+          >
+            Nhắn tin freelancer
+          </button>
+        ) : null}
       </div>
-
     </article>
-
   );
-
 }
-
-

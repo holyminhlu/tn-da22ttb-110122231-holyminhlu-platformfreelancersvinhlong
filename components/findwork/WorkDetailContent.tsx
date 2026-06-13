@@ -10,11 +10,14 @@ import {
   FaCalendarAlt,
   FaCheckCircle,
   FaClock,
+  FaCommentDots,
+  FaEnvelopeOpenText,
   FaListUl,
   FaMapMarkerAlt,
   FaMoneyBillWave,
   FaStar,
   FaUsers,
+  FaVideo,
 } from "react-icons/fa";
 import { getJob, type JobListing } from "@/lib/api/jobs";
 import { getUserInitials, resolveAvatarSrc } from "@/lib/authSession";
@@ -31,6 +34,15 @@ import {
   proposalCountLabel,
   relativePosted,
 } from "@/lib/jobsDisplay";
+import {
+  blocksNewJobQuote,
+  freelancerQuotePhaseDescription,
+  freelancerQuotePhaseLabel,
+  resolveFreelancerJobQuotePhase,
+} from "@/lib/findwork/workDetailQuote";
+import ClientCannotQuoteModal from "./ClientCannotQuoteModal";
+import SaveJobButton from "./SaveJobButton";
+import WorkDetailCommutePanel from "./WorkDetailCommutePanel";
 import WorkDetailGallery from "./WorkDetailGallery";
 import JobProposalFormModal from "./JobProposalFormModal";
 
@@ -79,7 +91,7 @@ function StatCard({
 export default function WorkDetailContent() {
   const params = useParams();
   const router = useRouter();
-  const { user, ready } = useStoredUser({ refreshFromApi: false });
+  const { user, ready, isClient } = useStoredUser({ refreshFromApi: false });
   const isGuest = ready && !user;
   const rawId = params?.id;
   const jobId = typeof rawId === "string" ? rawId : Array.isArray(rawId) ? rawId[0] : "";
@@ -88,7 +100,7 @@ export default function WorkDetailContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [proposalOpen, setProposalOpen] = useState(false);
-  const [accepted, setAccepted] = useState(false);
+  const [clientNoticeOpen, setClientNoticeOpen] = useState(false);
 
   const loadJob = useCallback(async () => {
     if (!jobId) {
@@ -116,11 +128,6 @@ export default function WorkDetailContent() {
   useEffect(() => {
     void loadJob();
   }, [loadJob]);
-
-  useEffect(() => {
-    if (!job) return;
-    setAccepted(Boolean(job.has_my_pending_quote));
-  }, [job]);
 
   if (loading) {
     return <WorkDetailSkeleton />;
@@ -156,7 +163,19 @@ export default function WorkDetailContent() {
   const isOpen = String(job.status).toLowerCase() === "open";
   const myContractId = job.my_contract_id ?? null;
   const isHired = Boolean(myContractId);
-  const myQuoteStatus = job.my_quote_status ? String(job.my_quote_status).toLowerCase() : null;
+  const quotePhase = resolveFreelancerJobQuotePhase(job);
+  const quotePhaseLabel = freelancerQuotePhaseLabel(quotePhase);
+  const quotePhaseDescription = freelancerQuotePhaseDescription(quotePhase);
+  const canSubmitQuote = isOpen && !blocksNewJobQuote(job);
+  const isOwnJob = Boolean(user?.id && job.client_id && String(user.id) === String(job.client_id));
+
+  function openQuoteFlow() {
+    if (isClient) {
+      setClientNoticeOpen(true);
+      return;
+    }
+    setProposalOpen(true);
+  }
 
   return (
     <div className="wd-page">
@@ -174,6 +193,18 @@ export default function WorkDetailContent() {
         <div className="wd-hero__top">
           <div className="wd-hero__titles">
             <span className={`wd-status wd-status--${statusTone}`}>{jobStatusLabel(job.status)}</span>
+            {quotePhase === "offered" ? (
+              <div className="wd-offer-ribbon" role="status">
+                <FaEnvelopeOpenText aria-hidden />
+                Client đã gửi offer cho bạn
+              </div>
+            ) : null}
+            {quotePhase === "interviewing" ? (
+              <div className="wd-interview-ribbon" role="status">
+                <FaVideo aria-hidden />
+                Client mời phỏng vấn / trao đổi thêm
+              </div>
+            ) : null}
             <h1 className="wd-hero__title">{job.title}</h1>
             <p className="wd-hero__meta">
               <FaClock className="wd-hero__meta-icon" aria-hidden />
@@ -231,6 +262,10 @@ export default function WorkDetailContent() {
             </div>
           </section>
 
+          {!isOwnJob ? (
+            <WorkDetailCommutePanel job={job} isFreelancerViewer={!isClient} />
+          ) : null}
+
           {categoryLabel || tags.length > 0 ? (
             <section className="wd-card">
               <h2 className="wd-card__title">Danh mục & kỹ năng</h2>
@@ -251,13 +286,26 @@ export default function WorkDetailContent() {
           ) : null}
 
           <section className="wd-card wd-card--muted" id="submit-help">
-            <h2 className="wd-card__title">Gửi báo giá</h2>
-            <p className="wd-help-text">
-              Nhấn <strong>Gửi yêu cầu báo giá</strong> để client nhận hồ sơ của bạn. Việc chỉ nhận đơn khi
-              trạng thái là <em>Đang tuyển</em> và bạn chưa gửi đơn trước đó.
-            </p>
-            {!isOpen ? (
+            <h2 className="wd-card__title">
+              {quotePhase === "offered"
+                ? "Offer từ client"
+                : quotePhase === "none" || quotePhase === "declined"
+                  ? "Gửi báo giá"
+                  : "Trạng thái hồ sơ của bạn"}
+            </h2>
+            {quotePhase === "none" || quotePhase === "declined" ? (
+              <p className="wd-help-text">
+                Nhấn <strong>Gửi yêu cầu báo giá</strong> để client nhận hồ sơ của bạn. Chỉ gửi được khi việc
+                đang <em>Đang tuyển</em> và bạn chưa có báo giá đang xử lý.
+              </p>
+            ) : (
+              <p className="wd-help-text">{quotePhaseDescription}</p>
+            )}
+            {!isOpen && quotePhase === "none" ? (
               <p className="wd-help-warn">Công việc này hiện không còn nhận báo giá mới.</p>
+            ) : null}
+            {blocksNewJobQuote(job) && quotePhase !== "accepted" ? (
+              <p className="wd-help-warn">Bạn không thể gửi báo giá mới cho công việc này ở trạng thái hiện tại.</p>
             ) : null}
           </section>
         </div>
@@ -317,7 +365,17 @@ export default function WorkDetailContent() {
               </dl>
             </section>
 
-            <section className="wd-card wd-cta-card">
+            <section
+              className={`wd-card wd-cta-card${
+                quotePhase === "offered"
+                  ? " wd-cta-card--offer"
+                  : quotePhase === "interviewing"
+                    ? " wd-cta-card--interview"
+                    : quotePhase === "pending"
+                      ? " wd-cta-card--pending"
+                      : ""
+              }`}
+            >
               {isHired && myContractId ? (
                 <>
                   <div className="wd-cta-success" role="status">
@@ -331,13 +389,81 @@ export default function WorkDetailContent() {
                     Mở workspace & làm việc
                   </Link>
                 </>
-              ) : accepted || myQuoteStatus === "accepted" ? (
+              ) : quotePhase === "offered" ? (
+                <>
+                  <div className="wd-cta-offer" role="status">
+                    <FaEnvelopeOpenText className="wd-cta-offer__icon" aria-hidden />
+                    <div>
+                      <p className="wd-cta-offer__title">Bạn nhận offer từ client</p>
+                      <p className="wd-cta-offer__text">{quotePhaseDescription}</p>
+                    </div>
+                  </div>
+                  <Link href="/findwork/quotes" className="wd-cta__btn wd-cta__btn--primary">
+                    Xem báo giá & offer của tôi
+                  </Link>
+                  <Link href="/findwork/messages" className="wd-cta__btn wd-cta__btn--ghost">
+                    <FaCommentDots aria-hidden />
+                    Nhắn tin client
+                  </Link>
+                </>
+              ) : quotePhase === "interviewing" ? (
+                <>
+                  <div className="wd-cta-interview" role="status">
+                    <FaVideo aria-hidden />
+                    <div>
+                      <p className="wd-cta-interview__title">{quotePhaseLabel}</p>
+                      <p className="wd-cta-interview__text">{quotePhaseDescription}</p>
+                    </div>
+                  </div>
+                  <Link href="/findwork/messages" className="wd-cta__btn wd-cta__btn--primary">
+                    <FaCommentDots aria-hidden />
+                    Trả lời client
+                  </Link>
+                  <Link href="/findwork/quotes" className="wd-cta__btn wd-cta__btn--ghost">
+                    Xem báo giá của tôi
+                  </Link>
+                </>
+              ) : quotePhase === "pending" ? (
+                <>
+                  <div className="wd-cta-pending" role="status">
+                    <FaCheckCircle aria-hidden />
+                    <div>
+                      <p className="wd-cta-pending__title">Đã gửi báo giá</p>
+                      <p className="wd-cta-pending__text">{quotePhaseDescription}</p>
+                    </div>
+                  </div>
+                  <Link href="/findwork/quotes" className="wd-cta__btn wd-cta__btn--primary">
+                    Theo dõi báo giá
+                  </Link>
+                </>
+              ) : quotePhase === "accepted" ? (
                 <div className="wd-cta-success" role="status">
                   <FaCheckCircle aria-hidden />
-                  {myQuoteStatus === "accepted"
-                    ? "Báo giá của bạn đã được chấp nhận — chờ hợp đồng được tạo."
-                    : "Đã gửi yêu cầu báo giá thành công."}
+                  Báo giá đã được chấp nhận — chờ client tạo hợp đồng hoặc kiểm tra workspace.
                 </div>
+              ) : quotePhase === "declined" ? (
+                <>
+                  <div className="wd-cta__error" role="status">
+                    Client đã từ chối báo giá trước đó. Bạn có thể gửi báo giá mới nếu việc vẫn đang tuyển.
+                  </div>
+                  {isGuest ? (
+                    <Link
+                      href={`/dang-nhap?next=/work/detail/${job.id}`}
+                      className="wd-cta__btn wd-cta__btn--primary"
+                    >
+                      Đăng nhập để báo giá
+                    </Link>
+                  ) : (
+                    <button
+                      type="button"
+                      disabled={!canSubmitQuote}
+                      onClick={openQuoteFlow}
+                      className="wd-cta__btn wd-cta__btn--primary"
+                    >
+                      Gửi báo giá mới
+                    </button>
+                  )}
+                </>
               ) : isGuest ? (
                 <Link
                   href={`/dang-nhap?next=/work/detail/${job.id}`}
@@ -348,17 +474,14 @@ export default function WorkDetailContent() {
               ) : (
                 <button
                   type="button"
-                  disabled={!isOpen || accepted}
-                  onClick={() => setProposalOpen(true)}
+                  disabled={!canSubmitQuote}
+                  onClick={openQuoteFlow}
                   className="wd-cta__btn wd-cta__btn--primary"
                 >
                   Gửi yêu cầu báo giá
                 </button>
               )}
-              <button type="button" className="wd-cta__btn wd-cta__btn--ghost" aria-label="Lưu việc">
-                <FaStar aria-hidden />
-                Lưu việc
-              </button>
+              {!isOwnJob ? <SaveJobButton jobId={job.id} variant="button" /> : null}
               <button
                 type="button"
                 className="wd-cta__btn wd-cta__btn--ghost"
@@ -370,8 +493,10 @@ export default function WorkDetailContent() {
               <p className="wd-cta__hint">
                 {isGuest ? (
                   <Link href="/dang-ky">Chưa có tài khoản? Đăng ký freelancer</Link>
+                ) : blocksNewJobQuote(job) ? (
+                  <a href="#submit-help">Tại sao tôi không thể gửi báo giá mới?</a>
                 ) : (
-                  <a href="#submit-help">Tại sao tôi không thể nộp đơn?</a>
+                  <a href="#submit-help">Hướng dẫn gửi báo giá</a>
                 )}
               </p>
             </section>
@@ -383,7 +508,20 @@ export default function WorkDetailContent() {
         job={job}
         open={proposalOpen}
         onClose={() => setProposalOpen(false)}
-        onSuccess={() => setAccepted(true)}
+        onSuccess={() => void loadJob()}
+        isOwnJob={isOwnJob}
+        onClientBlocked={() => {
+          setProposalOpen(false);
+          setClientNoticeOpen(true);
+        }}
+      />
+
+      <ClientCannotQuoteModal
+        open={clientNoticeOpen}
+        onClose={() => setClientNoticeOpen(false)}
+        jobTitle={job.title}
+        jobId={job.id}
+        isOwnJob={isOwnJob}
       />
     </div>
   );

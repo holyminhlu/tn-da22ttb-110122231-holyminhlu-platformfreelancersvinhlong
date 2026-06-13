@@ -6,7 +6,7 @@ export type JobLeadKind = "new" | "pending" | "hot" | "other";
 
 export type LeadFilter = "all" | "new" | "interested" | "service";
 
-const HOT_STATUSES = new Set(["shortlisted", "interviewing", "offered"]);
+const HOT_STATUSES = new Set(["interviewing", "offered"]);
 
 export function jobLeadKind(job: JobListing): JobLeadKind {
   const status = String(job.my_quote_status || "").toLowerCase();

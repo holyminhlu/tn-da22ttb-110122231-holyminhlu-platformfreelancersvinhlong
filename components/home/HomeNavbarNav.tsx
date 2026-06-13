@@ -1,9 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useStoredUser } from "@/hooks/useStoredUser";
 import { ABOUT_NAV } from "./navMenus";
 import NavDropdown from "./NavDropdown";
+
+function isNavActive(pathname: string, href: string) {
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
 
 const FREELANCER_NAV = [
   { href: "/dashboard", label: "Tổng quan" },
@@ -20,6 +25,7 @@ const CLIENT_NAV = [
 ] as const;
 
 export default function HomeNavbarNav() {
+  const pathname = usePathname();
   const { user, ready, isFreelancer, isClient } = useStoredUser({ refreshFromApi: false });
 
   if (!ready) {
@@ -29,11 +35,19 @@ export default function HomeNavbarNav() {
   if (user && isClient) {
     return (
       <div className="hidden space-x-6 font-medium text-gray-700 md:flex">
-        {CLIENT_NAV.map((item) => (
-          <Link key={item.href} href={item.href} className="hover:text-blue-600">
-            {item.label}
-          </Link>
-        ))}
+        {CLIENT_NAV.map((item) => {
+          const active = isNavActive(pathname, item.href);
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`home-navbar__nav-link${active ? " home-navbar__nav-link--active" : ""}`}
+              aria-current={active ? "page" : undefined}
+            >
+              {item.label}
+            </Link>
+          );
+        })}
       </div>
     );
   }
@@ -41,11 +55,19 @@ export default function HomeNavbarNav() {
   if (user && isFreelancer) {
     return (
       <div className="hidden space-x-6 font-medium text-gray-700 md:flex">
-        {FREELANCER_NAV.map((item) => (
-          <Link key={item.href} href={item.href} className="hover:text-blue-600">
-            {item.label}
-          </Link>
-        ))}
+        {FREELANCER_NAV.map((item) => {
+          const active = isNavActive(pathname, item.href);
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`home-navbar__nav-link${active ? " home-navbar__nav-link--active" : ""}`}
+              aria-current={active ? "page" : undefined}
+            >
+              {item.label}
+            </Link>
+          );
+        })}
       </div>
     );
   }

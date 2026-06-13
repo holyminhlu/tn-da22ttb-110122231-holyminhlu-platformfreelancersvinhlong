@@ -2,18 +2,6 @@
   flex-shrink: 0;
 }
 
-.freelancer-dashboard__service-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.freelancer-dashboard__service-thumb {
-  flex-shrink: 0;
-  border-radius: 0.25rem;
-  object-fit: cover;
-}
-
 /* Nội dung bổ sung trong client-widget — đồng bộ palette với panel trên */
 .fd-widget-block {
   display: flex;

@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useState } from "react";
 import { FaCheckCircle, FaTimes } from "react-icons/fa";
+import { isClientCannotQuoteError } from "@/components/findwork/ClientCannotQuoteModal";
 import { acceptJob, type JobListing, type SubmitJobQuotePayload } from "@/lib/api/jobs";
 import { formatVnd } from "@/lib/format";
 import { formatJobBudgetLine } from "@/lib/jobsDisplay";
@@ -14,6 +15,8 @@ type JobProposalFormModalProps = {
   open: boolean;
   onClose: () => void;
   onSuccess?: () => void;
+  isOwnJob?: boolean;
+  onClientBlocked?: () => void;
 };
 
 function defaultPricingType(job: JobListing): "fixed" | "hourly" {
@@ -47,6 +50,7 @@ export default function JobProposalFormModal({
   open,
   onClose,
   onSuccess,
+  onClientBlocked,
 }: JobProposalFormModalProps) {
   const titleId = useId();
   const [step, setStep] = useState<Step>("form");
@@ -135,6 +139,10 @@ export default function JobProposalFormModal({
         err && typeof err === "object" && "message" in err
           ? String((err as { message: string }).message)
           : "Không thể gửi báo giá lúc này.";
+      if (isClientCannotQuoteError(msg)) {
+        onClientBlocked?.();
+        return;
+      }
       setSubmitError(msg);
     } finally {
       setSubmitting(false);

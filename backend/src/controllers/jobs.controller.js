@@ -600,18 +600,25 @@ async function acceptJob(req, res) {
     }
 
     const existingQuote = await dbClient.query(
-      `SELECT id FROM public.job_quotes
+      `SELECT id, status FROM public.job_quotes
        WHERE job_id = $1 AND freelancer_id = $2
-         AND status IN ('pending', 'shortlisted', 'interviewing', 'offered')
+         AND status IN ('pending', 'shortlisted', 'interviewing', 'offered', 'accepted')
        LIMIT 1`,
       [jobId, freelancerId],
     );
 
     if (existingQuote.rowCount > 0) {
       await dbClient.query("ROLLBACK");
-      return res.status(409).json({
-        message: "Bạn đã gửi báo giá cho công việc này và đang chờ client phản hồi.",
-      });
+      const existingStatus = String(existingQuote.rows[0].status || "").toLowerCase();
+      let message = "Bạn đã gửi báo giá cho công việc này và đang chờ client phản hồi.";
+      if (existingStatus === "offered") {
+        message = "Client đã gửi offer cho bạn — không thể gửi báo giá mới. Chờ client chốt tuyển.";
+      } else if (existingStatus === "interviewing") {
+        message = "Client đang trao đổi với bạn về công việc này — không thể gửi báo giá mới.";
+      } else if (existingStatus === "accepted") {
+        message = "Bạn đã được chọn cho công việc này.";
+      }
+      return res.status(409).json({ message });
     }
 
     const insertResult = await dbClient.query(
@@ -955,9 +962,9 @@ async function patchJobQuote(req, res) {
     return res.status(403).json({ message: "Chỉ client hoặc freelancer được quản lý báo giá." });
   }
 
-  if (!["shortlist", "interview", "offer", "accept", "decline"].includes(action)) {
+  if (!["interview", "offer", "accept", "decline"].includes(action)) {
     return res.status(400).json({
-      message: "action phải là shortlist, interview, offer, accept hoặc decline.",
+      message: "action phải là interview, offer, accept hoặc decline.",
     });
   }
 
@@ -1003,25 +1010,6 @@ async function patchJobQuote(req, res) {
         actorId: payload.sub,
       }).catch((err) => console.error("notifyQuoteAction decline:", err.message));
       return res.json({ message: "Đã từ chối báo giá." });
-    }
-
-    if (action === "shortlist") {
-      if (!["pending", "interviewing", "offered"].includes(quote.status)) {
-        await dbClient.query("ROLLBACK");
-        return res.status(409).json({ message: "Chỉ có thể shortlist hồ sơ còn mở." });
-      }
-      await dbClient.query(
-        `UPDATE public.job_quotes SET status = 'shortlisted', updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
-        [quoteId],
-      );
-      await dbClient.query("COMMIT");
-      notifyQuoteAction(dbClient, {
-        action: "shortlist",
-        quote,
-        jobTitle: quote.job_title,
-        actorId: payload.sub,
-      }).catch((err) => console.error("notifyQuoteAction shortlist:", err.message));
-      return res.json({ message: "Đã đưa freelancer vào shortlist." });
     }
 
     if (action === "interview") {
@@ -1351,7 +1339,7 @@ async function listJobs(req, res) {
              FROM public.job_quotes jqm
              WHERE jqm.job_id = j.id
                AND jqm.freelancer_id = $${viewerIdx}::uuid
-               AND jqm.status = 'pending'
+               AND jqm.status IN ('pending', 'shortlisted', 'interviewing', 'offered', 'accepted')
            )
          END AS has_my_pending_quote,
          (
@@ -1359,7 +1347,7 @@ async function listJobs(req, res) {
            FROM public.job_quotes jq
            WHERE jq.job_id = j.id
              AND jq.freelancer_id = $${viewerIdx}::uuid
-             AND jq.status NOT IN ('withdrawn')
+             AND jq.status NOT IN ('withdrawn', 'declined')
            ORDER BY jq.updated_at DESC
            LIMIT 1
          ) AS my_quote_status
@@ -1439,7 +1427,7 @@ async function getJob(req, res) {
              FROM public.job_quotes jqm
              WHERE jqm.job_id = j.id
                AND jqm.freelancer_id = $2::uuid
-               AND jqm.status = 'pending'
+               AND jqm.status IN ('pending', 'shortlisted', 'interviewing', 'offered', 'accepted')
            )
          END AS has_my_pending_quote,
          (
@@ -1637,6 +1625,218 @@ async function listMyJobs(req, res) {
   }
 }
 
+function requireFreelancerPayload(req, res) {
+  const payload = verifyAccessToken(req, res);
+  if (!payload) return null;
+  if (payload.role !== "freelancer") {
+    res.status(403).json({ message: "Chỉ freelancer được lưu công việc." });
+    return null;
+  }
+  return payload;
+}
+
+const JOB_LISTING_JOINS_SQL = `
+       FROM public.jobs j
+       INNER JOIN public.users u ON u.id = j.client_id
+       LEFT JOIN public.user_profiles up ON up.user_id = j.client_id
+       LEFT JOIN (
+         SELECT client_id, COALESCE(SUM(agreed_price), 0) AS total_spent
+         FROM public.contracts
+         WHERE deleted_at IS NULL AND status IN ('completed', 'active')
+         GROUP BY client_id
+       ) csp ON csp.client_id = j.client_id
+       LEFT JOIN (
+         SELECT job_id, COUNT(*)::int AS proposal_count
+         FROM public.contracts
+         WHERE deleted_at IS NULL AND job_id IS NOT NULL
+         GROUP BY job_id
+       ) pc ON pc.job_id = j.id
+       LEFT JOIN (
+         SELECT job_id, COUNT(*)::int AS quote_count
+         FROM public.job_quotes
+         WHERE status NOT IN ('withdrawn', 'declined')
+         GROUP BY job_id
+       ) qc ON qc.job_id = j.id`;
+
+function jobListingViewerSelectSql(viewerIdx) {
+  return `
+         CASE
+           WHEN $${viewerIdx}::uuid IS NULL THEN FALSE
+           ELSE EXISTS (
+             SELECT 1
+             FROM public.job_quotes jqm
+             WHERE jqm.job_id = j.id
+               AND jqm.freelancer_id = $${viewerIdx}::uuid
+               AND jqm.status IN ('pending', 'shortlisted', 'interviewing', 'offered', 'accepted')
+           )
+         END AS has_my_pending_quote,
+         (
+           SELECT jq.status
+           FROM public.job_quotes jq
+           WHERE jq.job_id = j.id
+             AND jq.freelancer_id = $${viewerIdx}::uuid
+             AND jq.status NOT IN ('withdrawn', 'declined')
+           ORDER BY jq.updated_at DESC
+           LIMIT 1
+         ) AS my_quote_status`;
+}
+
+async function listSavedJobIds(req, res) {
+  const payload = requireFreelancerPayload(req, res);
+  if (!payload) return;
+
+  const db = await pool.connect();
+  try {
+    const result = await db.query(
+      `SELECT sj.job_id
+       FROM public.saved_jobs sj
+       WHERE sj.freelancer_id = $1
+       ORDER BY sj.saved_at DESC`,
+      [payload.sub],
+    );
+    return res.json({ jobIds: result.rows.map((row) => row.job_id) });
+  } catch (error) {
+    console.error("List saved job ids failed:", error.message);
+    if (error.code === "42P01") {
+      return res.status(503).json({
+        message: "Thiếu bảng saved_jobs. Chạy backend/sql/saved_jobs.sql trên PostgreSQL.",
+      });
+    }
+    return res.status(500).json({ message: "Không thể tải danh sách việc đã lưu." });
+  } finally {
+    db.release();
+  }
+}
+
+async function listSavedJobs(req, res) {
+  const payload = requireFreelancerPayload(req, res);
+  if (!payload) return;
+
+  const limit = Math.min(Math.max(Number.parseInt(String(req.query.limit || ""), 10) || 24, 1), 100);
+  const offset = Math.max(Number.parseInt(String(req.query.offset || ""), 10) || 0, 0);
+
+  const db = await pool.connect();
+  try {
+    const listResult = await db.query(
+      `SELECT${JOB_LISTING_SELECT},
+         ${jobListingViewerSelectSql(2)}
+       ${JOB_LISTING_JOINS_SQL}
+       INNER JOIN public.saved_jobs sj ON sj.job_id = j.id AND sj.freelancer_id = $1
+       WHERE u.deleted_at IS NULL
+       ORDER BY sj.saved_at DESC
+       LIMIT $3 OFFSET $4`,
+      [payload.sub, payload.sub, limit, offset],
+    );
+
+    const countResult = await db.query(
+      `SELECT COUNT(*)::int AS total
+       FROM public.saved_jobs sj
+       INNER JOIN public.jobs j ON j.id = sj.job_id
+       INNER JOIN public.users u ON u.id = j.client_id
+       WHERE sj.freelancer_id = $1 AND u.deleted_at IS NULL`,
+      [payload.sub],
+    );
+
+    return res.json({
+      jobs: listResult.rows.map(mapJobListingRow),
+      total: countResult.rows[0]?.total ?? 0,
+      limit,
+      offset,
+    });
+  } catch (error) {
+    console.error("List saved jobs failed:", error.message);
+    if (error.code === "42P01") {
+      return res.status(503).json({
+        message: "Thiếu bảng saved_jobs. Chạy backend/sql/saved_jobs.sql trên PostgreSQL.",
+      });
+    }
+    return res.status(500).json({ message: "Không thể tải công việc đã lưu." });
+  } finally {
+    db.release();
+  }
+}
+
+async function saveJob(req, res) {
+  const payload = requireFreelancerPayload(req, res);
+  if (!payload) return;
+
+  const jobId = parseUuidParam(req.params.jobId);
+  if (!jobId) {
+    return res.status(400).json({ message: "Mã công việc không hợp lệ." });
+  }
+
+  const db = await pool.connect();
+  try {
+    const jobCheck = await db.query(
+      `SELECT j.id, j.client_id, j.status
+       FROM public.jobs j
+       INNER JOIN public.users u ON u.id = j.client_id AND u.deleted_at IS NULL
+       WHERE j.id = $1
+       LIMIT 1`,
+      [jobId],
+    );
+    if (jobCheck.rowCount === 0) {
+      return res.status(404).json({ message: "Không tìm thấy công việc." });
+    }
+    if (String(jobCheck.rows[0].client_id) === String(payload.sub)) {
+      return res.status(400).json({ message: "Bạn không thể lưu công việc do chính mình đăng." });
+    }
+
+    await db.query(
+      `INSERT INTO public.saved_jobs (freelancer_id, job_id)
+       VALUES ($1, $2)
+       ON CONFLICT (freelancer_id, job_id) DO NOTHING`,
+      [payload.sub, jobId],
+    );
+
+    return res.status(201).json({ message: "Đã lưu công việc.", saved: true, jobId });
+  } catch (error) {
+    console.error("Save job failed:", error.message);
+    if (error.code === "42P01") {
+      return res.status(503).json({
+        message: "Thiếu bảng saved_jobs. Chạy backend/sql/saved_jobs.sql trên PostgreSQL.",
+      });
+    }
+    return res.status(500).json({ message: "Không thể lưu công việc." });
+  } finally {
+    db.release();
+  }
+}
+
+async function unsaveJob(req, res) {
+  const payload = requireFreelancerPayload(req, res);
+  if (!payload) return;
+
+  const jobId = parseUuidParam(req.params.jobId);
+  if (!jobId) {
+    return res.status(400).json({ message: "Mã công việc không hợp lệ." });
+  }
+
+  const db = await pool.connect();
+  try {
+    const result = await db.query(
+      `DELETE FROM public.saved_jobs
+       WHERE freelancer_id = $1 AND job_id = $2`,
+      [payload.sub, jobId],
+    );
+    return res.json({
+      message: result.rowCount > 0 ? "Đã bỏ lưu công việc." : "Công việc chưa được lưu.",
+      saved: false,
+      jobId,
+    });
+  } catch (error) {
+    console.error("Unsave job failed:", error.message);
+    if (error.code === "42P01") {
+      return res.status(503).json({
+        message: "Thiếu bảng saved_jobs. Chạy backend/sql/saved_jobs.sql trên PostgreSQL.",
+      });
+    }
+    return res.status(500).json({ message: "Không thể bỏ lưu công việc." });
+  } finally {
+    db.release();
+  }
+}
+
 module.exports = {
   listJobs,
   listMyJobs,
@@ -1649,4 +1849,8 @@ module.exports = {
   acceptJob,
   listMyJobQuotes,
   patchJobQuote,
+  listSavedJobIds,
+  listSavedJobs,
+  saveJob,
+  unsaveJob,
 };

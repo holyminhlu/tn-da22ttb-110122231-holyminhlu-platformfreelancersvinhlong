@@ -23,9 +23,9 @@ function badgeToneClass(status: string): string {
   const s = status.toLowerCase();
   if (s === "pending") return "fw-quotes__badge fw-quotes__badge--pending";
   if (s === "accepted") return "fw-quotes__badge fw-quotes__badge--accepted";
-  if (s === "shortlisted" || s === "interviewing" || s === "offered") {
-    return "fw-quotes__badge fw-quotes__badge--hot";
-  }
+  if (s === "offered") return "fw-quotes__badge fw-quotes__badge--offered";
+  if (s === "interviewing") return "fw-quotes__badge fw-quotes__badge--hot";
+  if (s === "shortlisted") return "fw-quotes__badge fw-quotes__badge--pending";
   return "fw-quotes__badge fw-quotes__badge--muted";
 }
 

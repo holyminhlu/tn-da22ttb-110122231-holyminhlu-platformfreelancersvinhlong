@@ -708,6 +708,297 @@ async function updateBillingProfile(req, res) {
   }
 }
 
+function detectCardBrandFromPan(digits) {
+  if (/^4/.test(digits)) return "Visa";
+  if (/^5[1-5]/.test(digits)) return "Mastercard";
+  if (/^3[47]/.test(digits)) return "Amex";
+  if (/^35(2[89]|[3-8]\d)/.test(digits)) return "JCB";
+  return "Card";
+}
+
+function luhnCheck(digits) {
+  if (!digits || digits.length < 13 || digits.length > 19) return false;
+  let sum = 0;
+  let alt = false;
+  for (let i = digits.length - 1; i >= 0; i -= 1) {
+    let n = Number(digits[i]);
+    if (alt) {
+      n *= 2;
+      if (n > 9) n -= 9;
+    }
+    sum += n;
+    alt = !alt;
+  }
+  return sum % 10 === 0;
+}
+
+async function addBillingMethod(req, res) {
+  const payload = verifyAccessToken(req, res);
+  if (!payload) return;
+
+  const role = String(payload.role || "").toLowerCase();
+  if (role !== "client") {
+    return res.status(403).json({ message: "Chỉ tài khoản khách hàng được thêm phương thức thanh toán." });
+  }
+
+  const userId = payload.sub;
+  const variant = String(req.body?.variant || "intl_card");
+  const isDefault = Boolean(req.body?.isDefault);
+  const cardDigits = String(req.body?.cardNumber || "").replace(/\D/g, "");
+  const cardholderName = String(req.body?.cardholderName || "").trim().slice(0, 80);
+  const bankName = String(req.body?.bankName || "").trim().slice(0, 120);
+  const walletProvider = String(req.body?.walletProvider || "").toLowerCase();
+  const walletPhone = String(req.body?.walletPhone || "").replace(/\D/g, "");
+
+  const db = await pool.connect();
+
+  try {
+    let methodType = "card";
+    let cardBrand = null;
+    let cardLast4 = null;
+    let cardExpMonth = null;
+    let cardExpYear = null;
+    let provider = cardholderName || null;
+    let bankNameValue = null;
+    let bankAccountLast4 = null;
+    let paypalEmail = null;
+
+    if (variant === "intl_card") {
+      if (!luhnCheck(cardDigits)) {
+        return res.status(400).json({ message: "Số thẻ không hợp lệ." });
+      }
+      const expMonth = Number(req.body?.expMonth);
+      const expYear = Number(req.body?.expYear);
+      if (!Number.isInteger(expMonth) || expMonth < 1 || expMonth > 12) {
+        return res.status(400).json({ message: "Tháng hết hạn không hợp lệ." });
+      }
+      if (!Number.isInteger(expYear) || expYear < new Date().getFullYear()) {
+        return res.status(400).json({ message: "Năm hết hạn không hợp lệ." });
+      }
+      if (!cardholderName) {
+        return res.status(400).json({ message: "Vui lòng nhập tên in trên thẻ." });
+      }
+
+      methodType = "card";
+      cardBrand = detectCardBrandFromPan(cardDigits);
+      cardLast4 = cardDigits.slice(-4);
+      cardExpMonth = expMonth;
+      cardExpYear = expYear;
+      provider = cardholderName;
+    } else if (variant === "domestic_atm") {
+      if (cardDigits.length < 16 || cardDigits.length > 19) {
+        return res.status(400).json({ message: "Số thẻ ATM nội địa phải có 16–19 chữ số." });
+      }
+      if (!bankName) {
+        return res.status(400).json({ message: "Vui lòng chọn ngân hàng." });
+      }
+      if (!cardholderName) {
+        return res.status(400).json({ message: "Vui lòng nhập tên chủ thẻ." });
+      }
+
+      methodType = "bank";
+      bankNameValue = bankName;
+      bankAccountLast4 = cardDigits.slice(-4);
+      provider = cardholderName;
+    } else if (variant === "ewallet") {
+      if (walletPhone.length < 9 || walletPhone.length > 11) {
+        return res.status(400).json({ message: "Số điện thoại ví không hợp lệ." });
+      }
+      const walletLabel = walletProvider === "zalopay" ? "ZaloPay" : "MoMo";
+      methodType = "bank";
+      bankNameValue = walletLabel;
+      bankAccountLast4 = walletPhone.slice(-4);
+      provider = walletLabel;
+    } else {
+      return res.status(400).json({ message: "Loại phương thức không hợp lệ." });
+    }
+
+    await db.query("BEGIN");
+
+    if (isDefault) {
+      await db.query(
+        `UPDATE public.client_billing_methods
+         SET is_default = false, updated_at = NOW()
+         WHERE user_id = $1 AND is_active = true`,
+        [userId],
+      );
+    }
+
+    const insert = await db.query(
+      `INSERT INTO public.client_billing_methods
+         (user_id, method_type, provider, card_brand, card_last4, card_exp_month, card_exp_year,
+          paypal_email, bank_name, bank_account_last4, is_default, is_active, updated_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, true, NOW())
+       RETURNING *`,
+      [
+        userId,
+        methodType,
+        provider,
+        cardBrand,
+        cardLast4,
+        cardExpMonth,
+        cardExpYear,
+        paypalEmail,
+        bankNameValue,
+        bankAccountLast4,
+        isDefault,
+      ],
+    );
+
+    await db.query("COMMIT");
+
+    return res.status(201).json({
+      message: "Đã thêm phương thức thanh toán.",
+      method: mapBillingMethodRow(insert.rows[0]),
+    });
+  } catch (error) {
+    await db.query("ROLLBACK").catch(() => {});
+    console.error("addBillingMethod failed:", error.message);
+    if (isMissingSchemaError(error)) {
+      return res.status(503).json({
+        message: "Thiếu bảng client_billing_methods. Chạy backend/sql/client_billing_payments.sql.",
+      });
+    }
+    return res.status(500).json({ message: "Không thể lưu phương thức thanh toán." });
+  } finally {
+    db.release();
+  }
+}
+
+async function setDefaultBillingMethod(req, res) {
+  const payload = verifyAccessToken(req, res);
+  if (!payload) return;
+
+  const role = String(payload.role || "").toLowerCase();
+  if (role !== "client") {
+    return res.status(403).json({ message: "Chỉ tài khoản khách hàng được đổi phương thức mặc định." });
+  }
+
+  const userId = payload.sub;
+  const methodId = String(req.params.methodId || "").trim();
+  if (!methodId || methodId === "identity-card") {
+    return res.status(400).json({ message: "Phương thức thanh toán không hợp lệ." });
+  }
+
+  const db = await pool.connect();
+  try {
+    const existing = await db.query(
+      `SELECT id FROM public.client_billing_methods
+       WHERE id = $1 AND user_id = $2 AND is_active = true
+       LIMIT 1`,
+      [methodId, userId],
+    );
+    if (existing.rows.length === 0) {
+      return res.status(404).json({ message: "Không tìm thấy phương thức thanh toán." });
+    }
+
+    await db.query("BEGIN");
+    await db.query(
+      `UPDATE public.client_billing_methods
+       SET is_default = false, updated_at = NOW()
+       WHERE user_id = $1 AND is_active = true`,
+      [userId],
+    );
+    const updated = await db.query(
+      `UPDATE public.client_billing_methods
+       SET is_default = true, updated_at = NOW()
+       WHERE id = $1 AND user_id = $2
+       RETURNING *`,
+      [methodId, userId],
+    );
+    await db.query("COMMIT");
+
+    return res.json({
+      message: "Đã đặt làm phương thức thanh toán mặc định.",
+      method: mapBillingMethodRow(updated.rows[0]),
+    });
+  } catch (error) {
+    await db.query("ROLLBACK").catch(() => {});
+    console.error("setDefaultBillingMethod failed:", error.message);
+    if (isMissingSchemaError(error)) {
+      return res.status(503).json({
+        message: "Thiếu bảng client_billing_methods. Chạy backend/sql/client_billing_payments.sql.",
+      });
+    }
+    return res.status(500).json({ message: "Không thể đổi phương thức mặc định." });
+  } finally {
+    db.release();
+  }
+}
+
+async function deleteBillingMethod(req, res) {
+  const payload = verifyAccessToken(req, res);
+  if (!payload) return;
+
+  const role = String(payload.role || "").toLowerCase();
+  if (role !== "client") {
+    return res.status(403).json({ message: "Chỉ tài khoản khách hàng được xóa phương thức thanh toán." });
+  }
+
+  const userId = payload.sub;
+  const methodId = String(req.params.methodId || "").trim();
+  if (!methodId || methodId === "identity-card") {
+    return res.status(400).json({ message: "Phương thức thanh toán không hợp lệ." });
+  }
+
+  const db = await pool.connect();
+  try {
+    const existing = await db.query(
+      `SELECT id, is_default
+       FROM public.client_billing_methods
+       WHERE id = $1 AND user_id = $2 AND is_active = true
+       LIMIT 1`,
+      [methodId, userId],
+    );
+    if (existing.rows.length === 0) {
+      return res.status(404).json({ message: "Không tìm thấy phương thức thanh toán." });
+    }
+
+    const wasDefault = Boolean(existing.rows[0].is_default);
+
+    await db.query("BEGIN");
+    await db.query(
+      `UPDATE public.client_billing_methods
+       SET is_active = false, is_default = false, updated_at = NOW()
+       WHERE id = $1 AND user_id = $2`,
+      [methodId, userId],
+    );
+
+    if (wasDefault) {
+      const nextDefault = await db.query(
+        `SELECT id
+         FROM public.client_billing_methods
+         WHERE user_id = $1 AND is_active = true
+         ORDER BY created_at DESC
+         LIMIT 1`,
+        [userId],
+      );
+      if (nextDefault.rows[0]?.id) {
+        await db.query(
+          `UPDATE public.client_billing_methods
+           SET is_default = true, updated_at = NOW()
+           WHERE id = $1 AND user_id = $2`,
+          [nextDefault.rows[0].id, userId],
+        );
+      }
+    }
+
+    await db.query("COMMIT");
+    return res.json({ message: "Đã xóa phương thức thanh toán." });
+  } catch (error) {
+    await db.query("ROLLBACK").catch(() => {});
+    console.error("deleteBillingMethod failed:", error.message);
+    if (isMissingSchemaError(error)) {
+      return res.status(503).json({
+        message: "Thiếu bảng client_billing_methods. Chạy backend/sql/client_billing_payments.sql.",
+      });
+    }
+    return res.status(500).json({ message: "Không thể xóa phương thức thanh toán." });
+  } finally {
+    db.release();
+  }
+}
+
 async function depositFunds(req, res) {
   const payload = verifyAccessToken(req, res);
   if (!payload) return;
@@ -848,6 +1139,9 @@ async function withdrawFreelancerFunds(req, res) {
 module.exports = {
   getBilling,
   updateBillingProfile,
+  addBillingMethod,
+  setDefaultBillingMethod,
+  deleteBillingMethod,
   depositFunds,
   withdrawFreelancerFunds,
 };

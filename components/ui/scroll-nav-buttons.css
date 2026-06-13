@@ -1,0 +1,97 @@
+.scroll-nav {
+  position: fixed;
+  bottom: 1.25rem;
+  left: 50%;
+  z-index: 45;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+  transform: translateX(-50%);
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+
+.scroll-nav--visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.scroll-nav__btn {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: rgb(20, 20, 20);
+  border: none;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 0 4px rgb(180 160 255 / 0.25);
+  cursor: pointer;
+  transition: width 0.3s ease, border-radius 0.3s ease, background-color 0.3s ease;
+  overflow: hidden;
+  position: relative;
+  pointer-events: auto;
+}
+
+.scroll-nav__icon {
+  width: 12px;
+  height: 12px;
+  transition: transform 0.3s ease;
+}
+
+.scroll-nav__icon path {
+  fill: white;
+}
+
+.scroll-nav__btn--down .scroll-nav__icon {
+  transform: rotate(180deg);
+}
+
+.scroll-nav__btn:hover {
+  width: 9.5rem;
+  border-radius: 50px;
+  background-color: rgb(181, 160, 255);
+}
+
+.scroll-nav__btn--up:hover .scroll-nav__icon {
+  transform: translateY(-200%);
+}
+
+.scroll-nav__btn--down:hover .scroll-nav__icon {
+  transform: rotate(180deg) translateY(-200%);
+}
+
+.scroll-nav__btn::before {
+  position: absolute;
+  bottom: -20px;
+  content: attr(data-label);
+  color: white;
+  font-size: 0;
+  opacity: 0;
+  white-space: nowrap;
+  transition: font-size 0.3s ease, opacity 0.3s ease, bottom 0.3s ease;
+}
+
+.scroll-nav__btn:hover::before {
+  font-size: 13px;
+  opacity: 1;
+  bottom: unset;
+}
+
+.scroll-nav__btn:focus-visible {
+  outline: 2px solid rgb(181, 160, 255);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-nav__btn,
+  .scroll-nav__icon,
+  .scroll-nav__btn::before,
+  .scroll-nav {
+    transition: none;
+  }
+}

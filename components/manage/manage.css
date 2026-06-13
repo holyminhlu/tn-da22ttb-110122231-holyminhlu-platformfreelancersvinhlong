@@ -195,6 +195,10 @@
   list-style: none;
 }
 
+.manage-page__pagination {
+  margin-top: 1.25rem;
+}
+
 .manage-page__empty {
   padding: 4rem 1.5rem;
   text-align: center;

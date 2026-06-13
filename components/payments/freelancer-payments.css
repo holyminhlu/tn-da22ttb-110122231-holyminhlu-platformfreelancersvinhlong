@@ -8,11 +8,6 @@
   }
 }
 
-.fl-payments__balance-card--pending {
-  border-color: #fde68a;
-  background: #fffbeb;
-}
-
 .fl-payments__withdraw {
   margin-top: 1.25rem;
   padding-top: 1.25rem;

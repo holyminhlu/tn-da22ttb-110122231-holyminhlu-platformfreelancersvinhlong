@@ -51,6 +51,27 @@ export function joinChatRoom(
   });
 }
 
+export type ChatReadEvent = {
+  conversationId: string;
+  userId: string;
+  readAt: string;
+};
+
+export function emitChatRead(
+  socket: Socket,
+  conversationId: string,
+): Promise<{ ok: boolean; readAt?: string; error?: string }> {
+  return new Promise((resolve) => {
+    socket.emit(
+      "chat:read",
+      { conversationId },
+      (ack: { ok: boolean; readAt?: string; error?: string }) => {
+        resolve(ack ?? { ok: false, error: "Không thể cập nhật đã xem." });
+      },
+    );
+  });
+}
+
 export function emitChatMessage(
   socket: Socket,
   conversationId: string,

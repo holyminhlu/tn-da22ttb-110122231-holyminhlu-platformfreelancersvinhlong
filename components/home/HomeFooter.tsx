@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { FaAndroid, FaApple, FaFacebookF, FaLinkedinIn, FaTwitter } from "./icons";
+import { FaFacebookF, FaLinkedinIn, FaTwitter } from "./icons";
 
 const FOOTER_LINKS = {
   navigate: [
@@ -13,16 +13,11 @@ const FOOTER_LINKS = {
     { label: "Giới thiệu về VLC", href: "/about" },
     { label: "Cách VLC hoạt động", href: "/how-vlc-works" },
     { label: "Tại sao chọn VLC", href: "/why-vlc" },
-    { label: "Bảng giá", href: "/pricing" },
   ],
   resources: [
     { label: "Trợ giúp & FAQ", href: "/help" },
     { label: "Blog", href: "/blog" },
     { label: "Liên hệ", href: "#" },
-    { label: "Ứng dụng di động", href: "#" },
-    { label: "API", href: "#" },
-    { label: "Sơ đồ trang", href: "#" },
-    { label: "Cài đặt cookie", href: "#" },
   ],
   policies: [
     { label: "Chính sách sở hữu trí tuệ", href: "#" },
@@ -59,7 +54,7 @@ export default function HomeFooter() {
           <FooterColumn title="Chính sách" links={FOOTER_LINKS.policies} />
           <div className="lg:col-span-2">
             <h4 className="mb-6 font-bold">Kết nối với chúng tôi</h4>
-            <div className="mb-10 flex space-x-4">
+            <div className="flex space-x-4">
               <a
                 href="#"
                 className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-700 transition hover:bg-blue-600"
@@ -80,15 +75,6 @@ export default function HomeFooter() {
                 aria-label="LinkedIn"
               >
                 <FaLinkedinIn />
-              </a>
-            </div>
-            <h4 className="mb-6 font-bold">Tải ứng dụng VLC</h4>
-            <div className="flex space-x-4">
-              <a href="#" className="transition hover:opacity-80" aria-label="Tải trên App Store">
-                <FaApple className="text-3xl" />
-              </a>
-              <a href="#" className="transition hover:opacity-80" aria-label="Tải trên Google Play">
-                <FaAndroid className="text-3xl" />
               </a>
             </div>
           </div>

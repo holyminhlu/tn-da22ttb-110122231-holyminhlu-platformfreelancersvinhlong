@@ -64,7 +64,7 @@ export async function getMyJobQuote(quoteId: string) {
   return quotes.find((row) => row.id === quoteId) ?? null;
 }
 
-export type PatchJobQuoteAction = "shortlist" | "interview" | "offer" | "accept" | "decline";
+export type PatchJobQuoteAction = "interview" | "offer" | "accept" | "decline";
 export type PatchFreelancerJobQuoteAction = "withdraw";
 
 export async function patchJobQuote(quoteId: string, action: PatchJobQuoteAction) {

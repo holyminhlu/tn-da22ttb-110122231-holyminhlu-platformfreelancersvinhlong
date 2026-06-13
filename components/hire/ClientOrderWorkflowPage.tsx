@@ -6,7 +6,7 @@ import HireShell from "./HireShell";
 export default function ClientOrderWorkflowPage() {
   return (
     <HireShell>
-      <ServiceOrderWorkflow backHref="/manage" backLabel="Phòng làm việc / Quản lý" />
+      <ServiceOrderWorkflow backHref="/hire/orders" backLabel="Đơn dịch vụ" />
     </HireShell>
   );
 }

@@ -219,3 +219,39 @@ export async function deleteMyJob(jobId: string) {
   });
   return data;
 }
+
+export async function listSavedJobIds() {
+  const { data } = await fetchApi<{ jobIds: string[] }>(apiPaths.jobs.savedJobIds, { auth: true });
+  return data.jobIds ?? [];
+}
+
+export type ListSavedJobsParams = {
+  limit?: number;
+  offset?: number;
+};
+
+export async function listSavedJobs(params?: ListSavedJobsParams) {
+  const search = new URLSearchParams();
+  if (params?.limit != null) search.set("limit", String(params.limit));
+  if (params?.offset != null) search.set("offset", String(params.offset));
+  const qs = search.toString();
+  const path = qs ? `${apiPaths.jobs.savedJobs}?${qs}` : apiPaths.jobs.savedJobs;
+  const { data } = await fetchApi<ListJobsResponse>(path, { auth: true });
+  return data;
+}
+
+export async function saveJob(jobId: string) {
+  const { data } = await fetchApi<{ message: string; saved: boolean; jobId: string }>(
+    apiPaths.jobs.savedJob(jobId),
+    { method: "POST", auth: true },
+  );
+  return data;
+}
+
+export async function unsaveJob(jobId: string) {
+  const { data } = await fetchApi<{ message: string; saved: boolean; jobId: string }>(
+    apiPaths.jobs.savedJob(jobId),
+    { method: "DELETE", auth: true },
+  );
+  return data;
+}

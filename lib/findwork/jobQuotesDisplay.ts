@@ -8,7 +8,6 @@ export type FreelancerQuoteSort = "newest" | "updated" | "price_desc" | "price_a
 
 const ACTIVE_STATUSES = new Set<JobQuoteStatus>([
   "pending",
-  "shortlisted",
   "interviewing",
   "offered",
 ]);
@@ -16,8 +15,7 @@ const ACTIVE_STATUSES = new Set<JobQuoteStatus>([
 const STATUS_PRIORITY: Record<string, number> = {
   offered: 0,
   interviewing: 1,
-  shortlisted: 2,
-  pending: 3,
+  pending: 2,
   accepted: 4,
   declined: 5,
   withdrawn: 6,
@@ -30,9 +28,9 @@ export function isActiveFreelancerQuote(quote: JobQuoteRow): boolean {
 export function freelancerQuoteStatusHint(status: string): string {
   const s = String(status).toLowerCase();
   if (s === "pending") return "Đang chờ client xem xét";
-  if (s === "shortlisted") return "Client đã shortlist hồ sơ của bạn";
+  if (s === "shortlisted") return "Đang chờ client xem xét";
   if (s === "interviewing") return "Client muốn trao đổi thêm";
-  if (s === "offered") return "Client đã gửi offer — có thể chốt tuyển";
+  if (s === "offered") return "Client đã gửi offer — chờ client chốt tuyển";
   if (s === "accepted") return "Bạn đã được tuyển cho việc này";
   if (s === "declined") return "Client đã từ chối báo giá";
   if (s === "withdrawn") return "Bạn đã rút báo giá";
@@ -40,7 +38,7 @@ export function freelancerQuoteStatusHint(status: string): string {
 }
 
 export function canWithdrawFreelancerQuote(quote: JobQuoteRow): boolean {
-  return ["pending", "shortlisted", "interviewing", "offered"].includes(
+  return ["pending", "interviewing", "offered"].includes(
     String(quote.status).toLowerCase(),
   );
 }
@@ -63,7 +61,10 @@ export function filterFreelancerQuotes(
   return quotes.filter((quote) => {
     const status = String(quote.status).toLowerCase();
     if (filter === "active" && !ACTIVE_STATUSES.has(status as JobQuoteStatus)) return false;
-    if (filter !== "all" && filter !== "active" && status !== filter) return false;
+    if (filter === "pending" && status !== "pending" && status !== "shortlisted") return false;
+    if (filter !== "all" && filter !== "active" && filter !== "pending" && status !== filter) {
+      return false;
+    }
     if (!query) return true;
     const hay = [
       quote.job_title,
@@ -112,8 +113,11 @@ export function countFreelancerQuotesByFilter(
   return {
     all: quotes.length,
     active: quotes.filter(isActiveFreelancerQuote).length,
-    pending: quotes.filter((q) => String(q.status).toLowerCase() === "pending").length,
-    shortlisted: quotes.filter((q) => String(q.status).toLowerCase() === "shortlisted").length,
+    pending: quotes.filter((q) => {
+      const s = String(q.status).toLowerCase();
+      return s === "pending" || s === "shortlisted";
+    }).length,
+    shortlisted: 0,
     interviewing: quotes.filter((q) => String(q.status).toLowerCase() === "interviewing").length,
     offered: quotes.filter((q) => String(q.status).toLowerCase() === "offered").length,
     accepted: quotes.filter((q) => String(q.status).toLowerCase() === "accepted").length,

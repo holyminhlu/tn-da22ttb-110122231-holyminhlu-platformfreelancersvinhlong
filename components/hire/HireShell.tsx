@@ -6,5 +6,9 @@ type HireShellProps = {
 };
 
 export default function HireShell({ children }: HireShellProps) {
-  return <ClientShell beforeMain={<HireSubNav />}>{children}</ClientShell>;
+  return (
+    <ClientShell beforeMain={<HireSubNav />} wide>
+      {children}
+    </ClientShell>
+  );
 }

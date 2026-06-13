@@ -15,6 +15,7 @@ import {
   filterFavoriteEntries,
   mergeFavoriteIds,
 } from "./clientHireFavorites";
+import FreelancerChatWidget from "@/components/chat/FreelancerChatWidget";
 import HireFavoriteCard from "./HireFavoriteCard";
 import type { HireFavoriteEntry, HireFavoriteSource } from "./hireFavoritesTypes";
 import HireShell from "./HireShell";
@@ -36,6 +37,7 @@ export default function ClientHireFavoritesPage() {
   const [searchInput, setSearchInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [tab, setTab] = useState<TabFilter>("all");
+  const [chatEntry, setChatEntry] = useState<HireFavoriteEntry | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -144,6 +146,7 @@ export default function ClientHireFavoritesPage() {
             skills: [],
             lastJobTitle: null,
             lastWorkedAt: null,
+            featuredServiceId: null,
             sources: ["favorite"],
           },
         ];
@@ -271,12 +274,25 @@ export default function ClientHireFavoritesPage() {
                   entry={entry}
                   isFavorite={favoriteIds.includes(entry.id)}
                   onToggleFavorite={handleToggleFavorite}
+                  onMessage={setChatEntry}
                 />
               </li>
             ))}
           </ul>
         )}
       </div>
+
+      {chatEntry ? (
+        <FreelancerChatWidget
+          key={chatEntry.id}
+          freelancerId={chatEntry.id}
+          freelancerName={chatEntry.name?.trim() || "Freelancer"}
+          serviceId={chatEntry.featuredServiceId}
+          contextTitle={chatEntry.title}
+          initialOpen
+          onClose={() => setChatEntry(null)}
+        />
+      ) : null}
     </HireShell>
   );
 }

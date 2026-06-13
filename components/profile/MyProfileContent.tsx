@@ -29,7 +29,6 @@ import {
   getMe,
   isFreelancerMeResponse,
   updateAvatar,
-  updateProfile,
   type FreelancerMeResponse,
   type MeUser,
 } from "@/lib/api/users";
@@ -113,7 +112,6 @@ function ProfileSection({
 export default function MyProfileContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const coverInputRef = useRef<HTMLInputElement>(null);
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const [data, setData] = useState<FreelancerMeResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -124,9 +122,7 @@ export default function MyProfileContent() {
   const [fileOpen, setFileOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
   const [avatarPreviewOpen, setAvatarPreviewOpen] = useState(false);
-  const [coverUploading, setCoverUploading] = useState(false);
   const [avatarUploading, setAvatarUploading] = useState(false);
-  const [coverError, setCoverError] = useState("");
   const [avatarError, setAvatarError] = useState("");
   const [shareFeedback, setShareFeedback] = useState("");
 
@@ -208,37 +204,6 @@ export default function MyProfileContent() {
     }
   }
 
-  async function handleCoverChange(event: React.ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    event.target.value = "";
-    if (!file || !data?.user) return;
-
-    if (!file.type.startsWith("image/")) {
-      setCoverError("Vui lòng chọn file ảnh (JPG, PNG, WebP...).");
-      return;
-    }
-
-    setCoverUploading(true);
-    setCoverError("");
-    try {
-      const url = await uploadServiceThumbnail(file);
-      await updateProfile({
-        fullName: (data.user.fullName || "").trim(),
-        title: data.freelancerProfile?.title ?? "",
-        coverUrl: url,
-      });
-      await load();
-    } catch (err) {
-      const message =
-        err && typeof err === "object" && "message" in err
-          ? String((err as { message: string }).message)
-          : "Không thể tải ảnh bìa.";
-      setCoverError(message);
-    } finally {
-      setCoverUploading(false);
-    }
-  }
-
   if (loading) {
     return <p className="ea-loading px-4 py-12">Đang tải hồ sơ...</p>;
   }
@@ -253,7 +218,6 @@ export default function MyProfileContent() {
 
   const user: MeUser = data.user;
   const avatarSrc = resolveAvatarSrc(user.avatarUrl);
-  const coverSrc = resolveAvatarSrc(user.coverUrl);
   const locationLine = [user.districtCity, "Việt Nam"].filter(Boolean).join(", ");
   const skills = data.skills ?? [];
   const portfolio = data.portfolio ?? [];
@@ -400,44 +364,6 @@ export default function MyProfileContent() {
           {shareFeedback ? (
             <p className="mp-share-feedback" role="status">
               {shareFeedback}
-            </p>
-          ) : null}
-
-          <div
-            className={`mp-cover${coverSrc ? " mp-cover--has-image" : ""}`}
-            style={
-              coverSrc
-                ? {
-                    backgroundImage: `linear-gradient(rgb(0 0 0 / 0.35), rgb(0 0 0 / 0.35)), url("${coverSrc}")`,
-                  }
-                : undefined
-            }
-          >
-            <input
-              ref={coverInputRef}
-              type="file"
-              accept="image/*"
-              className="mp-cover__input"
-              aria-hidden
-              tabIndex={-1}
-              onChange={(e) => void handleCoverChange(e)}
-            />
-            <div className="mp-cover__overlay">
-              <button
-                type="button"
-                className="mp-cover-btn"
-                disabled={coverUploading}
-                onClick={() => coverInputRef.current?.click()}
-              >
-                <FaCamera aria-hidden />
-                {coverUploading ? "Đang tải ảnh..." : coverSrc ? "Đổi ảnh bìa" : "Thêm ảnh bìa"}
-              </button>
-              <p className="mp-cover__hint">Ảnh ngang, tối thiểu 1200×400px để hiển thị đẹp trên hồ sơ.</p>
-            </div>
-          </div>
-          {coverError ? (
-            <p className="mp-cover__error" role="alert">
-              {coverError}
             </p>
           ) : null}
 

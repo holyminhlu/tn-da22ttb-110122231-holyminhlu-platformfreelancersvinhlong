@@ -244,54 +244,6 @@
   background: #eff6ff;
 }
 
-.my-profile-page .cp-cover {
-  position: relative;
-  margin-bottom: 1.25rem;
-  min-height: 10rem;
-  border-radius: 0.35rem;
-  background: linear-gradient(135deg, #dbeafe 0%, #eff6ff 50%, #f8fafc 100%);
-  overflow: hidden;
-}
-
-.my-profile-page .cp-cover--has-image {
-  background-size: cover;
-  background-position: center;
-}
-
-.my-profile-page .cp-cover__input {
-  display: none;
-}
-
-.my-profile-page .cp-cover__overlay {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgb(0 0 0 / 0.25);
-  opacity: 0;
-  transition: opacity 0.15s;
-}
-
-.my-profile-page .cp-cover:hover .cp-cover__overlay,
-.my-profile-page .cp-cover:focus-within .cp-cover__overlay {
-  opacity: 1;
-}
-
-.my-profile-page .cp-cover-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 0.25rem;
-  background: rgb(255 255 255 / 0.92);
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: #374151;
-  cursor: pointer;
-}
-
 .my-profile-page .cp-inline-error {
   margin: 0 0 1rem;
   font-size: 0.8125rem;
@@ -630,8 +582,14 @@
 
 .my-profile-page .cp-quick-actions {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: 0.65rem;
+}
+
+@media (min-width: 640px) {
+  .my-profile-page .cp-quick-actions {
+    grid-template-columns: repeat(4, 1fr);
+  }
 }
 
 .my-profile-page .cp-quick-action {

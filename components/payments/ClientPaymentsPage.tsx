@@ -7,8 +7,10 @@ import DashboardPagination from "@/components/dashboard/DashboardPagination";
 import { usePagedList } from "@/hooks/usePagedList";
 import {
   billingMethodTypeLabel,
+  deleteBillingMethod,
   depositFunds,
   getClientBillingOverview,
+  setDefaultBillingMethod,
   transactionCategoryLabel,
   updateBillingProfile,
   type BillingOverview,
@@ -16,6 +18,21 @@ import {
   type BillingTransaction,
 } from "@/lib/api/payments";
 import { formatDate, formatVnd } from "@/lib/format";
+import PaymentsBalanceCard from "@/components/payments/PaymentsBalanceCard";
+import PaymentsMoneyInput from "@/components/payments/PaymentsMoneyInput";
+import AddPaymentMethodModal from "@/components/payments/AddPaymentMethodModal";
+import ClientTransactionTable from "@/components/payments/ClientTransactionTable";
+import PaymentMethodIcon from "@/components/payments/PaymentMethodIcon";
+import PaymentMethodMenu from "@/components/payments/PaymentMethodMenu";
+import PaymentsSectionTitle from "@/components/payments/PaymentsSectionTitle";
+import PaymentsToast from "@/components/payments/PaymentsToast";
+import {
+  validateBillingProfile,
+  type BillingProfileErrors,
+  type BillingProfileField,
+} from "@/lib/payments/billingProfileValidation";
+import { groupClientBillingTransactions } from "@/lib/payments/clientTransactionDisplay";
+import { FaCalendarAlt, FaChartPie, FaHistory, FaPlus, FaSpinner } from "react-icons/fa";
 import "@/components/hire/hire.css";
 import "@/components/dashboard/dashboardPagination.css";
 import "./payments.css";
@@ -68,10 +85,16 @@ export default function ClientPaymentsPage() {
     billingEmail: "",
     contactName: "",
   });
-  const [profileMessage, setProfileMessage] = useState("");
+  const [profileErrors, setProfileErrors] = useState<BillingProfileErrors>({});
   const [filterJobId, setFilterJobId] = useState("");
   const [filterFreelancerId, setFilterFreelancerId] = useState("");
   const [filterMonth, setFilterMonth] = useState("");
+  const [methodModalOpen, setMethodModalOpen] = useState(false);
+  const [defaultMethodBusyId, setDefaultMethodBusyId] = useState<string | null>(null);
+  const [deleteMethodBusyId, setDeleteMethodBusyId] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ message: string; variant: "success" | "error" } | null>(
+    null,
+  );
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -106,15 +129,71 @@ export default function ClientPaymentsPage() {
     });
   }, [data?.transactions, filterJobId, filterFreelancerId, filterMonth]);
 
-  const txPage = usePagedList(filteredTransactions, TX_PAGE_SIZE);
+  const groupedTransactions = useMemo(
+    () => groupClientBillingTransactions(filteredTransactions),
+    [filteredTransactions],
+  );
+
+  const txResetKey = `${filterJobId}|${filterFreelancerId}|${filterMonth}`;
+  const txPage = usePagedList(groupedTransactions, TX_PAGE_SIZE, txResetKey);
 
   const defaultMethod = data?.defaultMethod;
   const autoBillingOn = Boolean(defaultMethod?.isAutoBillingEnabled);
+  const canSwitchDefault = (data?.billingMethods.length ?? 0) > 1;
+
+  function applyDefaultMethod(methodId: string) {
+    setData((prev) => {
+      if (!prev) return prev;
+      const billingMethods = prev.billingMethods.map((method) => ({
+        ...method,
+        isPrimary: method.id === methodId,
+      }));
+      const defaultMethod = billingMethods.find((method) => method.id === methodId) ?? null;
+      return { ...prev, billingMethods, defaultMethod };
+    });
+  }
+
+  async function handleSetDefaultMethod(methodId: string) {
+    if (methodId === "identity-card") return;
+    setDefaultMethodBusyId(methodId);
+    try {
+      const result = await setDefaultBillingMethod(methodId);
+      applyDefaultMethod(result.method.id);
+      setToast({ message: result.message, variant: "success" });
+      void load();
+    } catch (err) {
+      const message =
+        err && typeof err === "object" && "message" in err
+          ? String((err as { message: string }).message)
+          : "Không thể đổi phương thức mặc định.";
+      setToast({ message, variant: "error" });
+    } finally {
+      setDefaultMethodBusyId(null);
+    }
+  }
+
+  async function handleDeleteMethod(methodId: string) {
+    if (methodId === "identity-card") return;
+    setDeleteMethodBusyId(methodId);
+    try {
+      const result = await deleteBillingMethod(methodId);
+      setToast({ message: result.message, variant: "success" });
+      await load();
+    } catch (err) {
+      const message =
+        err && typeof err === "object" && "message" in err
+          ? String((err as { message: string }).message)
+          : "Không thể xóa phương thức thanh toán.";
+      setToast({ message, variant: "error" });
+    } finally {
+      setDeleteMethodBusyId(null);
+    }
+  }
 
   async function handleDeposit() {
-    const amount = Number(depositAmount.replace(/\D/g, ""));
+    const amount = Number(depositAmount);
     if (!Number.isFinite(amount) || amount < 10000) {
-      alert("Số tiền nạp tối thiểu 10.000 VND.");
+      setToast({ message: "Số tiền nạp tối thiểu 10.000 VND.", variant: "error" });
       return;
     }
     setDepositBusy(true);
@@ -124,31 +203,51 @@ export default function ClientPaymentsPage() {
         prev ? { ...prev, account: result.account } : prev,
       );
       await load();
-      alert(result.message);
+      setToast({ message: result.message, variant: "success" });
     } catch (err) {
       const message =
         err && typeof err === "object" && "message" in err
           ? String((err as { message: string }).message)
           : "Không thể nạp tiền.";
-      alert(message);
+      setToast({ message, variant: "error" });
     } finally {
       setDepositBusy(false);
     }
   }
 
+  const activeDepositPreset = DEPOSIT_PRESETS.find(
+    (preset) => Number(depositAmount) === preset,
+  );
+
+  function updateProfileField(field: BillingProfileField, value: string) {
+    setProfileForm((prev) => ({ ...prev, [field]: value }));
+    setProfileErrors((prev) => {
+      if (!prev[field]) return prev;
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
+  }
+
   async function handleSaveProfile(e: React.FormEvent) {
     e.preventDefault();
+    const errors = validateBillingProfile(profileForm);
+    if (Object.keys(errors).length > 0) {
+      setProfileErrors(errors);
+      setToast({ message: "Vui lòng kiểm tra lại các trường bắt buộc.", variant: "error" });
+      return;
+    }
+
     setSavingProfile(true);
-    setProfileMessage("");
     try {
       const result = await updateBillingProfile(profileForm);
-      setProfileMessage(result.message);
+      setToast({ message: result.message || "Cập nhật thông tin thành công!", variant: "success" });
     } catch (err) {
       const message =
         err && typeof err === "object" && "message" in err
           ? String((err as { message: string }).message)
           : "Không thể lưu thông tin.";
-      setProfileMessage(message);
+      setToast({ message, variant: "error" });
     } finally {
       setSavingProfile(false);
     }
@@ -164,9 +263,16 @@ export default function ClientPaymentsPage() {
               Quản lý số dư ví, ký quỹ Escrow, phương thức thanh toán và lịch sử giao dịch từ hệ thống.
             </p>
           </div>
-          <Link href="/payments/phuong-thuc" className="hire-page__post-btn">
-            Quản lý phương thức
-          </Link>
+          {data && !loading && !error ? (
+            <button
+              type="button"
+              className="payments-btn payments-btn--secondary payments-page__head-action"
+              disabled={filteredTransactions.length === 0}
+              onClick={() => exportCsv(filteredTransactions)}
+            >
+              Xuất sao kê (CSV)
+            </button>
+          ) : null}
         </header>
 
         {loading ? (
@@ -182,53 +288,80 @@ export default function ClientPaymentsPage() {
         ) : data ? (
           <>
             <section className="payments-panel">
-              <h2 className="payments-panel__title">Số dư &amp; ký quỹ</h2>
-              <div className="payments-balance-grid">
-                <article className="payments-balance-card payments-balance-card--primary">
-                  <p className="payments-balance-card__label">Số dư khả dụng</p>
-                  <p className="payments-balance-card__amount">{formatVnd(data.account.balance)}</p>
-                  <p className="payments-balance-card__hint">Dùng để nạp ký quỹ cho hợp đồng</p>
-                </article>
-                <article className="payments-balance-card">
-                  <p className="payments-balance-card__label">Tiền đang ký quỹ</p>
-                  <p className="payments-balance-card__amount">{formatVnd(data.account.escrowBalance)}</p>
-                  <p className="payments-balance-card__hint">Hợp đồng đã nạp Escrow, chưa giải ngân</p>
-                </article>
-              </div>
-
-              <div className="payments-deposit">
-                <label className="payments-deposit__label" htmlFor="deposit-amount">
-                  Nạp tiền vào ví (VND)
-                </label>
-                <div className="payments-deposit__row">
-                  <input
-                    id="deposit-amount"
-                    type="text"
-                    inputMode="numeric"
-                    className="payments-deposit__input"
-                    value={depositAmount}
-                    onChange={(e) => setDepositAmount(e.target.value.replace(/[^\d]/g, ""))}
+              <PaymentsSectionTitle icon={<FaChartPie />}>
+                Số dư &amp; ký quỹ
+              </PaymentsSectionTitle>
+              <div className="payments-balance-layout">
+                <div className="payments-balance-grid">
+                  <PaymentsBalanceCard
+                    variant="available"
+                    featured
+                    label="Số dư khả dụng"
+                    amount={formatVnd(data.account.balance)}
+                    hint="Dùng để nạp ký quỹ cho hợp đồng"
                   />
-                  <button
-                    type="button"
-                    className="payments-btn payments-btn--primary"
-                    disabled={depositBusy}
-                    onClick={() => void handleDeposit()}
-                  >
-                    {depositBusy ? "Đang xử lý..." : "Nạp tiền"}
-                  </button>
+                  <PaymentsBalanceCard
+                    variant="escrow"
+                    label="Tiền đang ký quỹ"
+                    amount={formatVnd(data.account.escrowBalance)}
+                    hint="Hợp đồng đã nạp Escrow, chưa giải ngân"
+                    tooltip="Đây là số tiền hệ thống đang tạm giữ an toàn cho dự án của bạn. Tiền chỉ được chuyển cho Freelancer sau khi bạn nghiệm thu công việc thành công."
+                  />
                 </div>
-                <div className="payments-deposit__presets">
-                  {DEPOSIT_PRESETS.map((preset) => (
+
+                <div className="payments-deposit-card">
+                  <div className="payments-deposit-card__head">
+                    <h3 className="payments-deposit-card__title">Nạp tiền vào ví</h3>
+                    <p className="payments-deposit-card__hint">
+                      Tiền nạp được cộng vào số dư khả dụng ngay sau khi xử lý.
+                    </p>
+                  </div>
+                  <div className="payments-deposit__controls">
+                    <label className="payments-deposit__label sr-only" htmlFor="deposit-amount">
+                      Số tiền nạp
+                    </label>
+                    <PaymentsMoneyInput
+                      id="deposit-amount"
+                      className="payments-money-input--deposit"
+                      value={depositAmount}
+                      onChange={setDepositAmount}
+                      disabled={depositBusy}
+                      aria-label="Số tiền nạp vào ví"
+                    />
+                    <div className="payments-deposit__presets">
+                      {DEPOSIT_PRESETS.map((preset) => (
+                        <button
+                          key={preset}
+                          type="button"
+                          className={
+                            activeDepositPreset === preset
+                              ? "payments-chip payments-chip--active"
+                              : "payments-chip"
+                          }
+                          aria-pressed={activeDepositPreset === preset}
+                          onClick={() => setDepositAmount(String(preset))}
+                        >
+                          {formatVnd(preset)}
+                        </button>
+                      ))}
+                    </div>
                     <button
-                      key={preset}
                       type="button"
-                      className="payments-chip"
-                      onClick={() => setDepositAmount(String(preset))}
+                      className="payments-btn payments-btn--primary payments-btn--with-icon payments-deposit__submit"
+                      disabled={depositBusy}
+                      aria-busy={depositBusy}
+                      onClick={() => void handleDeposit()}
                     >
-                      {formatVnd(preset)}
+                      {depositBusy ? (
+                        <>
+                          <FaSpinner className="payments-btn__spinner" aria-hidden />
+                          Đang xử lý...
+                        </>
+                      ) : (
+                        "Nạp tiền"
+                      )}
                     </button>
-                  ))}
+                  </div>
                 </div>
               </div>
             </section>
@@ -236,34 +369,84 @@ export default function ClientPaymentsPage() {
             <section className="payments-panel">
               <div className="payments-panel__head">
                 <h2 className="payments-panel__title">Phương thức thanh toán</h2>
-                <Link href="/payments/phuong-thuc" className="payments-link-btn">
-                  + Thêm / chỉnh sửa
-                </Link>
+                <button
+                  type="button"
+                  className="payments-btn payments-btn--primary payments-btn--with-icon"
+                  onClick={() => setMethodModalOpen(true)}
+                >
+                  <FaPlus aria-hidden />
+                  Thêm phương thức
+                </button>
               </div>
 
               {data.billingMethods.length === 0 ? (
                 <p className="payments-muted">
-                  Chưa có phương thức thanh toán. Thêm thẻ khi{" "}
-                  <Link href="/xac-minh-danh-tinh">xác minh danh tính</Link> hoặc tại trang phương thức.
+                  Chưa có phương thức thanh toán. Nhấn <strong>Thêm phương thức</strong> để thêm thẻ
+                  hoặc ví, hoặc thêm thẻ khi{" "}
+                  <Link href="/xac-minh-danh-tinh">xác minh danh tính</Link>.
                 </p>
               ) : (
-                <ul className="payments-method-list">
-                  {data.billingMethods.map((method) => (
-                    <li key={method.id} className="payments-method-item">
-                      <div>
-                        <p className="payments-method-item__title">{method.label}</p>
-                        <p className="payments-method-item__detail">
-                          {billingMethodTypeLabel(method.type)} • {method.detail}
-                        </p>
-                      </div>
-                      <div className="payments-method-item__aside">
-                        {method.isPrimary ? (
-                          <span className="payments-badge">Mặc định</span>
-                        ) : null}
-                      </div>
-                    </li>
-                  ))}
-                </ul>
+                <>
+                  <ul className="payments-method-list">
+                    {data.billingMethods.map((method) => {
+                      const isSettingDefault = defaultMethodBusyId === method.id;
+                      const isDeleting = deleteMethodBusyId === method.id;
+                      const canManage = method.id !== "identity-card";
+                      return (
+                        <li
+                          key={method.id}
+                          className={
+                            method.isPrimary
+                              ? "payments-method-item payments-method-item--primary"
+                              : "payments-method-item"
+                          }
+                        >
+                          <div className="payments-method-item__main">
+                            <PaymentMethodIcon
+                              method={method}
+                              size={36}
+                              className="payments-method-item__brand-icon"
+                            />
+                            <div>
+                              <p className="payments-method-item__title">{method.label}</p>
+                              <p className="payments-method-item__detail">
+                                {billingMethodTypeLabel(method.type)} • {method.detail}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="payments-method-item__aside">
+                            {method.isPrimary ? (
+                              <span className="payments-badge">Mặc định</span>
+                            ) : canSwitchDefault && canManage ? (
+                              <button
+                                type="button"
+                                className="payments-method-item__set-default"
+                                disabled={defaultMethodBusyId != null || isDeleting}
+                                onClick={() => void handleSetDefaultMethod(method.id)}
+                              >
+                                {isSettingDefault ? "Đang đặt..." : "Đặt làm mặc định"}
+                              </button>
+                            ) : null}
+                            {canManage ? (
+                              <PaymentMethodMenu
+                                methodLabel={method.label}
+                                disabled={isDeleting || defaultMethodBusyId === method.id}
+                                onEdit={() => {
+                                  setToast({
+                                    message:
+                                      "Để cập nhật thẻ, hãy xóa phương thức cũ rồi thêm lại thông tin mới.",
+                                    variant: "success",
+                                  });
+                                }}
+                                onDelete={() => void handleDeleteMethod(method.id)}
+                              />
+                            ) : null}
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </>
               )}
 
               {defaultMethod?.autoTopupThreshold != null && defaultMethod.autoTopupAmount != null ? (
@@ -279,17 +462,9 @@ export default function ClientPaymentsPage() {
             </section>
 
             <section className="payments-panel">
-              <div className="payments-panel__head">
-                <h2 className="payments-panel__title">Lịch sử giao dịch &amp; hóa đơn</h2>
-                <button
-                  type="button"
-                  className="payments-btn payments-btn--secondary"
-                  disabled={filteredTransactions.length === 0}
-                  onClick={() => exportCsv(filteredTransactions)}
-                >
-                  Xuất sao kê (CSV)
-                </button>
-              </div>
+              <PaymentsSectionTitle icon={<FaHistory />}>
+                Lịch sử giao dịch &amp; hóa đơn
+              </PaymentsSectionTitle>
 
               <div className="payments-filters">
                 <select
@@ -316,47 +491,44 @@ export default function ClientPaymentsPage() {
                     </option>
                   ))}
                 </select>
-                <input
-                  type="month"
-                  aria-label="Lọc theo tháng"
-                  value={filterMonth}
-                  onChange={(e) => setFilterMonth(e.target.value)}
-                />
+                <label
+                  className={`payments-filter-month${filterMonth ? " payments-filter-month--has-value" : ""}`}
+                >
+                  <FaCalendarAlt className="payments-filter-month__icon" aria-hidden />
+                  <span className="payments-filter-month__label" aria-hidden>
+                    {filterMonth
+                      ? `Tháng ${filterMonth.slice(5, 7)}/${filterMonth.slice(0, 4)}`
+                      : "Lọc theo tháng"}
+                  </span>
+                  <input
+                    type="month"
+                    className="payments-filter-month__input"
+                    aria-label="Lọc theo tháng"
+                    value={filterMonth}
+                    onChange={(e) => setFilterMonth(e.target.value)}
+                  />
+                  {filterMonth ? (
+                    <button
+                      type="button"
+                      className="payments-filter-month__clear"
+                      aria-label="Xóa lọc tháng"
+                      onClick={() => setFilterMonth("")}
+                    >
+                      ×
+                    </button>
+                  ) : null}
+                </label>
               </div>
 
-              {filteredTransactions.length === 0 ? (
+              {groupedTransactions.length === 0 ? (
                 <p className="payments-muted">Chưa có giao dịch nào phù hợp bộ lọc.</p>
               ) : (
                 <>
-                  <div className="payments-table-wrap">
-                    <table className="payments-table">
-                      <thead>
-                        <tr>
-                          <th>Ngày</th>
-                          <th>Dự án / mô tả</th>
-                          <th>Freelancer</th>
-                          <th>Loại</th>
-                          <th>Số tiền</th>
-                          <th>Hóa đơn</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {txPage.items.map((item) => (
-                          <tr key={item.id}>
-                            <td>{formatDate(item.occurredAt)}</td>
-                            <td className="payments-table__project">{item.projectTitle}</td>
-                            <td>{item.freelancerName}</td>
-                            <td>{transactionCategoryLabel(item.category)}</td>
-                            <td className={item.amount < 0 ? "payments-neg" : "payments-pos"}>
-                              {formatVnd(item.amount)}
-                            </td>
-                            <td>{item.invoiceNumber || "—"}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                  <ClientTransactionTable rows={txPage.items} />
                   <DashboardPagination
+                    className="payments-pagination"
+                    alwaysShow
+                    pageSize={TX_PAGE_SIZE}
                     page={txPage.page}
                     totalPages={txPage.totalPages}
                     total={txPage.total}
@@ -369,64 +541,172 @@ export default function ClientPaymentsPage() {
             <section className="payments-panel">
               <h2 className="payments-panel__title">Thông tin xuất hóa đơn</h2>
               <p className="payments-muted">Thông tin này dùng khi xuất hóa đơn / sao kê.</p>
-              <form className="payments-form-grid" onSubmit={(e) => void handleSaveProfile(e)}>
-                <label>
-                  <span>Tên công ty</span>
-                  <input
-                    type="text"
-                    value={profileForm.companyName}
-                    onChange={(e) => setProfileForm((p) => ({ ...p, companyName: e.target.value }))}
-                  />
-                </label>
-                <label>
-                  <span>Mã số thuế</span>
-                  <input
-                    type="text"
-                    value={profileForm.taxId}
-                    onChange={(e) => setProfileForm((p) => ({ ...p, taxId: e.target.value }))}
-                  />
-                </label>
-                <label className="payments-form-grid__full">
-                  <span>Địa chỉ công ty</span>
-                  <input
-                    type="text"
-                    value={profileForm.companyAddress}
-                    onChange={(e) => setProfileForm((p) => ({ ...p, companyAddress: e.target.value }))}
-                  />
-                </label>
-                <label>
-                  <span>Email nhận hóa đơn</span>
-                  <input
-                    type="email"
-                    value={profileForm.billingEmail}
-                    onChange={(e) => setProfileForm((p) => ({ ...p, billingEmail: e.target.value }))}
-                  />
-                </label>
-                <label>
-                  <span>Người liên hệ kế toán</span>
-                  <input
-                    type="text"
-                    value={profileForm.contactName}
-                    onChange={(e) => setProfileForm((p) => ({ ...p, contactName: e.target.value }))}
-                  />
-                </label>
+              <form className="payments-form-grid" onSubmit={(e) => void handleSaveProfile(e)} noValidate>
+                <div className="payments-form-field">
+                  <label htmlFor="billing-company-name">
+                    <span>
+                      Tên công ty
+                      <span className="payments-form-field__required" aria-hidden>
+                        {" "}
+                        *
+                      </span>
+                    </span>
+                    <input
+                      id="billing-company-name"
+                      type="text"
+                      autoComplete="organization"
+                      placeholder="VD: Công ty TNHH ABC"
+                      value={profileForm.companyName}
+                      aria-invalid={Boolean(profileErrors.companyName)}
+                      aria-describedby={
+                        profileErrors.companyName ? "billing-company-name-error" : undefined
+                      }
+                      className={profileErrors.companyName ? "payments-form-field__input--error" : ""}
+                      onChange={(e) => updateProfileField("companyName", e.target.value)}
+                    />
+                  </label>
+                  {profileErrors.companyName ? (
+                    <p id="billing-company-name-error" className="payments-form-field__error" role="alert">
+                      {profileErrors.companyName}
+                    </p>
+                  ) : null}
+                </div>
+                <div className="payments-form-field">
+                  <label htmlFor="billing-tax-id">
+                    <span>
+                      Mã số thuế
+                      <span className="payments-form-field__required" aria-hidden>
+                        {" "}
+                        *
+                      </span>
+                    </span>
+                    <input
+                      id="billing-tax-id"
+                      type="text"
+                      inputMode="numeric"
+                      placeholder="Nhập 10–13 chữ số"
+                      value={profileForm.taxId}
+                      aria-invalid={Boolean(profileErrors.taxId)}
+                      aria-describedby={profileErrors.taxId ? "billing-tax-id-error" : undefined}
+                      className={profileErrors.taxId ? "payments-form-field__input--error" : ""}
+                      onChange={(e) =>
+                        updateProfileField("taxId", e.target.value.replace(/\D/g, "").slice(0, 13))
+                      }
+                    />
+                  </label>
+                  {profileErrors.taxId ? (
+                    <p id="billing-tax-id-error" className="payments-form-field__error" role="alert">
+                      {profileErrors.taxId}
+                    </p>
+                  ) : null}
+                </div>
+                <div className="payments-form-field payments-form-grid__full">
+                  <label htmlFor="billing-company-address">
+                    <span>
+                      Địa chỉ công ty
+                      <span className="payments-form-field__required" aria-hidden>
+                        {" "}
+                        *
+                      </span>
+                    </span>
+                    <input
+                      id="billing-company-address"
+                      type="text"
+                      autoComplete="street-address"
+                      placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành phố"
+                      value={profileForm.companyAddress}
+                      aria-invalid={Boolean(profileErrors.companyAddress)}
+                      aria-describedby={
+                        profileErrors.companyAddress ? "billing-company-address-error" : undefined
+                      }
+                      className={
+                        profileErrors.companyAddress ? "payments-form-field__input--error" : ""
+                      }
+                      onChange={(e) => updateProfileField("companyAddress", e.target.value)}
+                    />
+                  </label>
+                  {profileErrors.companyAddress ? (
+                    <p
+                      id="billing-company-address-error"
+                      className="payments-form-field__error"
+                      role="alert"
+                    >
+                      {profileErrors.companyAddress}
+                    </p>
+                  ) : null}
+                </div>
+                <div className="payments-form-field">
+                  <label htmlFor="billing-email">
+                    <span>Email nhận hóa đơn</span>
+                    <input
+                      id="billing-email"
+                      type="email"
+                      autoComplete="email"
+                      placeholder="ketoan@congty.com"
+                      value={profileForm.billingEmail}
+                      aria-invalid={Boolean(profileErrors.billingEmail)}
+                      aria-describedby={profileErrors.billingEmail ? "billing-email-error" : undefined}
+                      className={profileErrors.billingEmail ? "payments-form-field__input--error" : ""}
+                      onChange={(e) => updateProfileField("billingEmail", e.target.value)}
+                    />
+                  </label>
+                  {profileErrors.billingEmail ? (
+                    <p id="billing-email-error" className="payments-form-field__error" role="alert">
+                      {profileErrors.billingEmail}
+                    </p>
+                  ) : null}
+                </div>
+                <div className="payments-form-field">
+                  <label htmlFor="billing-contact-name">
+                    <span>Người liên hệ kế toán</span>
+                    <input
+                      id="billing-contact-name"
+                      type="text"
+                      autoComplete="name"
+                      placeholder="Họ và tên người nhận hóa đơn"
+                      value={profileForm.contactName}
+                      onChange={(e) => updateProfileField("contactName", e.target.value)}
+                    />
+                  </label>
+                </div>
                 <div className="payments-form-grid__actions">
                   <button
                     type="submit"
-                    className="payments-btn payments-btn--primary"
+                    className="payments-btn payments-btn--primary payments-btn--with-icon"
                     disabled={savingProfile}
+                    aria-busy={savingProfile}
                   >
-                    {savingProfile ? "Đang lưu..." : "Lưu thông tin"}
+                    {savingProfile ? (
+                      <>
+                        <FaSpinner className="payments-btn__spinner" aria-hidden />
+                        Đang lưu...
+                      </>
+                    ) : (
+                      "Lưu thông tin"
+                    )}
                   </button>
-                  {profileMessage ? (
-                    <p className="payments-form-message" role="status">
-                      {profileMessage}
-                    </p>
-                  ) : null}
                 </div>
               </form>
             </section>
           </>
+        ) : null}
+
+        {methodModalOpen ? (
+          <AddPaymentMethodModal
+            onClose={() => setMethodModalOpen(false)}
+            onSaved={() => {
+              setToast({ message: "Đã thêm phương thức thanh toán.", variant: "success" });
+              void load();
+            }}
+          />
+        ) : null}
+
+        {toast ? (
+          <PaymentsToast
+            message={toast.message}
+            variant={toast.variant}
+            onClose={() => setToast(null)}
+          />
         ) : null}
       </div>
     </ClientShell>

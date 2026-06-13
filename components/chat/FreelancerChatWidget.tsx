@@ -4,7 +4,7 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 import { FaBriefcase, FaComments, FaStore } from "react-icons/fa";
 import { useFreelancerChat } from "@/hooks/useFreelancerChat";
 import { useStoredUser } from "@/hooks/useStoredUser";
-import type { ChatMessage } from "@/lib/api/chat";
+import { resolveChatAssetUrl, type ChatMessage } from "@/lib/api/chat";
 import { formatDate } from "@/lib/format";
 import "./chat.css";
 
@@ -51,15 +51,37 @@ function ChatMessageItem({ msg }: { msg: ChatMessage }) {
     );
   }
 
+  const assetUrl = resolveChatAssetUrl(msg.attachmentUrl);
+
   return (
     <li
       className={`vlc-chat-bubble-row ${msg.mine ? "vlc-chat-bubble-row--mine" : "vlc-chat-bubble-row--theirs"}`}
     >
-      <span className="vlc-chat-bubble-time">{formatChatTime(msg.createdAt)}</span>
+      <div className="vlc-chat-bubble-row__meta">
+        <span className="vlc-chat-bubble-time">{formatChatTime(msg.createdAt)}</span>
+        {msg.mine && msg.kind !== "context" ? (
+          <span className="vlc-chat-bubble-status">
+            <span aria-hidden>{msg.readByPeer ? "✓✓" : "✓"}</span>
+            {msg.readByPeer ? "Đã xem" : "Đã gửi"}
+          </span>
+        ) : null}
+      </div>
       <div
         className={`vlc-chat-bubble ${msg.mine ? "vlc-chat-bubble--mine" : "vlc-chat-bubble--theirs"}`}
       >
-        {msg.body}
+        {msg.kind === "image" && assetUrl ? (
+          <a href={assetUrl} target="_blank" rel="noopener noreferrer">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={assetUrl} alt={msg.attachmentName || "Ảnh"} className="vlc-chat-bubble__image" />
+          </a>
+        ) : null}
+        {msg.kind === "file" && assetUrl ? (
+          <a href={assetUrl} target="_blank" rel="noopener noreferrer" className="vlc-chat-bubble__file">
+            {msg.attachmentName || msg.body}
+          </a>
+        ) : (
+          msg.body
+        )}
       </div>
     </li>
   );
@@ -92,6 +114,7 @@ export default function FreelancerChatWidget({
     freelancerId,
     clientId,
     conversationId,
+    peerId: freelancerId ?? clientId ?? null,
     currentUserId: user?.id,
     jobQuoteId,
     serviceId,
