@@ -141,7 +141,7 @@
   gap: 1rem;
   align-items: start;
   border: 1px solid #e5e7eb;
-  border-radius: 0.35rem;
+  border-radius: var(--card-radius);
   padding: 1rem 1.15rem;
   background: #fff;
   text-decoration: none;

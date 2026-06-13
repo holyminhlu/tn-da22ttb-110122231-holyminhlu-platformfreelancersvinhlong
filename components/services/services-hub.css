@@ -191,7 +191,7 @@
 
 .svc-manage__card {
   border: 1px solid #e5e7eb;
-  border-radius: 0.35rem;
+  border-radius: var(--card-radius);
   background: #fff;
   padding: 1rem;
   display: flex;
@@ -630,7 +630,7 @@
 
 .svc-tier-card {
   border: 1px solid #e5e7eb;
-  border-radius: 0.35rem;
+  border-radius: var(--card-radius);
   padding: 0.85rem 1rem;
   margin-bottom: 0.65rem;
   background: #f9fafb;

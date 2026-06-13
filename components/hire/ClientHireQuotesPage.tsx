@@ -26,8 +26,7 @@ type QuoteFilter = "all" | JobQuoteStatus;
 const QUOTE_FILTER_OPTIONS: { value: QuoteFilter; label: string }[] = [
   { value: "all", label: "Tất cả báo giá" },
   { value: "pending", label: "Đang chờ" },
-  { value: "interviewing", label: "Phỏng vấn" },
-  { value: "offered", label: "Đã gửi offer" },
+  { value: "offered", label: "Đã gửi đề xuất" },
   { value: "accepted", label: "Đã tuyển" },
   { value: "declined", label: "Đã từ chối" },
 ];
@@ -178,10 +177,6 @@ export default function ClientHireQuotesPage() {
       await patchJobQuote(quoteId, action);
       const rows = await listMyJobQuotes();
       setQuotes(rows);
-      if (action === "interview") {
-        const row = rows.find((q) => q.id === quoteId);
-        if (row) setChatQuote(row);
-      }
     } catch (err) {
       const message =
         err && typeof err === "object" && "message" in err

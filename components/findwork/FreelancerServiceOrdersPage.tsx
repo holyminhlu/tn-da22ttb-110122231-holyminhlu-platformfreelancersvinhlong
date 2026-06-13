@@ -5,7 +5,10 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { listServiceOrders, type ServiceOrderListItem } from "@/lib/api/contracts";
 import { formatPackagePrice } from "@/lib/hire/servicePackages";
 import {
+  escrowStatusLabel,
   filterServiceOrders,
+  orderCardPreviewText,
+  orderCardTitle,
   orderStatusHint,
   parsePackageName,
   workflowStageLabel,
@@ -115,6 +118,8 @@ export default function FreelancerServiceOrdersPage() {
                 (order.workflow_stage === "selection" && !order.proposal_text) ||
                 (order.workflow_stage === "delivery" && !order.delivered_at);
 
+              const briefPreview = orderCardPreviewText(order.client_brief);
+
               return (
                 <li key={order.id}>
                   <Link
@@ -123,7 +128,7 @@ export default function FreelancerServiceOrdersPage() {
                   >
                     <div className="fw-orders__card-top">
                       <h2 className="fw-orders__card-title">
-                        {order.job_title || order.service_title || "Hợp đồng"}
+                        {orderCardTitle(order.service_title, order.job_title, "Hợp đồng")}
                       </h2>
                       <span
                         className={`fw-orders__card-badge${urgent ? "" : " fw-orders__card-badge--stage"}`}
@@ -132,25 +137,22 @@ export default function FreelancerServiceOrdersPage() {
                       </span>
                     </div>
                     <p className="fw-orders__card-meta">
-                      Client: <strong>{order.counterparty_name || "—"}</strong>
+                      Khách hàng: <strong>{order.counterparty_name || "—"}</strong>
                       {pkgName ? ` · Gói ${pkgName}` : ""}
                       {order.agreed_price != null
                         ? ` · ${formatPackagePrice(Number(order.agreed_price))}`
                         : ""}
                     </p>
-                    {order.client_brief ? (
-                      <p className="fw-orders__card-meta" style={{ marginTop: "0.35rem" }}>
-                        {order.client_brief.slice(0, 140)}
-                        {order.client_brief.length > 140 ? "…" : ""}
-                      </p>
+                    {briefPreview ? (
+                      <p className="fw-orders__card-preview">{briefPreview}</p>
                     ) : null}
                     <div className="fw-orders__card-foot">
                       <span>{workflowStageLabel(order.workflow_stage)}</span>
-                      <span>Escrow: {order.escrow_status}</span>
+                      <span>Ký quỹ: {escrowStatusLabel(order.escrow_status)}</span>
                       {deadlineLine ? (
                         <span className="fw-orders__card-deadline">{deadlineLine}</span>
                       ) : null}
-                      <span>Cập nhật {formatDate(order.updated_at || order.created_at)}</span>
+                      <span>Cập nhật: {formatDate(order.updated_at || order.created_at)}</span>
                     </div>
                   </Link>
                 </li>

@@ -102,7 +102,7 @@ function BenefitCard({
 }) {
   const Icon = icons[item.icon];
   return (
-    <article className="why-vlc-benefit-card rounded-2xl border border-gray-100 bg-white p-7 shadow-sm">
+    <article className="why-vlc-benefit-card border border-gray-100 bg-white p-7 shadow-sm">
       <span className="mb-5 flex h-14 w-14 items-center justify-center rounded-xl bg-[#0066cc]/10">
         <Icon className="text-2xl text-[#0066cc]" aria-hidden />
       </span>
@@ -162,7 +162,7 @@ function UspSection() {
             return (
               <article
                 key={item.title}
-                className="why-vlc-usp-card rounded-2xl border border-gray-100 p-8 text-center shadow-sm"
+                className="why-vlc-usp-card border border-gray-100 p-8 text-center shadow-sm"
               >
                 <span className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-[#0066cc] text-white">
                   <Icon className="text-2xl" aria-hidden />
@@ -220,7 +220,7 @@ function TestimonialCarousel() {
 
   return (
     <div className="mx-auto max-w-3xl">
-      <blockquote className="why-vlc-testimonial-card rounded-r-xl bg-white p-8 shadow-sm md:p-10">
+      <blockquote className="why-vlc-testimonial-card bg-white p-8 shadow-sm md:p-10">
         <p className="mb-8 text-base italic leading-relaxed text-gray-600 md:text-lg">
           &ldquo;{item.quote}&rdquo;
         </p>

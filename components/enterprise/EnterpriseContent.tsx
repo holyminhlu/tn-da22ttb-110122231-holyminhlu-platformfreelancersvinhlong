@@ -86,7 +86,7 @@ function CoreBenefitsSection() {
             return (
               <article
                 key={item.title}
-                className="enterprise-benefit-card rounded-2xl border border-gray-100 bg-gray-50 p-8 shadow-sm"
+                className="enterprise-benefit-card border border-gray-100 bg-gray-50 p-8 shadow-sm"
               >
                 <span className="mb-5 flex h-14 w-14 items-center justify-center rounded-xl bg-[#1c2e4a] text-sky-400">
                   <Icon className="text-2xl" aria-hidden />
@@ -183,7 +183,7 @@ function TrustSection() {
 
         <div className="grid gap-8 md:grid-cols-2">
           {CASE_STUDIES.map((study) => (
-            <article key={study.title} className="enterprise-case-card rounded-2xl border border-gray-100 bg-gray-50 p-8 shadow-sm">
+            <article key={study.title} className="enterprise-case-card border border-gray-100 bg-gray-50 p-8 shadow-sm">
               <span className="mb-2 inline-block text-xs font-bold uppercase tracking-wide text-[#0066cc]">
                 {study.industry}
               </span>

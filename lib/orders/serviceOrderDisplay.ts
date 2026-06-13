@@ -1,4 +1,5 @@
 import type { ServiceOrderListItem } from "@/lib/api/contracts";
+import { formatDisplayTitle, markdownToPlainText } from "@/lib/text/displayText";
 import { cancelTypeLabel, isOrderExpiredOrCancelled } from "./workflowSlaDisplay";
 
 const STAGE_LABELS: Record<string, string> = {  selection: "Chốt thỏa thuận",
@@ -10,6 +11,32 @@ const STAGE_LABELS: Record<string, string> = {  selection: "Chốt thỏa thuậ
 
 export function workflowStageLabel(stage: string): string {
   return STAGE_LABELS[String(stage).toLowerCase()] || stage;
+}
+
+export function escrowStatusLabel(status: string | null | undefined): string {
+  const s = String(status || "none").toLowerCase();
+  if (s === "funded") return "Đã nạp";
+  if (s === "released") return "Đã giải ngân";
+  if (s === "pending") return "Chưa nạp";
+  if (s === "held") return "Đang giữ";
+  if (s === "refunded") return "Đã hoàn";
+  if (s === "none" || !s) return "Chưa có";
+  return status || "—";
+}
+
+export function orderCardTitle(
+  serviceTitle: string | null | undefined,
+  jobTitle: string | null | undefined,
+  fallback = "Đơn dịch vụ",
+): string {
+  const raw = serviceTitle?.trim() || jobTitle?.trim() || fallback;
+  return formatDisplayTitle(raw);
+}
+
+export function orderCardPreviewText(text: string | null | undefined): string | null {
+  const trimmed = text?.trim();
+  if (!trimmed) return null;
+  return markdownToPlainText(trimmed);
 }
 
 export function parsePackageName(snapshot: unknown): string | null {

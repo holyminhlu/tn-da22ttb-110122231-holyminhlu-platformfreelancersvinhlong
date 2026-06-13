@@ -129,7 +129,7 @@ export default function CompletionReviewPanel({
             </h3>
             <dl className="hire-completion__meta">
               <div>
-                <dt>{isClient ? "Freelancer" : "Client"}</dt>
+                <dt>{isClient ? "Freelancer" : "Khách hàng"}</dt>
                 <dd>{counterpartyName || "—"}</dd>
               </div>
               <div>

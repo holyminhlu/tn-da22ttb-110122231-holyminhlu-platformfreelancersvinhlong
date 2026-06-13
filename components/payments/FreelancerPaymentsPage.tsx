@@ -45,7 +45,7 @@ function monthKey(iso: string) {
 }
 
 function exportFreelancerCsv(rows: FreelancerTransaction[]) {
-  const header = ["Ngày", "Dự án", "Client", "Loại", "Số tiền", "Mã tham chiếu"];
+  const header = ["Ngày", "Dự án", "Khách hàng", "Loại", "Số tiền", "Mã tham chiếu"];
   const lines = rows.map((r) =>
     [
       formatDate(r.occurredAt),

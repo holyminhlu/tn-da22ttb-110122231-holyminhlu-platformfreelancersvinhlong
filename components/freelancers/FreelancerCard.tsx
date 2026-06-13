@@ -19,10 +19,10 @@ type FreelancerCardProps = {
 
 export default function FreelancerCard({ freelancer }: FreelancerCardProps) {
   return (
-    <article className="ff-card-shadow mb-6 overflow-hidden rounded-sm border border-gray-200 bg-white">
+    <article className="ff-card-shadow mb-6 overflow-hidden border border-gray-200 bg-white">
       <div className="flex p-4">
         <div className="mr-4 w-6 shrink-0">
-          <input type="checkbox" className="mt-1" aria-label={`Select ${freelancer.name}`} />
+          <input type="checkbox" className="mt-1" aria-label={`Chọn ${freelancer.name}`} />
         </div>
         <div className="min-w-0 flex-grow">
           <div className="mb-2 flex items-start justify-between">
@@ -40,7 +40,7 @@ export default function FreelancerCard({ freelancer }: FreelancerCardProps) {
                 <h3 className="ff-guru-blue flex cursor-pointer items-center font-bold hover:underline">
                   <span className="truncate">{freelancer.name}</span>
                   <span className="ml-2 shrink-0 border border-gray-300 px-1 text-[10px] font-normal text-gray-400">
-                    MEMBER
+                    THÀNH VIÊN
                   </span>
                   {freelancer.hasVideo ? (
                     <FaPlayCircle className="ml-2 shrink-0 text-blue-500" aria-hidden />
@@ -60,7 +60,7 @@ export default function FreelancerCard({ freelancer }: FreelancerCardProps) {
               <button
                 type="button"
                 className="cursor-pointer text-gray-400 hover:text-red-500"
-                aria-label="Save freelancer"
+                aria-label="Lưu freelancer"
               >
                 <FaHeart />
               </button>
@@ -71,7 +71,7 @@ export default function FreelancerCard({ freelancer }: FreelancerCardProps) {
                 type="button"
                 className="rounded bg-[#5c8ab3] px-3 py-1.5 text-xs font-bold text-white hover:bg-[#4a7294]"
               >
-                Get a Quote
+                Yêu cầu báo giá
               </button>
             </div>
           </div>
@@ -81,7 +81,7 @@ export default function FreelancerCard({ freelancer }: FreelancerCardProps) {
               {freelancer.thumbnail ? (
                 <Image
                   src={freelancer.thumbnail}
-                  alt="Work sample"
+                  alt="Ảnh minh họa"
                   width={400}
                   height={200}
                   className="h-full w-full object-cover"
@@ -122,10 +122,10 @@ export default function FreelancerCard({ freelancer }: FreelancerCardProps) {
 
       <div className="flex border-t border-gray-200 bg-[#fafafa] text-[10px] font-bold uppercase text-gray-500">
         {[
-          { icon: FaPaperclip, label: `More Services (${freelancer.services})`, rotate: true },
-          { icon: FaImage, label: `Portfolio (${freelancer.portfolio})` },
-          { icon: FaThumbsUp, label: "Performance" },
-          { icon: FaUser, label: "About" },
+          { icon: FaPaperclip, label: `Thêm dịch vụ (${freelancer.services})`, rotate: true },
+          { icon: FaImage, label: `Hồ sơ dự án (${freelancer.portfolio})` },
+          { icon: FaThumbsUp, label: "Hiệu suất" },
+          { icon: FaUser, label: "Giới thiệu" },
         ].map((tab, index) => (
           <button
             key={tab.label}

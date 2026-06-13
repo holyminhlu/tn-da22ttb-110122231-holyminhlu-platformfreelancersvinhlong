@@ -24,8 +24,7 @@ const FILTERS: { value: FreelancerQuoteFilter; label: string }[] = [
   { value: "all", label: "Tất cả" },
   { value: "active", label: "Đang mở" },
   { value: "pending", label: "Đang chờ" },
-  { value: "interviewing", label: "Phỏng vấn" },
-  { value: "offered", label: "Offer" },
+  { value: "offered", label: "Đề xuất" },
   { value: "accepted", label: "Đã tuyển" },
   { value: "declined", label: "Từ chối" },
 ];
@@ -126,7 +125,7 @@ export default function FreelancerJobQuotesPage() {
           <div>
             <h1 className="fw-quotes__title">Báo giá job</h1>
             <p className="fw-quotes__lead">
-              Theo dõi báo giá bạn đã gửi cho client — trạng thái phỏng vấn, offer và
+              Theo dõi báo giá bạn đã gửi cho khách hàng — trạng thái phỏng vấn, đề xuất và
               kết quả tuyển chọn.
               {activeCount > 0 ? ` Hiện có ${activeCount} báo giá đang mở.` : ""}
             </p>
@@ -160,7 +159,7 @@ export default function FreelancerJobQuotesPage() {
               </div>
               <div className="fw-quotes__stat">
                 <span className="fw-quotes__stat-value">{counts.offered}</span>
-                <span className="fw-quotes__stat-label">Có offer</span>
+                <span className="fw-quotes__stat-label">Có đề xuất</span>
               </div>
               <div className="fw-quotes__stat">
                 <span className="fw-quotes__stat-value">{counts.accepted}</span>

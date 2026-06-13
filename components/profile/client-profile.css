@@ -64,7 +64,7 @@
 .my-profile-page .cp-profile-card {
   margin-bottom: 1rem;
   border: 1px solid #e5e7eb;
-  border-radius: 0.35rem;
+  border-radius: var(--card-radius);
   background: #fff;
   padding: 1.25rem 1.5rem;
 }
@@ -283,7 +283,7 @@
   max-width: 9.5rem;
   padding: 1rem 0.75rem;
   border: 1px solid #e5e7eb;
-  border-radius: 0.35rem;
+  border-radius: var(--card-radius);
   background: #fff;
   text-align: center;
 }

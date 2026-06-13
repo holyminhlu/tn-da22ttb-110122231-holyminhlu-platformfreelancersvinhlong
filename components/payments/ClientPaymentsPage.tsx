@@ -305,7 +305,7 @@ export default function ClientPaymentsPage() {
                     label="Tiền đang ký quỹ"
                     amount={formatVnd(data.account.escrowBalance)}
                     hint="Hợp đồng đã nạp Escrow, chưa giải ngân"
-                    tooltip="Đây là số tiền hệ thống đang tạm giữ an toàn cho dự án của bạn. Tiền chỉ được chuyển cho Freelancer sau khi bạn nghiệm thu công việc thành công."
+                    tooltip="Đây là số tiền hệ thống đang tạm giữ an toàn cho dự án của bạn. Tiền chỉ được chuyển cho freelancer sau khi bạn nghiệm thu công việc thành công."
                   />
                 </div>
 

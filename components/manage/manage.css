@@ -276,7 +276,7 @@
   position: relative;
   overflow: visible;
   border: 1px solid #e5e7eb;
-  border-radius: 0.35rem;
+  border-radius: var(--card-radius);
   background: #fff;
   transition: border-color 0.15s, box-shadow 0.15s;
 }
@@ -296,7 +296,7 @@
   bottom: 0;
   left: 0;
   width: 3px;
-  border-radius: 0.35rem 0 0 0.35rem;
+  border-radius: var(--card-radius) 0 0 var(--card-radius);
   background: linear-gradient(180deg, #3b82f6, #60a5fa);
 }
 

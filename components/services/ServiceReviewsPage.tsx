@@ -62,7 +62,7 @@ export default function ServiceReviewsPage() {
         <div>
           <h1 className="svc-hub__title">Đánh giá &amp; Phản hồi</h1>
           <p className="svc-hub__lead">
-            Xem đánh giá Client sau khi hoàn thành đơn dịch vụ và phản hồi để tăng uy tín trên nền tảng.
+            Xem đánh giá khách hàng sau khi hoàn thành đơn dịch vụ và phản hồi để tăng uy tín trên nền tảng.
           </p>
         </div>
       </header>
@@ -75,7 +75,7 @@ export default function ServiceReviewsPage() {
         </p>
       ) : reviews.length === 0 ? (
         <div className="svc-panel text-sm text-gray-600 text-center">
-          Chưa có đánh giá nào. Đánh giá xuất hiện sau khi Client nghiệm thu đơn dịch vụ.
+          Chưa có đánh giá nào. Đánh giá xuất hiện sau khi khách hàng nghiệm thu đơn dịch vụ.
         </div>
       ) : (
         <div className="svc-review__list">
@@ -85,7 +85,7 @@ export default function ServiceReviewsPage() {
                 <div>
                   <p className="svc-review__stars">{"★".repeat(review.rating)}{"☆".repeat(5 - review.rating)}</p>
                   <p className="text-sm font-semibold text-gray-800">
-                    {review.clientName || "Client"} · {review.serviceTitle || "Dịch vụ"}
+                    {review.clientName || "Khách hàng"} · {review.serviceTitle || "Dịch vụ"}
                   </p>
                   <p className="text-xs text-gray-500">{formatDate(review.createdAt)}</p>
                 </div>

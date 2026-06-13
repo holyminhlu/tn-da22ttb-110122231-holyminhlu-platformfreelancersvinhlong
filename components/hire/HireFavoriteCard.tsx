@@ -66,7 +66,7 @@ export default function HireFavoriteCard({
                   <span className="hire-favorites__badge hire-favorites__badge--worked">Đã làm việc cùng</span>
                 ) : null}
                 {entry.sources.includes("favorite") ? (
-                  <span className="hire-favorites__badge hire-favorites__badge--saved">My Favorites</span>
+                  <span className="hire-favorites__badge hire-favorites__badge--saved">Yêu thích</span>
                 ) : null}
               </div>
             </div>
@@ -74,7 +74,7 @@ export default function HireFavoriteCard({
               type="button"
               className={`hire-favorites__heart${isFavorite ? " hire-favorites__heart--active" : ""}`}
               aria-pressed={isFavorite}
-              aria-label={isFavorite ? "Bỏ khỏi My Favorites" : "Thêm vào My Favorites"}
+              aria-label={isFavorite ? "Bỏ khỏi danh sách yêu thích" : "Thêm vào danh sách yêu thích"}
               onClick={() => onToggleFavorite(entry.id)}
             >
               <FaHeart aria-hidden />
@@ -133,7 +133,7 @@ export default function HireFavoriteCard({
       <div className="hire-favorites__actions">
         <Link href="/hire/post" className="hire-favorites__action hire-favorites__action--primary">
           <FaUserTie aria-hidden />
-          Hire
+          Thuê
         </Link>
         <button
           type="button"
@@ -141,11 +141,11 @@ export default function HireFavoriteCard({
           onClick={() => onMessage(entry)}
         >
           <FaComment aria-hidden />
-          Message
+          Nhắn tin
         </button>
         <Link href={requestQuoteHref(entry)} className="hire-favorites__action">
           <FaEnvelope aria-hidden />
-          Request Quote
+          Yêu cầu báo giá
         </Link>
       </div>
     </article>

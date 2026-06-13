@@ -176,7 +176,7 @@ export default function HireQuoteCard({ quote, busy, onAccept, onDecline, onChat
               onClick={() => onAccept?.(quote.id)}
             >
               <FaCheckCircle aria-hidden />
-              {busy ? "Đang xử lý…" : "Thuê (Hire)"}
+              {busy ? "Đang xử lý…" : "Thuê"}
             </button>
           </>
         ) : null}

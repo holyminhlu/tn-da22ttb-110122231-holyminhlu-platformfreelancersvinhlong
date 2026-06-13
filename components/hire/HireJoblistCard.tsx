@@ -10,9 +10,10 @@ import {
   clientLocationLabel,
   formatCompactVnd,
   formatJobBudgetLine,
+  jobStatusLabel,
   parseJobTags,
   quotesCountLabel,
-  relativePostedEn,
+  relativePosted,
 } from "@/lib/jobsDisplay";
 
 type HireJoblistCardProps = {
@@ -41,14 +42,14 @@ export default function HireJoblistCard({ job, selected, onSelect }: HireJoblist
             className="hire-joblist__checkbox"
             checked={selected}
             onChange={(e) => onSelect(job.id, e.target.checked)}
-            aria-label={`Select ${job.title}`}
+            aria-label={`Chọn ${job.title}`}
           />
           <span>
-            {relativePostedEn(job.created_at)} · {quotesCountLabel(quoteCount)}
+            {relativePosted(job.created_at)} · {quotesCountLabel(quoteCount)}
           </span>
         </label>
         <span className={`hire-joblist__status hire-joblist__status--${job.status}`}>
-          {job.status}
+          {jobStatusLabel(job.status)}
         </span>
       </div>
 

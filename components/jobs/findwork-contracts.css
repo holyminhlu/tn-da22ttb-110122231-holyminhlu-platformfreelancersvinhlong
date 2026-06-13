@@ -131,7 +131,7 @@
 .fw-contracts__card {
   display: block;
   border: 1px solid #e5e7eb;
-  border-radius: 0.35rem;
+  border-radius: var(--card-radius);
   padding: 1rem 1.15rem;
   background: #fff;
   text-decoration: none;

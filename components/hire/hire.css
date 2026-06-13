@@ -657,7 +657,7 @@
   height: 100%;
   width: 100%;
   border: 1px solid #e5e7eb;
-  border-radius: 0.35rem;
+  border-radius: var(--card-radius);
   overflow: hidden;
   background: #fff;
   text-decoration: none;
@@ -905,7 +905,7 @@
 /* —— Quote cards —— */
 .hire-quote-card {
   border: 1px solid #e5e7eb;
-  border-radius: 0.5rem;
+  border-radius: var(--card-radius);
   background: #fff;
   padding: 1.25rem;
   box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
@@ -1354,7 +1354,7 @@
 
 .hire-favorites__card {
   border: 1px solid #e5e7eb;
-  border-radius: 0.35rem;
+  border-radius: var(--card-radius);
   background: #fff;
   overflow: hidden;
   box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
@@ -1863,7 +1863,7 @@
 
 .hire-search__card {
   border: 1px solid #e5e7eb;
-  border-radius: 0.15rem;
+  border-radius: var(--card-radius);
   background: #fff;
   box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
 }
@@ -2832,7 +2832,7 @@
   flex-direction: column;
   height: 100%;
   border: 1px solid #e5e7eb;
-  border-radius: 0.65rem;
+  border-radius: var(--card-radius);
   overflow: hidden;
   background: #fff;
   box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
@@ -3135,7 +3135,7 @@
 
 .hire-modal-portfolio-card {
   border: 1px solid #e5e7eb;
-  border-radius: 0.65rem;
+  border-radius: var(--card-radius);
   overflow: hidden;
   background: #fff;
   box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
@@ -3542,7 +3542,7 @@
   text-decoration: none;
   color: inherit;
   border: 1px solid #e5e7eb;
-  border-radius: 0.3rem;
+  border-radius: var(--card-radius);
   padding: 0.65rem 0.75rem;
   background: #fafafa;
   transition: border-color 0.15s, background 0.15s;
@@ -3901,7 +3901,7 @@
 
 .hire-search__review-card {
   border: 1px solid #f3f4f6;
-  border-radius: 0.3rem;
+  border-radius: var(--card-radius);
   padding: 0.65rem 0.75rem;
   background: #fafafa;
 }
@@ -4082,7 +4082,7 @@
 
 .hire-joblist__card {
   border: 1px solid #e5e7eb;
-  border-radius: 0.15rem;
+  border-radius: var(--card-radius);
   background: #fff;
   padding: 1.25rem 1.5rem;
   box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);
@@ -4309,7 +4309,7 @@
 
 .hire-quote-product-card__actions {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.4rem;
   margin-top: auto;
   padding-top: 0.75rem;
@@ -4534,7 +4534,7 @@
 
 .hire-manage__panel {
   border: 1px solid #e5e7eb;
-  border-radius: 0.5rem;
+  border-radius: var(--card-radius);
   background: #fff;
   padding: clamp(1rem, 2vw, 1.35rem);
 }
@@ -4613,7 +4613,7 @@
   flex-direction: column;
   height: 100%;
   border: 1px solid #e5e7eb;
-  border-radius: 0.4rem;
+  border-radius: var(--card-radius);
   background: #fff;
   padding: 0.85rem 0.9rem 0.75rem;
   box-shadow: 0 1px 2px rgb(0 0 0 / 0.04);

@@ -27,7 +27,6 @@ type HireQuoteDetailViewProps = {
   quote: JobQuoteRow;
   busy?: boolean;
   actionError?: string;
-  onInterview?: (quoteId: string) => void;
   onOffer?: (quoteId: string) => void;
   onAccept?: (quoteId: string) => void;
   onDecline?: (quoteId: string) => void;
@@ -38,7 +37,6 @@ export default function HireQuoteDetailView({
   quote,
   busy,
   actionError,
-  onInterview,
   onOffer,
   onAccept,
   onDecline,
@@ -50,7 +48,7 @@ export default function HireQuoteDetailView({
   const location = quote.freelancer_location?.trim() || "—";
   const ratingPct = quoteRatingPercent(quote);
   const message = quote.message?.trim() || "";
-  const { canInterview, canOffer, canDecline, canHire } = quoteClientActions(quote.status);
+  const { canOffer, canDecline, canHire } = quoteClientActions(quote.status);
   const profileHref = `/hire/search/${quote.freelancer_id}`;
 
   return (
@@ -164,16 +162,6 @@ export default function HireQuoteDetailView({
           Xem hồ sơ
         </Link>
         {onChat ? <FreelancerChatInlineButton onClick={onChat} /> : null}
-        {canInterview ? (
-          <button
-            type="button"
-            className="hire-favorites__action"
-            disabled={busy}
-            onClick={() => onInterview?.(quote.id)}
-          >
-            Phỏng vấn
-          </button>
-        ) : null}
         {canOffer ? (
           <button
             type="button"
@@ -181,7 +169,7 @@ export default function HireQuoteDetailView({
             disabled={busy}
             onClick={() => onOffer?.(quote.id)}
           >
-            Gửi Offer
+            Gửi đề xuất
           </button>
         ) : null}
         {canDecline ? (
@@ -204,7 +192,7 @@ export default function HireQuoteDetailView({
               onClick={() => onAccept?.(quote.id)}
             >
               <FaCheckCircle aria-hidden />
-              {busy ? "Đang xử lý…" : "Chốt tuyển (Hire)"}
+              {busy ? "Đang xử lý…" : "Chốt tuyển"}
             </button>
           </>
         ) : null}

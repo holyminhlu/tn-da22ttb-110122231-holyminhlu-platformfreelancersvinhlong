@@ -78,7 +78,7 @@
 
 .edit-account-page .fb-card {
   border: 1px solid #e5e7eb;
-  border-radius: 6px;
+  border-radius: var(--card-radius);
   padding: 1rem 1.25rem;
   background: #fafafa;
 }

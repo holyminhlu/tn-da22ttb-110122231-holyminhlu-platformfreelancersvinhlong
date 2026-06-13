@@ -80,7 +80,7 @@
 /* Hero search + CTA bar */
 .home-landing .hero-search-bar__card {
   overflow: hidden;
-  border-radius: 1rem;
+  border-radius: var(--card-radius);
   background: #fff;
   box-shadow:
     0 4px 6px -1px rgb(0 0 0 / 0.08),

@@ -362,7 +362,7 @@ export default function ClientHireFreelancerDetailPage({
             <span className="hire-fl-detail__stat-value">
               {fl.job_success_score != null ? `${fl.job_success_score}%` : "—"}
             </span>
-            <span className="hire-fl-detail__stat-label">Job Success</span>
+            <span className="hire-fl-detail__stat-label">Tỷ lệ thành công</span>
           </div>
           <div className="hire-fl-detail__stat">
             <span className="hire-fl-detail__stat-value">
@@ -382,7 +382,7 @@ export default function ClientHireFreelancerDetailPage({
           </div>
           <div className="hire-fl-detail__stat">
             <span className="hire-fl-detail__stat-value">{data.portfolio.length}</span>
-            <span className="hire-fl-detail__stat-label">Portfolio</span>
+            <span className="hire-fl-detail__stat-label">Hồ sơ dự án</span>
           </div>
         </div>
 
@@ -535,7 +535,7 @@ export default function ClientHireFreelancerDetailPage({
 
             <section className="hire-fl-detail__section" aria-labelledby="fl-portfolio-heading">
               <h2 id="fl-portfolio-heading" className="hire-fl-detail__section-title">
-                Portfolio ({data.portfolio.length})
+                Hồ sơ dự án ({data.portfolio.length})
               </h2>
               {data.portfolio.length === 0 ? (
                 <p className="hire-fl-detail__empty">Chưa có mục portfolio.</p>
@@ -604,7 +604,7 @@ export default function ClientHireFreelancerDetailPage({
                           ))}
                         </span>
                         <span className="hire-fl-detail__review-author">
-                          {review.client_name || "Client"}
+                          {review.client_name || "Khách hàng"}
                         </span>
                         <time className="hire-fl-detail__review-date" dateTime={review.created_at}>
                           {formatDate(review.created_at)}

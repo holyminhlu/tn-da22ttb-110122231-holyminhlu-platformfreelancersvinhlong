@@ -71,8 +71,8 @@ export function relativePostedEn(iso: string): string {
 }
 
 export function quotesCountLabel(count: number): string {
-  if (count <= 0) return "No Quotes Received";
-  return count === 1 ? "1 Quote Received" : `${count} Quotes Received`;
+  if (count <= 0) return "Chưa có báo giá";
+  return count === 1 ? "1 báo giá" : `${count} báo giá`;
 }
 
 export { formatCompactVnd } from "@/lib/format";
@@ -105,7 +105,7 @@ export function formatJobBudgetLine(job: {
 
 export function clientDisplayName(fullName?: string | null): string {
   const name = String(fullName || "").trim();
-  if (!name) return "Client";
+  if (!name) return "Khách hàng";
   const parts = name.split(/\s+/).filter(Boolean);
   if (parts.length === 1) return parts[0];
   const first = parts[0];

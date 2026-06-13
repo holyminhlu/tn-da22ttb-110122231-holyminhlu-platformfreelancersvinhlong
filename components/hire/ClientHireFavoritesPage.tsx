@@ -26,7 +26,7 @@ type TabFilter = "all" | "worked" | "favorites";
 const TABS: { value: TabFilter; label: string }[] = [
   { value: "all", label: "Tất cả" },
   { value: "worked", label: "Đã làm việc cùng" },
-  { value: "favorites", label: "My Favorites" },
+  { value: "favorites", label: "Yêu thích" },
 ];
 
 export default function ClientHireFavoritesPage() {
@@ -180,12 +180,8 @@ export default function ClientHireFavoritesPage() {
       <div className="hire-page hire-favorites hire-favorites--full-width">
         <header className="hire-page__head">
           <div>
-            <h1 className="hire-page__title">Favorite Freelancers</h1>
+            <h1 className="hire-page__title">Freelancer yêu thích</h1>
             <p className="hire-page__lead hire-favorites__lead">
-              Hire, message, or request quotes from Freelancers you have worked with or added to My
-              Favorites.
-            </p>
-            <p className="hire-favorites__lead-sub">
               Thuê, nhắn tin hoặc yêu cầu báo giá từ freelancer bạn đã từng hợp tác hoặc đã lưu vào
               danh sách yêu thích.
             </p>
@@ -250,7 +246,7 @@ export default function ClientHireFavoritesPage() {
             </div>
             <h2 className="hire-favorites__empty-title">Chưa có freelancer yêu thích</h2>
             <p className="hire-favorites__empty-text">
-              Khi bạn hoàn thành hợp đồng với freelancer hoặc thêm họ vào My Favorites, họ sẽ hiện
+              Khi bạn hoàn thành hợp đồng với freelancer hoặc thêm họ vào danh sách yêu thích, họ sẽ hiện
               ở đây để bạn thuê lại, nhắn tin hoặc gửi yêu cầu báo giá.
             </p>
             <div className="hire-favorites__empty-actions">

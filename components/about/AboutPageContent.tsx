@@ -68,7 +68,7 @@ function IntroSection() {
         </div>
 
         <div className="mt-16 grid gap-6 md:grid-cols-2">
-          <div className="about-mission-card rounded-xl bg-white/10 p-8 backdrop-blur-sm">
+          <div className="about-mission-card bg-white/10 p-8 backdrop-blur-sm">
             <div className="mb-4 flex items-center gap-3">
               <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#0066cc]">
                 <FaHandshake className="text-lg text-white" />
@@ -78,7 +78,7 @@ function IntroSection() {
             <p className="leading-relaxed text-neutral-300">{ABOUT_INTRO.mission.description}</p>
           </div>
 
-          <div className="about-vision-card rounded-xl bg-white/10 p-8 backdrop-blur-sm">
+          <div className="about-vision-card bg-white/10 p-8 backdrop-blur-sm">
             <div className="mb-4 flex items-center gap-3">
               <span className="flex h-10 w-10 items-center justify-center rounded-full bg-sky-400">
                 <FaEye className="text-lg text-white" />

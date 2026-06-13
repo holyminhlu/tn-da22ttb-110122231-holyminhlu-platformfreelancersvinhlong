@@ -175,7 +175,7 @@ export default function JobProposalFormModal({
         </button>
 
         <header className="job-proposal-modal__header">
-          <p className="job-proposal-modal__eyebrow">Proposal Form</p>
+          <p className="job-proposal-modal__eyebrow">Mẫu đề xuất</p>
           <h2 id={titleId} className="job-proposal-modal__title">
             {step === "form" ? "Chuẩn bị báo giá" : "Xác nhận chi tiết báo giá"}
           </h2>
@@ -255,7 +255,7 @@ export default function JobProposalFormModal({
             </label>
 
             <label className="job-proposal-field">
-              <span className="job-proposal-field__label">Thư đề xuất (Proposal)</span>
+              <span className="job-proposal-field__label">Thư đề xuất</span>
               <textarea
                 className="job-proposal-field__textarea"
                 rows={6}

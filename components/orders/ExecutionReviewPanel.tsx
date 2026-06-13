@@ -162,7 +162,7 @@ export default function ExecutionReviewPanel({
             </h3>
             <dl className="hire-execution__meta">
               <div>
-                <dt>{isClient ? "Freelancer" : "Client"}</dt>
+                <dt>{isClient ? "Freelancer" : "Khách hàng"}</dt>
                 <dd>{counterpartyName || "—"}</dd>
               </div>
               {timelineLabel !== "—" ? (

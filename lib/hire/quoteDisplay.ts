@@ -107,7 +107,6 @@ export function quoteRatingPercent(quote: JobQuoteRow): number {
 }
 
 export type QuoteClientActions = {
-  canInterview: boolean;
   canOffer: boolean;
   canDecline: boolean;
   canHire: boolean;
@@ -118,7 +117,6 @@ export type QuoteClientActions = {
 export function quoteClientActions(status: string): QuoteClientActions {
   const s = String(status).toLowerCase();
   return {
-    canInterview: ["pending", "shortlisted", "offered"].includes(s),
     canOffer: ["pending", "shortlisted", "interviewing"].includes(s),
     canDecline: ["pending", "shortlisted", "interviewing", "offered"].includes(s),
     canHire: s === "offered",

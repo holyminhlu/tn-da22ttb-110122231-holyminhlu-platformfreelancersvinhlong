@@ -962,9 +962,9 @@ async function patchJobQuote(req, res) {
     return res.status(403).json({ message: "Chỉ client hoặc freelancer được quản lý báo giá." });
   }
 
-  if (!["interview", "offer", "accept", "decline"].includes(action)) {
+  if (!["offer", "accept", "decline"].includes(action)) {
     return res.status(400).json({
-      message: "action phải là interview, offer, accept hoặc decline.",
+      message: "action phải là offer, accept hoặc decline.",
     });
   }
 
@@ -1010,25 +1010,6 @@ async function patchJobQuote(req, res) {
         actorId: payload.sub,
       }).catch((err) => console.error("notifyQuoteAction decline:", err.message));
       return res.json({ message: "Đã từ chối báo giá." });
-    }
-
-    if (action === "interview") {
-      if (!["pending", "shortlisted", "offered"].includes(quote.status)) {
-        await dbClient.query("ROLLBACK");
-        return res.status(409).json({ message: "Chỉ có thể chuyển phỏng vấn hồ sơ còn mở." });
-      }
-      await dbClient.query(
-        `UPDATE public.job_quotes SET status = 'interviewing', updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
-        [quoteId],
-      );
-      await dbClient.query("COMMIT");
-      notifyQuoteAction(dbClient, {
-        action: "interview",
-        quote,
-        jobTitle: quote.job_title,
-        actorId: payload.sub,
-      }).catch((err) => console.error("notifyQuoteAction interview:", err.message));
-      return res.json({ message: "Đã chuyển hồ sơ sang trạng thái phỏng vấn." });
     }
 
     if (action === "offer") {

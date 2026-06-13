@@ -199,7 +199,7 @@ export default function ClientHireJoblistPage() {
             />
             <span>
               {total.toLocaleString("en-US")} job{total === 1 ? "" : "s"}
-              {selectedIds.size > 0 ? ` · ${selectedIds.size} selected` : ""}
+              {selectedIds.size > 0 ? ` · ${selectedIds.size} đã chọn` : ""}
             </span>
           </label>
         </div>

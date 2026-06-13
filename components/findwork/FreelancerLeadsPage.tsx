@@ -239,7 +239,7 @@ export default function FreelancerLeadsPage() {
                               )}
                               <div className="fw-leads__card-main">
                                 <p className="fw-leads__card-client">
-                                  {job.client_name?.trim() || "Client"}
+                                  {job.client_name?.trim() || "Khách hàng"}
                                   {job.client_email_verified ? " · Đã xác minh email" : ""}
                                 </p>
                                 <p className="fw-leads__card-job">{job.title}</p>
@@ -287,7 +287,7 @@ export default function FreelancerLeadsPage() {
                             </span>
                             <div className="fw-leads__card-main">
                               <p className="fw-leads__card-client">
-                                {order.counterparty_name?.trim() || "Client"}
+                                {order.counterparty_name?.trim() || "Khách hàng"}
                               </p>
                               <p className="fw-leads__card-job">
                                 {order.service_title || order.job_title || "Đơn dịch vụ"}

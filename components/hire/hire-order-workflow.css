@@ -366,7 +366,7 @@
 .hire-selection__context-card {
   padding: 1rem 1.1rem;
   border: 1px solid #e5e7eb;
-  border-radius: 0.4rem;
+  border-radius: var(--card-radius);
   background: #fff;
 }
 
@@ -462,7 +462,7 @@
 .hire-selection__state-card {
   padding: 1.25rem 1.35rem;
   border: 1px solid #e5e7eb;
-  border-radius: 0.45rem;
+  border-radius: var(--card-radius);
   background: #fff;
   box-shadow: 0 1px 3px rgb(15 23 42 / 0.04);
 }
@@ -934,7 +934,7 @@
 
 .hire-escrow__summary-card {
   padding: 1rem 1.1rem;
-  border-radius: 0.4rem;
+  border-radius: var(--card-radius);
   background: #fff;
   border: 1px solid #e5e7eb;
 }
@@ -972,7 +972,7 @@
 .hire-escrow__context-card {
   padding: 1rem 1.1rem;
   border: 1px solid #e5e7eb;
-  border-radius: 0.4rem;
+  border-radius: var(--card-radius);
   background: #fff;
 }
 
@@ -1057,7 +1057,7 @@
 .hire-escrow__state-card {
   padding: 1.25rem 1.35rem;
   border: 1px solid #e5e7eb;
-  border-radius: 0.45rem;
+  border-radius: var(--card-radius);
   background: #fff;
   box-shadow: 0 1px 3px rgb(15 23 42 / 0.04);
 }
@@ -1505,7 +1505,7 @@
 .hire-execution__context-card {
   padding: 1rem 1.1rem;
   border: 1px solid #e5e7eb;
-  border-radius: 0.4rem;
+  border-radius: var(--card-radius);
   background: #fff;
 }
 
@@ -1544,7 +1544,7 @@
 
 .hire-execution__revision-card {
   padding: 1rem 1.1rem;
-  border-radius: 0.4rem;
+  border-radius: var(--card-radius);
   background: #fff;
   border: 1px solid #c7d2fe;
 }
@@ -1668,7 +1668,7 @@
 .hire-execution__review-card {
   padding: 1.25rem 1.35rem;
   border: 1px solid #e5e7eb;
-  border-radius: 0.45rem;
+  border-radius: var(--card-radius);
   background: #fff;
   box-shadow: 0 1px 3px rgb(15 23 42 / 0.04);
 }
@@ -2077,7 +2077,7 @@
 
 .hire-delivery__summary-card {
   padding: 1rem 1.1rem;
-  border-radius: 0.4rem;
+  border-radius: var(--card-radius);
   background: linear-gradient(180deg, #f0fdfa 0%, #fff 100%);
   border: 1px solid #99f6e4;
 }
@@ -2108,7 +2108,7 @@
 .hire-delivery__context-card {
   padding: 1rem 1.1rem;
   border: 1px solid #e5e7eb;
-  border-radius: 0.4rem;
+  border-radius: var(--card-radius);
   background: #fff;
 }
 
@@ -2244,7 +2244,7 @@
 .hire-delivery__state-card {
   padding: 1.25rem 1.35rem;
   border: 1px solid #e5e7eb;
-  border-radius: 0.45rem;
+  border-radius: var(--card-radius);
   background: #fff;
   box-shadow: 0 1px 3px rgb(15 23 42 / 0.04);
 }
@@ -2583,7 +2583,7 @@
 .hire-completion__summary-card {
   position: relative;
   padding: 1rem 1.1rem;
-  border-radius: 0.4rem;
+  border-radius: var(--card-radius);
   background: linear-gradient(180deg, #faf5ff 0%, #fff 100%);
   border: 1px solid #ddd6fe;
   text-align: center;
@@ -2622,7 +2622,7 @@
 .hire-completion__context-card {
   padding: 1rem 1.1rem;
   border: 1px solid #e5e7eb;
-  border-radius: 0.4rem;
+  border-radius: var(--card-radius);
   background: #fff;
 }
 
@@ -2679,7 +2679,7 @@
 .hire-completion__state-card {
   padding: 1.25rem 1.35rem;
   border: 1px solid #e5e7eb;
-  border-radius: 0.45rem;
+  border-radius: var(--card-radius);
   background: #fff;
   box-shadow: 0 1px 3px rgb(15 23 42 / 0.04);
 }

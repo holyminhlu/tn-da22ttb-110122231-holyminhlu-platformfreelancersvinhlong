@@ -136,7 +136,7 @@ export default function WorkDetailContent() {
   if (error || !job) {
     return (
       <div className="wd-empty-state">
-        <nav className="wd-breadcrumb" aria-label="Breadcrumb">
+        <nav className="wd-breadcrumb" aria-label="Điều hướng">
           <Link href="/findwork">Tìm việc làm</Link>
         </nav>
         <div className="wd-error" role="alert">
@@ -180,7 +180,7 @@ export default function WorkDetailContent() {
   return (
     <div className="wd-page">
       <header className="wd-hero">
-        <nav className="wd-breadcrumb" aria-label="Breadcrumb">
+        <nav className="wd-breadcrumb" aria-label="Điều hướng">
           <Link href="/findwork">Tìm việc làm</Link>
           <span className="wd-breadcrumb__sep" aria-hidden>
             /
@@ -196,13 +196,13 @@ export default function WorkDetailContent() {
             {quotePhase === "offered" ? (
               <div className="wd-offer-ribbon" role="status">
                 <FaEnvelopeOpenText aria-hidden />
-                Client đã gửi offer cho bạn
+                Khách hàng đã gửi đề xuất cho bạn
               </div>
             ) : null}
             {quotePhase === "interviewing" ? (
               <div className="wd-interview-ribbon" role="status">
                 <FaVideo aria-hidden />
-                Client mời phỏng vấn / trao đổi thêm
+                Khách hàng mời phỏng vấn / trao đổi thêm
               </div>
             ) : null}
             <h1 className="wd-hero__title">{job.title}</h1>
@@ -288,7 +288,7 @@ export default function WorkDetailContent() {
           <section className="wd-card wd-card--muted" id="submit-help">
             <h2 className="wd-card__title">
               {quotePhase === "offered"
-                ? "Offer từ client"
+                ? "Đề xuất từ khách hàng"
                 : quotePhase === "none" || quotePhase === "declined"
                   ? "Gửi báo giá"
                   : "Trạng thái hồ sơ của bạn"}
@@ -386,7 +386,7 @@ export default function WorkDetailContent() {
                     href={`/findwork/orders/${myContractId}`}
                     className="wd-cta__btn wd-cta__btn--primary"
                   >
-                    Mở workspace & làm việc
+                    Mở không gian làm việc
                   </Link>
                 </>
               ) : quotePhase === "offered" ? (
@@ -394,12 +394,12 @@ export default function WorkDetailContent() {
                   <div className="wd-cta-offer" role="status">
                     <FaEnvelopeOpenText className="wd-cta-offer__icon" aria-hidden />
                     <div>
-                      <p className="wd-cta-offer__title">Bạn nhận offer từ client</p>
+                      <p className="wd-cta-offer__title">Bạn nhận đề xuất từ khách hàng</p>
                       <p className="wd-cta-offer__text">{quotePhaseDescription}</p>
                     </div>
                   </div>
                   <Link href="/findwork/quotes" className="wd-cta__btn wd-cta__btn--primary">
-                    Xem báo giá & offer của tôi
+                    Xem báo giá & đề xuất của tôi
                   </Link>
                   <Link href="/findwork/messages" className="wd-cta__btn wd-cta__btn--ghost">
                     <FaCommentDots aria-hidden />
@@ -439,12 +439,12 @@ export default function WorkDetailContent() {
               ) : quotePhase === "accepted" ? (
                 <div className="wd-cta-success" role="status">
                   <FaCheckCircle aria-hidden />
-                  Báo giá đã được chấp nhận — chờ client tạo hợp đồng hoặc kiểm tra workspace.
+                  Báo giá đã được chấp nhận — chờ khách hàng tạo hợp đồng hoặc kiểm tra không gian làm việc.
                 </div>
               ) : quotePhase === "declined" ? (
                 <>
                   <div className="wd-cta__error" role="status">
-                    Client đã từ chối báo giá trước đó. Bạn có thể gửi báo giá mới nếu việc vẫn đang tuyển.
+                    Khách hàng đã từ chối báo giá trước đó. Bạn có thể gửi báo giá mới nếu việc vẫn đang tuyển.
                   </div>
                   {isGuest ? (
                     <Link

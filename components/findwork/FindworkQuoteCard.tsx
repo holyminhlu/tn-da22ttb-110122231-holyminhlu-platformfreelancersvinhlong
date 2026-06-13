@@ -31,7 +31,7 @@ function badgeToneClass(status: string): string {
 
 export default function FindworkQuoteCard({ quote, busy = false, onWithdraw }: FindworkQuoteCardProps) {
   const status = String(quote.status).toLowerCase();
-  const clientName = quote.client_name?.trim() || "Client";
+  const clientName = quote.client_name?.trim() || "Khách hàng";
   const avatarSrc = resolveAvatarSrc(quote.client_avatar_url);
   const jobHref = `/work/detail/${quote.job_id}`;
   const message = quote.message?.trim() || "";

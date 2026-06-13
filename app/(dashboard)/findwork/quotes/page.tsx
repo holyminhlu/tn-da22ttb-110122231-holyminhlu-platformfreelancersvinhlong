@@ -3,7 +3,7 @@ import FreelancerJobQuotesPage from "@/components/findwork/FreelancerJobQuotesPa
 
 export const metadata = freelancerPageMetadata(
   "Báo giá job",
-  "Theo dõi báo giá đã gửi cho client — phỏng vấn, offer và kết quả tuyển.",
+  "Theo dõi báo giá đã gửi cho client — đề xuất và kết quả tuyển.",
 );
 
 export default function FindworkQuotesRoutePage() {

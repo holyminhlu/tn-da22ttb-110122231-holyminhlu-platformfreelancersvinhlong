@@ -8,30 +8,30 @@ export default function HeroSearchBar() {
       <div className="hero-search-bar__card">
         <div className="hero-search-bar__search-row">
           <label htmlFor="hero-skill-search" className="sr-only">
-            What skill are you looking for?
+            Bạn đang tìm kỹ năng gì?
           </label>
           <div className="hero-search-bar__input-wrap">
             <FaSearch className="hero-search-bar__input-icon" aria-hidden />
             <input
               id="hero-skill-search"
               type="search"
-              placeholder="What skill are you looking for?"
+              placeholder="Bạn đang tìm kỹ năng gì?"
               className="hero-search-bar__input"
               autoComplete="off"
             />
           </div>
           <button type="button" className="hero-search-bar__search-btn">
-            Search
+            Tìm kiếm
           </button>
         </div>
 
         <div className="hero-search-bar__divider" aria-hidden>
-          <span className="hero-search-bar__or">Or</span>
+          <span className="hero-search-bar__or">Hoặc</span>
         </div>
 
         <button type="button" className="hero-search-bar__cta">
           <span>Đăng việc</span>
-          <span className="hero-search-bar__cta-badge">It&apos;s Free</span>
+          <span className="hero-search-bar__cta-badge">Miễn phí</span>
         </button>
       </div>
     </div>

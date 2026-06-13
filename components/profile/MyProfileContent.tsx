@@ -431,7 +431,7 @@ export default function MyProfileContent() {
           </ProfileSection>
 
           <ProfileSection
-            title="Portfolio"
+            title="Hồ sơ dự án"
             count={portfolio.length}
             onAdd={() => setPortfolioOpen(true)}
             emptyDescription="Trưng bày công việc đã làm để thu hút khách hàng."
@@ -515,7 +515,7 @@ export default function MyProfileContent() {
                         <p className="mp-asset-card__desc">{item.description}</p>
                       ) : null}
                       <p className="mp-asset-card__meta">
-                        {item.resource_type === "link" ? "Link" : item.file_name || "Tệp đính kèm"}
+                        {item.resource_type === "link" ? "Liên kết" : item.file_name || "Tệp đính kèm"}
                       </p>
                       {href ? (
                         <a

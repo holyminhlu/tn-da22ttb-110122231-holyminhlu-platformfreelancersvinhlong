@@ -97,7 +97,7 @@ export default function JobCard({ job, onAccepted, onSavedChange, guestMode = fa
 
   return (
     <article
-      className={`fw-card-shadow fw-job-card mb-4 rounded border border-gray-200 bg-white p-5 transition-shadow${hasMedia ? " fw-job-card--has-media" : ""}`}
+      className={`fw-card-shadow fw-job-card mb-4 border border-gray-200 bg-white p-5 transition-shadow${hasMedia ? " fw-job-card--has-media" : ""}`}
     >
       <div className="mb-2 flex items-start justify-between">
         <div className="flex items-center space-x-2 text-xs text-gray-500">

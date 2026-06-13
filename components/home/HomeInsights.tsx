@@ -6,7 +6,7 @@ export default function HomeInsights() {
     <section className="bg-gray-50 py-24">
       <div className="mx-auto max-w-7xl px-6">
         <div className="mb-16 text-center">
-          <h2 className="mb-2 text-3xl font-bold">VLC Insights</h2>
+          <h2 className="mb-2 text-3xl font-bold">Tin tức VLC</h2>
           <div className="mx-auto h-1 w-12 bg-blue-500" />
         </div>
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -36,7 +36,7 @@ export default function HomeInsights() {
             type="button"
             className="rounded bg-[#0066cc] px-8 py-3 font-bold text-white transition hover:bg-blue-700"
           >
-            View Blog
+            Xem blog
           </button>
         </div>
       </div>

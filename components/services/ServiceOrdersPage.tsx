@@ -11,7 +11,7 @@ import {
   filterOrdersByBucket,
   type ServiceOrderBucket,
 } from "@/lib/services/servicesDisplay";
-import { orderDeadlineSubtitle } from "@/lib/orders/workflowSlaDisplay";
+import { orderCardTitle } from "@/lib/orders/serviceOrderDisplay";
 import { formatDate } from "@/lib/format";
 import ServicesShell from "./ServicesShell";
 import "../findwork/findwork-orders.css";
@@ -115,7 +115,7 @@ export default function ServiceOrdersPage() {
                   >
                     <div className="fw-orders__card-top">
                       <h2 className="fw-orders__card-title">
-                        {order.service_title || order.job_title || "Đơn dịch vụ"}
+                        {orderCardTitle(order.service_title, order.job_title)}
                       </h2>
                       <span className="fw-orders__card-badge">
                         {ORDER_BUCKET_LABELS[bucketKey]}
@@ -131,7 +131,7 @@ export default function ServiceOrdersPage() {
                       {deadlineLine ? (
                         <span className="fw-orders__card-deadline">{deadlineLine}</span>
                       ) : null}
-                      <span>Cập nhật {formatDate(order.updated_at || order.created_at)}</span>
+                      <span>Cập nhật: {formatDate(order.updated_at || order.created_at)}</span>
                     </div>
                   </Link>
                 </li>

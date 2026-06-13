@@ -4,7 +4,7 @@ import { clientPageMetadata } from "@/components/layout/ClientPlaceholderPage";
 
 export const metadata = clientPageMetadata(
   "Quản lý tuyển dụng",
-  "Screening hồ sơ, phỏng vấn, gửi offer và theo dõi hợp đồng theo từng công việc.",
+  "Screening hồ sơ, gửi đề xuất và theo dõi hợp đồng theo từng công việc.",
 );
 
 export default function HireJobManageRoutePage() {

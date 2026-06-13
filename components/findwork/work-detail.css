@@ -251,7 +251,7 @@
 
 /* Cards */
 .work-detail-page .wd-card {
-  border-radius: 0.75rem;
+  border-radius: var(--card-radius);
   border: 1px solid #e5e7eb;
   background: #fff;
   padding: 1.25rem 1.5rem;

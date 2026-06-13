@@ -413,7 +413,7 @@
   display: flex;
   flex-direction: column;
   border: 1px solid #e5e7eb;
-  border-radius: 0.3rem;
+  border-radius: var(--card-radius);
   overflow: hidden;
   background: #fafafa;
   transition: border-color 0.15s, box-shadow 0.15s;
@@ -514,7 +514,7 @@
 
 .hire-fl-detail__portfolio-card {
   border: 1px solid #e5e7eb;
-  border-radius: 0.3rem;
+  border-radius: var(--card-radius);
   overflow: hidden;
   background: #fafafa;
 }
@@ -632,7 +632,7 @@
 .hire-fl-detail__sidebar-card {
   padding: 1.15rem;
   border: 1px solid #e5e7eb;
-  border-radius: 0.35rem;
+  border-radius: var(--card-radius);
   background: #f9fafb;
 }
 

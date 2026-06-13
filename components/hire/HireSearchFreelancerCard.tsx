@@ -55,7 +55,7 @@ type HireSearchFreelancerCardProps = {
 
 const MODAL_META: Record<DetailTab, { title: string; closeLabel: string }> = {
   services: { title: "Dịch vụ", closeLabel: "Đóng danh sách dịch vụ" },
-  portfolio: { title: "Portfolio", closeLabel: "Đóng portfolio" },
+  portfolio: { title: "Hồ sơ dự án", closeLabel: "Đóng hồ sơ dự án" },
   performance: { title: "Hiệu suất", closeLabel: "Đóng hiệu suất" },
   about: { title: "Giới thiệu", closeLabel: "Đóng giới thiệu" },
 };
@@ -77,7 +77,7 @@ function buildPerformanceStats(row: FreelancerSearchRow, satisfaction: number): 
   }
   stats.push({ label: "Hợp đồng hoàn thành", value: String(row.completed_jobs) });
   if (row.job_success_score != null) {
-    stats.push({ label: "Job Success", value: `${row.job_success_score}%` });
+    stats.push({ label: "Tỷ lệ thành công", value: `${row.job_success_score}%` });
   }
   if (row.avg_response_minutes) {
     stats.push({ label: "Phản hồi trung bình", value: `~${row.avg_response_minutes} phút` });
@@ -129,7 +129,7 @@ function renderReviewList(
                   />
                 ))}
               </span>
-              <span className="hire-search__review-author">{review.client_name || "Client"}</span>
+              <span className="hire-search__review-author">{review.client_name || "Khách hàng"}</span>
               <span className="hire-search__review-date">{formatDate(review.created_at)}</span>
             </div>
             {review.comment?.trim() ? (
@@ -167,7 +167,7 @@ export default function HireSearchFreelancerCard({
   const category =
     row.featured_service_category?.trim() ||
     row.skills[0] ||
-    "Programming & Development";
+    "Lập trình & phát triển";
 
   const profileBase = publicProfile ? "/freelancers" : "/hire/search";
 
@@ -251,7 +251,7 @@ export default function HireSearchFreelancerCard({
       label: `Dịch vụ (${row.services_count})`,
       rotate: true,
     },
-    { id: "portfolio", icon: FaImage, label: `Portfolio (${row.portfolio_count})` },
+    { id: "portfolio", icon: FaImage, label: `Hồ sơ dự án (${row.portfolio_count})` },
     { id: "performance", icon: FaThumbsUp, label: "Hiệu suất" },
     { id: "about", icon: FaUser, label: "Giới thiệu" },
   ];
@@ -430,7 +430,7 @@ export default function HireSearchFreelancerCard({
         aboutStats.push({ label: "Dịch vụ", value: String(row.services_count) });
       }
       if (row.portfolio_count > 0) {
-        aboutStats.push({ label: "Portfolio", value: String(row.portfolio_count) });
+        aboutStats.push({ label: "Hồ sơ dự án", value: String(row.portfolio_count) });
       }
 
       return (
@@ -528,7 +528,7 @@ export default function HireSearchFreelancerCard({
                   type="button"
                   className={`hire-search__heart${isFavorite ? " hire-search__heart--active" : ""}`}
                   aria-pressed={isFavorite}
-                  aria-label={isFavorite ? "Bỏ yêu thích" : "Thêm vào My Favorites"}
+                  aria-label={isFavorite ? "Bỏ yêu thích" : "Thêm vào danh sách yêu thích"}
                   onClick={() => onToggleFavorite(row.id)}
                 >
                   <FaHeart aria-hidden />
@@ -538,7 +538,7 @@ export default function HireSearchFreelancerCard({
                 href={quoteHref(row.featured_service_id)}
                 className="hire-search__quote-btn"
               >
-                {guestMode ? "Đăng nhập để thuê" : "Get a Quote"}
+                {guestMode ? "Đăng nhập để thuê" : "Yêu cầu báo giá"}
               </Link>
             </div>
           </div>

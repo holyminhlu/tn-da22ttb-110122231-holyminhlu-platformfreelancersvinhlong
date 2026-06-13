@@ -35,7 +35,7 @@ export default function HireQuoteGridCard({
   const message = quote.message?.trim() || "";
   const ratingPct = quoteRatingPercent(quote);
   const href = `/hire/quotes/${quote.id}`;
-  const { canInterview, canDecline } = quoteClientActions(quote.status);
+  const { canDecline } = quoteClientActions(quote.status);
 
   return (
     <article className={`hire-quote-product-card hire-quote-product-card--${quote.status}`}>
@@ -99,21 +99,6 @@ export default function HireQuoteGridCard({
           <Link href={href} className="hire-quote-product-card__action">
             Xem chi tiết
           </Link>
-
-          {canInterview ? (
-            <button
-              type="button"
-              className="hire-quote-product-card__action"
-              disabled={busy}
-              onClick={() => onAction?.(quote.id, "interview")}
-            >
-              {busy ? "Đang xử lý..." : "Phỏng vấn"}
-            </button>
-          ) : (
-            <span className="hire-quote-product-card__action hire-quote-product-card__action--placeholder" aria-hidden>
-              —
-            </span>
-          )}
 
           {canDecline ? (
             <button

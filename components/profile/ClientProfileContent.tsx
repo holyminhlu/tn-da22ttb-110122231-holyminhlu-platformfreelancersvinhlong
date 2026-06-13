@@ -186,7 +186,7 @@ export default function ClientProfileContent() {
             </div>
           </div>
           <div className="cp-header__badge">
-            <span className="cp-role-badge">CLIENT</span>
+            <span className="cp-role-badge">KHÁCH HÀNG</span>
           </div>
         </div>
       </header>

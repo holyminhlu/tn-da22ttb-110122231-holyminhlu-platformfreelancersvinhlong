@@ -1,16 +1,16 @@
 export const HERO_SKILL_TAGS = [
-  "Design",
-  "Web Development",
-  "Writing",
-  "Software Development",
-  "Graphic Design",
+  "Thiết kế",
+  "Phát triển web",
+  "Viết lách",
+  "Phát triển phần mềm",
+  "Thiết kế đồ họa",
 ] as const;
 
 export const STATS = [
-  { icon: "users" as const, value: "800,000", label: "Employers Worldwide" },
-  { icon: "invoice" as const, value: "1 Million", label: "Paid Invoices" },
-  { icon: "money" as const, value: "6.250 tỷ ₫", label: "Đã thanh toán cho Freelancer" },
-  { icon: "thumbs" as const, value: "99%", label: "Customer Satisfaction Rate", highlight: true },
+  { icon: "users" as const, value: "800,000", label: "Khách hàng trên toàn cầu" },
+  { icon: "invoice" as const, value: "1 triệu", label: "Hóa đơn đã thanh toán" },
+  { icon: "money" as const, value: "6.250 tỷ ₫", label: "Đã thanh toán cho freelancer" },
+  { icon: "thumbs" as const, value: "99%", label: "Tỷ lệ hài lòng khách hàng", highlight: true },
 ] as const;
 
 export const WHY_CHOOSE_LEFT = [
@@ -70,22 +70,22 @@ export const STEPS = [
 export const INSIGHT_POSTS = [
   {
     img: "https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&q=80&w=400",
-    date: "June 27, 2024",
-    title: "Add a Non-U.S. Bank Account to Withdraw Funds From Your Guru Cash Account",
+    date: "27/06/2024",
+    title: "Thêm tài khoản ngân hàng ngoài Mỹ để rút tiền từ ví VLC",
   },
   {
     img: "https://images.unsplash.com/photo-1521737706017-d3550090f772?auto=format&fit=crop&q=80&w=400",
-    date: "October 04, 2023",
-    title: "What Are the Roles of Support Personnel?",
+    date: "04/10/2023",
+    title: "Vai trò của nhân viên hỗ trợ khách hàng",
   },
   {
     img: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d?auto=format&fit=crop&q=80&w=400",
-    date: "October 04, 2023",
-    title: "What Is Remote Customer Service?",
+    date: "04/10/2023",
+    title: "Dịch vụ khách hàng từ xa là gì?",
   },
   {
     img: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&q=80&w=400",
-    date: "October 04, 2023",
-    title: "What Does a Customer Support Agent Do?",
+    date: "04/10/2023",
+    title: "Nhân viên hỗ trợ khách hàng làm những gì?",
   },
 ] as const;

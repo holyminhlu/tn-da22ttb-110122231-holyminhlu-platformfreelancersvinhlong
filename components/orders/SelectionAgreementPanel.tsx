@@ -147,7 +147,7 @@ export default function SelectionAgreementPanel({
             </h3>
             <dl className="hire-selection__meta">
               <div>
-                <dt>{isClient ? "Freelancer" : "Client"}</dt>
+                <dt>{isClient ? "Freelancer" : "Khách hàng"}</dt>
                 <dd>{counterpartyName || "—"}</dd>
               </div>
               <div>

@@ -65,7 +65,7 @@ export default function ClientCannotQuoteModal({
 
         <header className="job-proposal-notice__header">
           <h2 id={titleId} className="job-proposal-notice__title">
-            Tài khoản Client không gửi báo giá
+            Tài khoản khách hàng không gửi báo giá
           </h2>
           {jobTitle ? (
             <p className="job-proposal-notice__subtitle" title={jobTitle}>
@@ -77,13 +77,13 @@ export default function ClientCannotQuoteModal({
         <div className="job-proposal-notice__body">
           {isOwnJob ? (
             <p>
-              Đây là tin tuyển dụng của bạn. Client không ứng tuyển vào job của chính mình — hãy
+              Đây là tin tuyển dụng của bạn. Khách hàng không ứng tuyển vào job của chính mình — hãy
               chờ freelancer gửi báo giá, sau đó xem và chọn trong mục quản lý.
             </p>
           ) : (
             <p>
-              Bạn đang đăng nhập bằng tài khoản <strong>Client</strong>. Chỉ{" "}
-              <strong>Freelancer</strong> mới gửi báo giá cho công việc của người khác.
+              Bạn đang đăng nhập bằng tài khoản <strong>khách hàng</strong>. Chỉ{" "}
+              <strong>freelancer</strong> mới gửi báo giá cho công việc của người khác.
             </p>
           )}
 
@@ -92,7 +92,7 @@ export default function ClientCannotQuoteModal({
               <>
                 <li>
                   <FaBriefcase aria-hidden />
-                  Xem báo giá đã nhận và gửi offer cho freelancer
+                  Xem báo giá đã nhận và gửi đề xuất cho freelancer
                 </li>
                 <li>
                   <FaSearch aria-hidden />
@@ -107,7 +107,7 @@ export default function ClientCannotQuoteModal({
                 </li>
                 <li>
                   <FaUserTie aria-hidden />
-                  Cần nhận việc? Đăng ký hoặc chuyển sang tài khoản Freelancer
+                  Cần nhận việc? Đăng ký hoặc chuyển sang tài khoản freelancer
                 </li>
               </>
             )}

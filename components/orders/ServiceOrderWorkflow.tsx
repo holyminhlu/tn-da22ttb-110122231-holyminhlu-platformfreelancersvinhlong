@@ -194,7 +194,7 @@ export default function ServiceOrderWorkflow({ backHref, backLabel }: ServiceOrd
         <div
           className={`hire-order__status-banner hire-order__status-banner--${contract.escrow_status === "funded" || contract.escrow_status === "released" ? "success" : "info"}`}
         >
-          Escrow: <strong>{escrowLabel}</strong>
+          Ký quỹ: <strong>{escrowLabel}</strong>
           {contract.funded_at ? ` · Nạp lúc ${formatDate(contract.funded_at)}` : ""}
           {contract.released_at ? ` · Giải ngân ${formatDate(contract.released_at)}` : ""}
         </div>

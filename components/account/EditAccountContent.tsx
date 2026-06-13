@@ -308,7 +308,7 @@ export default function EditAccountContent() {
               <h2 className="ea-section-title">Email &amp; Số điện thoại</h2>
               <div className="max-w-sm">
                 <InfoField
-                  label="Email"
+                  label="Địa chỉ email"
                   value={displayValue(user.email)}
                   verified={Boolean(user.isEmailVerified)}
                   editable={false}

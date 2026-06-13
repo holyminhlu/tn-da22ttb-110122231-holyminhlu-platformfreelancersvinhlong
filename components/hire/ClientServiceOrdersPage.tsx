@@ -5,7 +5,10 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { listServiceOrders, type ServiceOrderListItem } from "@/lib/api/contracts";
 import { formatPackagePrice } from "@/lib/hire/servicePackages";
 import {
+  escrowStatusLabel,
   filterServiceOrders,
+  orderCardPreviewText,
+  orderCardTitle,
   orderStatusHint,
   parsePackageName,
   workflowStageLabel,
@@ -130,9 +133,10 @@ export default function ClientServiceOrdersPage() {
               const pkgName = parsePackageName(order.package_snapshot);
               const hint = orderStatusHint(order, false);
               const deadlineLine = orderDeadlineSubtitle(order);
-              const hasProposal = Boolean(order.proposal_text?.trim());
+              const proposalPreview = orderCardPreviewText(order.proposal_text);
+              const briefPreview = orderCardPreviewText(order.client_brief);
               const urgent =
-                String(order.workflow_stage).toLowerCase() === "selection" && hasProposal;
+                String(order.workflow_stage).toLowerCase() === "selection" && Boolean(proposalPreview);
 
               return (
                 <li key={order.id}>
@@ -142,7 +146,7 @@ export default function ClientServiceOrdersPage() {
                   >
                     <div className="fw-orders__card-top">
                       <h2 className="fw-orders__card-title">
-                        {order.service_title || order.job_title || "Đơn dịch vụ"}
+                        {orderCardTitle(order.service_title, order.job_title)}
                       </h2>
                       <span
                         className={`fw-orders__card-badge${urgent ? "" : " fw-orders__card-badge--stage"}`}
@@ -157,24 +161,21 @@ export default function ClientServiceOrdersPage() {
                         ? ` · ${formatPackagePrice(Number(order.agreed_price))}`
                         : ""}
                     </p>
-                    {hasProposal ? (
-                      <p className="fw-orders__card-meta" style={{ marginTop: "0.35rem", color: "#047857" }}>
-                        Đề xuất: {order.proposal_text!.slice(0, 120)}
-                        {order.proposal_text!.length > 120 ? "…" : ""}
+                    {proposalPreview ? (
+                      <p className="fw-orders__card-preview fw-orders__card-preview--proposal">
+                        <span className="fw-orders__card-preview-label">Đề xuất:</span>{" "}
+                        {proposalPreview}
                       </p>
-                    ) : order.client_brief ? (
-                      <p className="fw-orders__card-meta" style={{ marginTop: "0.35rem" }}>
-                        {order.client_brief.slice(0, 120)}
-                        {order.client_brief.length > 120 ? "…" : ""}
-                      </p>
+                    ) : briefPreview ? (
+                      <p className="fw-orders__card-preview">{briefPreview}</p>
                     ) : null}
                     <div className="fw-orders__card-foot">
                       <span>{workflowStageLabel(order.workflow_stage)}</span>
-                      <span>Escrow: {order.escrow_status}</span>
+                      <span>Ký quỹ: {escrowStatusLabel(order.escrow_status)}</span>
                       {deadlineLine ? (
                         <span className="fw-orders__card-deadline">{deadlineLine}</span>
                       ) : null}
-                      <span>Cập nhật {formatDate(order.updated_at || order.created_at)}</span>
+                      <span>Cập nhật: {formatDate(order.updated_at || order.created_at)}</span>
                     </div>
                   </Link>
                 </li>

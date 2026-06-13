@@ -2,6 +2,7 @@
 
 @import "./styles/global/tokens.css";
 @import "./styles/global/base.css";
+@import "./styles/global/cards.css";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
@@ -48,6 +49,7 @@
     --radius-2xl: calc(var(--radius) * 1.8);
     --radius-3xl: calc(var(--radius) * 2.2);
     --radius-4xl: calc(var(--radius) * 2.6);
+    --radius-card: var(--card-radius);
 }
 
 :root {
@@ -75,6 +77,7 @@
     --chart-4: oklch(0.371 0 0);
     --chart-5: oklch(0.269 0 0);
     --radius: 0.625rem;
+    --card-radius: 0.15rem;
     --sidebar: oklch(0.985 0 0);
     --sidebar-foreground: oklch(0.145 0 0);
     --sidebar-primary: oklch(0.205 0 0);

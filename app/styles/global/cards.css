@@ -1,0 +1,38 @@
+/* Shared card corner radius — matches /hire/search (.hire-search__card) */
+
+/* Tailwind card shells */
+.find-work-page .fw-job-card,
+.ff-card-shadow {
+  border-radius: var(--card-radius);
+}
+
+/* shadcn Card */
+[data-slot="card"] {
+  border-radius: var(--card-radius);
+}
+
+[data-slot="card"] [data-slot="card-header"] {
+  border-top-left-radius: var(--card-radius);
+  border-top-right-radius: var(--card-radius);
+}
+
+[data-slot="card"] [data-slot="card-footer"] {
+  border-bottom-left-radius: var(--card-radius);
+  border-bottom-right-radius: var(--card-radius);
+}
+
+/* Marketing cards (override Tailwind rounded-* when present) */
+.enterprise-page .enterprise-benefit-card,
+.enterprise-page .enterprise-case-card,
+.why-vlc-page .why-vlc-benefit-card,
+.why-vlc-page .why-vlc-usp-card,
+.why-vlc-page .why-vlc-testimonial-card,
+.about-page .about-mission-card,
+.about-page .about-vision-card {
+  border-radius: var(--card-radius);
+}
+
+/* Left accent stripes that follow card radius */
+.manage-workspace-card__accent {
+  border-radius: var(--card-radius) 0 0 var(--card-radius);
+}
