@@ -339,6 +339,10 @@
 }
 
 /* —— Toolbar: danh mục, tìm kiếm, chỉ tiêu, bộ lọc —— */
+.find-work-page .fw-toolbar {
+  margin-bottom: 0.5rem;
+}
+
 .find-work-page .fw-toolbar__row {
   display: flex;
   flex-direction: column;
@@ -648,6 +652,12 @@
   flex-wrap: wrap;
   gap: 0.5rem;
   align-items: center;
+  margin-bottom: 0.25rem;
+}
+
+.find-work-page .fw-results-count {
+  margin-top: 0;
+  margin-bottom: 1rem;
 }
 
 .find-work-page .fw-chip {

@@ -111,7 +111,7 @@ export default function FindWorkToolbar({
   }
 
   return (
-    <div className="fw-toolbar mb-6">
+    <div className="fw-toolbar">
       <div className="fw-toolbar__row">
         <div className="fw-toolbar__search">
           <div className="fw-dropdown" ref={categoryRef}>
@@ -360,7 +360,7 @@ export function FindWorkActiveChips({
   if (chips.length === 0) return null;
 
   return (
-    <div className="fw-chips mb-4">
+    <div className="fw-chips">
       {chips.map((chip) => (
         <button
           key={chip.key}

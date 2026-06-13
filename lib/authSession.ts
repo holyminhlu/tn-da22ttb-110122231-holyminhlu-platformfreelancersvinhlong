@@ -1,4 +1,5 @@
 import { apiUrl, getApiBaseUrl } from "@/config/api.config";
+import { disconnectChatSocket } from "@/lib/chat/socketClient";
 import type { AuthUser } from "@/lib/api/auth";
 
 export const VLC_USER_STORAGE_KEY = "vlc_current_user";
@@ -58,6 +59,7 @@ export function persistAuthTokens(tokens: {
 
 export function clearStoredSession(): void {
   if (typeof window === "undefined") return;
+  disconnectChatSocket();
   window.localStorage.removeItem(VLC_USER_STORAGE_KEY);
   window.localStorage.removeItem("vlc_access_token");
   window.localStorage.removeItem("vlc_refresh_token");

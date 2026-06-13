@@ -5,6 +5,7 @@ import { getApiBaseUrl } from "@/config/api.config";
 import type { ChatMessage } from "@/lib/api/chat";
 
 let sharedSocket: Socket | null = null;
+let sharedToken: string | null = null;
 
 function getAccessToken(): string | null {
   if (typeof window === "undefined") return null;
@@ -13,7 +14,14 @@ function getAccessToken(): string | null {
 
 export function getChatSocket(): Socket | null {
   const token = getAccessToken();
-  if (!token) return null;
+  if (!token) {
+    disconnectChatSocket();
+    return null;
+  }
+
+  if (sharedSocket && sharedToken !== token) {
+    disconnectChatSocket();
+  }
 
   if (sharedSocket?.connected) {
     return sharedSocket;
@@ -24,6 +32,7 @@ export function getChatSocket(): Socket | null {
     sharedSocket = null;
   }
 
+  sharedToken = token;
   sharedSocket = io(getApiBaseUrl(), {
     auth: { token },
     transports: ["websocket", "polling"],
@@ -38,6 +47,7 @@ export function disconnectChatSocket() {
     sharedSocket.disconnect();
     sharedSocket = null;
   }
+  sharedToken = null;
 }
 
 export function joinChatRoom(

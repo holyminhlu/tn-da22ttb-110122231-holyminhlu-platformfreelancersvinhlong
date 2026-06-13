@@ -175,7 +175,7 @@ export default function FindWorkBody() {
         onClearAll={clearAllFilters}
       />
 
-      <div className="mb-4 flex items-center justify-between">
+      <div className="fw-results-count flex items-center justify-between">
         <label className="flex items-center space-x-2 text-sm text-gray-600">
           <input type="checkbox" className="mr-1" />
           <span className="font-semibold text-gray-800">

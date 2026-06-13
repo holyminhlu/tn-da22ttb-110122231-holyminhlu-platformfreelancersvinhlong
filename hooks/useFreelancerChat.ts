@@ -54,6 +54,7 @@ export function useFreelancerChat({
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
   const joinedRef = useRef(false);
+  const socketInstanceRef = useRef<ReturnType<typeof getChatSocket>>(null);
   const lastMessageAtRef = useRef<string | null>(null);
   const markReadTimerRef = useRef<number | null>(null);
   const peerIdRef = useRef<string | null>(peerId ?? null);
@@ -222,6 +223,24 @@ export function useFreelancerChat({
     const socket = getChatSocket();
     if (!socket) return;
 
+    const convId = conversation.id;
+
+    if (socketInstanceRef.current !== socket) {
+      socketInstanceRef.current = socket;
+      joinedRef.current = false;
+    }
+
+    const joinRoom = () => {
+      void joinChatRoom(socket, convId).then((result) => {
+        if (result.ok) joinedRef.current = true;
+      });
+    };
+
+    const onConnect = () => {
+      joinedRef.current = false;
+      joinRoom();
+    };
+
     const onMessage = (payload: ChatMessage) => {
       if (payload.conversationId !== conversation.id) return;
       appendMessage(payload);
@@ -244,11 +263,10 @@ export function useFreelancerChat({
 
     socket.on("chat:message", onMessage);
     socket.on("chat:read", onRead);
+    socket.on("connect", onConnect);
 
-    if (!joinedRef.current) {
-      void joinChatRoom(socket, conversation.id).then((result) => {
-        if (result.ok) joinedRef.current = true;
-      });
+    if (socket.connected && !joinedRef.current) {
+      joinRoom();
     }
 
     const poll = window.setInterval(() => {
@@ -283,6 +301,7 @@ export function useFreelancerChat({
     return () => {
       socket.off("chat:message", onMessage);
       socket.off("chat:read", onRead);
+      socket.off("connect", onConnect);
       window.clearInterval(poll);
       if (markReadTimerRef.current) window.clearTimeout(markReadTimerRef.current);
     };
@@ -315,7 +334,6 @@ export function useFreelancerChat({
             appendMessage(result.message);
             return true;
           }
-          if (result.error) setError(result.error);
         }
         const message = await sendChatMessage(conversation.id, normalized);
         appendMessage(message);

@@ -4,7 +4,7 @@ import { FaSearch } from "./icons";
 
 export default function HeroSearchBar() {
   return (
-    <div className="hero-search-bar mb-4 max-w-xl">
+    <div className="hero-search-bar mx-auto mb-4 w-full max-w-xl">
       <div className="hero-search-bar__card">
         <div className="hero-search-bar__search-row">
           <label htmlFor="hero-skill-search" className="sr-only">
