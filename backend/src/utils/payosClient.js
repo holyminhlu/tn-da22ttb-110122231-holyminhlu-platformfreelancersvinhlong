@@ -50,13 +50,9 @@ function isPayosPayoutConfigured() {
 function mapPayosPayoutError(message) {
   const text = String(message || "").toLowerCase();
   if (text.includes("api key") || text.includes("client") || text.includes("không tồn tại")) {
-    return (
-      "Kênh Chi hộ payOS chưa được kích hoạt hoặc API Key chi hộ chưa đúng. " +
-      "Trên my.payos.vn: bật Kênh chi, lấy Client ID / API Key / Checksum Key chi hộ, " +
-      "rồi đặt PAYOS_PAYOUT_ENABLED=true trong .env (có thể dùng PAYOS_PAYOUT_CLIENT_ID, PAYOS_PAYOUT_API_KEY, PAYOS_PAYOUT_CHECKSUM_KEY)."
-    );
+    return "Không thể chuyển tiền lúc này. Vui lòng thử lại sau hoặc liên hệ hỗ trợ.";
   }
-  return message || "Không thể gửi lệnh chi hộ payOS.";
+  return message || "Không thể gửi lệnh chi hộ.";
 }
 
 let payosClient = null;

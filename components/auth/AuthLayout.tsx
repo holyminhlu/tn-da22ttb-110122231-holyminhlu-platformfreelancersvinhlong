@@ -11,7 +11,7 @@ const MOBILE_COPY = {
     lead: "Đăng nhập để quản lý công việc, báo giá và kết nối với cộng đồng freelancer tại Vĩnh Long.",
   },
   register: {
-    title: "Gia nhập VLC Connected",
+    title: "Gia nhập VLC Connect",
     lead: "Tạo tài khoản Client hoặc Freelancer — đăng việc, nhận báo giá và làm việc trên nền tảng địa phương.",
   },
 } as const;

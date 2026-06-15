@@ -15,7 +15,6 @@ import {
   FaListUl,
   FaMapMarkerAlt,
   FaMoneyBillWave,
-  FaStar,
   FaUsers,
   FaVideo,
 } from "react-icons/fa";
@@ -49,13 +48,8 @@ import JobProposalFormModal from "./JobProposalFormModal";
 function WorkDetailSkeleton() {
   return (
     <div className="wd-skeleton" aria-busy="true" aria-label="Đang tải">
+      <div className="wd-skeleton__back" />
       <div className="wd-skeleton__hero" />
-      <div className="wd-skeleton__stats">
-        <span />
-        <span />
-        <span />
-        <span />
-      </div>
       <div className="wd-skeleton__grid">
         <div className="wd-skeleton__main" />
         <div className="wd-skeleton__aside" />
@@ -76,14 +70,12 @@ function StatCard({
   highlight?: boolean;
 }) {
   return (
-    <div className={`wd-stat${highlight ? " wd-stat--highlight" : ""}`}>
-      <span className="wd-stat__icon" aria-hidden>
+    <div className={`wd-hero-stat${highlight ? " wd-hero-stat--highlight" : ""}`}>
+      <span className="wd-hero-stat__icon" aria-hidden>
         {icon}
       </span>
-      <div className="wd-stat__body">
-        <span className="wd-stat__label">{label}</span>
-        <span className="wd-stat__value">{value}</span>
-      </div>
+      <span className="wd-hero-stat__label">{label}</span>
+      <span className="wd-hero-stat__value">{value}</span>
     </div>
   );
 }
@@ -136,16 +128,13 @@ export default function WorkDetailContent() {
   if (error || !job) {
     return (
       <div className="wd-empty-state">
-        <nav className="wd-breadcrumb" aria-label="Điều hướng">
-          <Link href="/findwork">Tìm việc làm</Link>
-        </nav>
-        <div className="wd-error" role="alert">
-          {error || "Không tìm thấy công việc."}
-        </div>
-        <Link href="/findwork" className="wd-back-link">
+        <Link href="/findwork" className="wd-back">
           <FaArrowLeft aria-hidden />
           Quay lại danh sách
         </Link>
+        <div className="wd-error" role="alert">
+          {error || "Không tìm thấy công việc."}
+        </div>
       </div>
     );
   }
@@ -179,73 +168,79 @@ export default function WorkDetailContent() {
 
   return (
     <div className="wd-page">
-      <header className="wd-hero">
+      <Link href="/findwork" className="wd-back">
+        <FaArrowLeft aria-hidden />
+        Quay lại danh sách
+      </Link>
+
+      <header className="wd-hero-card">
         <nav className="wd-breadcrumb" aria-label="Điều hướng">
           <Link href="/findwork">Tìm việc làm</Link>
           <span className="wd-breadcrumb__sep" aria-hidden>
             /
           </span>
           <span className="wd-breadcrumb__current" aria-current="page">
-            Chi tiết
+            Chi tiết công việc
           </span>
         </nav>
 
-        <div className="wd-hero__top">
-          <div className="wd-hero__titles">
-            <span className={`wd-status wd-status--${statusTone}`}>{jobStatusLabel(job.status)}</span>
-            {quotePhase === "offered" ? (
-              <div className="wd-offer-ribbon" role="status">
-                <FaEnvelopeOpenText aria-hidden />
-                Khách hàng đã gửi đề xuất cho bạn
-              </div>
-            ) : null}
-            {quotePhase === "interviewing" ? (
-              <div className="wd-interview-ribbon" role="status">
-                <FaVideo aria-hidden />
-                Khách hàng mời phỏng vấn / trao đổi thêm
-              </div>
-            ) : null}
-            <h1 className="wd-hero__title">{job.title}</h1>
-            <p className="wd-hero__meta">
-              <FaClock className="wd-hero__meta-icon" aria-hidden />
-              Đăng {relativePosted(job.created_at)}
-              <span className="wd-hero__meta-dot" aria-hidden>
-                ·
+        <div className="wd-hero-card__head">
+          <div className="wd-hero-card__main">
+            <div className="wd-hero-card__badges">
+              <span className={`wd-status wd-status--${statusTone}`}>{jobStatusLabel(job.status)}</span>
+              {quotePhase === "offered" ? (
+                <span className="wd-ribbon wd-ribbon--offer" role="status">
+                  <FaEnvelopeOpenText aria-hidden />
+                  Khách hàng đã gửi đề xuất
+                </span>
+              ) : null}
+              {quotePhase === "interviewing" ? (
+                <span className="wd-ribbon wd-ribbon--interview" role="status">
+                  <FaVideo aria-hidden />
+                  Mời phỏng vấn / trao đổi
+                </span>
+              ) : null}
+            </div>
+            <h1 className="wd-hero-card__title">{job.title}</h1>
+            <p className="wd-hero-card__meta">
+              <span className="wd-hero-card__meta-item">
+                <FaClock aria-hidden />
+                Đăng {relativePosted(job.created_at)}
               </span>
-              <FaUsers className="wd-hero__meta-icon" aria-hidden />
-              {proposalCountLabel(quoteCount)}
+              <span className="wd-hero-card__meta-item">
+                <FaUsers aria-hidden />
+                {proposalCountLabel(quoteCount)}
+              </span>
+              {categoryLabel ? (
+                <span className="wd-hero-card__meta-item">
+                  <FaListUl aria-hidden />
+                  {categoryLabel}
+                </span>
+              ) : null}
             </p>
           </div>
-          <Link href="/findwork" className="wd-hero__back">
-            <FaArrowLeft aria-hidden />
-            <span>Danh sách</span>
-          </Link>
+          {!isOwnJob ? (
+            <div className="wd-hero-card__actions">
+              <SaveJobButton jobId={job.id} variant="button" />
+            </div>
+          ) : null}
+        </div>
+
+        <div className="wd-hero-stats">
+          <StatCard icon={<FaMoneyBillWave />} label="Ngân sách" value={budgetPrimary} highlight />
+          <StatCard
+            icon={<FaMapMarkerAlt />}
+            label="Vị trí"
+            value={job.location_label?.trim() || clientLoc}
+          />
+          <StatCard icon={<FaBriefcase />} label="Loại ngân sách" value={budgetLine} />
+          <StatCard
+            icon={<FaCalendarAlt />}
+            label="Hạn gửi"
+            value={job.due_at ? formatDate(job.due_at) : "Không giới hạn"}
+          />
         </div>
       </header>
-
-      <div className="wd-stats">
-        <StatCard
-          icon={<FaMoneyBillWave />}
-          label="Ngân sách"
-          value={budgetPrimary}
-          highlight
-        />
-        <StatCard
-          icon={<FaMapMarkerAlt />}
-          label="Vị trí"
-          value={job.location_label?.trim() || clientLoc}
-        />
-        <StatCard
-          icon={<FaBriefcase />}
-          label="Loại ngân sách"
-          value={budgetLine}
-        />
-        <StatCard
-          icon={<FaCalendarAlt />}
-          label="Hạn gửi"
-          value={job.due_at ? formatDate(job.due_at) : "Không giới hạn"}
-        />
-      </div>
 
       <div className="wd-layout">
         <div className="wd-main-col">
@@ -481,7 +476,6 @@ export default function WorkDetailContent() {
                   Gửi yêu cầu báo giá
                 </button>
               )}
-              {!isOwnJob ? <SaveJobButton jobId={job.id} variant="button" /> : null}
               <button
                 type="button"
                 className="wd-cta__btn wd-cta__btn--ghost"

@@ -31,6 +31,7 @@ export const apiPaths = {
   },
   users: {
     me: "/api/users/me",
+    credentials: "/api/users/me/credentials",
     feedback: "/api/users/me/feedback",
     profileStats: "/api/users/me/profile-stats",
     identityVerification: "/api/users/me/identity-verification",
@@ -49,6 +50,15 @@ export const apiPaths = {
     changeEmail: "/api/users/me/email",
     changePassword: "/api/users/me/password",
     avatar: "/api/users/me/avatar",
+    security: "/api/users/me/security",
+    securitySessions: "/api/users/me/security/sessions",
+    securitySession: (sessionId: string) =>
+      `/api/users/me/security/sessions/${encodeURIComponent(sessionId)}`,
+    securityRevokeOthers: "/api/users/me/security/sessions/revoke-others",
+    securityLoginHistory: "/api/users/me/security/login-history",
+    securityRecovery: "/api/users/me/security/recovery",
+    securityDeactivate: "/api/users/me/security/deactivate",
+    securityDeleteAccount: "/api/users/me/security/account",
     skills: "/api/users/me/skills",
     portfolio: "/api/users/me/portfolio",
     exclusiveResources: "/api/users/me/exclusive-resources",
@@ -59,6 +69,12 @@ export const apiPaths = {
     list: "/api/contracts",
     myWork: "/api/contracts/my-work",
     serviceOrders: "/api/contracts/service-orders",
+    refundRequests: "/api/contracts/resolution/refund-requests",
+    disputes: "/api/contracts/resolution/disputes",
+    disputeEvidence: "/api/contracts/resolution/dispute-evidence",
+    dispute: (disputeId: string) => `/api/contracts/resolution/disputes/${encodeURIComponent(disputeId)}`,
+    disputeMessages: (disputeId: string) =>
+      `/api/contracts/resolution/disputes/${encodeURIComponent(disputeId)}/messages`,
     fromServiceQuote: "/api/contracts/from-service-quote",
     workflow: (contractId: string) => `/api/contracts/${contractId}/workflow`,
     review: (contractId: string) => `/api/contracts/${contractId}/review`,
@@ -142,6 +158,12 @@ export const apiPaths = {
       `/api/admin/freelancer-approvals/${encodeURIComponent(userId)}/approve`,
     rejectFreelancer: (userId: string) =>
       `/api/admin/freelancer-approvals/${encodeURIComponent(userId)}/reject`,
+    disputes: "/api/admin/disputes",
+    dispute: (disputeId: string) => `/api/admin/disputes/${encodeURIComponent(disputeId)}`,
+    disputeMessages: (disputeId: string) =>
+      `/api/admin/disputes/${encodeURIComponent(disputeId)}/messages`,
+    resolveDispute: (disputeId: string) =>
+      `/api/admin/disputes/${encodeURIComponent(disputeId)}/resolve`,
   },
   chat: {
     listConversations: "/api/chat/conversations",

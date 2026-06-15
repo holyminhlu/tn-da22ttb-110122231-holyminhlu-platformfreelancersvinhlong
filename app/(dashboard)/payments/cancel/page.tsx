@@ -14,7 +14,7 @@ function DepositCancelContent() {
 
   useEffect(() => {
     if (!Number.isFinite(orderCode)) {
-      setMessage("Bạn đã hủy thanh toán trên payOS.");
+      setMessage("Bạn đã hủy thanh toán.");
       return;
     }
 
@@ -29,7 +29,7 @@ function DepositCancelContent() {
         const msg =
           err && typeof err === "object" && "message" in err
             ? String((err as { message: string }).message)
-            : "Thanh toán đã bị hủy trên payOS.";
+            : "Thanh toán đã bị hủy.";
         setMessage(msg);
       });
 

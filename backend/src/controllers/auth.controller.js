@@ -17,6 +17,8 @@ const {
   createGoogleOAuthTicket,
   consumeGoogleOAuthTicket,
 } = require("../utils/googleOAuthTickets");
+const { notifyNewLogin } = require("../utils/notificationService");
+const { parseUserAgent } = require("../utils/parseUserAgent");
 
 function getFrontendUrl() {
   return (process.env.FRONTEND_URL || "http://localhost:3000").replace(/\/+$/, "");
@@ -139,6 +141,35 @@ async function logLoginAttempt(client, { email, ip, success }) {
   );
 }
 
+async function maybeAlertNewLogin(client, userId, ipAddress, userAgent) {
+  try {
+    const prefs = await client.query(
+      `SELECT login_alerts_enabled FROM public.users WHERE id = $1 LIMIT 1`,
+      [userId],
+    );
+    if (prefs.rows[0]?.login_alerts_enabled === false) return;
+
+    const seen = await client.query(
+      `SELECT 1
+       FROM public.user_login_logs
+       WHERE user_id = $1
+         AND ip_address IS NOT NULL
+         AND host(ip_address) = $2
+       LIMIT 1`,
+      [userId, ipAddress || ""],
+    );
+    if (seen.rowCount > 0 || !ipAddress) return;
+
+    const parsed = parseUserAgent(userAgent);
+    await notifyNewLogin(client, userId, {
+      ipAddress,
+      deviceLabel: parsed.label,
+    });
+  } catch (error) {
+    console.warn("maybeAlertNewLogin:", error.message);
+  }
+}
+
 async function exchangeGoogleCode(code, redirectUri) {
   const response = await fetch("https://oauth2.googleapis.com/token", {
     method: "POST",
@@ -178,7 +209,7 @@ async function findOrCreateGoogleUser(client, profile, preferredRole, req) {
   const ipAddress = getClientIp(req);
 
   let userResult = await client.query(
-    `SELECT u.id, u.email, u.role, up.full_name, up.avatar_url
+    `SELECT u.id, u.email, u.role, u.deactivated_at, up.full_name, up.avatar_url
      FROM public.users u
      LEFT JOIN public.user_profiles up ON up.user_id = u.id
      WHERE u.google_id = $1 AND u.deleted_at IS NULL
@@ -188,7 +219,7 @@ async function findOrCreateGoogleUser(client, profile, preferredRole, req) {
 
   if (userResult.rowCount === 0) {
     userResult = await client.query(
-      `SELECT u.id, u.email, u.role, u.google_id, up.full_name, up.avatar_url
+      `SELECT u.id, u.email, u.role, u.deactivated_at, u.google_id, up.full_name, up.avatar_url
        FROM public.users u
        LEFT JOIN public.user_profiles up ON up.user_id = u.id
        WHERE u.email = $1 AND u.deleted_at IS NULL
@@ -199,6 +230,12 @@ async function findOrCreateGoogleUser(client, profile, preferredRole, req) {
 
   if (userResult.rowCount > 0) {
     const existing = userResult.rows[0];
+    if (existing.deactivated_at) {
+      throw Object.assign(new Error("ACCOUNT_DEACTIVATED"), {
+        code: "ACCOUNT_DEACTIVATED",
+        message: "Tài khoản đã tạm khóa. Liên hệ hỗ trợ để kích hoạt lại.",
+      });
+    }
     if (!existing.google_id) {
       await client.query(
         `UPDATE public.users SET google_id = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
@@ -213,6 +250,7 @@ async function findOrCreateGoogleUser(client, profile, preferredRole, req) {
       existing.avatar_url = avatarUrl;
     }
     await logLoginAttempt(client, { email, ip: ipAddress, success: true });
+    await maybeAlertNewLogin(client, existing.id, ipAddress, req.headers["user-agent"] || null);
     await client.query(
       `INSERT INTO public.user_login_logs (user_id, ip_address, user_agent)
        VALUES ($1, $2::inet, $3)`,
@@ -378,7 +416,7 @@ async function login(req, res) {
 
   try {
     const userResult = await client.query(
-      `SELECT u.id, u.email, u.role, u.password_hash, up.full_name, up.avatar_url
+      `SELECT u.id, u.email, u.role, u.password_hash, u.deactivated_at, up.full_name, up.avatar_url
        FROM public.users u
        LEFT JOIN public.user_profiles up ON up.user_id = u.id
        WHERE u.email = $1 AND u.deleted_at IS NULL
@@ -392,6 +430,12 @@ async function login(req, res) {
     }
 
     const user = userResult.rows[0];
+    if (user.deactivated_at) {
+      return res.status(403).json({
+        message: "Tài khoản đã tạm khóa. Liên hệ hỗ trợ để kích hoạt lại.",
+        code: "ACCOUNT_DEACTIVATED",
+      });
+    }
     const isValidPassword = await bcrypt.compare(password, user.password_hash);
 
     if (!isValidPassword) {
@@ -404,6 +448,7 @@ async function login(req, res) {
     await client.query("BEGIN");
     await persistRefreshToken(client, user.id, refreshToken, req);
     await logLoginAttempt(client, { email, ip: ipAddress, success: true });
+    await maybeAlertNewLogin(client, user.id, ipAddress, req.headers["user-agent"] || null);
     await client.query(
       `INSERT INTO public.user_login_logs (user_id, ip_address, user_agent)
        VALUES ($1, $2::inet, $3)`,
@@ -456,6 +501,7 @@ async function refresh(req, res) {
       `SELECT token
        FROM public.refresh_tokens
        WHERE user_id = $1 AND token = $2 AND expires_at > NOW()
+         AND COALESCE(is_revoked, false) = false
        LIMIT 1`,
       [payload.sub, refreshToken],
     );

@@ -1,6 +1,6 @@
 import type { ServiceOrderListItem } from "@/lib/api/contracts";
 import { formatDisplayTitle, markdownToPlainText } from "@/lib/text/displayText";
-import { cancelTypeLabel, isOrderExpiredOrCancelled } from "./workflowSlaDisplay";
+import { cancelTypeLabel, isContractDisputed, isOrderExpiredOrCancelled } from "./workflowSlaDisplay";
 
 const STAGE_LABELS: Record<string, string> = {  selection: "Chốt thỏa thuận",
   escrow: "Ký quỹ",
@@ -46,6 +46,9 @@ export function parsePackageName(snapshot: unknown): string | null {
 }
 
 export function orderStatusHint(order: ServiceOrderListItem, asFreelancer: boolean): string {
+  if (isContractDisputed(order.status)) {
+    return "Đang tranh chấp";
+  }
   if (isOrderExpiredOrCancelled(order.status, order.cancel_type)) {
     return cancelTypeLabel(order.cancel_type) || "Đã hủy";
   }
@@ -106,6 +109,9 @@ export function orderCardStatusTone(
   order: ServiceOrderListItem,
   asFreelancer: boolean,
 ): OrderCardStatusTone {
+  if (isContractDisputed(order.status)) {
+    return "warning";
+  }
   if (isOrderExpiredOrCancelled(order.status, order.cancel_type)) {
     return "danger";
   }

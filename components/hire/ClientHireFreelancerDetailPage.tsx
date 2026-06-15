@@ -38,6 +38,8 @@ import {
   satisfactionPercent,
   serviceDescriptionPreview,
 } from "@/lib/hire/freelancerSearchDisplay";
+import { useClientIdentityVerification } from "@/hooks/useClientIdentityVerification";
+import { CLIENT_VERIFY_PAGE } from "@/lib/hire/clientVerification";
 import { formatDate } from "@/lib/format";
 import FreelancerChatWidget from "@/components/chat/FreelancerChatWidget";
 import HireShell from "./HireShell";
@@ -86,6 +88,10 @@ export default function ClientHireFreelancerDetailPage({
   const { user, ready, isClient } = useStoredUser({ refreshFromApi: false });
   const isGuest = publicBrowse && ready && !user;
   const canHire = ready && user && isClient;
+  const { verified: identityVerified, loading: identityLoading } = useClientIdentityVerification({
+    enabled: Boolean(canHire),
+    refreshOnVisible: false,
+  });
   const params = useParams();
   const searchParams = useSearchParams();
   const freelancerId = String(params?.freelancerId ?? "");
@@ -156,8 +162,17 @@ export default function ClientHireFreelancerDetailPage({
 
   function serviceQuoteHref(serviceId: string) {
     const target = `/hire/quote?serviceId=${encodeURIComponent(serviceId)}&freelancerId=${encodeURIComponent(freelancerId)}`;
-    return isGuest ? `/dang-nhap?next=${encodeURIComponent(target)}` : target;
+    if (isGuest) return `/dang-nhap?next=${encodeURIComponent(target)}`;
+    if (canHire && !identityLoading && !identityVerified) return CLIENT_VERIFY_PAGE;
+    return target;
   }
+
+  const quoteActionLabel =
+    isGuest
+      ? "Đăng nhập để báo giá"
+      : canHire && !identityLoading && !identityVerified
+        ? "Xác minh để báo giá"
+        : "Yêu cầu báo giá";
 
   const PageShell = publicBrowse ? PublicDetailShell : HireShell;
 
@@ -313,7 +328,7 @@ export default function ClientHireFreelancerDetailPage({
 
           <div className="hire-fl-detail__actions">
             <Link href={activeQuoteHref} className="hire-fl-detail__btn hire-fl-detail__btn--primary">
-              {isGuest ? "Đăng nhập để báo giá" : "Yêu cầu báo giá"}
+              {quoteActionLabel}
             </Link>
             {canHire ? (
               <Link
@@ -522,7 +537,7 @@ export default function ClientHireFreelancerDetailPage({
                               href={serviceQuoteHref(svc.id)}
                               className="hire-fl-detail__btn hire-fl-detail__btn--primary"
                             >
-                              {isGuest ? "Đăng nhập để báo giá" : "Yêu cầu báo giá"}
+                              {quoteActionLabel}
                             </Link>
                           </div>
                         </div>
@@ -657,7 +672,7 @@ export default function ClientHireFreelancerDetailPage({
               </ul>
               <div className="hire-fl-detail__sidebar-actions">
                 <Link href={activeQuoteHref} className="hire-fl-detail__btn hire-fl-detail__btn--primary">
-                  {isGuest ? "Đăng nhập để báo giá" : "Yêu cầu báo giá"}
+                  {quoteActionLabel}
                 </Link>
                 {canHire ? (
                   <Link

@@ -3,6 +3,7 @@ import HomeNavbar from "@/components/home/HomeNavbar";
 import "../home/home.css";
 import "./find-work.css";
 import FindWorkBody from "./FindWorkBody";
+import FindWorkProviders from "./FindWorkProviders";
 import FindWorkSubNav from "./FindWorkSubNav";
 
 export default function FindWorkPage() {
@@ -11,7 +12,9 @@ export default function FindWorkPage() {
       <HomeNavbar />
       <FindWorkSubNav />
       <main id="main-content">
-        <FindWorkBody />
+        <FindWorkProviders>
+          <FindWorkBody />
+        </FindWorkProviders>
       </main>
       <HomeFooter />
     </div>

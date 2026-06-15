@@ -12,6 +12,8 @@ import {
 } from "react-icons/fa";
 import type { ContractMilestone, WorkflowContract } from "@/lib/api/contracts";
 import { formatDate, formatVnd } from "@/lib/format";
+import ClientVerifyNotice from "@/components/hire/ClientVerifyNotice";
+import { CLIENT_VERIFY_PAYMENT_LEAD } from "@/lib/hire/clientVerification";
 
 type ContractReview = {
   id: string;
@@ -26,6 +28,7 @@ type CompletionReviewPanelProps = {
   isClient: boolean;
   busy: boolean;
   actionError?: string;
+  paymentBlocked?: boolean;
   counterpartyName: string;
   review: ContractReview | null;
   onReleasePayment: () => void;
@@ -40,6 +43,7 @@ export default function CompletionReviewPanel({
   isClient,
   busy,
   actionError,
+  paymentBlocked = false,
   counterpartyName,
   review,
   onReleasePayment,
@@ -66,6 +70,9 @@ export default function CompletionReviewPanel({
 
   return (
     <div className="hire-completion">
+      {paymentBlocked && isClient ? (
+        <ClientVerifyNotice message={CLIENT_VERIFY_PAYMENT_LEAD} />
+      ) : null}
       <div className="hire-completion__hero">
         <div className="hire-completion__hero-text">
           <span className="hire-completion__eyebrow">Giai đoạn 5</span>
@@ -191,6 +198,7 @@ export default function CompletionReviewPanel({
                 <input
                   type="checkbox"
                   checked={releaseConfirmed}
+                  disabled={paymentBlocked}
                   onChange={(e) => setReleaseConfirmed(e.target.checked)}
                 />
                 <span>
@@ -201,7 +209,7 @@ export default function CompletionReviewPanel({
               <button
                 type="button"
                 className="hire-completion__btn hire-completion__btn--primary"
-                disabled={busy || !releaseConfirmed || agreedAmount <= 0}
+                disabled={busy || !releaseConfirmed || agreedAmount <= 0 || paymentBlocked}
                 onClick={onReleasePayment}
               >
                 {busy ? "Đang xử lý..." : "Xác nhận giải ngân"}

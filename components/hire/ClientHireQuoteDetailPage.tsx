@@ -10,12 +10,15 @@ import {
   type JobQuoteRow,
   type PatchJobQuoteAction,
 } from "@/lib/api/jobQuotes";
+import { useClientIdentityVerification } from "@/hooks/useClientIdentityVerification";
 import FreelancerChatWidget from "@/components/chat/FreelancerChatWidget";
 import HireQuoteDetailView from "./HireQuoteDetailView";
 import HireShell from "./HireShell";
 import "./hire.css";
 
 export default function ClientHireQuoteDetailPage() {
+  const { verified: clientIdentityVerified, loading: clientIdentityLoading } =
+    useClientIdentityVerification({ refreshOnVisible: false });
   const params = useParams();
   const router = useRouter();
   const quoteId = typeof params.quoteId === "string" ? params.quoteId : "";
@@ -103,15 +106,16 @@ export default function ClientHireQuoteDetailPage() {
             quote={quote}
             busy={busy}
             actionError={actionError}
-            onOffer={() => void handleQuoteAction("offer")}
             onAccept={() => void handleQuoteAction("accept")}
             onDecline={() => void handleQuoteAction("decline")}
-            onChat={() => setChatOpen(true)}
+            onChat={clientIdentityVerified ? () => setChatOpen(true) : undefined}
+            clientIdentityVerified={clientIdentityVerified}
+            clientIdentityLoading={clientIdentityLoading}
           />
         ) : null}
       </div>
 
-      {quote ? (
+      {quote && clientIdentityVerified ? (
         <FreelancerChatWidget
           freelancerId={quote.freelancer_id}
           freelancerName={quote.freelancer_name?.trim() || "Freelancer"}

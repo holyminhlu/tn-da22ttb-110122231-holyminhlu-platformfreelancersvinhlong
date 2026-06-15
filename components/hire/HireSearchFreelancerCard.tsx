@@ -38,6 +38,7 @@ import {
   satisfactionPercent,
 } from "@/lib/hire/freelancerSearchDisplay";
 import { formatDate } from "@/lib/format";
+import { CLIENT_VERIFY_PAGE } from "@/lib/hire/clientVerification";
 
 type DetailTab = "services" | "portfolio" | "performance" | "about";
 
@@ -49,6 +50,9 @@ type HireSearchFreelancerCardProps = {
   onToggleFavorite: (id: string) => void;
   /** Khách chưa đăng nhập — xem công khai, thuê qua đăng nhập. */
   guestMode?: boolean;
+  /** Client đã hoàn tất xác minh danh tính. */
+  clientIdentityVerified?: boolean;
+  clientIdentityLoading?: boolean;
   /** Liên kết hồ sơ dùng /freelancers thay vì /hire/search. */
   publicProfile?: boolean;
 };
@@ -149,6 +153,8 @@ export default function HireSearchFreelancerCard({
   isFavorite,
   onToggleFavorite,
   guestMode = false,
+  clientIdentityVerified = true,
+  clientIdentityLoading = false,
   publicProfile = false,
 }: HireSearchFreelancerCardProps) {
   const [activeModal, setActiveModal] = useState<DetailTab | null>(null);
@@ -185,10 +191,19 @@ export default function HireSearchFreelancerCard({
     if (guestMode) {
       return `/dang-nhap?next=${encodeURIComponent(target)}`;
     }
+    if (!clientIdentityLoading && !clientIdentityVerified) {
+      return CLIENT_VERIFY_PAGE;
+    }
     return serviceId
       ? `/hire/quote?serviceId=${encodeURIComponent(serviceId)}&freelancerId=${encodeURIComponent(row.id)}`
       : profileHref(serviceId);
   }
+
+  const quoteLabel = guestMode
+    ? "Đăng nhập để thuê"
+    : !clientIdentityLoading && !clientIdentityVerified
+      ? "Xác minh để báo giá"
+      : "Yêu cầu báo giá";
 
   function favoriteHref() {
     return `/dang-nhap?next=${encodeURIComponent("/freelancers")}`;
@@ -538,7 +553,7 @@ export default function HireSearchFreelancerCard({
                 href={quoteHref(row.featured_service_id)}
                 className="hire-search__quote-btn"
               >
-                {guestMode ? "Đăng nhập để thuê" : "Yêu cầu báo giá"}
+                {quoteLabel}
               </Link>
             </div>
           </div>

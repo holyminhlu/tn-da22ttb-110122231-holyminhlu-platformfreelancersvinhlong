@@ -44,13 +44,17 @@ export function cancelTypeLabel(cancelType: string | null | undefined): string {
   }
 }
 
+export function isContractDisputed(status: string | null | undefined): boolean {
+  return String(status || "").toLowerCase() === "disputed";
+}
+
 export function isOrderExpiredOrCancelled(
   status: string,
   cancelType: string | null | undefined,
 ): boolean {
   if (cancelType) return true;
   const s = String(status).toLowerCase();
-  return s === "cancelled" || s === "disputed";
+  return s === "cancelled";
 }
 
 type OrderDeadlineFields = {
@@ -65,6 +69,7 @@ type OrderDeadlineFields = {
 
 /** Deadline SLA áp dụng cho đơn trên list */
 export function orderEffectiveDeadline(order: OrderDeadlineFields): string | null {
+  if (isContractDisputed(order.status)) return null;
   if (isOrderExpiredOrCancelled(order.status, order.cancel_type)) return null;
 
   const stage = String(order.workflow_stage || "").toLowerCase();

@@ -353,3 +353,31 @@
   text-decoration: underline;
   word-break: break-word;
 }
+
+.vlc-chat-panel--verify {
+  padding: 1rem 1.1rem 1.25rem;
+}
+
+.vlc-chat-panel__verify-text {
+  margin: 0.75rem 0 1rem;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: #4b5563;
+}
+
+.vlc-chat-panel__verify-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.9rem;
+  border-radius: 0.375rem;
+  background: #0066cc;
+  color: #fff;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.vlc-chat-panel__verify-link:hover {
+  background: #0052a3;
+}

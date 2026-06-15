@@ -1,6 +1,6 @@
 const { pool } = require("../db/pool");
 const { verifyAccessToken, tryVerifyAccessToken } = require("../utils/authTokens");
-const { normalizeJobImageUrls, parseUuidParam } = require("../utils/validators");
+const { normalizeJobImageUrls, parseUuidParam, parseJobDueAt } = require("../utils/validators");
 const { uploadJobImages: uploadJobImagesMw } = require("../middleware/jobImagesUpload");
 const {
   isClientIdentityVerified: checkClientIdentityVerified,
@@ -8,6 +8,7 @@ const {
 } = require("../utils/clientIdentityVerified");
 const { notifyQuoteAction } = require("../utils/notificationService");
 const { ensureFreelancerCanWork } = require("../utils/freelancerIdentityVerified");
+const { setStageDeadline, logWorkflowEvent, SLA_DAYS } = require("../utils/workflowSla");
 
 async function isClientIdentityVerified(db, userId) {
   const result = await db.query(
@@ -86,13 +87,12 @@ async function createMyJob(req, res) {
   const images = normalizeJobImageUrls(req.body?.images);
 
   let dueAt = null;
-  const dueRaw = req.body?.due_at;
-  if (dueRaw !== undefined && dueRaw !== null && String(dueRaw).trim() !== "") {
-    const d = new Date(String(dueRaw));
-    if (!Number.isFinite(d.getTime())) {
-      return res.status(400).json({ message: "Thời hạn hoàn thành không hợp lệ." });
+  if (req.body?.due_at !== undefined && req.body?.due_at !== null && String(req.body.due_at).trim() !== "") {
+    const parsedDue = parseJobDueAt(req.body.due_at);
+    if (!parsedDue.ok) {
+      return res.status(400).json({ message: parsedDue.message });
     }
-    dueAt = d;
+    dueAt = parsedDue.value;
   }
 
   if (!title) {
@@ -290,11 +290,11 @@ async function updateMyJob(req, res) {
       if (dueRaw === null || String(dueRaw).trim() === "") {
         dueAt = null;
       } else {
-        const d = new Date(String(dueRaw));
-        if (!Number.isFinite(d.getTime())) {
-          return res.status(400).json({ message: "Thời hạn hoàn thành không hợp lệ." });
+        const parsedDue = parseJobDueAt(dueRaw);
+        if (!parsedDue.ok) {
+          return res.status(400).json({ message: parsedDue.message });
         }
-        dueAt = d;
+        dueAt = parsedDue.value;
       }
     }
 
@@ -1040,73 +1040,86 @@ async function patchJobQuote(req, res) {
       return res.json({ message: "Đã gửi offer cho freelancer." });
     }
 
-    if (quote.job_status !== "open") {
-      await dbClient.query("ROLLBACK");
-      return res.status(409).json({ message: "Công việc không còn mở để thuê freelancer." });
-    }
+    if (action === "accept") {
+      if (!["pending", "shortlisted", "interviewing", "offered"].includes(quote.status)) {
+        await dbClient.query("ROLLBACK");
+        return res.status(409).json({ message: "Không thể chốt tuyển báo giá ở trạng thái hiện tại." });
+      }
 
-    if (quote.status !== "offered") {
-      await dbClient.query("ROLLBACK");
-      return res.status(409).json({
-        message: "Bạn cần gửi offer trước khi xác nhận tuyển freelancer.",
+      if (quote.job_status !== "open") {
+        await dbClient.query("ROLLBACK");
+        return res.status(409).json({ message: "Công việc không còn mở để thuê freelancer." });
+      }
+
+      const activeContract = await dbClient.query(
+        `SELECT id FROM public.contracts
+         WHERE job_id = $1 AND deleted_at IS NULL AND status IN ('pending', 'active')
+         LIMIT 1`,
+        [quote.job_id],
+      );
+
+      if (activeContract.rowCount > 0) {
+        await dbClient.query("ROLLBACK");
+        return res.status(409).json({ message: "Công việc đã có hợp đồng đang hoạt động." });
+      }
+
+      const agreedPrice =
+        quote.amount != null ? quote.amount : quote.budget != null ? quote.budget : null;
+
+      const contractResult = await dbClient.query(
+        `INSERT INTO public.contracts (
+           job_id, service_id, client_id, freelancer_id, agreed_price, status,
+           workflow_stage, escrow_status
+         )
+         VALUES ($1, NULL, $2, $3, $4, 'pending', 'selection', 'none')
+         RETURNING id, job_id, agreed_price, status, workflow_stage, created_at`,
+        [quote.job_id, quote.client_id, quote.freelancer_id, agreedPrice],
+      );
+      const contractId = contractResult.rows[0].id;
+
+      await setStageDeadline(dbClient, contractId, SLA_DAYS.AWAIT_PROPOSAL);
+      await logWorkflowEvent(
+        dbClient,
+        contractId,
+        "order_created",
+        { source: "job_quote_hire", slaDays: SLA_DAYS.AWAIT_PROPOSAL },
+        payload.sub,
+      );
+
+      await dbClient.query(
+        `UPDATE public.job_quotes SET status = 'accepted', updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
+        [quoteId],
+      );
+
+      await dbClient.query(
+        `UPDATE public.job_quotes
+         SET status = 'declined', updated_at = CURRENT_TIMESTAMP
+         WHERE job_id = $1 AND id <> $2 AND status IN ('pending', 'shortlisted', 'interviewing', 'offered')`,
+        [quote.job_id, quoteId],
+      );
+
+      await dbClient.query(
+        `UPDATE public.jobs SET status = 'in_progress', updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
+        [quote.job_id],
+      );
+
+      await dbClient.query("COMMIT");
+
+      notifyQuoteAction(dbClient, {
+        action: "accept",
+        quote,
+        jobTitle: quote.job_title,
+        actorId: payload.sub,
+      }).catch((err) => console.error("notifyQuoteAction accept:", err.message));
+
+      return res.json({
+        message: "Đã chọn freelancer và tạo hợp đồng.",
+        contract: contractResult.rows[0],
       });
     }
 
-    const activeContract = await dbClient.query(
-      `SELECT id FROM public.contracts
-       WHERE job_id = $1 AND deleted_at IS NULL AND status IN ('pending', 'active')
-       LIMIT 1`,
-      [quote.job_id],
-    );
-
-    if (activeContract.rowCount > 0) {
-      await dbClient.query("ROLLBACK");
-      return res.status(409).json({ message: "Công việc đã có hợp đồng đang hoạt động." });
-    }
-
-    const agreedPrice =
-      quote.amount != null ? quote.amount : quote.budget != null ? quote.budget : null;
-
-    const contractResult = await dbClient.query(
-      `INSERT INTO public.contracts (
-         job_id, service_id, client_id, freelancer_id, agreed_price, start_date, status,
-         workflow_stage, proposal_text, proposal_submitted_at
-       )
-       VALUES ($1, NULL, $2, $3, $4, CURRENT_TIMESTAMP, 'active', 'execution', $5, CURRENT_TIMESTAMP)
-       RETURNING id, job_id, agreed_price, status, created_at`,
-      [quote.job_id, quote.client_id, quote.freelancer_id, agreedPrice, quote.message ?? null],
-    );
-
-    await dbClient.query(
-      `UPDATE public.job_quotes SET status = 'accepted', updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
-      [quoteId],
-    );
-
-    await dbClient.query(
-      `UPDATE public.job_quotes
-       SET status = 'declined', updated_at = CURRENT_TIMESTAMP
-       WHERE job_id = $1 AND id <> $2 AND status IN ('pending', 'shortlisted', 'interviewing', 'offered')`,
-      [quote.job_id, quoteId],
-    );
-
-    await dbClient.query(
-      `UPDATE public.jobs SET status = 'in_progress', updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
-      [quote.job_id],
-    );
-
-    await dbClient.query("COMMIT");
-
-    notifyQuoteAction(dbClient, {
-      action: "accept",
-      quote,
-      jobTitle: quote.job_title,
-      actorId: payload.sub,
-    }).catch((err) => console.error("notifyQuoteAction accept:", err.message));
-
-    return res.json({
-      message: "Đã chọn freelancer và tạo hợp đồng.",
-      contract: contractResult.rows[0],
-    });
+    await dbClient.query("ROLLBACK");
+    return res.status(400).json({ message: "action không hợp lệ." });
   } catch (error) {
     await dbClient.query("ROLLBACK").catch(() => {});
     console.error("Patch job quote failed:", error.message);
@@ -1757,10 +1770,6 @@ async function saveJob(req, res) {
 
   const db = await pool.connect();
   try {
-    if (!(await ensureFreelancerCanWork(db, payload.sub, res))) {
-      return;
-    }
-
     const jobCheck = await db.query(
       `SELECT j.id, j.client_id, j.status
        FROM public.jobs j

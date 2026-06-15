@@ -119,7 +119,10 @@ export default function GoogleCallbackHandler() {
       <p className="text-sm text-gray-700" role="status">
         {message}
       </p>
-      {message.includes("thử lại") || message.includes("Thiếu") || message.includes("hết hạn") ? (
+      {message.includes("thử lại") ||
+      message.includes("Thiếu") ||
+      message.includes("hết hạn") ||
+      message.includes("tạm khóa") ? (
         <a
           href="/dang-nhap"
           className="text-sm font-semibold text-[#0066cc] hover:underline"

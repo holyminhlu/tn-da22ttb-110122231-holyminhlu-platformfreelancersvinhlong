@@ -23,6 +23,7 @@ const {
   verifyWithdrawalPin,
   isMissingSchemaError: isPinSchemaError,
 } = require("../services/withdrawalPin.service");
+const { assertClientPaymentAllowed } = require("../utils/clientIdentityVerified");
 
 function isMissingSchemaError(err) {
   return err?.code === "42703" || err?.code === "42P01";
@@ -853,6 +854,10 @@ async function updateBillingProfile(req, res) {
 
   const db = await pool.connect();
   try {
+    if (!(await assertClientPaymentAllowed(db, role, userId, res))) {
+      return;
+    }
+
     await db.query(
       `INSERT INTO public.client_billing_profiles
          (user_id, company_name, company_address, tax_id, billing_email, contact_name, updated_at)
@@ -925,6 +930,10 @@ async function addBillingMethod(req, res) {
   const db = await pool.connect();
 
   try {
+    if (!(await assertClientPaymentAllowed(db, role, userId, res))) {
+      return;
+    }
+
     let methodType = "card";
     let cardBrand = null;
     let cardLast4 = null;
@@ -1054,6 +1063,10 @@ async function setDefaultBillingMethod(req, res) {
 
   const db = await pool.connect();
   try {
+    if (!(await assertClientPaymentAllowed(db, role, userId, res))) {
+      return;
+    }
+
     const existing = await db.query(
       `SELECT id FROM public.client_billing_methods
        WHERE id = $1 AND user_id = $2 AND is_active = true
@@ -1115,6 +1128,10 @@ async function deleteBillingMethod(req, res) {
 
   const db = await pool.connect();
   try {
+    if (!(await assertClientPaymentAllowed(db, role, userId, res))) {
+      return;
+    }
+
     const existing = await db.query(
       `SELECT id, is_default
        FROM public.client_billing_methods
@@ -1183,7 +1200,7 @@ async function createPaymentLink(req, res) {
   if (!isPayosConfigured()) {
     return res.status(503).json({
       message:
-        "Cổng payOS chưa được cấu hình. Thêm PAYOS_CLIENT_ID, PAYOS_API_KEY, PAYOS_CHECKSUM_KEY vào .env.",
+        "Cổng thanh toán chưa sẵn sàng. Vui lòng thử lại sau.",
     });
   }
 
@@ -1194,12 +1211,16 @@ async function createPaymentLink(req, res) {
 
   const db = await pool.connect();
   try {
+    if (!(await assertClientPaymentAllowed(db, role, payload.sub, res))) {
+      return;
+    }
+
     const result = await createPayosPaymentLink(db, payload.sub, amount);
     if (!result.checkoutUrl) {
-      return res.status(502).json({ message: "payOS không trả về link thanh toán." });
+      return res.status(502).json({ message: "Không thể tạo link thanh toán." });
     }
     return res.json({
-      message: "Đã tạo link thanh toán payOS.",
+      message: "Đã tạo link thanh toán.",
       orderCode: result.orderCode,
       amount: result.amount,
       checkoutUrl: result.checkoutUrl,
@@ -1212,7 +1233,7 @@ async function createPaymentLink(req, res) {
       });
     }
     return res.status(500).json({
-      message: error.message || "Không thể tạo link thanh toán payOS.",
+      message: error.message || "Không thể tạo link thanh toán.",
     });
   } finally {
     db.release();
@@ -1332,6 +1353,10 @@ async function cancelDepositOrder(req, res) {
 
   const db = await pool.connect();
   try {
+    if (!(await assertClientPaymentAllowed(db, role, payload.sub, res))) {
+      return;
+    }
+
     const order = await getWalletDepositOrderForUser(db, orderCode, payload.sub);
     if (!order) {
       return res.status(404).json({ message: "Không tìm thấy đơn nạp tiền." });
@@ -1339,7 +1364,7 @@ async function cancelDepositOrder(req, res) {
     if (order.status === "SUCCESS") {
       return res.status(409).json({ message: "Đơn đã thanh toán thành công, không thể hủy." });
     }
-    await cancelWalletDepositOrder(db, orderCode, "Client hủy tại trang payOS");
+    await cancelWalletDepositOrder(db, orderCode, "Client hủy tại trang thanh toán");
     return res.json({ message: "Đã hủy yêu cầu nạp tiền.", orderCode, status: "CANCELLED" });
   } catch (error) {
     console.error("cancelDepositOrder failed:", error.message);

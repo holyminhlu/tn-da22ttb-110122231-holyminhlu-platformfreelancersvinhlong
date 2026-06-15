@@ -264,8 +264,10 @@ async function patchIdentityVerification(req, res) {
         [userId],
       );
       const role = String(userRow.rows[0]?.role || "").toLowerCase();
-      if (role === "freelancer") {
+      if (role === "freelancer" || role === "client") {
         sets.push(`admin_review_status = 'pending'`);
+      }
+      if (role === "freelancer") {
         await db.query(
           `UPDATE public.users SET status = 'pending', updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
           [userId],
@@ -472,7 +474,7 @@ async function addCreditCard(req, res) {
 
     return res.json({
       message:
-        "Đã lưu thẻ. Chuyển sang bước xác minh số tiền — thanh toán 10.000 VND qua payOS để hoàn tất.",
+        "Đã lưu thẻ. Chuyển sang bước xác minh số tiền — thanh toán 10.000 VND để hoàn tất.",
       verification: mapRow(result.rows[0]),
     });
   } catch (error) {
@@ -496,7 +498,7 @@ async function createCardVerifyPaymentLink(req, res) {
   if (!isPayosConfigured()) {
     return res.status(503).json({
       message:
-        "Cổng payOS chưa được cấu hình. Thêm PAYOS_CLIENT_ID, PAYOS_API_KEY, PAYOS_CHECKSUM_KEY vào .env.",
+        "Cổng thanh toán chưa sẵn sàng. Vui lòng thử lại sau.",
     });
   }
 
@@ -519,7 +521,7 @@ async function createCardVerifyPaymentLink(req, res) {
 
     const result = await createIdentityVerifyPaymentLink(db, userId);
     if (!result.checkoutUrl) {
-      return res.status(502).json({ message: "payOS không trả về link thanh toán." });
+      return res.status(502).json({ message: "Không thể tạo link thanh toán." });
     }
 
     return res.json({
@@ -644,7 +646,7 @@ async function verifyCardCharge(req, res) {
     const row = result.rows[0];
     if (!row?.card_added_at || !row.card_charge_cents) {
       return res.status(400).json({
-        message: "Hãy hoàn tất thanh toán 10.000 VND qua payOS ở bước xác minh số tiền.",
+        message: "Hãy hoàn tất thanh toán 10.000 VND ở bước xác minh số tiền.",
       });
     }
     if (row.card_verified_at) {

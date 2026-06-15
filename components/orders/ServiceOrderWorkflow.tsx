@@ -12,15 +12,18 @@ import {
 } from "@/lib/api/contracts";
 import { formatPackagePrice } from "@/lib/hire/servicePackages";
 import { formatDate } from "@/lib/format";
+import { useClientIdentityVerification } from "@/hooks/useClientIdentityVerification";
 import EscrowFundPanel from "./EscrowFundPanel";
 import CompletionReviewPanel from "./CompletionReviewPanel";
 import DeliveryAcceptancePanel from "./DeliveryAcceptancePanel";
 import ExecutionReviewPanel from "./ExecutionReviewPanel";
 import SelectionAgreementPanel from "./SelectionAgreementPanel";
-import { cancelTypeLabel, isOrderExpiredOrCancelled } from "@/lib/orders/workflowSlaDisplay";
+import { cancelTypeLabel, isContractDisputed, isOrderExpiredOrCancelled } from "@/lib/orders/workflowSlaDisplay";
+import { disputeCenterPath } from "@/lib/orders/resolutionLinks";
 import "../hire/hire.css";
 import "../hire/hire-freelancer-detail.css";
 import "../hire/hire-order-workflow.css";
+import "../manage/manage.css";
 
 type ServiceOrderWorkflowProps = {
   backHref: string;
@@ -75,6 +78,10 @@ function stageIndex(stage: string) {
 export default function ServiceOrderWorkflow({ backHref, backLabel }: ServiceOrderWorkflowProps) {
   const params = useParams();
   const contractId = String(params?.contractId ?? "");
+  const { verified: identityVerified, loading: identityLoading } = useClientIdentityVerification({
+    refreshOnVisible: false,
+  });
+  const paymentBlocked = !identityLoading && !identityVerified;
 
   const [data, setData] = useState<ContractWorkflowResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -165,10 +172,43 @@ export default function ServiceOrderWorkflow({ backHref, backLabel }: ServiceOrd
   const workflowStage = String(contract.workflow_stage || "selection").toLowerCase();
   const hasProposal = Boolean(contract.proposal_text?.trim());
   const isTerminal = isOrderExpiredOrCancelled(contract.status, contract.cancel_type);
+  const isDisputed = isContractDisputed(contract.status);
+  const disputeCenterHref = disputeCenterPath(isClient ? "client" : "freelancer", {
+    disputeId: data.dispute?.id,
+    contractId,
+  });
 
   function confirmCancelOrder() {
     const reason = window.prompt("Lý do hủy đơn (tùy chọn):", "") ?? "";
     void runAction({ action: "cancel_order", reason });
+  }
+
+  if (isDisputed) {
+    return (
+      <div className="hire-page hire-order hire-order--full-width">
+        <Link href={backHref} className="hire-fl-detail__back">
+          <FaArrowLeft aria-hidden /> {backLabel}
+        </Link>
+        <div className="hire-sla-banner hire-sla-banner--info" role="status">
+          <strong>Đơn đang trong tranh chấp</strong>
+          <span>
+            Workflow tạm dừng trong lúc xử lý. Trao đổi và theo dõi tiến trình tại Trung tâm giải
+            quyết tranh chấp.
+          </span>
+        </div>
+        <div className="hire-order__disputed-summary">
+          <p>
+            <strong>{contract.service_title || contract.job_title || "Đơn hàng"}</strong>
+          </p>
+          <p>
+            Giai đoạn lúc mở tranh chấp: {stageMeta.title} · Ký quỹ: {escrowLabel}
+          </p>
+          <Link href={disputeCenterHref} className="resolution-card__link">
+            Đi tới Xử lý tranh chấp
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   if (isTerminal) {
@@ -245,6 +285,7 @@ export default function ServiceOrderWorkflow({ backHref, backLabel }: ServiceOrd
             isClient={isClient}
             busy={busy}
             actionError={actionError}
+            paymentBlocked={isClient && paymentBlocked}
             counterpartyName={
               isClient
                 ? contract.freelancer_name || "—"
@@ -260,6 +301,8 @@ export default function ServiceOrderWorkflow({ backHref, backLabel }: ServiceOrd
             isClient={isClient}
             busy={busy}
             actionError={actionError}
+            paymentBlocked={isClient && paymentBlocked}
+            progressHistory={data.progressHistory ?? []}
             cancelRequest={data.cancelRequest}
             counterpartyName={
               isClient
@@ -277,8 +320,13 @@ export default function ServiceOrderWorkflow({ backHref, backLabel }: ServiceOrd
             onRequestRevision={(note) =>
               void runAction({ action: "request_revision", revisionNote: note })
             }
-            onRequestCancelRefund={(reason) =>
-              void runAction({ action: "request_cancel_refund", reason })
+            onRequestCancelRefund={(payload) =>
+              void runAction({
+                action: "request_cancel_refund",
+                reasonCode: payload.reasonCode,
+                detail: payload.detail,
+                refundMethod: payload.refundMethod,
+              })
             }
             onRespondCancelRequest={(agree, responseNote) =>
               void runAction({
@@ -287,8 +335,15 @@ export default function ServiceOrderWorkflow({ backHref, backLabel }: ServiceOrd
                 responseNote,
               })
             }
-            onOpenDispute={(reason) =>
-              void runAction({ action: "open_dispute", reason })
+            onOpenDispute={(payload) =>
+              void runAction({
+                action: "open_dispute",
+                issueCategory: payload.issueCategory,
+                desiredResolution: payload.desiredResolution,
+                resolutionNote: payload.resolutionNote,
+                detail: payload.detail,
+                evidenceUrls: payload.evidenceUrls,
+              })
             }
           />
         ) : workflowStage === "delivery" ? (
@@ -298,6 +353,7 @@ export default function ServiceOrderWorkflow({ backHref, backLabel }: ServiceOrd
             isClient={isClient}
             busy={busy}
             actionError={actionError}
+            paymentBlocked={isClient && paymentBlocked}
             counterpartyName={
               isClient
                 ? contract.freelancer_name || "—"
@@ -305,8 +361,15 @@ export default function ServiceOrderWorkflow({ backHref, backLabel }: ServiceOrd
             }
             onMarkDelivered={() => void runAction({ action: "mark_delivered" })}
             onAcceptDelivery={() => void runAction({ action: "accept_delivery" })}
-            onOpenDispute={(reason) =>
-              void runAction({ action: "open_dispute", reason })
+            onOpenDispute={(payload) =>
+              void runAction({
+                action: "open_dispute",
+                issueCategory: payload.issueCategory,
+                desiredResolution: payload.desiredResolution,
+                resolutionNote: payload.resolutionNote,
+                detail: payload.detail,
+                evidenceUrls: payload.evidenceUrls,
+              })
             }
           />
         ) : workflowStage === "completion" ? (
@@ -316,6 +379,7 @@ export default function ServiceOrderWorkflow({ backHref, backLabel }: ServiceOrd
             isClient={isClient}
             busy={busy}
             actionError={actionError}
+            paymentBlocked={isClient && paymentBlocked}
             counterpartyName={
               isClient
                 ? contract.freelancer_name || "—"

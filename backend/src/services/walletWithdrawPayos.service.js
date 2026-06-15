@@ -402,7 +402,7 @@ async function confirmWithdrawal(db, orderId, userId) {
           `UPDATE public.freelancer_withdrawal_orders
            SET status = 'FAILED', failure_reason = $2, updated_at = NOW()
            WHERE id = $1`,
-          [orderRow.id, payosErr.message || "Không thể gửi lệnh chi hộ payOS."],
+          [orderRow.id, payosErr.message || "Không thể gửi lệnh chi hộ. Vui lòng thử lại sau."],
         );
         if (txId) {
           try {

@@ -12,6 +12,7 @@ import {
 import FreelancerAvatarFrame from "@/components/freelancer/FreelancerAvatarFrame";
 import { getUserInitials, resolveAvatarSrc } from "@/lib/authSession";
 import { formatDate, formatVnd } from "@/lib/format";
+import { CLIENT_VERIFY_PAGE } from "@/lib/hire/clientVerification";
 import type { HireFavoriteEntry } from "./hireFavoritesTypes";
 
 type HireFavoriteCardProps = {
@@ -19,6 +20,8 @@ type HireFavoriteCardProps = {
   isFavorite: boolean;
   onToggleFavorite: (id: string) => void;
   onMessage: (entry: HireFavoriteEntry) => void;
+  clientIdentityVerified?: boolean;
+  clientIdentityLoading?: boolean;
 };
 
 function requestQuoteHref(entry: HireFavoriteEntry) {
@@ -33,11 +36,17 @@ export default function HireFavoriteCard({
   isFavorite,
   onToggleFavorite,
   onMessage,
+  clientIdentityVerified = true,
+  clientIdentityLoading = false,
 }: HireFavoriteCardProps) {
   const avatarSrc = resolveAvatarSrc(entry.avatarUrl);
   const initials = getUserInitials(entry.name, entry.email);
   const rating =
     entry.ratingAvg != null && entry.ratingAvg > 0 ? Number(entry.ratingAvg).toFixed(1) : null;
+
+  const needsVerify = !clientIdentityLoading && !clientIdentityVerified;
+  const quoteHref = needsVerify ? CLIENT_VERIFY_PAGE : requestQuoteHref(entry);
+  const quoteLabel = needsVerify ? "Xác minh để báo giá" : "Yêu cầu báo giá";
 
   return (
     <article className="hire-favorites__card">
@@ -135,17 +144,24 @@ export default function HireFavoriteCard({
           <FaUserTie aria-hidden />
           Thuê
         </Link>
-        <button
-          type="button"
-          className="hire-favorites__action"
-          onClick={() => onMessage(entry)}
-        >
-          <FaComment aria-hidden />
-          Nhắn tin
-        </button>
-        <Link href={requestQuoteHref(entry)} className="hire-favorites__action">
+        {needsVerify ? (
+          <Link href={CLIENT_VERIFY_PAGE} className="hire-favorites__action">
+            <FaComment aria-hidden />
+            Xác minh để nhắn tin
+          </Link>
+        ) : (
+          <button
+            type="button"
+            className="hire-favorites__action"
+            onClick={() => onMessage(entry)}
+          >
+            <FaComment aria-hidden />
+            Nhắn tin
+          </button>
+        )}
+        <Link href={quoteHref} className="hire-favorites__action">
           <FaEnvelope aria-hidden />
-          Yêu cầu báo giá
+          {quoteLabel}
         </Link>
       </div>
     </article>

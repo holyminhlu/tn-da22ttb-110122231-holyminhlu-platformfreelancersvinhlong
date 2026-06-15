@@ -6,11 +6,13 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { FaArrowLeft } from "react-icons/fa";
 import { createServiceQuote } from "@/lib/api/contracts";
 import { getService } from "@/lib/api/services";
+import { useClientIdentityVerification } from "@/hooks/useClientIdentityVerification";
 import {
   formatPackagePrice,
   parseServicePackages,
   type ServicePackage,
 } from "@/lib/hire/servicePackages";
+import ClientIdentityVerifyGate from "./ClientIdentityVerifyGate";
 import HireShell from "./HireShell";
 import "./hire.css";
 import "./hire-quote.css";
@@ -31,6 +33,7 @@ export default function ClientServiceQuotePage() {
   const searchParams = useSearchParams();
   const serviceId = searchParams.get("serviceId") || "";
   const freelancerId = searchParams.get("freelancerId") || "";
+  const { loading: verifyLoading, verified, user, idv } = useClientIdentityVerification();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -45,6 +48,10 @@ export default function ClientServiceQuotePage() {
   const load = useCallback(async () => {
     if (!serviceId) {
       setError("Thiếu mã dịch vụ. Quay lại tìm kiếm và chọn freelancer.");
+      setLoading(false);
+      return;
+    }
+    if (!verified) {
       setLoading(false);
       return;
     }
@@ -74,7 +81,7 @@ export default function ClientServiceQuotePage() {
     } finally {
       setLoading(false);
     }
-  }, [serviceId, freelancerId]);
+  }, [serviceId, freelancerId, verified]);
 
   useEffect(() => {
     void load();
@@ -135,7 +142,18 @@ export default function ClientServiceQuotePage() {
           </div>
         </header>
 
-        {loading ? (
+        {verifyLoading ? (
+          <p className="hire-page__state">Đang kiểm tra tài khoản...</p>
+        ) : !verified ? (
+          <ClientIdentityVerifyGate
+            user={user}
+            idv={idv}
+            title="Xác minh danh tính trước khi gửi yêu cầu báo giá"
+            lead="Hoàn thành 5 mục thông tin nhận dạng và xác minh thẻ tín dụng (bước 2) tại trang xác minh, sau đó bạn có thể gửi yêu cầu báo giá."
+            backHref="/hire/search"
+            backLabel="Quay lại tìm kiếm freelancer"
+          />
+        ) : loading ? (
           <p className="hire-page__state">Đang tải dịch vụ...</p>
         ) : error ? (
           <p className="hire-page__state hire-page__state--error" role="alert">

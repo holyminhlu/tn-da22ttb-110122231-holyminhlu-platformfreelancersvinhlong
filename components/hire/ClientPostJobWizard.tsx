@@ -7,6 +7,11 @@ import { FaCheck, FaImage, FaMapMarkerAlt, FaMoneyBillWave, FaTimes } from "reac
 import { DEFAULT_JOB_CATEGORIES } from "@/components/findwork/constants";
 import { createJob, getJob, updateMyJob, uploadJobImages } from "@/lib/api/jobs";
 import { formatJobBudgetLine } from "@/lib/jobsDisplay";
+import {
+  isoToLocalDateInputValue,
+  isDateInputBeforeToday,
+  localDateInputValue,
+} from "@/lib/format";
 import JobWorkLocationField, {
   REMOTE_WORK_LOCATION_LABEL,
   type WorkLocationMode,
@@ -116,9 +121,10 @@ export default function ClientPostJobWizard({ editJobId = null }: ClientPostJobW
           return;
         }
         const isRemote = job.location_label === REMOTE_WORK_LOCATION_LABEL;
-        const dueLocal = job.due_at
-          ? new Date(job.due_at).toISOString().slice(0, 16)
-          : "";
+        const dueLocal = (() => {
+          const v = isoToLocalDateInputValue(job.due_at);
+          return v && !isDateInputBeforeToday(v) ? v : "";
+        })();
         setForm({
           title: job.title || "",
           description: job.description || "",
@@ -199,13 +205,8 @@ export default function ClientPostJobWizard({ editJobId = null }: ClientPostJobW
         return false;
       }
       if (form.dueAt) {
-        const d = new Date(form.dueAt);
-        if (!Number.isFinite(d.getTime())) {
-          setStepError("Thời hạn không hợp lệ.");
-          return false;
-        }
-        if (d.getTime() < Date.now() - 86400000) {
-          setStepError("Thời hạn hoàn thành phải là ngày trong tương lai.");
+        if (isDateInputBeforeToday(form.dueAt)) {
+          setStepError("Hạn hoàn thành dự kiến không được là ngày trong quá khứ.");
           return false;
         }
       }
@@ -271,12 +272,12 @@ export default function ClientPostJobWizard({ editJobId = null }: ClientPostJobW
             : form.locationLabel.trim(),
         location_lat: form.locationMode === "onsite" ? form.locationLat : null,
         location_lng: form.locationMode === "onsite" ? form.locationLng : null,
-        due_at: form.dueAt ? new Date(form.dueAt).toISOString() : null,
+        due_at: form.dueAt ? `${form.dueAt}T12:00:00` : null,
         images: imageUrls,
       };
       if (isEdit && editJobId) {
         await updateMyJob(editJobId, payload);
-        router.push("/manage");
+        router.push("/manage/phong-lam-viec");
         router.refresh();
         return;
       }
@@ -466,7 +467,16 @@ export default function ClientPostJobWizard({ editJobId = null }: ClientPostJobW
               <input
                 type="date"
                 value={form.dueAt}
-                onChange={(e) => patch({ dueAt: e.target.value })}
+                min={localDateInputValue()}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (value && isDateInputBeforeToday(value)) {
+                    setStepError("Hạn hoàn thành dự kiến không được là ngày trong quá khứ.");
+                    return;
+                  }
+                  setStepError("");
+                  patch({ dueAt: value });
+                }}
               />
             </label>
           </div>

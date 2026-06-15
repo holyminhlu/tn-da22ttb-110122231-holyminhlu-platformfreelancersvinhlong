@@ -17,6 +17,8 @@ import { formatPackagePrice } from "@/lib/hire/servicePackages";
 import { formatDate, formatVnd } from "@/lib/format";
 import { formatTimelineDisplay, parseProposalSections } from "@/lib/orders/proposalDisplay";
 import WorkflowDeadlineBanner from "./WorkflowDeadlineBanner";
+import ClientVerifyNotice from "@/components/hire/ClientVerifyNotice";
+import { CLIENT_VERIFY_PAYMENT_LEAD } from "@/lib/hire/clientVerification";
 
 type EscrowFundPanelProps = {
   contract: WorkflowContract;
@@ -24,6 +26,7 @@ type EscrowFundPanelProps = {
   isClient: boolean;
   busy: boolean;
   actionError?: string;
+  paymentBlocked?: boolean;
   counterpartyName: string;
   onFundEscrow: () => void;
   onCancelOrder?: () => void;
@@ -45,6 +48,7 @@ export default function EscrowFundPanel({
   isClient,
   busy,
   actionError,
+  paymentBlocked = false,
   counterpartyName,
   onFundEscrow,
   onCancelOrder,
@@ -71,6 +75,7 @@ export default function EscrowFundPanel({
 
   return (
     <div className="hire-escrow">
+      {paymentBlocked ? <ClientVerifyNotice message={CLIENT_VERIFY_PAYMENT_LEAD} /> : null}
       <WorkflowDeadlineBanner
         deadlineAt={contract.stage_deadline_at || contract.escrow_deadline_at}
         label="Hạn nạp ký quỹ Escrow"
@@ -224,6 +229,7 @@ export default function EscrowFundPanel({
                 <input
                   type="checkbox"
                   checked={confirmed}
+                  disabled={paymentBlocked}
                   onChange={(e) => setConfirmed(e.target.checked)}
                 />
                 <span>
@@ -236,7 +242,7 @@ export default function EscrowFundPanel({
                 <button
                   type="button"
                   className="hire-escrow__btn hire-escrow__btn--primary"
-                  disabled={busy || !confirmed || agreedAmount <= 0}
+                  disabled={busy || !confirmed || agreedAmount <= 0 || paymentBlocked}
                   onClick={onFundEscrow}
                 >
                   {busy ? "Đang xử lý..." : "Xác nhận nạp ký quỹ"}

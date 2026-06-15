@@ -14,6 +14,7 @@ function resolveActiveSection(pathname: string): AccountSidebarSection {
   if (pathname.startsWith("/ho-so")) return "profile";
   if (pathname.startsWith("/edit-account/xac-minh")) return "verification";
   if (pathname.startsWith("/edit-account/ten-dang-nhap")) return "credentials";
+  if (pathname.startsWith("/edit-account/bao-mat")) return "security";
   if (pathname.startsWith("/edit-account/cai-dat")) return "settings";
   if (pathname.startsWith("/edit-account")) return "contact";
   return "contact";

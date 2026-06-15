@@ -3,8 +3,8 @@
 import { useEffect, useRef } from "react";
 
 const TITLE_LINE_1 = "Vĩnh Long";
-const TITLE_LINE_2 = "Connected";
-const LOGO_SRC = "/Logo/Logo.png";
+const TITLE_LINE_2 = "Connect";
+const LOGO_SRC = "/Logo/logoVLC.png";
 const CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
 
 const FORM_DURATION = 3000;
@@ -265,22 +265,24 @@ function drawLogo(
 ) {
   if (opacity <= 0 || !logo.complete || logo.naturalWidth === 0) return;
 
-  const size = Math.min(width, height) * 0.56;
-  const x = (width - size) / 2;
-  const y = (height - size) / 2;
-  const radius = size / 2;
-  const centerX = width / 2;
-  const centerY = height / 2;
+  const maxWidth = width * 0.72;
+  const maxHeight = height * 0.56;
+  const aspect = logo.naturalWidth / logo.naturalHeight;
+
+  let drawWidth = maxWidth;
+  let drawHeight = drawWidth / aspect;
+
+  if (drawHeight > maxHeight) {
+    drawHeight = maxHeight;
+    drawWidth = drawHeight * aspect;
+  }
+
+  const x = (width - drawWidth) / 2;
+  const y = (height - drawHeight) / 2;
 
   ctx.save();
   ctx.globalAlpha = opacity;
-  ctx.beginPath();
-  ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
-  ctx.closePath();
-  ctx.fillStyle = "#ffffff";
-  ctx.fill();
-  ctx.clip();
-  ctx.drawImage(logo, x, y, size, size);
+  ctx.drawImage(logo, x, y, drawWidth, drawHeight);
   ctx.restore();
 }
 

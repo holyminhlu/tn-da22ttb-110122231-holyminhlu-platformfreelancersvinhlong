@@ -191,8 +191,8 @@ async function completeWalletDeposit(db, orderCode, payosMeta = {}) {
   const txCategory = orderType === ORDER_TYPE_IDENTITY_VERIFY ? "deposit" : "deposit";
   const txDescription =
     orderType === ORDER_TYPE_IDENTITY_VERIFY
-      ? `Xác minh thẻ tín dụng qua payOS #${orderCode}`
-      : `Nạp tiền qua payOS #${orderCode}`;
+      ? `Xác minh thẻ tín dụng #${orderCode}`
+      : `Nạp tiền ví #${orderCode}`;
 
   let transactionId = order.transaction_id;
   if (!transactionId) {

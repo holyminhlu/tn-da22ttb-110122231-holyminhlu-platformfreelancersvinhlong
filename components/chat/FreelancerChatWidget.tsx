@@ -1,10 +1,13 @@
 "use client";
 
+import Link from "next/link";
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { FaBriefcase, FaComments, FaStore } from "react-icons/fa";
+import { FaBriefcase, FaComments, FaIdCard, FaStore } from "react-icons/fa";
+import { useClientIdentityVerification } from "@/hooks/useClientIdentityVerification";
 import { useFreelancerChat } from "@/hooks/useFreelancerChat";
 import { useStoredUser } from "@/hooks/useStoredUser";
 import { resolveChatAssetUrl, type ChatMessage } from "@/lib/api/chat";
+import { CLIENT_VERIFY_PAGE } from "@/lib/hire/clientVerification";
 import { formatDate } from "@/lib/format";
 import "./chat.css";
 
@@ -102,13 +105,18 @@ export default function FreelancerChatWidget({
   onClose,
 }: FreelancerChatWidgetProps) {
   const displayName = peerName ?? freelancerName ?? "Đối tác";
-  const { user } = useStoredUser({ refreshFromApi: false });
+  const { user, ready, isClient } = useStoredUser({ refreshFromApi: false });
+  const clientVerify = useClientIdentityVerification({
+    enabled: ready && isClient,
+    refreshOnVisible: false,
+  });
+  const clientNeedsVerify = isClient && !clientVerify.loading && !clientVerify.verified;
   const isEmbedded = mode === "embedded";
   const [open, setOpen] = useState(isEmbedded || initialOpen);
   const [draft, setDraft] = useState("");
   const listRef = useRef<HTMLUListElement>(null);
 
-  const chatEnabled = (isEmbedded || open) && Boolean(user?.id);
+  const chatEnabled = !clientNeedsVerify && (isEmbedded || open) && Boolean(user?.id);
 
   const { conversation, messages, loading, sending, error, send } = useFreelancerChat({
     freelancerId,
@@ -151,6 +159,73 @@ export default function FreelancerChatWidget({
   }
 
   if (!user) {
+    return null;
+  }
+
+  if (clientNeedsVerify) {
+    if (mode === "embedded") {
+      return (
+        <div className="vlc-chat-fab-wrap vlc-chat-fab-wrap--embedded">
+          <div className="vlc-chat-panel vlc-chat-panel--embedded vlc-chat-panel--verify" role="status">
+            <p className="vlc-chat-panel__verify-text">
+              Hoàn thành xác minh danh tính (5 mục nhận dạng + thẻ tín dụng) để nhắn tin với freelancer.
+            </p>
+            <Link href={CLIENT_VERIFY_PAGE} className="vlc-chat-panel__verify-link">
+              <FaIdCard aria-hidden />
+              Đi xác minh ngay
+            </Link>
+          </div>
+        </div>
+      );
+    }
+
+    if (mode === "floating") {
+      return (
+        <div className="vlc-chat-fab-wrap">
+          {open ? (
+            <div className="vlc-chat-panel vlc-chat-panel--verify" role="dialog" aria-label="Yêu cầu xác minh">
+              <div className="vlc-chat-panel__head">
+                <div className="vlc-chat-panel__title-wrap">
+                  <FaComments className="shrink-0 text-[#0066cc]" aria-hidden />
+                  <div className="min-w-0">
+                    <div className="vlc-chat-panel__title">Nhắn tin — {displayName}</div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  className="vlc-chat-panel__close"
+                  onClick={() => setOpen(false)}
+                  aria-label="Đóng"
+                >
+                  ✕
+                </button>
+              </div>
+              <p className="vlc-chat-panel__verify-text">
+                Hoàn thành 5 mục thông tin nhận dạng và xác minh thẻ tín dụng (bước 2) tại trang xác minh
+                trước khi nhắn tin.
+              </p>
+              <Link href={CLIENT_VERIFY_PAGE} className="vlc-chat-panel__verify-link">
+                <FaIdCard aria-hidden />
+                Đi xác minh ngay
+              </Link>
+            </div>
+          ) : null}
+          <button
+            type="button"
+            className="vlc-chat-btn"
+            onClick={() => setOpen(true)}
+            aria-label={`Xác minh để nhắn tin với ${displayName}`}
+            aria-expanded={open}
+          >
+            <svg height="1.6em" fill="white" viewBox="0 0 1000 1000" aria-hidden>
+              <path d="M881.1,720.5H434.7L173.3,941V720.5h-54.4C58.8,720.5,10,671.1,10,610.2v-441C10,108.4,58.8,59,118.9,59h762.2C941.2,59,990,108.4,990,169.3v441C990,671.1,941.2,720.5,881.1,720.5L881.1,720.5z M935.6,169.3c0-30.4-24.4-55.2-54.5-55.2H118.9c-30.1,0-54.5,24.7-54.5,55.2v441c0,30.4,24.4,55.1,54.5,55.1h54.4h54.4v110.3l163.3-110.2H500h381.1c30.1,0,54.5-24.7,54.5-55.1V169.3L935.6,169.3z M717.8,444.8c-30.1,0-54.4-24.7-54.4-55.1c0-30.4,24.3-55.2,54.4-55.2c30.1,0,54.5,24.7,54.5,55.2C772.2,420.2,747.8,444.8,717.8,444.8L717.8,444.8z M500,444.8c-30.1,0-54.4-24.7-54.4-55.1c0-30.4,24.3-55.2,54.4-55.2c30.1,0,54.4,24.7,54.4,55.2C554.4,420.2,530.1,444.8,500,444.8L500,444.8z M282.2,444.8c-30.1,0-54.5-24.7-54.5-55.1c0-30.4,24.4-55.2,54.5-55.2c30.1,0,54.4,24.7,54.4,55.2C336.7,420.2,312.3,444.8,282.2,444.8L282.2,444.8z" />
+            </svg>
+            <span className="vlc-chat-btn__tooltip">Xác minh để nhắn tin</span>
+          </button>
+        </div>
+      );
+    }
+
     return null;
   }
 
@@ -256,12 +331,25 @@ export default function FreelancerChatWidget({
 export function FreelancerChatInlineButton({
   onClick,
   label = "Nhắn tin",
+  disabled = false,
+  href,
 }: {
-  onClick: () => void;
+  onClick?: () => void;
   label?: string;
+  disabled?: boolean;
+  href?: string;
 }) {
+  if (href) {
+    return (
+      <Link href={href} className="vlc-chat-inline-btn">
+        <FaComments aria-hidden />
+        {label}
+      </Link>
+    );
+  }
+
   return (
-    <button type="button" className="vlc-chat-inline-btn" onClick={onClick}>
+    <button type="button" className="vlc-chat-inline-btn" onClick={onClick} disabled={disabled}>
       <FaComments aria-hidden />
       {label}
     </button>

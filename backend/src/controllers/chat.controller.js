@@ -4,6 +4,21 @@ const { verifyAccessToken } = require("../utils/authTokens");
 const { parseUuidParam } = require("../utils/validators");
 const { notifyChatMessage } = require("../utils/notificationService");
 const { uploadChatAttachment, imageMime } = require("../middleware/chatAttachmentUpload");
+const {
+  queryClientIdentityVerified,
+  IDENTITY_NOT_VERIFIED_CHAT_MESSAGE,
+} = require("../utils/clientIdentityVerified");
+
+async function assertClientCanMessage(db, role, userId, res) {
+  if (String(role || "").toLowerCase() !== "client") return true;
+  const verified = await queryClientIdentityVerified(db, userId);
+  if (verified) return true;
+  res.status(403).json({
+    message: IDENTITY_NOT_VERIFIED_CHAT_MESSAGE,
+    code: "IDENTITY_NOT_VERIFIED",
+  });
+  return false;
+}
 
 async function assertConversationAccess(db, conversationId, userId) {
   const result = await db.query(
@@ -351,6 +366,10 @@ async function openConversation(req, res) {
       return res.status(404).json({ message: "Không tìm thấy client." });
     }
 
+    if (!(await assertClientCanMessage(dbClient, role, userId, res))) {
+      return;
+    }
+
     const existing = await dbClient.query(
       `SELECT id, job_quote_id, service_id, context_title
        FROM public.chat_conversations
@@ -581,6 +600,10 @@ async function sendMessage(req, res) {
       return res.status(404).json({ message: "Cuộc trò chuyện không tồn tại hoặc bạn không có quyền." });
     }
 
+    if (!(await assertClientCanMessage(dbClient, payload.role, payload.sub, res))) {
+      return;
+    }
+
     const peerId =
       String(conversation.client_id) === String(payload.sub)
         ? conversation.freelancer_id
@@ -796,6 +819,10 @@ function uploadAttachment(req, res) {
       const conversation = await assertConversationAccess(dbClient, conversationId, payload.sub);
       if (!conversation) {
         return res.status(404).json({ message: "Cuộc trò chuyện không tồn tại hoặc bạn không có quyền." });
+      }
+
+      if (!(await assertClientCanMessage(dbClient, payload.role, payload.sub, res))) {
+        return;
       }
 
       const mime = String(file.mimetype || "").toLowerCase();

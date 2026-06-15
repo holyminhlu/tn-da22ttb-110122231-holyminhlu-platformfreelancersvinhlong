@@ -241,6 +241,18 @@ export async function getProfileStats(period: ProfileStatsPeriod = "30d") {
   return data;
 }
 
+export type CredentialsMeta = {
+  email: string;
+  isGoogleAccount: boolean;
+  hasLocalPassword: boolean;
+  isGoogleOnly: boolean;
+};
+
+export async function getCredentials() {
+  const { data } = await fetchApi<CredentialsMeta>(apiPaths.users.credentials, { auth: true });
+  return data;
+}
+
 export async function changeEmail(newEmail: string, currentPassword: string) {
   const { data } = await fetchApi<{ message?: string; email?: string; requireReLogin?: boolean }>(
     apiPaths.users.changeEmail,
@@ -250,10 +262,31 @@ export async function changeEmail(newEmail: string, currentPassword: string) {
 }
 
 export async function changePassword(currentPassword: string, newPassword: string) {
-  const { data } = await fetchApi<{ message?: string; requireReLogin?: boolean }>(
-    apiPaths.users.changePassword,
-    { method: "PATCH", auth: true, body: { currentPassword, newPassword } },
-  );
+  const { data } = await fetchApi<{
+    message?: string;
+    requireReLogin?: boolean;
+    hasLocalPassword?: boolean;
+    isGoogleOnly?: boolean;
+  }>(apiPaths.users.changePassword, {
+    method: "PATCH",
+    auth: true,
+    body: { currentPassword, newPassword },
+  });
+  return data;
+}
+
+/** Tạo mật khẩu VLC lần đầu cho tài khoản đăng nhập Google. */
+export async function setPassword(newPassword: string) {
+  const { data } = await fetchApi<{
+    message?: string;
+    requireReLogin?: boolean;
+    hasLocalPassword?: boolean;
+    isGoogleOnly?: boolean;
+  }>(apiPaths.users.changePassword, {
+    method: "PATCH",
+    auth: true,
+    body: { newPassword },
+  });
   return data;
 }
 

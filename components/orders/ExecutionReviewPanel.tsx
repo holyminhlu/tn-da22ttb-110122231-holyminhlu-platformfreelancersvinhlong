@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   FaCheckCircle,
   FaClipboardCheck,
@@ -15,9 +15,16 @@ import type { ContractMilestone, WorkflowContract } from "@/lib/api/contracts";
 import { formatPackagePrice } from "@/lib/hire/servicePackages";
 import { formatDate } from "@/lib/format";
 import { formatTimelineDisplay, parseProposalSections } from "@/lib/orders/proposalDisplay";
-import type { CancelRequest } from "@/lib/api/contracts";
+import type { CancelRequest, ProgressHistoryEntry } from "@/lib/api/contracts";
 import WorkflowDeadlineBanner from "./WorkflowDeadlineBanner";
+import ProgressHistoryTimeline from "./ProgressHistoryTimeline";
+import ClientVerifyNotice from "@/components/hire/ClientVerifyNotice";
+import { CLIENT_VERIFY_PAYMENT_LEAD } from "@/lib/hire/clientVerification";
 import { formatDeadlineCountdown } from "@/lib/orders/workflowSlaDisplay";
+import RefundRequestForm from "./RefundRequestForm";
+import DisputeOpenForm from "./DisputeOpenForm";
+import type { OpenDisputePayload, RefundRequestPayload } from "@/lib/api/resolution";
+import { isQuickRefundEligible } from "@/lib/orders/refundDisputeData";
 
 type ExecutionReviewPanelProps = {
   contract: WorkflowContract;
@@ -25,14 +32,16 @@ type ExecutionReviewPanelProps = {
   isClient: boolean;
   busy: boolean;
   actionError?: string;
+  paymentBlocked?: boolean;
   counterpartyName: string;
+  progressHistory?: ProgressHistoryEntry[];
   cancelRequest?: CancelRequest | null;
   onUpdateProgress: (payload: { progressNote: string; demoUrl: string }) => void;
   onMarkDelivered: () => void;
   onRequestRevision: (revisionNote: string) => void;
-  onRequestCancelRefund?: (reason: string) => void;
+  onRequestCancelRefund?: (payload: RefundRequestPayload) => void;
   onRespondCancelRequest?: (agree: boolean, responseNote?: string) => void;
-  onOpenDispute?: (reason: string) => void;
+  onOpenDispute?: (payload: OpenDisputePayload) => void;
 };
 
 function milestoneStatusLabel(status: string) {
@@ -51,7 +60,9 @@ export default function ExecutionReviewPanel({
   isClient,
   busy,
   actionError,
+  paymentBlocked = false,
   counterpartyName,
+  progressHistory = [],
   onUpdateProgress,
   onMarkDelivered,
   onRequestRevision,
@@ -60,17 +71,21 @@ export default function ExecutionReviewPanel({
   onRespondCancelRequest,
   onOpenDispute,
 }: ExecutionReviewPanelProps) {
-  const [cancelReason, setCancelReason] = useState("");
-  const [disputeReason, setDisputeReason] = useState("");
-  const [progressNote, setProgressNote] = useState(contract.progress_note || "");
-  const [demoUrl, setDemoUrl] = useState(contract.demo_url || "");
+  const [progressNote, setProgressNote] = useState("");
+  const [demoUrl, setDemoUrl] = useState("");
   const [revisionNote, setRevisionNote] = useState("");
   const [deliveryConfirmed, setDeliveryConfirmed] = useState(false);
 
-  useEffect(() => {
-    setProgressNote(contract.progress_note || "");
-    setDemoUrl(contract.demo_url || "");
-  }, [contract.progress_note, contract.demo_url]);
+  const latestProgressEntry = useMemo(() => {
+    for (let i = progressHistory.length - 1; i >= 0; i -= 1) {
+      if (progressHistory[i]?.entry_type === "progress") return progressHistory[i];
+    }
+    return null;
+  }, [progressHistory]);
+
+  const displayProgressNote =
+    latestProgressEntry?.note?.trim() || contract.progress_note?.trim() || "";
+  const displayDemoUrl = latestProgressEntry?.demo_url?.trim() || contract.demo_url?.trim() || "";
 
   const revisionsLimit = Number(contract.revisions_limit) || 2;
   const revisionsUsed = Number(contract.revisions_used) || 0;
@@ -82,8 +97,8 @@ export default function ExecutionReviewPanel({
   );
   const timelineLabel = formatTimelineDisplay(proposal.timeline);
 
-  const hasProgress = Boolean(progressNote.trim());
-  const hasDemo = Boolean(demoUrl.trim());
+  const hasProgress = Boolean(displayProgressNote);
+  const hasDemo = Boolean(displayDemoUrl);
   const canRequestRevision = revisionsLeft > 0;
 
   const milestonesInProgress = milestones.filter((m) =>
@@ -93,8 +108,18 @@ export default function ExecutionReviewPanel({
     ["submitted", "approved", "paid"].includes(String(m.status).toLowerCase()),
   );
 
+  const quickRefundEligible = isQuickRefundEligible({
+    escrow_status: contract.escrow_status,
+    workflow_stage: contract.workflow_stage,
+    delivered_at: contract.delivered_at,
+    progress_entry_count: progressHistory.filter((e) => e.entry_type === "progress").length,
+  });
+
   return (
     <div className="hire-execution">
+      {paymentBlocked && isClient ? (
+        <ClientVerifyNotice message={CLIENT_VERIFY_PAYMENT_LEAD} />
+      ) : null}
       {cancelRequest ? (
         <div className="hire-sla-banner hire-sla-banner--warn" role="alert">
           <strong>
@@ -235,6 +260,10 @@ export default function ExecutionReviewPanel({
         </aside>
 
         <div className="hire-execution__main">
+          {progressHistory.length > 0 ? (
+            <ProgressHistoryTimeline entries={progressHistory} highlightLatest />
+          ) : null}
+
           {!isClient ? (
             <div className="hire-execution__work-card">
               <header className="hire-execution__work-head">
@@ -242,7 +271,9 @@ export default function ExecutionReviewPanel({
                 <div>
                   <h3 className="hire-execution__work-title">Cập nhật tiến độ</h3>
                   <p className="hire-execution__work-sub">
-                    Ghi chú những gì đã làm và gửi link demo (staging) để client kiểm tra.
+                    {progressHistory.length > 0
+                      ? "Gửi bản cập nhật mới — lịch sử các lần trước vẫn được giữ bên trên."
+                      : "Ghi chú những gì đã làm và gửi link demo (staging) để client kiểm tra."}
                   </p>
                 </div>
               </header>
@@ -288,12 +319,14 @@ export default function ExecutionReviewPanel({
                   type="button"
                   className="hire-execution__btn hire-execution__btn--primary"
                   disabled={busy || (!hasProgress && !hasDemo)}
-                  onClick={() =>
+                  onClick={() => {
                     onUpdateProgress({
                       progressNote: progressNote.trim(),
                       demoUrl: demoUrl.trim(),
-                    })
-                  }
+                    });
+                    setProgressNote("");
+                    setDemoUrl("");
+                  }}
                 >
                   {busy ? "Đang lưu..." : "Lưu tiến độ & demo"}
                 </button>
@@ -330,38 +363,40 @@ export default function ExecutionReviewPanel({
               <header className="hire-execution__review-head">
                 <h3 className="hire-execution__work-title">Tiến độ từ Freelancer</h3>
                 <p className="hire-execution__work-sub">
-                  Xem bản cập nhật mới nhất và phản hồi nếu cần chỉnh sửa.
+                  Xem các bản cập nhật theo thời gian và phản hồi nếu cần chỉnh sửa trước khi bàn
+                  giao.
                 </p>
               </header>
 
-              {hasProgress || hasDemo ? (
-                <div className="hire-execution__status-feed">
+              {progressHistory.length === 0 && (hasProgress || hasDemo) ? (
+                <div className="hire-execution__status-feed hire-execution__status-feed--latest">
+                  <p className="hire-execution__latest-label">Bản cập nhật mới nhất</p>
                   {hasProgress ? (
                     <div className="hire-execution__feed-item">
                       <span className="hire-execution__feed-label">Ghi chú tiến độ</span>
-                      <p className="hire-execution__feed-body">{progressNote}</p>
+                      <p className="hire-execution__feed-body">{displayProgressNote}</p>
                     </div>
                   ) : null}
                   {hasDemo ? (
                     <div className="hire-execution__feed-item hire-execution__feed-item--demo">
                       <span className="hire-execution__feed-label">Link demo</span>
                       <a
-                        href={demoUrl}
+                        href={displayDemoUrl}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="hire-execution__demo-link"
                       >
-                        {demoUrl}
+                        {displayDemoUrl}
                         <FaExternalLinkAlt aria-hidden />
                       </a>
                     </div>
                   ) : null}
                 </div>
-              ) : (
+              ) : progressHistory.length === 0 ? (
                 <div className="hire-execution__empty-feed">
                   <p>Freelancer chưa cập nhật tiến độ hoặc chưa gửi link demo.</p>
                 </div>
-              )}
+              ) : null}
 
               <div className="hire-execution__revision-form">
                 <header className="hire-execution__revision-head">
@@ -397,47 +432,18 @@ export default function ExecutionReviewPanel({
 
           {isClient && !cancelRequest && onRequestCancelRefund ? (
             <div className="hire-execution__cancel-box">
-              <h4 className="hire-execution__revision-title">Yêu cầu hủy & hoàn tiền</h4>
-              <p className="hire-execution__revision-sub">
-                Chỉ dùng khi Freelancer không phản hồi / bỏ việc. Freelancer có 3 ngày phản hồi,
-                sau đó hệ thống có thể tự hoàn 100% về ví của bạn.
-              </p>
-              <textarea
-                className="hire-execution__textarea"
-                rows={3}
-                value={cancelReason}
-                onChange={(e) => setCancelReason(e.target.value)}
-                placeholder="Mô tả lý do (bắt buộc)..."
+              <RefundRequestForm
+                agreedPrice={contract.agreed_price}
+                eligible={quickRefundEligible}
+                busy={busy || paymentBlocked}
+                onSubmit={onRequestCancelRefund}
               />
-              <button
-                type="button"
-                className="hire-execution__btn hire-execution__btn--outline"
-                disabled={busy || cancelReason.trim().length < 10}
-                onClick={() => onRequestCancelRefund(cancelReason.trim())}
-              >
-                Gửi yêu cầu hủy
-              </button>
             </div>
           ) : null}
 
           {onOpenDispute ? (
             <div className="hire-execution__cancel-box">
-              <h4 className="hire-execution__revision-title">Mở tranh chấp</h4>
-              <textarea
-                className="hire-execution__textarea"
-                rows={2}
-                value={disputeReason}
-                onChange={(e) => setDisputeReason(e.target.value)}
-                placeholder="Mô tả tranh chấp..."
-              />
-              <button
-                type="button"
-                className="hire-execution__btn hire-execution__btn--outline"
-                disabled={busy || disputeReason.trim().length < 10}
-                onClick={() => onOpenDispute(disputeReason.trim())}
-              >
-                Mở tranh chấp
-              </button>
+              <DisputeOpenForm busy={busy} onSubmit={onOpenDispute} />
             </div>
           ) : null}
 

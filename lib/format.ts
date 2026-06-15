@@ -48,6 +48,27 @@ export function formatDate(value: string | null | undefined): string {
   });
 }
 
+/** YYYY-MM-DD theo múi giờ máy người dùng — dùng cho input type="date". */
+export function localDateInputValue(date = new Date()): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+export function isDateInputBeforeToday(value: string): boolean {
+  const v = value.trim().slice(0, 10);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(v)) return false;
+  return v < localDateInputValue();
+}
+
+export function isoToLocalDateInputValue(iso: string | null | undefined): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return localDateInputValue(d);
+}
+
 export function parseJsonArray(value: unknown): string[] {
   if (Array.isArray(value)) {
     return value.map((v) => String(v)).filter(Boolean);

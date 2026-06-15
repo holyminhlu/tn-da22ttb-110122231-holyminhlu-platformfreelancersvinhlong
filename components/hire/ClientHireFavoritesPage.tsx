@@ -15,6 +15,7 @@ import {
   filterFavoriteEntries,
   mergeFavoriteIds,
 } from "./clientHireFavorites";
+import { useClientIdentityVerification } from "@/hooks/useClientIdentityVerification";
 import FreelancerChatWidget from "@/components/chat/FreelancerChatWidget";
 import HireFavoriteCard from "./HireFavoriteCard";
 import type { HireFavoriteEntry, HireFavoriteSource } from "./hireFavoritesTypes";
@@ -30,6 +31,8 @@ const TABS: { value: TabFilter; label: string }[] = [
 ];
 
 export default function ClientHireFavoritesPage() {
+  const { verified: clientIdentityVerified, loading: clientIdentityLoading } =
+    useClientIdentityVerification({ refreshOnVisible: false });
   const [entries, setEntries] = useState<HireFavoriteEntry[]>([]);
   const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -271,6 +274,8 @@ export default function ClientHireFavoritesPage() {
                   isFavorite={favoriteIds.includes(entry.id)}
                   onToggleFavorite={handleToggleFavorite}
                   onMessage={setChatEntry}
+                  clientIdentityVerified={clientIdentityVerified}
+                  clientIdentityLoading={clientIdentityLoading}
                 />
               </li>
             ))}
@@ -278,7 +283,7 @@ export default function ClientHireFavoritesPage() {
         )}
       </div>
 
-      {chatEntry ? (
+      {chatEntry && clientIdentityVerified ? (
         <FreelancerChatWidget
           key={chatEntry.id}
           freelancerId={chatEntry.id}

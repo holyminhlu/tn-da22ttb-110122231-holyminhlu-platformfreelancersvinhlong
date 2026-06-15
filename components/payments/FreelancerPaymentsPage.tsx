@@ -236,7 +236,7 @@ export default function FreelancerPaymentsPage() {
                 <div className="payments-deposit-card__head">
                   <h3 className="payments-deposit-card__title">Rút tiền về tài khoản ngân hàng</h3>
                   <p className="payments-deposit-card__hint">
-                    Chi hộ qua payOS Napas 24/7 — xác nhận bằng PIN 6 số, tối thiểu {formatVnd(MIN_WITHDRAW_VND)}.
+                    Chi hộ Napas 24/7 — xác nhận bằng PIN 6 số, tối thiểu {formatVnd(MIN_WITHDRAW_VND)}.
                   </p>
                 </div>
 
@@ -313,7 +313,7 @@ export default function FreelancerPaymentsPage() {
                 ) : null}
 
                 <p className="payments-muted fl-payments__note">
-                  Tiền chuyển vào tài khoản đã liên kết sau khi payOS xác nhận thành công.
+                  Tiền chuyển vào tài khoản đã liên kết sau khi giao dịch được xác nhận thành công.
                 </p>
               </div>
 

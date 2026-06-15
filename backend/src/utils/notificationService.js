@@ -395,21 +395,24 @@ async function notifyReviewReceived(db, contract, rating, actorId) {
   });
 }
 
-async function notifyIdentityReviewApproved(db, userId, actorId) {
+async function notifyIdentityReviewApproved(db, userId, actorId, role = "freelancer") {
+  const isClient = String(role).toLowerCase() === "client";
   return notifyUser(db, {
     recipientId: userId,
     actorId,
     category: "system",
     action: "identity_review_approved",
-    title: "Tài khoản đã được duyệt",
-    body: "Xác minh danh tính của bạn đã được admin phê duyệt. Bạn có thể báo giá và thao tác với job.",
+    title: "Hồ sơ xác minh đã được duyệt",
+    body: isClient
+      ? "Xác minh danh tính của bạn đã được admin phê duyệt."
+      : "Xác minh danh tính của bạn đã được admin phê duyệt. Bạn có thể báo giá và thao tác với job.",
     href: "/edit-account/xac-minh",
     entityType: "identity_verification",
     entityId: userId,
   });
 }
 
-async function notifyIdentityReviewRejected(db, userId, actorId, note) {
+async function notifyIdentityReviewRejected(db, userId, actorId, note, role = "freelancer") {
   const trimmed = String(note || "").trim();
   return notifyUser(db, {
     recipientId: userId,
@@ -439,6 +442,21 @@ async function notifyIdentityReviewSubmitted(db, userId) {
   });
 }
 
+async function notifyNewLogin(db, userId, { ipAddress, deviceLabel }) {
+  const ip = ipAddress || "không xác định";
+  const device = deviceLabel || "thiết bị mới";
+  return notifyUser(db, {
+    recipientId: userId,
+    category: "system",
+    action: "security_new_login",
+    title: "Đăng nhập từ thiết bị hoặc vị trí mới",
+    body: `Phát hiện đăng nhập từ ${device} (IP: ${ip}). Nếu không phải bạn, hãy đổi mật khẩu và đăng xuất các thiết bị khác.`,
+    href: "/edit-account/bao-mat",
+    entityType: "security",
+    entityId: userId,
+  });
+}
+
 module.exports = {
   setNotificationIo,
   mapNotificationRow,
@@ -452,4 +470,5 @@ module.exports = {
   notifyIdentityReviewApproved,
   notifyIdentityReviewRejected,
   notifyIdentityReviewSubmitted,
+  notifyNewLogin,
 };

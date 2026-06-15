@@ -3,6 +3,7 @@
 import FreelancerAvatarFrame from "@/components/freelancer/FreelancerAvatarFrame";
 import Link from "next/link";
 import { FreelancerChatInlineButton } from "@/components/chat/FreelancerChatWidget";
+import { CLIENT_VERIFY_PAGE } from "@/lib/hire/clientVerification";
 import {
   FaBriefcase,
   FaCheckCircle,
@@ -27,28 +28,31 @@ type HireQuoteDetailViewProps = {
   quote: JobQuoteRow;
   busy?: boolean;
   actionError?: string;
-  onOffer?: (quoteId: string) => void;
   onAccept?: (quoteId: string) => void;
   onDecline?: (quoteId: string) => void;
   onChat?: () => void;
+  clientIdentityVerified?: boolean;
+  clientIdentityLoading?: boolean;
 };
 
 export default function HireQuoteDetailView({
   quote,
   busy,
   actionError,
-  onOffer,
   onAccept,
   onDecline,
   onChat,
+  clientIdentityVerified = true,
+  clientIdentityLoading = false,
 }: HireQuoteDetailViewProps) {
+  const needsVerify = !clientIdentityLoading && !clientIdentityVerified;
   const avatarSrc = resolveAvatarSrc(quote.freelancer_avatar_url);
   const name = quote.freelancer_name?.trim() || "Freelancer";
   const title = quote.freelancer_title?.trim() || "Thành viên VLC";
   const location = quote.freelancer_location?.trim() || "—";
   const ratingPct = quoteRatingPercent(quote);
   const message = quote.message?.trim() || "";
-  const { canOffer, canDecline, canHire } = quoteClientActions(quote.status);
+  const { canDecline, canHire } = quoteClientActions(quote.status);
   const profileHref = `/hire/search/${quote.freelancer_id}`;
 
   return (
@@ -161,16 +165,10 @@ export default function HireQuoteDetailView({
           <FaUser aria-hidden />
           Xem hồ sơ
         </Link>
-        {onChat ? <FreelancerChatInlineButton onClick={onChat} /> : null}
-        {canOffer ? (
-          <button
-            type="button"
-            className="hire-favorites__action"
-            disabled={busy}
-            onClick={() => onOffer?.(quote.id)}
-          >
-            Gửi đề xuất
-          </button>
+        {needsVerify ? (
+          <FreelancerChatInlineButton href={CLIENT_VERIFY_PAGE} label="Xác minh để nhắn tin" />
+        ) : onChat ? (
+          <FreelancerChatInlineButton onClick={onChat} />
         ) : null}
         {canDecline ? (
           <button
@@ -184,17 +182,15 @@ export default function HireQuoteDetailView({
           </button>
         ) : null}
         {canHire ? (
-          <>
-            <button
-              type="button"
-              className="hire-favorites__action hire-favorites__action--primary"
-              disabled={busy}
-              onClick={() => onAccept?.(quote.id)}
-            >
-              <FaCheckCircle aria-hidden />
-              {busy ? "Đang xử lý…" : "Chốt tuyển"}
-            </button>
-          </>
+          <button
+            type="button"
+            className="hire-favorites__action hire-favorites__action--primary"
+            disabled={busy}
+            onClick={() => onAccept?.(quote.id)}
+          >
+            <FaCheckCircle aria-hidden />
+            {busy ? "Đang xử lý…" : "Chốt tuyển"}
+          </button>
         ) : null}
       </div>
     </article>

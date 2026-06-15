@@ -3,14 +3,17 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { FaSignOutAlt, FaUserCheck } from "react-icons/fa";
+import { FaGavel, FaSignOutAlt, FaUserCheck } from "react-icons/fa";
 import { logout } from "@/lib/api/auth";
 import { clearStoredSession, getUserInitials } from "@/lib/authSession";
 import { ADMIN_HOME } from "@/lib/auth/roleRoutes";
 import { useStoredUser } from "@/hooks/useStoredUser";
 import "./admin.css";
 
-const NAV = [{ href: ADMIN_HOME, label: "Duyệt tài khoản", icon: FaUserCheck }] as const;
+const NAV = [
+  { href: ADMIN_HOME, label: "Duyệt tài khoản", icon: FaUserCheck },
+  { href: "/admin/tranh-chap", label: "Quản lý tranh chấp", icon: FaGavel },
+] as const;
 
 export default function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();

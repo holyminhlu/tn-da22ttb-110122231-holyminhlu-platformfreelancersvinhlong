@@ -1850,6 +1850,125 @@
   border-bottom: 1px solid #f3f4f6;
 }
 
+.hire-execution__history {
+  margin-bottom: 1.25rem;
+  padding: 1rem 1.1rem;
+  border-radius: 0.5rem;
+  border: 1px solid #e5e7eb;
+  background: #fafafa;
+}
+
+.hire-execution__history-title {
+  margin: 0 0 0.85rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #374151;
+}
+
+.hire-execution__history-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.hire-execution__history-item {
+  padding: 0.85rem 1rem;
+  border-radius: 0.35rem;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+}
+
+.hire-execution__history-item--revision {
+  border-color: #fde68a;
+  background: #fffbeb;
+}
+
+.hire-execution__history-item--progress {
+  border-color: #e0e7ff;
+  background: #f8fafc;
+}
+
+.hire-execution__history-item--latest {
+  box-shadow: 0 0 0 2px rgb(79 70 229 / 0.12);
+}
+
+.hire-execution__history-head {
+  display: flex;
+  gap: 0.65rem;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+}
+
+.hire-execution__history-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 999px;
+  flex-shrink: 0;
+  font-size: 0.75rem;
+}
+
+.hire-execution__history-badge--progress {
+  background: #e0e7ff;
+  color: #4338ca;
+}
+
+.hire-execution__history-badge--revision {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.hire-execution__history-meta {
+  min-width: 0;
+}
+
+.hire-execution__history-label {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.hire-execution__history-sub {
+  display: block;
+  margin-top: 0.1rem;
+  font-size: 0.6875rem;
+  color: #6b7280;
+}
+
+.hire-execution__history-note {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: #334155;
+  white-space: pre-wrap;
+}
+
+.hire-execution__history-demo {
+  margin-top: 0.5rem;
+}
+
+.hire-execution__status-feed--latest {
+  border: 1px solid #c7d2fe;
+  border-radius: 0.35rem;
+  padding: 0.85rem 1rem;
+  background: #eef2ff;
+}
+
+.hire-execution__latest-label {
+  margin: 0 0 0.65rem;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #4338ca;
+}
+
 .hire-execution__status-feed {
   display: flex;
   flex-direction: column;
@@ -3007,6 +3126,25 @@
   background: #fef2f2;
   border: 1px solid #fecaca;
   color: #b91c1c;
+}
+
+.hire-order__disputed-summary {
+  margin-top: 1rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  background: #fff;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: #374151;
+}
+
+.hire-order__disputed-summary p {
+  margin: 0 0 0.5rem;
+}
+
+.hire-order__disputed-summary .resolution-card__link {
+  margin-top: 0.35rem;
 }
 
 .hire-sla-banner {

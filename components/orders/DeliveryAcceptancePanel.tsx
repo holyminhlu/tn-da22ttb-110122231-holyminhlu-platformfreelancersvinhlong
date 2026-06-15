@@ -16,6 +16,10 @@ import { formatPackagePrice } from "@/lib/hire/servicePackages";
 import { formatDate, formatVnd } from "@/lib/format";
 import { formatTimelineDisplay, parseProposalSections } from "@/lib/orders/proposalDisplay";
 import WorkflowDeadlineBanner from "./WorkflowDeadlineBanner";
+import ClientVerifyNotice from "@/components/hire/ClientVerifyNotice";
+import { CLIENT_VERIFY_PAYMENT_LEAD } from "@/lib/hire/clientVerification";
+import DisputeOpenForm from "./DisputeOpenForm";
+import type { OpenDisputePayload } from "@/lib/api/resolution";
 
 type DeliveryAcceptancePanelProps = {
   contract: WorkflowContract;
@@ -23,10 +27,11 @@ type DeliveryAcceptancePanelProps = {
   isClient: boolean;
   busy: boolean;
   actionError?: string;
+  paymentBlocked?: boolean;
   counterpartyName: string;
   onMarkDelivered: () => void;
   onAcceptDelivery: () => void;
-  onOpenDispute?: (reason: string) => void;
+  onOpenDispute?: (payload: OpenDisputePayload) => void;
 };
 
 function milestoneStatusLabel(status: string) {
@@ -44,6 +49,7 @@ export default function DeliveryAcceptancePanel({
   isClient,
   busy,
   actionError,
+  paymentBlocked = false,
   counterpartyName,
   onMarkDelivered,
   onAcceptDelivery,
@@ -51,7 +57,6 @@ export default function DeliveryAcceptancePanel({
 }: DeliveryAcceptancePanelProps) {
   const [acceptConfirmed, setAcceptConfirmed] = useState(false);
   const [deliverConfirmed, setDeliverConfirmed] = useState(false);
-  const [disputeReason, setDisputeReason] = useState("");
 
   const isDelivered = Boolean(contract.delivered_at);
   const progressNote = contract.progress_note?.trim() || "";
@@ -67,6 +72,9 @@ export default function DeliveryAcceptancePanel({
 
   return (
     <div className="hire-delivery">
+      {paymentBlocked && isClient ? (
+        <ClientVerifyNotice message={CLIENT_VERIFY_PAYMENT_LEAD} />
+      ) : null}
       {contract.delivered_at && !contract.accepted_at ? (
         <WorkflowDeadlineBanner
           deadlineAt={contract.delivery_review_deadline_at}
@@ -314,6 +322,7 @@ export default function DeliveryAcceptancePanel({
                 <input
                   type="checkbox"
                   checked={acceptConfirmed}
+                  disabled={paymentBlocked}
                   onChange={(e) => setAcceptConfirmed(e.target.checked)}
                 />
                 <span>
@@ -326,7 +335,7 @@ export default function DeliveryAcceptancePanel({
                 <button
                   type="button"
                   className="hire-delivery__btn hire-delivery__btn--success"
-                  disabled={busy || !acceptConfirmed}
+                  disabled={busy || !acceptConfirmed || paymentBlocked}
                   onClick={onAcceptDelivery}
                 >
                   {busy ? "Đang xử lý..." : "Nghiệm thu → Hoàn tất"}
@@ -337,24 +346,7 @@ export default function DeliveryAcceptancePanel({
 
           {isClient && onOpenDispute ? (
             <div className="hire-execution__cancel-box">
-              <h4 className="hire-execution__revision-title">Mở tranh chấp</h4>
-              <p className="hire-execution__revision-sub">
-                Dùng khi sản phẩm không đạt thỏa thuận hoặc Freelancer không phản hồi yêu cầu sửa.
-              </p>
-              <textarea
-                className="hire-execution__textarea"
-                rows={2}
-                value={disputeReason}
-                onChange={(e) => setDisputeReason(e.target.value)}
-              />
-              <button
-                type="button"
-                className="hire-execution__btn hire-execution__btn--outline"
-                disabled={busy || disputeReason.trim().length < 10}
-                onClick={() => onOpenDispute(disputeReason.trim())}
-              >
-                Mở tranh chấp
-              </button>
+              <DisputeOpenForm busy={busy} onSubmit={onOpenDispute} />
             </div>
           ) : null}
 

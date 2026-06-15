@@ -20,6 +20,9 @@ import {
   type BillingTransaction,
 } from "@/lib/api/payments";
 import { formatDate, formatVnd } from "@/lib/format";
+import { useClientIdentityVerification } from "@/hooks/useClientIdentityVerification";
+import ClientVerifyNotice from "@/components/hire/ClientVerifyNotice";
+import { CLIENT_VERIFY_PAYMENT_LEAD } from "@/lib/hire/clientVerification";
 import PaymentsBalanceCard from "@/components/payments/PaymentsBalanceCard";
 import PaymentsMoneyInput from "@/components/payments/PaymentsMoneyInput";
 import AddPaymentMethodModal from "@/components/payments/AddPaymentMethodModal";
@@ -74,6 +77,10 @@ function exportCsv(rows: BillingTransaction[]) {
 }
 
 export default function ClientPaymentsPage() {
+  const { verified: identityVerified, loading: identityLoading } = useClientIdentityVerification({
+    refreshOnVisible: false,
+  });
+  const paymentBlocked = !identityLoading && !identityVerified;
   const [data, setData] = useState<BillingOverview | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -202,7 +209,7 @@ export default function ClientPaymentsPage() {
     try {
       const result = await createPaymentLink(amount);
       if (!result.checkoutUrl) {
-        setToast({ message: "Không nhận được link thanh toán payOS.", variant: "error" });
+        setToast({ message: "Không nhận được link thanh toán.", variant: "error" });
         return;
       }
       window.location.href = result.checkoutUrl;
@@ -289,6 +296,10 @@ export default function ClientPaymentsPage() {
           </p>
         ) : data ? (
           <>
+            {paymentBlocked ? (
+              <ClientVerifyNotice message={CLIENT_VERIFY_PAYMENT_LEAD} />
+            ) : null}
+
             <section className="payments-panel">
               <PaymentsSectionTitle icon={<FaChartPie />}>
                 Số dư &amp; ký quỹ
@@ -311,12 +322,14 @@ export default function ClientPaymentsPage() {
                   />
                 </div>
 
-                <div className="payments-deposit-card">
+                <div className={`payments-deposit-card${paymentBlocked ? " payments-deposit-card--blocked" : ""}`}>
                   <div className="payments-deposit-card__head">
                     <h3 className="payments-deposit-card__title">Nạp tiền vào ví</h3>
-                    <p className="payments-deposit-card__hint">
-                      Thanh toán qua payOS (QR ngân hàng). Số dư được cộng sau khi webhook xác nhận thành công.
-                    </p>
+                    {paymentBlocked ? (
+                      <p className="payments-muted payments-deposit-card__blocked-hint">
+                        Cần xác minh danh tính trước khi nạp tiền.
+                      </p>
+                    ) : null}
                   </div>
                   <div className="payments-deposit__controls">
                     <label className="payments-deposit__label sr-only" htmlFor="deposit-amount">
@@ -327,7 +340,7 @@ export default function ClientPaymentsPage() {
                       className="payments-money-input--deposit"
                       value={depositAmount}
                       onChange={setDepositAmount}
-                      disabled={depositBusy}
+                      disabled={depositBusy || paymentBlocked}
                       aria-label="Số tiền nạp vào ví"
                     />
                     <div className="payments-deposit__presets">
@@ -341,6 +354,7 @@ export default function ClientPaymentsPage() {
                               : "payments-chip"
                           }
                           aria-pressed={activeDepositPreset === preset}
+                          disabled={paymentBlocked}
                           onClick={() => setDepositAmount(String(preset))}
                         >
                           {formatVnd(preset)}
@@ -350,7 +364,7 @@ export default function ClientPaymentsPage() {
                     <button
                       type="button"
                       className="payments-btn payments-btn--primary payments-btn--with-icon payments-deposit__submit"
-                      disabled={depositBusy}
+                      disabled={depositBusy || paymentBlocked}
                       aria-busy={depositBusy}
                       onClick={() => void handleDeposit()}
                     >
@@ -360,7 +374,7 @@ export default function ClientPaymentsPage() {
                           Đang xử lý...
                         </>
                       ) : (
-                        "Thanh toán payOS"
+                        "Thanh toán"
                       )}
                     </button>
                   </div>
@@ -374,6 +388,7 @@ export default function ClientPaymentsPage() {
                 <button
                   type="button"
                   className="payments-btn payments-btn--primary payments-btn--with-icon"
+                  disabled={paymentBlocked}
                   onClick={() => setMethodModalOpen(true)}
                 >
                   <FaPlus aria-hidden />
@@ -393,7 +408,7 @@ export default function ClientPaymentsPage() {
                     {data.billingMethods.map((method) => {
                       const isSettingDefault = defaultMethodBusyId === method.id;
                       const isDeleting = deleteMethodBusyId === method.id;
-                      const canManage = method.id !== "identity-card";
+                      const canManage = method.id !== "identity-card" && !paymentBlocked;
                       return (
                         <li
                           key={method.id}
@@ -543,7 +558,12 @@ export default function ClientPaymentsPage() {
             <section className="payments-panel">
               <h2 className="payments-panel__title">Thông tin xuất hóa đơn</h2>
               <p className="payments-muted">Thông tin này dùng khi xuất hóa đơn / sao kê.</p>
-              <form className="payments-form-grid" onSubmit={(e) => void handleSaveProfile(e)} noValidate>
+              <form
+                className="payments-form-grid"
+                onSubmit={(e) => void handleSaveProfile(e)}
+                noValidate
+              >
+                <fieldset className="payments-form-grid__fieldset" disabled={paymentBlocked}>
                 <div className="payments-form-field">
                   <label htmlFor="billing-company-name">
                     <span>
@@ -671,11 +691,12 @@ export default function ClientPaymentsPage() {
                     />
                   </label>
                 </div>
+                </fieldset>
                 <div className="payments-form-grid__actions">
                   <button
                     type="submit"
                     className="payments-btn payments-btn--primary payments-btn--with-icon"
-                    disabled={savingProfile}
+                    disabled={savingProfile || paymentBlocked}
                     aria-busy={savingProfile}
                   >
                     {savingProfile ? (
@@ -693,7 +714,7 @@ export default function ClientPaymentsPage() {
           </>
         ) : null}
 
-        {methodModalOpen ? (
+        {methodModalOpen && !paymentBlocked ? (
           <AddPaymentMethodModal
             onClose={() => setMethodModalOpen(false)}
             onSaved={() => {

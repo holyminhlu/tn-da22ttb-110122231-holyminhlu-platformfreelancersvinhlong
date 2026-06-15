@@ -2,6 +2,14 @@ import { buildVerifyItems } from "@/components/account/identity-verification/typ
 import type { IdentityVerificationResponse } from "@/lib/api/identityVerification";
 import type { MeUser } from "@/lib/api/users";
 
+export const CLIENT_VERIFY_PAGE = "/edit-account/xac-minh";
+
+export const CLIENT_VERIFY_LEAD =
+  "Hoàn thành 5 mục thông tin nhận dạng và xác minh thẻ tín dụng (bước 2) tại trang xác minh.";
+
+export const CLIENT_VERIFY_PAYMENT_LEAD =
+  `${CLIENT_VERIFY_LEAD} Sau đó bạn có thể nạp tiền, quản lý phương thức thanh toán và thực hiện giao dịch ký quỹ.`;
+
 /** Các bước bắt buộc trước khi đăng tin tuyển dụng. */
 export function getClientVerificationBlockers(
   user: MeUser | null,

@@ -360,7 +360,7 @@ export default function SelectionAgreementPanel({
                   disabled={busy}
                   onClick={onAcceptProposal}
                 >
-                  {busy ? "Đang xử lý..." : "Chấp nhận đề xuất → Sang Escrow"}
+                  {busy ? "Đang xử lý..." : "Chấp nhận đề xuất"}
                 </button>
                 {onRejectProposal ? (
                   <button

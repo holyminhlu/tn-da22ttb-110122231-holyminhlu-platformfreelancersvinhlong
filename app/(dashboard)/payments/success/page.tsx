@@ -12,7 +12,7 @@ function DepositSuccessContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const orderCode = Number(searchParams.get("orderCode"));
-  const [message, setMessage] = useState("Đang xác nhận thanh toán với payOS…");
+  const [message, setMessage] = useState("Đang xác nhận thanh toán…");
   const [status, setStatus] = useState<"pending" | "success" | "error">("pending");
   const [amount, setAmount] = useState<number | null>(null);
 
@@ -41,7 +41,7 @@ function DepositSuccessContent() {
           setMessage("Đơn nạp tiền đã bị hủy.");
           return true;
         }
-        setMessage("Đang chờ payOS xác nhận chuyển khoản…");
+        setMessage("Đang chờ xác nhận chuyển khoản…");
         return false;
       } catch (err) {
         if (stopped) return true;
@@ -67,7 +67,7 @@ function DepositSuccessContent() {
           if (!finished && !stopped && attempts >= 30) {
             setStatus("error");
             setMessage(
-              "Chưa nhận được xác nhận từ payOS. Nếu đã chuyển khoản, vui lòng đợi thêm hoặc liên hệ hỗ trợ.",
+              "Chưa nhận được xác nhận thanh toán. Nếu đã chuyển khoản, vui lòng đợi thêm hoặc liên hệ hỗ trợ.",
             );
           }
         }

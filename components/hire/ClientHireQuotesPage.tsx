@@ -13,6 +13,7 @@ import {
   type JobQuoteRow,
   type JobQuoteStatus,
 } from "@/lib/api/jobQuotes";
+import { useClientIdentityVerification } from "@/hooks/useClientIdentityVerification";
 import FreelancerChatWidget from "@/components/chat/FreelancerChatWidget";
 import HireQuoteGridCard from "./HireQuoteGridCard";
 import HireShell from "./HireShell";
@@ -39,6 +40,8 @@ const QUOTE_SORT_OPTIONS: { value: QuoteSort; label: string }[] = [
 ];
 
 export default function ClientHireQuotesPage() {
+  const { verified: clientIdentityVerified, loading: clientIdentityLoading } =
+    useClientIdentityVerification({ refreshOnVisible: false });
   const [hasJobs, setHasJobs] = useState(true);
   const [quotes, setQuotes] = useState<JobQuoteRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -357,7 +360,9 @@ export default function ClientHireQuotesPage() {
                       showJobTitle
                       busy={actionBusyId === quote.id}
                       onAction={(id, action) => void handleQuoteAction(id, action)}
-                      onChat={(row) => setChatQuote(row)}
+                      onChat={clientIdentityVerified ? (row) => setChatQuote(row) : undefined}
+                      clientIdentityVerified={clientIdentityVerified}
+                      clientIdentityLoading={clientIdentityLoading}
                     />
                   ))}
                 </div>
@@ -375,7 +380,7 @@ export default function ClientHireQuotesPage() {
         )}
       </div>
 
-      {chatQuote ? (
+      {chatQuote && clientIdentityVerified ? (
         <FreelancerChatWidget
           key={chatQuote.id}
           freelancerId={chatQuote.freelancer_id}

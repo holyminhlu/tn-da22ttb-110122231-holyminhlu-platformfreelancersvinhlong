@@ -219,6 +219,36 @@ function parseUuidParam(value) {
   return s;
 }
 
+function localDateString(d = new Date()) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function extractDateOnly(raw) {
+  const m = String(raw ?? "").trim().match(/^(\d{4}-\d{2}-\d{2})/);
+  return m ? m[1] : null;
+}
+
+/** @returns {{ ok: true, value: Date | null } | { ok: false, message: string }} */
+function parseJobDueAt(dueRaw) {
+  if (dueRaw === undefined || dueRaw === null || String(dueRaw).trim() === "") {
+    return { ok: true, value: null };
+  }
+  const s = String(dueRaw).trim();
+  const dateOnly = extractDateOnly(s);
+  const d = dateOnly ? new Date(`${dateOnly}T12:00:00`) : new Date(s);
+  if (!Number.isFinite(d.getTime())) {
+    return { ok: false, message: "Thời hạn hoàn thành không hợp lệ." };
+  }
+  const dueDay = dateOnly || localDateString(d);
+  if (dueDay < localDateString()) {
+    return { ok: false, message: "Thời hạn hoàn thành không được là ngày trong quá khứ." };
+  }
+  return { ok: true, value: d };
+}
+
 module.exports = {
   normalizeJobImageUrls,
   normalizeServiceImageUrls,
@@ -227,5 +257,6 @@ module.exports = {
   readServiceUpsertBody,
   buildDefaultServicePackages,
   parseUuidParam,
+  parseJobDueAt,
   ALLOWED_SERVICE_DELIVERY_DAYS,
 };

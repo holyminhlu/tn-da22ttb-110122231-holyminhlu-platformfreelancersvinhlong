@@ -727,3 +727,25 @@
 .find-work-page .fw-saved__pagination {
   margin-top: 1.25rem;
 }
+
+.find-work-page .fw-save-wrap {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.35rem;
+}
+
+.find-work-page .fw-save-wrap--icon {
+  align-items: center;
+}
+
+.find-work-page .fw-save-error {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 0.3rem;
+  max-width: 14rem;
+  font-size: 0.6875rem;
+  line-height: 1.35;
+  color: #b91c1c;
+  text-align: right;
+}

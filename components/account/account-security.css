@@ -1,0 +1,556 @@
+.edit-account-page .sec-panel {
+  max-width: none;
+  width: 100%;
+}
+
+.edit-account-page .sec-panel__header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.edit-account-page .sec-panel__header-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  flex-shrink: 0;
+  border-radius: 0.75rem;
+  background: linear-gradient(135deg, #dcfce7 0%, #f0fdf4 100%);
+  color: #16a34a;
+  font-size: 1.125rem;
+}
+
+.edit-account-page .sec-panel__title {
+  margin: 0 0 0.35rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #111827;
+  line-height: 1.25;
+}
+
+.edit-account-page .sec-panel__subtitle {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: #6b7280;
+}
+
+.edit-account-page .sec-panel__loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 3rem 1rem;
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.edit-account-page .sec-panel__spinner {
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 2px solid #e5e7eb;
+  border-top-color: #16a34a;
+  border-radius: 50%;
+  animation: sec-spin 0.7s linear infinite;
+}
+
+@keyframes sec-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.edit-account-page .sec-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  margin-bottom: 1.5rem;
+  border-radius: 0.75rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.edit-account-page .sec-banner--success {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
+}
+
+.edit-account-page .sec-banner--error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+}
+
+.edit-account-page .sec-banner--info {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1e40af;
+}
+
+.edit-account-page .sec-section {
+  margin-bottom: 2rem;
+}
+
+.edit-account-page .sec-section__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.edit-account-page .sec-section__title {
+  margin: 0 0 0.25rem;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.edit-account-page .sec-section__desc {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: #6b7280;
+}
+
+.edit-account-page .sec-section__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.edit-account-page .sec-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+
+.edit-account-page .sec-card + .sec-card {
+  margin-top: 0.75rem;
+}
+
+.edit-account-page .sec-card--muted {
+  background: #f9fafb;
+}
+
+.edit-account-page .sec-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.125rem;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.edit-account-page .sec-row:last-child {
+  border-bottom: none;
+}
+
+.edit-account-page .sec-row__main {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.875rem;
+  min-width: 0;
+}
+
+.edit-account-page .sec-row__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex-shrink: 0;
+  border-radius: 0.5rem;
+  background: #f3f4f6;
+  color: #4b5563;
+  font-size: 0.9375rem;
+}
+
+.edit-account-page .sec-row__icon--google {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+}
+
+.edit-account-page .sec-google-logo {
+  display: block;
+  flex-shrink: 0;
+}
+
+.edit-account-page .sec-banner--info .sec-google-logo {
+  margin-top: 0.1rem;
+}
+
+.edit-account-page .sec-row__icon--device {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.edit-account-page .sec-row__label {
+  margin: 0 0 0.2rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: #111827;
+}
+
+.edit-account-page .sec-row__meta {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: #6b7280;
+}
+
+.edit-account-page .sec-row__aside {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.edit-account-page .sec-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 9999px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.edit-account-page .sec-badge--current {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.edit-account-page .sec-badge--soon {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.edit-account-page .sec-badge--linked {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.edit-account-page .sec-badge--success {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.edit-account-page .sec-badge--fail {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.edit-account-page .sec-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.875rem;
+  border-radius: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.25;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.edit-account-page .sec-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.edit-account-page .sec-btn--ghost {
+  background: #fff;
+  border-color: #d1d5db;
+  color: #374151;
+}
+
+.edit-account-page .sec-btn--ghost:hover:not(:disabled) {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+.edit-account-page .sec-btn--primary {
+  background: #2563eb;
+  color: #fff;
+}
+
+.edit-account-page .sec-btn--primary:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+
+.edit-account-page .sec-btn--danger {
+  background: #fff;
+  border-color: #fca5a5;
+  color: #b91c1c;
+}
+
+.edit-account-page .sec-btn--danger:hover:not(:disabled) {
+  background: #fef2f2;
+}
+
+.edit-account-page .sec-btn--danger-solid {
+  background: #dc2626;
+  color: #fff;
+}
+
+.edit-account-page .sec-btn--danger-solid:hover:not(:disabled) {
+  background: #b91c1c;
+}
+
+.edit-account-page .sec-form-grid {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem 1.125rem;
+}
+
+@media (min-width: 640px) {
+  .edit-account-page .sec-form-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.edit-account-page .sec-field label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.edit-account-page .sec-field input[type="text"],
+.edit-account-page .sec-field input[type="email"],
+.edit-account-page .sec-field input[type="tel"],
+.edit-account-page .sec-field input[type="password"] {
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  color: #111827;
+  background: #fff;
+}
+
+.edit-account-page .sec-field input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.edit-account-page .sec-field__hint {
+  margin: 0.35rem 0 0;
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+.edit-account-page .sec-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.125rem;
+  border-top: 1px solid #f3f4f6;
+}
+
+.edit-account-page .sec-toggle__switch {
+  position: relative;
+  width: 2.75rem;
+  height: 1.5rem;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 9999px;
+  background: #d1d5db;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.edit-account-page .sec-toggle__switch[aria-checked="true"] {
+  background: #16a34a;
+}
+
+.edit-account-page .sec-toggle__switch::after {
+  content: "";
+  position: absolute;
+  top: 0.15rem;
+  left: 0.15rem;
+  width: 1.2rem;
+  height: 1.2rem;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.2s;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+
+.edit-account-page .sec-toggle__switch[aria-checked="true"]::after {
+  transform: translateX(1.25rem);
+}
+
+.edit-account-page .sec-history-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.edit-account-page .sec-history-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.875rem 1.125rem;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.edit-account-page .sec-history-item:last-child {
+  border-bottom: none;
+}
+
+.edit-account-page .sec-empty {
+  padding: 2rem 1.125rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: #9ca3af;
+}
+
+.edit-account-page .sec-danger-zone {
+  border-color: #fecaca;
+  background: linear-gradient(180deg, #fff 0%, #fffbfb 100%);
+}
+
+.edit-account-page .sec-danger-zone .sec-section__title {
+  color: #991b1b;
+}
+
+.edit-account-page .sec-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(17, 24, 39, 0.45);
+}
+
+.edit-account-page .sec-modal {
+  width: 100%;
+  max-width: 28rem;
+  background: #fff;
+  border-radius: 0.875rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+}
+
+.edit-account-page .sec-modal__header {
+  padding: 1.25rem 1.25rem 0.5rem;
+}
+
+.edit-account-page .sec-modal__title {
+  margin: 0 0 0.35rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.edit-account-page .sec-modal__title--danger {
+  color: #991b1b;
+}
+
+.edit-account-page .sec-modal__text {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: #6b7280;
+}
+
+.edit-account-page .sec-modal__body {
+  padding: 0.75rem 1.25rem 1rem;
+  display: grid;
+  gap: 0.875rem;
+}
+
+.edit-account-page .sec-modal__confirm-input {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  letter-spacing: 0.04em;
+}
+
+.edit-account-page .sec-modal__error {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+  margin: 0;
+  font-size: 0.8125rem;
+  color: #b91c1c;
+}
+
+.edit-account-page .sec-modal__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem 1.25rem;
+  border-top: 1px solid #f3f4f6;
+}
+
+.edit-account-page .sec-feature-grid {
+  display: grid;
+  gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .edit-account-page .sec-feature-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.edit-account-page .sec-feature {
+  padding: 1rem 1.125rem;
+  border: 1px dashed #d1d5db;
+  border-radius: 0.75rem;
+  background: #fafafa;
+}
+
+.edit-account-page .sec-feature__title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin: 0 0 0.35rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.edit-account-page .sec-feature__desc {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: #9ca3af;
+}
+
+.edit-account-page .sec-dual-grid {
+  margin-bottom: 2rem;
+}
+
+@media (min-width: 1024px) {
+  .edit-account-page .sec-dual-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem 2.5rem;
+    align-items: start;
+  }
+
+  .edit-account-page .sec-dual-grid .sec-section {
+    margin-bottom: 0;
+  }
+}

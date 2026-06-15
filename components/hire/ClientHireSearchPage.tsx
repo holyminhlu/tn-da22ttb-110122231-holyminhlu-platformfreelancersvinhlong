@@ -12,6 +12,7 @@ import {
   FaSearch,
 } from "react-icons/fa";
 import { listFreelancers, type FreelancerSearchRow } from "@/lib/api/freelancers";
+import { useClientIdentityVerification } from "@/hooks/useClientIdentityVerification";
 import {
   readFavoriteFreelancerIds,
   toggleFavoriteFreelancerId,
@@ -24,6 +25,8 @@ const PAGE_SIZE = 12;
 const ALL = "Tất cả";
 
 export default function ClientHireSearchPage() {
+  const { verified: clientIdentityVerified, loading: clientIdentityLoading } =
+    useClientIdentityVerification({ refreshOnVisible: false });
   const [rows, setRows] = useState<FreelancerSearchRow[]>([]);
   const [total, setTotal] = useState(0);
   const [servicesTotal, setServicesTotal] = useState(0);
@@ -404,6 +407,8 @@ export default function ClientHireSearchPage() {
                   onSelect={handleSelect}
                   isFavorite={favoriteIds.includes(row.id)}
                   onToggleFavorite={handleToggleFavorite}
+                  clientIdentityVerified={clientIdentityVerified}
+                  clientIdentityLoading={clientIdentityLoading}
                 />
               ))}
             </div>

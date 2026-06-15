@@ -13,6 +13,7 @@ import {
   quoteStatusBadgeClass,
   quoteStatusLabel,
 } from "@/lib/hire/quoteDisplay";
+import { CLIENT_VERIFY_PAGE } from "@/lib/hire/clientVerification";
 
 type HireQuoteGridCardProps = {
   quote: JobQuoteRow;
@@ -20,6 +21,8 @@ type HireQuoteGridCardProps = {
   busy?: boolean;
   onAction?: (quoteId: string, action: PatchJobQuoteAction) => void;
   onChat?: (quote: JobQuoteRow) => void;
+  clientIdentityVerified?: boolean;
+  clientIdentityLoading?: boolean;
 };
 
 export default function HireQuoteGridCard({
@@ -28,7 +31,10 @@ export default function HireQuoteGridCard({
   busy = false,
   onAction,
   onChat,
+  clientIdentityVerified = true,
+  clientIdentityLoading = false,
 }: HireQuoteGridCardProps) {
+  const needsVerify = !clientIdentityLoading && !clientIdentityVerified;
   const avatarSrc = resolveAvatarSrc(quote.freelancer_avatar_url);
   const name = quote.freelancer_name?.trim() || "Freelancer";
   const title = quote.freelancer_title?.trim() || "Freelancer";
@@ -116,7 +122,11 @@ export default function HireQuoteGridCard({
           )}
         </div>
 
-        {onChat ? (
+        {needsVerify ? (
+          <Link href={CLIENT_VERIFY_PAGE} className="hire-quote-product-card__chat-link">
+            Xác minh để nhắn tin
+          </Link>
+        ) : onChat ? (
           <button
             type="button"
             className="hire-quote-product-card__chat-link"

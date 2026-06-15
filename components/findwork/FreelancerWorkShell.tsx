@@ -2,6 +2,7 @@ import HomeFooter from "@/components/home/HomeFooter";
 import HomeNavbar from "@/components/home/HomeNavbar";
 import "../home/home.css";
 import "./find-work.css";
+import FindWorkProviders from "./FindWorkProviders";
 import FindWorkSubNav from "./FindWorkSubNav";
 
 type FreelancerWorkShellProps = {
@@ -14,7 +15,7 @@ export default function FreelancerWorkShell({ children }: FreelancerWorkShellPro
       <HomeNavbar />
       <FindWorkSubNav />
       <main id="main-content" className="fw-main">
-        {children}
+        <FindWorkProviders>{children}</FindWorkProviders>
       </main>
       <HomeFooter />
     </div>

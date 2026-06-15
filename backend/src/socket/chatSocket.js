@@ -10,6 +10,10 @@ const {
   mapMessageRow,
 } = require("../controllers/chat.controller");
 const { notifyChatMessage } = require("../utils/notificationService");
+const {
+  queryClientIdentityVerified,
+  IDENTITY_NOT_VERIFIED_CHAT_MESSAGE,
+} = require("../utils/clientIdentityVerified");
 
 function initChatSocket(httpServer, frontendUrl) {
   const io = new Server(httpServer, {
@@ -98,6 +102,16 @@ function initChatSocket(httpServer, frontendUrl) {
         if (!conversation) {
           if (typeof ack === "function") ack({ ok: false, error: "Không có quyền gửi tin nhắn." });
           return;
+        }
+
+        if (String(socket.userRole || "").toLowerCase() === "client") {
+          const verified = await queryClientIdentityVerified(db, socket.userId);
+          if (!verified) {
+            if (typeof ack === "function") {
+              ack({ ok: false, error: IDENTITY_NOT_VERIFIED_CHAT_MESSAGE, code: "IDENTITY_NOT_VERIFIED" });
+            }
+            return;
+          }
         }
 
         const peerId =

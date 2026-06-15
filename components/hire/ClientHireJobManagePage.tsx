@@ -145,7 +145,7 @@ export default function ClientHireJobManagePage() {
                   </span>
                 </div>
                 <p className="hire-page__lead">
-                  Quản lý báo giá, gửi đề xuất và theo dõi hợp đồng cho công việc này.
+                  Quản lý báo giá, chốt tuyển và theo dõi hợp đồng cho công việc này.
                 </p>
                 <dl className="hire-manage__head-meta">
                   <div>
@@ -208,7 +208,7 @@ export default function ClientHireJobManagePage() {
                 <div className="hire-manage__panel-intro">
                   <h2 className="hire-manage__panel-title">Báo giá từ freelancer</h2>
                   <p className="hire-manage__panel-note">
-                    Xem hồ sơ, gửi đề xuất và chốt tuyển để tạo hợp đồng.
+                    Xem hồ sơ và chốt tuyển để tạo hợp đồng.
                   </p>
                 </div>
 
@@ -225,7 +225,7 @@ export default function ClientHireJobManagePage() {
                       const freelancerName = quote.freelancer_name?.trim() || "Freelancer";
                       const avatarSrc = resolveAvatarSrc(quote.freelancer_avatar_url);
                       const isBusy = busyQuoteId === quote.id;
-                      const { canOffer, canHire, canDecline } = quoteClientActions(
+                      const { canHire, canDecline } = quoteClientActions(
                         quote.status,
                       );
                       const ratingPct = quoteRatingPercent(quote);
@@ -279,16 +279,7 @@ export default function ClientHireJobManagePage() {
                               <Link href={detailHref} className="hire-manage__quote-btn">
                                 Xem chi tiết
                               </Link>
-                              {canOffer ? (
-                                <button
-                                  type="button"
-                                  className="hire-manage__quote-btn"
-                                  disabled={isBusy}
-                                  onClick={() => void handleQuoteAction(quote.id, "offer")}
-                                >
-                                  {isBusy ? "Đang xử lý..." : "Gửi đề xuất"}
-                                </button>
-                              ) : canHire ? (
+                              {canHire ? (
                                 <button
                                   type="button"
                                   className="hire-manage__quote-btn hire-manage__quote-btn--primary"

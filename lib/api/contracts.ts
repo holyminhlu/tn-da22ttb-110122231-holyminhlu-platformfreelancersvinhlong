@@ -156,6 +156,17 @@ export type ContractDispute = {
   admin_notes: string | null;
 };
 
+export type ProgressHistoryEntry = {
+  id: string;
+  entry_type: "progress" | "revision";
+  note: string;
+  demo_url: string | null;
+  created_at: string;
+  actor_id: string | null;
+  actor_name: string | null;
+  actor_role: string | null;
+};
+
 export type ContractWorkflowResponse = {
   contract: WorkflowContract;
   milestones: ContractMilestone[];
@@ -164,6 +175,7 @@ export type ContractWorkflowResponse = {
   stages: string[];
   cancelRequest?: CancelRequest | null;
   dispute?: ContractDispute | null;
+  progressHistory?: ProgressHistoryEntry[];
 };
 
 export type ServiceOrderListItem = {

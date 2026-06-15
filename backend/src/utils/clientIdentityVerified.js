@@ -40,6 +40,46 @@ function isClientIdentityVerified(row, profile) {
   return getBlockers(row, profile).length === 0;
 }
 
+async function queryClientIdentityVerified(db, userId) {
+  const result = await db.query(
+    `SELECT ${IDV_VERIFY_SELECT}
+     FROM public.users u
+     LEFT JOIN public.identity_verifications iv ON iv.user_id = u.id
+     LEFT JOIN public.user_profiles up ON up.user_id = u.id
+     WHERE u.id = $1 AND u.deleted_at IS NULL
+     LIMIT 1`,
+    [userId],
+  );
+  if (result.rowCount === 0) return false;
+  const row = result.rows[0];
+  return isClientIdentityVerified(row, {
+    phone: row.profile_phone,
+    avatar_url: row.profile_avatar_url,
+  });
+}
+
+const IDENTITY_NOT_VERIFIED_MESSAGE =
+  "Hoàn tất xác minh danh tính trước khi thuê dịch vụ. Vào Tài khoản → Xác minh danh tính.";
+
+const IDENTITY_NOT_VERIFIED_CHAT_MESSAGE =
+  "Hoàn tất xác minh danh tính trước khi nhắn tin. Vào Tài khoản → Xác minh danh tính.";
+
+const IDENTITY_NOT_VERIFIED_PAYMENT_MESSAGE =
+  "Hoàn tất xác minh danh tính trước khi thanh toán. Vào Tài khoản → Xác minh danh tính.";
+
+async function assertClientPaymentAllowed(db, role, userId, res) {
+  if (String(role || "").toLowerCase() !== "client") return true;
+  const verified = await queryClientIdentityVerified(db, userId);
+  if (verified) return true;
+  if (res) {
+    res.status(403).json({
+      message: IDENTITY_NOT_VERIFIED_PAYMENT_MESSAGE,
+      code: "IDENTITY_NOT_VERIFIED",
+    });
+  }
+  return false;
+}
+
 const IDV_VERIFY_SELECT = `
   iv.contact_confirmed,
   iv.selfie_url,
@@ -57,5 +97,10 @@ module.exports = {
   buildVerifyFlags,
   getBlockers,
   isClientIdentityVerified,
+  queryClientIdentityVerified,
+  IDENTITY_NOT_VERIFIED_MESSAGE,
+  IDENTITY_NOT_VERIFIED_CHAT_MESSAGE,
+  IDENTITY_NOT_VERIFIED_PAYMENT_MESSAGE,
+  assertClientPaymentAllowed,
   IDV_VERIFY_SELECT,
 };

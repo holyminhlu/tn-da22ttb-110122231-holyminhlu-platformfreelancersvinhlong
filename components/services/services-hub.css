@@ -10,6 +10,25 @@
   box-sizing: border-box;
 }
 
+.svc-resolution-page__head {
+  margin-bottom: 1.25rem;
+}
+
+.svc-resolution-page__title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.svc-resolution-page__lead {
+  margin: 0.35rem 0 0;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: #6b7280;
+  max-width: 46rem;
+}
+
 .svc-hub__head {
   display: flex;
   flex-wrap: wrap;

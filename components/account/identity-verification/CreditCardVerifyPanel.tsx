@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { FaCreditCard, FaLock, FaSpinner } from "react-icons/fa";
+import { FaCreditCard, FaLock, FaShieldAlt, FaSpinner } from "react-icons/fa";
 import {
   addCreditCard,
   createCardVerifyPaymentLink,
@@ -42,6 +42,23 @@ function defaultCardholder(data: IdentityVerificationResponse) {
   return legal || splitName(data.profile.full_name) || "";
 }
 
+function resolveBillingDefaults(data: IdentityVerificationResponse) {
+  const v = data.verification;
+  return {
+    street: v?.billing_street?.trim() || v?.address_street?.trim() || "",
+    country: v?.billing_country?.trim() || v?.address_country?.trim() || "Việt Nam",
+    state: v?.billing_state?.trim() || v?.address_state?.trim() || "",
+    city:
+      v?.billing_city?.trim() ||
+      v?.address_city?.trim() ||
+      data.profile.district_city?.trim() ||
+      "",
+    postal: v?.billing_postal?.trim() || v?.address_postal?.trim() || "",
+    phone: v?.billing_phone?.trim() || data.profile.phone?.trim() || "",
+    currency: v?.billing_currency?.trim() || "VND",
+  };
+}
+
 export default function CreditCardVerifyPanel({
   data,
   onSaved,
@@ -66,30 +83,30 @@ export default function CreditCardVerifyPanel({
   );
   const [isBusinessCard, setIsBusinessCard] = useState(v?.is_business_card ?? false);
 
-  const [billingStreet, setBillingStreet] = useState(
-    v?.billing_street ?? v?.address_street ?? data.profile.bio ?? "",
-  );
-  const [billingCountry, setBillingCountry] = useState(
-    v?.billing_country ?? v?.address_country ?? "Vietnam",
-  );
-  const [billingState, setBillingState] = useState(v?.billing_state ?? v?.address_state ?? "");
-  const [billingCity, setBillingCity] = useState(
-    v?.billing_city ?? v?.address_city ?? data.profile.district_city ?? "",
-  );
-  const [billingPostal, setBillingPostal] = useState(
-    v?.billing_postal ?? v?.address_postal ?? "",
-  );
-  const [billingPhone, setBillingPhone] = useState(
-    v?.billing_phone ?? data.profile.phone ?? "",
-  );
-  const [billingCurrency, setBillingCurrency] = useState(
-    v?.billing_currency ?? "Vietnamese Đồng",
-  );
+  const billingDefaults = useMemo(() => resolveBillingDefaults(data), [data]);
+
+  const [billingStreet, setBillingStreet] = useState(billingDefaults.street);
+  const [billingCountry, setBillingCountry] = useState(billingDefaults.country);
+  const [billingState, setBillingState] = useState(billingDefaults.state);
+  const [billingCity, setBillingCity] = useState(billingDefaults.city);
+  const [billingPostal, setBillingPostal] = useState(billingDefaults.postal);
+  const [billingPhone, setBillingPhone] = useState(billingDefaults.phone);
+  const [billingCurrency] = useState(billingDefaults.currency);
 
   const maskedCard = useMemo(() => {
     if (!v?.card_last4) return null;
     return `•••• •••• •••• ${v.card_last4}`;
   }, [v?.card_last4]);
+
+  useEffect(() => {
+    const next = resolveBillingDefaults(data);
+    setBillingStreet((prev) => prev || next.street);
+    setBillingCountry((prev) => (prev === "Vietnam" || !prev ? next.country : prev || next.country));
+    setBillingState((prev) => prev || next.state);
+    setBillingCity((prev) => prev || next.city);
+    setBillingPostal((prev) => prev || next.postal);
+    setBillingPhone((prev) => prev || next.phone);
+  }, [data]);
 
   function startWizard(step: WizardStep) {
     setMessage("");
@@ -122,7 +139,7 @@ export default function CreditCardVerifyPanel({
       });
       setMessage(
         result.message ??
-          "Đã lưu thẻ. Chuyển sang bước xác minh số tiền — thanh toán 10.000 VND qua payOS.",
+          "Đã lưu thẻ. Chuyển sang bước xác minh số tiền — thanh toán 10.000 VND.",
       );
       setCvv("");
       setCardNumber("");
@@ -145,7 +162,7 @@ export default function CreditCardVerifyPanel({
     try {
       const result = await createCardVerifyPaymentLink();
       if (!result.checkoutUrl) {
-        setMessage("Không nhận được link thanh toán payOS.");
+        setMessage("Không nhận được link thanh toán.");
         return;
       }
       window.location.href = result.checkoutUrl;
@@ -167,7 +184,7 @@ export default function CreditCardVerifyPanel({
     setPolling(true);
     setView("wizard");
     setWizardStep("verify");
-    setMessage("Đang xác nhận thanh toán với payOS…");
+    setMessage("Đang xác nhận thanh toán…");
 
     void (async () => {
       for (let i = 0; i < 30 && !stopped; i += 1) {
@@ -195,7 +212,7 @@ export default function CreditCardVerifyPanel({
       }
       if (!stopped) {
         setMessage(
-          "Chưa nhận được xác nhận từ payOS. Nếu đã chuyển khoản, vui lòng đợi thêm hoặc bấm Thanh toán lại.",
+          "Chưa nhận được xác nhận thanh toán. Nếu đã chuyển khoản, vui lòng đợi thêm hoặc bấm Thanh toán lại.",
         );
         onPaymentPollComplete?.();
         setPolling(false);
@@ -210,10 +227,13 @@ export default function CreditCardVerifyPanel({
   if (view === "intro") {
     return (
       <div className="idv-cc">
-        <p className="idv-intro" style={{ marginBottom: "1.5rem" }}>
-          Thêm thẻ và thanh toán {formatVnd(VERIFY_AMOUNT)} qua payOS để xác minh. Số tiền này sẽ
-          trở thành số dư đầu tiên trong ví của bạn.
-        </p>
+        <div className="idv-cc-charge-notice" role="note">
+          <p className="idv-cc-charge-notice__title">Phí xác minh thẻ</p>
+          <p className="idv-cc-charge-notice__text">
+            Bạn sẽ thanh toán <strong>{formatVnd(VERIFY_AMOUNT)}</strong> để xác minh thẻ. Số tiền này được{" "}
+            <strong>cộng vào số dư ví</strong> của bạn — không phải phí ẩn.
+          </p>
+        </div>
 
         <div className="idv-cc-actions">
           <button
@@ -236,7 +256,7 @@ export default function CreditCardVerifyPanel({
             <FaLock className="idv-cc-action-card__icon" aria-hidden />
             <h3 className="idv-cc-action-card__title">Xác minh số tiền</h3>
             <p className="idv-cc-action-card__desc">
-              Thanh toán {formatVnd(VERIFY_AMOUNT)} qua payOS để hoàn tất xác minh thẻ.
+              Thanh toán {formatVnd(VERIFY_AMOUNT)} để hoàn tất xác minh thẻ.
             </p>
           </button>
         </div>
@@ -301,9 +321,10 @@ export default function CreditCardVerifyPanel({
                 type="text"
                 inputMode="numeric"
                 autoComplete="cc-number"
-                placeholder="Nhập số thẻ"
+                placeholder="4123 4567 8901 2345"
                 value={cardNumber}
                 onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
+                maxLength={23}
               />
               <span className="idv-cc-brands" aria-hidden>
                 <span className="idv-cc-brand idv-cc-brand--visa">VISA</span>
@@ -337,11 +358,15 @@ export default function CreditCardVerifyPanel({
                 type="password"
                 inputMode="numeric"
                 autoComplete="cc-csc"
-                placeholder="CVV"
+                placeholder="3–4 chữ số"
                 maxLength={4}
                 value={cvv}
                 onChange={(e) => setCvv(e.target.value.replace(/\D/g, "").slice(0, 4))}
               />
+              <span className="idv-cc-security-inline">
+                <FaLock aria-hidden />
+                Thông tin thẻ được mã hóa và bảo mật an toàn.
+              </span>
             </label>
           </div>
 
@@ -367,11 +392,18 @@ export default function CreditCardVerifyPanel({
           </label>
 
           <h3 className="idv-detail__subtitle">Thông tin thanh toán</h3>
+          {billingDefaults.street ? (
+            <p className="idv-cc-autofill-hint" role="note">
+              Đã điền sẵn từ hồ sơ xác minh — bạn có thể chỉnh sửa nếu địa chỉ thanh toán khác.
+            </p>
+          ) : null}
 
           <label className="idv-field">
-            <span className="idv-field__label">Đường phố</span>
+            <span className="idv-field__label">Đường phố / Số nhà</span>
             <input
               className="idv-field__input"
+              autoComplete="street-address"
+              placeholder="Ví dụ: 123 đường Phạm Thái Bường"
               value={billingStreet}
               onChange={(e) => setBillingStreet(e.target.value)}
             />
@@ -382,14 +414,17 @@ export default function CreditCardVerifyPanel({
               <span className="idv-field__label">Quốc gia</span>
               <input
                 className="idv-field__input"
+                autoComplete="country-name"
                 value={billingCountry}
                 onChange={(e) => setBillingCountry(e.target.value)}
               />
             </label>
             <label className="idv-field">
-              <span className="idv-field__label">Tình trạng</span>
+              <span className="idv-field__label">Tỉnh/Thành phố</span>
               <input
                 className="idv-field__input"
+                autoComplete="address-level1"
+                placeholder="Ví dụ: Tỉnh Vĩnh Long"
                 value={billingState}
                 onChange={(e) => setBillingState(e.target.value)}
               />
@@ -398,17 +433,23 @@ export default function CreditCardVerifyPanel({
 
           <div className="idv-form-grid">
             <label className="idv-field">
-              <span className="idv-field__label">Thành phố</span>
+              <span className="idv-field__label">Quận/Huyện</span>
               <input
                 className="idv-field__input"
+                autoComplete="address-level2"
+                placeholder="Ví dụ: TP Vĩnh Long"
                 value={billingCity}
                 onChange={(e) => setBillingCity(e.target.value)}
               />
             </label>
             <label className="idv-field">
-              <span className="idv-field__label">Mã bưu chính</span>
+              <span className="idv-field__label">
+                Mã bưu chính <span className="idv-field__optional">(Tùy chọn)</span>
+              </span>
               <input
                 className="idv-field__input"
+                autoComplete="postal-code"
+                placeholder="Không bắt buộc"
                 value={billingPostal}
                 onChange={(e) => setBillingPostal(e.target.value)}
               />
@@ -420,6 +461,8 @@ export default function CreditCardVerifyPanel({
             <input
               className="idv-field__input"
               type="tel"
+              autoComplete="tel"
+              placeholder="Ví dụ: 0912 345 678"
               value={billingPhone}
               onChange={(e) => setBillingPhone(e.target.value)}
             />
@@ -428,17 +471,21 @@ export default function CreditCardVerifyPanel({
           <label className="idv-field">
             <span className="idv-field__label">Tiền tệ</span>
             <input
-              className="idv-field__input"
-              value={billingCurrency}
-              onChange={(e) => setBillingCurrency(e.target.value)}
+              className="idv-field__input idv-field__input--readonly"
+              value="Đồng Việt Nam (VND)"
+              readOnly
+              aria-readonly
             />
           </label>
 
-          <p className="idv-cc-charge-note">
-            Sau khi thêm thẻ, bạn sẽ thanh toán {formatVnd(VERIFY_AMOUNT)} qua payOS ở bước tiếp
-            theo. Số tiền này được cộng vào số dư ví và hoàn tất xác minh thẻ.{" "}
-            <Link href="/help">Tìm hiểu thêm</Link>
-          </p>
+          <div className="idv-cc-charge-notice" role="note">
+            <p className="idv-cc-charge-notice__title">Lưu ý thanh toán xác minh</p>
+            <p className="idv-cc-charge-notice__text">
+              Sau khi thêm thẻ, bạn sẽ thanh toán <strong>{formatVnd(VERIFY_AMOUNT)}</strong> ở bước
+              tiếp theo. Số tiền được <strong>cộng vào số dư ví</strong> và hoàn tất xác minh thẻ.{" "}
+              <Link href="/help">Tìm hiểu thêm</Link>
+            </p>
+          </div>
 
           {message ? (
             <p
@@ -448,15 +495,23 @@ export default function CreditCardVerifyPanel({
             </p>
           ) : null}
 
-          <div className="idv-detail__actions idv-detail__actions--row">
+          <div className="idv-cc-form-footer">
             <button
               type="button"
-              className="idv-btn idv-btn--ghost"
+              className="idv-btn idv-btn--ghost idv-cc-form-footer__back"
               onClick={() => setView("intro")}
             >
               Quay lại
             </button>
-            <button type="submit" className="idv-btn idv-btn--primary" disabled={saving}>
+            <p className="idv-cc-form-footer__trust">
+              <FaShieldAlt aria-hidden />
+              <span>Dữ liệu thẻ được bảo vệ theo tiêu chuẩn bảo mật thanh toán.</span>
+            </p>
+            <button
+              type="submit"
+              className="idv-btn idv-btn--primary idv-cc-form-footer__submit"
+              disabled={saving}
+            >
               {saving ? "Đang xử lý..." : "Thêm thẻ"}
             </button>
           </div>
@@ -464,11 +519,16 @@ export default function CreditCardVerifyPanel({
       ) : (
         <div className="idv-cc-form">
           <h2 className="idv-detail__title">Xác minh số tiền</h2>
-          <p className="idv-detail__lead">
-            Thanh toán <strong>{formatVnd(VERIFY_AMOUNT)}</strong> qua payOS để xác minh thẻ tín
-            dụng. Số tiền sẽ được cộng vào số dư ví của bạn ngay sau khi thanh toán thành công.
-            {maskedCard ? ` Thẻ: ${maskedCard}.` : null}
-          </p>
+
+          <div className="idv-cc-charge-notice idv-cc-charge-notice--prominent" role="note">
+            <p className="idv-cc-charge-notice__title">Số tiền cần thanh toán</p>
+            <p className="idv-cc-charge-notice__amount">{formatVnd(VERIFY_AMOUNT)}</p>
+            <p className="idv-cc-charge-notice__text">
+              Thanh toán để xác minh thẻ. Số tiền sẽ được <strong>cộng vào số dư ví</strong>{" "}
+              ngay sau khi thanh toán thành công.
+              {maskedCard ? ` Thẻ: ${maskedCard}.` : null}
+            </p>
+          </div>
 
           {cardVerified ? (
             <p className="idv-msg idv-msg--ok">
@@ -505,8 +565,8 @@ export default function CreditCardVerifyPanel({
               {cardVerified
                 ? "Đã xác minh"
                 : saving
-                  ? "Đang chuyển payOS…"
-                  : `Thanh toán ${formatVnd(VERIFY_AMOUNT)} qua payOS`}
+                  ? "Đang mở trang thanh toán…"
+                  : `Thanh toán ${formatVnd(VERIFY_AMOUNT)}`}
             </button>
           </div>
         </div>

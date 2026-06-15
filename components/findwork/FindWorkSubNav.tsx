@@ -7,12 +7,13 @@ import { FINDWORK_NAV } from "./findworkNav";
 
 export default function FindWorkSubNav() {
   const pathname = usePathname();
-  const { user, ready } = useStoredUser({ refreshFromApi: false });
+  const { user, ready, isFreelancer } = useStoredUser({ refreshFromApi: false });
   const isGuest = ready && !user;
 
-  const tabs = isGuest
+  const tabs = (isGuest
     ? FINDWORK_NAV.filter((tab) => tab.id === "find")
-    : FINDWORK_NAV;
+    : FINDWORK_NAV.filter((tab) => tab.id !== "saved" || isFreelancer)
+  );
 
   return (
     <nav className="hire-subnav" aria-label="Tìm việc">

@@ -3,6 +3,8 @@ const users = require("../controllers/users.controller");
 const profileStats = require("../controllers/profileStats.controller");
 const identityVerification = require("../controllers/identityVerification.controller");
 
+const security = require("../controllers/security.controller");
+
 const router = express.Router();
 
 router.use((req, _res, next) => {
@@ -14,6 +16,7 @@ router.use((req, _res, next) => {
 
 router.options("/me/avatar", (_req, res) => res.sendStatus(204));
 router.get("/me", users.getMe);
+router.get("/me/credentials", users.getCredentials);
 router.get("/me/feedback", users.listMyFeedback);
 router.get("/me/profile-stats", profileStats.getProfileStats);
 router.get("/me/identity-verification", identityVerification.getIdentityVerification);
@@ -32,6 +35,14 @@ router.post("/me/avatar", users.updateAvatar);
 router.patch("/me/profile", users.updateProfile);
 router.patch("/me/email", users.changeEmail);
 router.patch("/me/password", users.changePassword);
+router.get("/me/security", security.getSecurityOverview);
+router.get("/me/security/sessions", security.listSessions);
+router.delete("/me/security/sessions/:sessionId", security.revokeSession);
+router.post("/me/security/sessions/revoke-others", security.revokeOtherSessions);
+router.get("/me/security/login-history", security.listLoginHistory);
+router.patch("/me/security/recovery", security.updateRecoverySettings);
+router.post("/me/security/deactivate", security.deactivateAccount);
+router.delete("/me/security/account", security.deleteAccount);
 router.put("/me/skills", users.updateSkills);
 router.post("/me/portfolio", users.createPortfolio);
 router.post("/me/exclusive-resources", users.createExclusiveResource);

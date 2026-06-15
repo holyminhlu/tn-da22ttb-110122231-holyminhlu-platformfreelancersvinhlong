@@ -19,15 +19,46 @@ function validateNewPassword(password) {
   return null;
 }
 
+async function loadUserAuthMethods(db, userId) {
+  const result = await db.query(
+    `SELECT email, google_id, password_user_set_at
+     FROM public.users
+     WHERE id = $1 AND deleted_at IS NULL
+     LIMIT 1`,
+    [userId],
+  );
+  if (result.rowCount === 0) return null;
+  const row = result.rows[0];
+  const isGoogleAccount = Boolean(row.google_id);
+  const hasLocalPassword = Boolean(row.password_user_set_at);
+  return {
+    email: row.email,
+    isGoogleAccount,
+    hasLocalPassword,
+    isGoogleOnly: isGoogleAccount && !hasLocalPassword,
+  };
+}
+
 async function verifyCurrentPassword(db, userId, currentPassword) {
   const result = await db.query(
-    `SELECT password_hash FROM public.users WHERE id = $1 AND deleted_at IS NULL LIMIT 1`,
+    `SELECT password_hash, google_id, password_user_set_at
+     FROM public.users
+     WHERE id = $1 AND deleted_at IS NULL
+     LIMIT 1`,
     [userId],
   );
   if (result.rowCount === 0) return { ok: false, status: 404, message: "Không tìm thấy người dùng." };
-  const hash = result.rows[0].password_hash;
+  const row = result.rows[0];
+  if (row.google_id && !row.password_user_set_at) {
+    return {
+      ok: false,
+      status: 400,
+      message: "Tài khoản đăng nhập Google chưa có mật khẩu VLC. Hãy tạo mật khẩu trước.",
+    };
+  }
+  const hash = row.password_hash;
   if (!hash) {
-    return { ok: false, status: 400, message: "Tài khoản không có mật khẩu cục bộ (đăng nhập Google)." };
+    return { ok: false, status: 400, message: "Tài khoản không có mật khẩu cục bộ." };
   }
   const match = await bcrypt.compare(String(currentPassword), hash);
   if (!match) {
@@ -884,6 +915,30 @@ async function listMyFeedback(req, res) {
   }
 }
 
+async function getCredentials(req, res) {
+  const payload = verifyAccessToken(req, res);
+  if (!payload) return;
+
+  const db = await pool.connect();
+  try {
+    const auth = await loadUserAuthMethods(db, payload.sub);
+    if (!auth) {
+      return res.status(404).json({ message: "Không tìm thấy người dùng." });
+    }
+    return res.json({
+      email: auth.email,
+      isGoogleAccount: auth.isGoogleAccount,
+      hasLocalPassword: auth.hasLocalPassword,
+      isGoogleOnly: auth.isGoogleOnly,
+    });
+  } catch (error) {
+    console.error("Get credentials failed:", error.message);
+    return res.status(500).json({ message: "Không thể tải thông tin đăng nhập." });
+  } finally {
+    db.release();
+  }
+}
+
 async function changeEmail(req, res) {
   const payload = verifyAccessToken(req, res);
   if (!payload) return;
@@ -900,6 +955,18 @@ async function changeEmail(req, res) {
 
   const db = await pool.connect();
   try {
+    const auth = await loadUserAuthMethods(db, payload.sub);
+    if (!auth) {
+      return res.status(404).json({ message: "Không tìm thấy người dùng." });
+    }
+    if (auth.isGoogleAccount) {
+      return res.status(403).json({
+        message:
+          "Email đang liên kết với tài khoản Google. Địa chỉ đăng nhập được quản lý qua Google và không thể đổi tại đây.",
+        code: "GOOGLE_EMAIL_LOCKED",
+      });
+    }
+
     const check = await verifyCurrentPassword(db, payload.sub, currentPassword);
     if (!check.ok) {
       return res.status(check.status).json({ message: check.message });
@@ -938,19 +1005,49 @@ async function changePassword(req, res) {
   const currentPassword = String(req.body?.currentPassword || "");
   const newPassword = String(req.body?.newPassword || "");
 
-  if (!currentPassword) {
-    return res.status(400).json({ message: "Vui lòng nhập mật khẩu hiện tại." });
-  }
   const pwdError = validateNewPassword(newPassword);
   if (pwdError) {
     return res.status(400).json({ message: pwdError });
   }
-  if (currentPassword === newPassword) {
-    return res.status(400).json({ message: "Mật khẩu mới phải khác mật khẩu hiện tại." });
-  }
 
   const db = await pool.connect();
   try {
+    const auth = await loadUserAuthMethods(db, payload.sub);
+    if (!auth) {
+      return res.status(404).json({ message: "Không tìm thấy người dùng." });
+    }
+
+    if (auth.isGoogleOnly) {
+      if (currentPassword) {
+        return res.status(400).json({
+          message: "Tài khoản Google chưa có mật khẩu VLC — chỉ cần nhập mật khẩu mới.",
+        });
+      }
+      const passwordHash = await bcrypt.hash(newPassword, 10);
+      await db.query(
+        `UPDATE public.users
+         SET password_hash = $2,
+             password_user_set_at = NOW(),
+             updated_at = CURRENT_TIMESTAMP
+         WHERE id = $1`,
+        [payload.sub, passwordHash],
+      );
+      return res.json({
+        message:
+          "Đã tạo mật khẩu VLC. Bạn có thể đăng nhập bằng Google hoặc email/mật khẩu vừa tạo.",
+        requireReLogin: false,
+        hasLocalPassword: true,
+        isGoogleOnly: false,
+      });
+    }
+
+    if (!currentPassword) {
+      return res.status(400).json({ message: "Vui lòng nhập mật khẩu hiện tại." });
+    }
+    if (currentPassword === newPassword) {
+      return res.status(400).json({ message: "Mật khẩu mới phải khác mật khẩu hiện tại." });
+    }
+
     const check = await verifyCurrentPassword(db, payload.sub, currentPassword);
     if (!check.ok) {
       return res.status(check.status).json({ message: check.message });
@@ -987,6 +1084,7 @@ module.exports = {
   createProfileFile,
   uploadProfileFileAsset,
   getMe,
+  getCredentials,
   listMyFeedback,
   changeEmail,
   changePassword,

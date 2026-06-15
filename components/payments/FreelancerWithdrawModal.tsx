@@ -368,7 +368,7 @@ export default function FreelancerWithdrawModal({
               </label>
               <PinInput id="fl-withdraw-pin" value={pin} onChange={setPin} disabled={busy} autoFocus />
               <p className="payments-muted fl-withdraw-modal__hint">
-                Hệ thống sẽ gửi lệnh chi hộ qua payOS sau khi PIN đúng.
+                Hệ thống sẽ chuyển tiền vào tài khoản ngân hàng sau khi PIN đúng.
               </p>
 
               {error ? (
@@ -422,7 +422,7 @@ export default function FreelancerWithdrawModal({
               <FaSpinner className="fl-withdraw-modal__spinner" aria-hidden />
               <p className="fl-withdraw-modal__status-title">Đang xử lý lệnh rút</p>
               <p className="payments-muted">
-                payOS đang chuyển tiền vào tài khoản ngân hàng của bạn. Thao tác của bạn đã hoàn
+                Hệ thống đang chuyển tiền vào tài khoản ngân hàng của bạn. Thao tác của bạn đã hoàn
                 tất — vui lòng đợi trong giây lát.
               </p>
               {order ? (

@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import GoogleLogo from "@/components/icons/GoogleLogo";
 import {
   FaCheck,
   FaEnvelope,
@@ -14,7 +15,13 @@ import {
   FaTimes,
   FaUser,
 } from "react-icons/fa";
-import { changeEmail, changePassword, getMe } from "@/lib/api/users";
+import {
+  changeEmail,
+  changePassword,
+  getCredentials,
+  setPassword,
+  type CredentialsMeta,
+} from "@/lib/api/users";
 import { clearStoredSession } from "@/lib/authSession";
 import {
   getPasswordChecks,
@@ -24,6 +31,7 @@ import {
 import "./credentials.css";
 
 type DialogMode = "email" | "password" | null;
+type PasswordMode = "set" | "change";
 
 function PasswordStrengthBar({ password }: { password: string }) {
   const checks = getPasswordChecks(password);
@@ -98,10 +106,17 @@ function PasswordToggleInput({
 export default function CredentialsContent() {
   const router = useRouter();
   const [email, setEmail] = useState("");
+  const [auth, setAuth] = useState<Pick<CredentialsMeta, "isGoogleAccount" | "hasLocalPassword" | "isGoogleOnly">>({
+    isGoogleAccount: false,
+    hasLocalPassword: false,
+    isGoogleOnly: false,
+  });
   const [loading, setLoading] = useState(true);
   const [dialog, setDialog] = useState<DialogMode>(null);
+  const [passwordMode, setPasswordMode] = useState<PasswordMode>("change");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
 
   const [newEmail, setNewEmail] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
@@ -114,10 +129,16 @@ export default function CredentialsContent() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await getMe();
-      setEmail(data.user?.email ?? "");
+      const data = await getCredentials();
+      setEmail(data.email ?? "");
+      setAuth({
+        isGoogleAccount: data.isGoogleAccount,
+        hasLocalPassword: data.hasLocalPassword,
+        isGoogleOnly: data.isGoogleOnly,
+      });
     } catch {
       setEmail("");
+      setAuth({ isGoogleAccount: false, hasLocalPassword: false, isGoogleOnly: false });
     } finally {
       setLoading(false);
     }
@@ -140,10 +161,11 @@ export default function CredentialsContent() {
     setDialog("email");
   }
 
-  function openPasswordDialog() {
+  function openPasswordDialog(mode: PasswordMode) {
     setError("");
     setCurrentPassword("");
     setNewPassword("");
+    setPasswordMode(mode);
     setDialog("password");
   }
 
@@ -192,7 +214,7 @@ export default function CredentialsContent() {
   }
 
   async function submitPassword() {
-    if (!currentPassword) {
+    if (passwordMode === "change" && !currentPassword) {
       setError("Vui lòng nhập mật khẩu hiện tại.");
       return;
     }
@@ -203,22 +225,47 @@ export default function CredentialsContent() {
     setSaving(true);
     setError("");
     try {
-      const data = await changePassword(currentPassword, newPassword);
+      const data =
+        passwordMode === "set"
+          ? await setPassword(newPassword)
+          : await changePassword(currentPassword, newPassword);
+
       if (data.requireReLogin) {
         await handleReLogin();
         return;
       }
+
+      if (passwordMode === "set") {
+        setAuth((prev) => ({
+          ...prev,
+          hasLocalPassword: true,
+          isGoogleOnly: false,
+        }));
+        setSuccessMessage(
+          data.message ??
+            "Đã tạo mật khẩu VLC. Bạn có thể đăng nhập bằng Google hoặc email/mật khẩu.",
+        );
+      }
+
       closeDialog();
     } catch (err) {
       const message =
         err && typeof err === "object" && "message" in err
           ? String((err as { message: string }).message)
-          : "Không thể đổi mật khẩu.";
+          : passwordMode === "set"
+            ? "Không thể tạo mật khẩu."
+            : "Không thể đổi mật khẩu.";
       setError(message);
     } finally {
       setSaving(false);
     }
   }
+
+  const passwordDialogTitle = passwordMode === "set" ? "Tạo mật khẩu VLC" : "Đổi mật khẩu";
+  const passwordDialogSub =
+    passwordMode === "set"
+      ? "Sau khi tạo, bạn có thể đăng nhập bằng Google hoặc email/mật khẩu VLC."
+      : "Tạo mật khẩu mạnh để bảo vệ tài khoản.";
 
   if (loading) {
     return (
@@ -240,10 +287,19 @@ export default function CredentialsContent() {
         <div>
           <h1 className="cred-panel__title">Tên đăng nhập và mật khẩu</h1>
           <p className="cred-panel__subtitle">
-            Quản lý email đăng nhập và mật khẩu để bảo vệ tài khoản của bạn.
+            {auth.isGoogleAccount
+              ? "Tài khoản liên kết Google — quản lý email và mật khẩu theo chính sách đăng nhập một lần (SSO)."
+              : "Quản lý email đăng nhập và mật khẩu để bảo vệ tài khoản của bạn."}
           </p>
         </div>
       </header>
+
+      {successMessage ? (
+        <p className="cred-success" role="status">
+          <FaCheck aria-hidden />
+          {successMessage}
+        </p>
+      ) : null}
 
       <div className="cred-panel__cards">
         <article className="cred-card">
@@ -253,19 +309,40 @@ export default function CredentialsContent() {
             </div>
             <div className="cred-card__meta">
               <h2 className="cred-card__title">Tên người dùng</h2>
-              <p className="cred-card__desc">Email dùng để đăng nhập và nhận thông báo hệ thống.</p>
+              <p className="cred-card__desc">
+                {auth.isGoogleAccount
+                  ? "Địa chỉ Gmail dùng khi đăng nhập với Google và nhận thông báo hệ thống."
+                  : "Email dùng để đăng nhập và nhận thông báo hệ thống."}
+              </p>
             </div>
           </div>
           <div className="cred-card__field">
             <span className="cred-card__label">Email hiện tại</span>
             <div className="cred-card__value-box">
-              <FaUser className="cred-card__value-icon" aria-hidden />
+              {auth.isGoogleAccount ? (
+                <GoogleLogo className="cred-google-logo cred-card__value-icon--google" size={16} />
+              ) : (
+                <FaUser className="cred-card__value-icon" aria-hidden />
+              )}
               <span className="cred-card__value">{email || "—"}</span>
+              {auth.isGoogleAccount ? (
+                <span className="cred-google-badge">Google</span>
+              ) : null}
             </div>
           </div>
-          <button type="button" className="cred-card__btn" onClick={openEmailDialog}>
-            Thay đổi email
-          </button>
+          {auth.isGoogleAccount ? (
+            <div className="cred-google-note" role="note">
+              <GoogleLogo className="cred-google-logo" size={18} />
+              <p className="cred-google-note__text">
+                Email được quản lý qua tài khoản Google và không thể đổi tại đây. Đăng nhập vẫn dùng nút
+                &quot;Đăng nhập với Google&quot;.
+              </p>
+            </div>
+          ) : (
+            <button type="button" className="cred-card__btn" onClick={openEmailDialog}>
+              Thay đổi email
+            </button>
+          )}
         </article>
 
         <article className="cred-card">
@@ -276,22 +353,40 @@ export default function CredentialsContent() {
             <div className="cred-card__meta">
               <h2 className="cred-card__title">Mật khẩu</h2>
               <p className="cred-card__desc">
-                Mật khẩu đã được thiết lập. Nên đổi định kỳ và không chia sẻ với người khác.
+                {auth.isGoogleOnly
+                  ? "Mật khẩu đăng nhập Google do Google quản lý. VLC không lưu mật khẩu Google của bạn."
+                  : auth.isGoogleAccount && auth.hasLocalPassword
+                    ? "Đã thiết lập mật khẩu VLC. Bạn có thể đăng nhập bằng Google hoặc email/mật khẩu."
+                    : "Mật khẩu đã được thiết lập. Nên đổi định kỳ và không chia sẻ với người khác."}
               </p>
             </div>
           </div>
           <div className="cred-card__field">
-            <span className="cred-card__label">Mật khẩu hiện tại</span>
-            <div className="cred-card__value-box cred-card__value-box--masked">
+            <span className="cred-card__label">
+              {auth.isGoogleOnly ? "Mật khẩu VLC" : "Mật khẩu hiện tại"}
+            </span>
+            <div
+              className={`cred-card__value-box${auth.isGoogleOnly ? " cred-card__value-box--unset" : " cred-card__value-box--masked"}`}
+            >
               <FaLock className="cred-card__value-icon" aria-hidden />
-              <span className="cred-card__value cred-card__masked" aria-hidden>
-                ••••••••••••
-              </span>
-              <span className="sr-only">Đã thiết lập</span>
+              {auth.isGoogleOnly ? (
+                <span className="cred-card__value cred-card__value--muted">Chưa thiết lập</span>
+              ) : (
+                <>
+                  <span className="cred-card__value cred-card__masked" aria-hidden>
+                    ••••••••••••
+                  </span>
+                  <span className="sr-only">Đã thiết lập</span>
+                </>
+              )}
             </div>
           </div>
-          <button type="button" className="cred-card__btn" onClick={openPasswordDialog}>
-            Đổi mật khẩu
+          <button
+            type="button"
+            className="cred-card__btn"
+            onClick={() => openPasswordDialog(auth.isGoogleOnly ? "set" : "change")}
+          >
+            {auth.isGoogleOnly ? "Tạo mật khẩu" : "Đổi mật khẩu"}
           </button>
         </article>
       </div>
@@ -303,8 +398,9 @@ export default function CredentialsContent() {
         <div>
           <p className="cred-tip__title">Mẹo bảo mật</p>
           <p className="cred-tip__text">
-            Dùng mật khẩu riêng cho VL Connected, bật xác minh email và không chia sẻ thông tin
-            đăng nhập qua tin nhắn hoặc cuộc gọi lạ.
+            {auth.isGoogleAccount
+              ? "Giữ bảo mật tài khoản Google của bạn. Nếu tạo mật khẩu VLC, hãy dùng mật khẩu riêng — không trùng với Gmail."
+              : "Dùng mật khẩu riêng cho VL Connected, bật xác minh email và không chia sẻ thông tin đăng nhập qua tin nhắn hoặc cuộc gọi lạ."}
           </p>
         </div>
       </aside>
@@ -326,12 +422,12 @@ export default function CredentialsContent() {
                 </div>
                 <div>
                   <h3 id={dialog === "email" ? "cred-email-title" : "cred-pwd-title"}>
-                    {dialog === "email" ? "Thay đổi email đăng nhập" : "Đổi mật khẩu"}
+                    {dialog === "email" ? "Thay đổi email đăng nhập" : passwordDialogTitle}
                   </h3>
                   <p className="cred-modal__header-sub">
                     {dialog === "email"
                       ? "Email mới sẽ dùng cho lần đăng nhập tiếp theo."
-                      : "Tạo mật khẩu mạnh để bảo vệ tài khoản."}
+                      : passwordDialogSub}
                   </p>
                 </div>
               </div>
@@ -378,17 +474,27 @@ export default function CredentialsContent() {
                 </>
               ) : (
                 <>
-                  <PasswordToggleInput
-                    id="cred-cur-pwd"
-                    label="Mật khẩu hiện tại"
-                    value={currentPassword}
-                    onChange={setCurrentPassword}
-                    placeholder="Nhập mật khẩu hiện tại"
-                    autoComplete="current-password"
-                  />
+                  {passwordMode === "change" ? (
+                    <PasswordToggleInput
+                      id="cred-cur-pwd"
+                      label="Mật khẩu hiện tại"
+                      value={currentPassword}
+                      onChange={setCurrentPassword}
+                      placeholder="Nhập mật khẩu hiện tại"
+                      autoComplete="current-password"
+                    />
+                  ) : (
+                    <div className="cred-google-note cred-google-note--compact" role="note">
+                      <GoogleLogo className="cred-google-logo" size={18} />
+                      <p className="cred-google-note__text">
+                        Bạn đang đăng nhập qua Google. Tạo mật khẩu VLC để có thể đăng nhập thêm bằng
+                        email/mật khẩu — liên kết Google vẫn giữ nguyên.
+                      </p>
+                    </div>
+                  )}
                   <PasswordToggleInput
                     id="cred-new-pwd"
-                    label="Mật khẩu mới"
+                    label={passwordMode === "set" ? "Mật khẩu VLC mới" : "Mật khẩu mới"}
                     value={newPassword}
                     onChange={setNewPassword}
                     placeholder="Nhập mật khẩu mới"
@@ -421,7 +527,9 @@ export default function CredentialsContent() {
               ) : null}
 
               <p className="cred-modal__note">
-                Sau khi cập nhật thành công, bạn sẽ cần đăng nhập lại bằng thông tin mới.
+                {dialog === "password" && passwordMode === "set"
+                  ? "Sau khi tạo mật khẩu, bạn không cần đăng nhập lại phiên hiện tại."
+                  : "Sau khi cập nhật thành công, bạn sẽ cần đăng nhập lại bằng thông tin mới."}
               </p>
             </div>
 
@@ -440,7 +548,11 @@ export default function CredentialsContent() {
                 disabled={saving || (dialog === "password" && !pwdReady && Boolean(newPassword))}
                 onClick={() => void (dialog === "email" ? submitEmail() : submitPassword())}
               >
-                {saving ? "Đang lưu..." : "Lưu thay đổi"}
+                {saving
+                  ? "Đang lưu..."
+                  : dialog === "password" && passwordMode === "set"
+                    ? "Tạo mật khẩu"
+                    : "Lưu thay đổi"}
               </button>
             </div>
           </div>

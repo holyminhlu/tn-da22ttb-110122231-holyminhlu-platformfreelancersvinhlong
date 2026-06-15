@@ -11,8 +11,7 @@ export default function HomeHero() {
       <div className="relative z-20 mx-auto flex min-h-[calc(92vh-8rem)] max-w-4xl flex-col items-center justify-center px-6 text-center">
         <HomeHeroTitle />
         <p className="mb-10 max-w-2xl text-xl text-neutral-300">
-          Kết nối doanh nghiệp, hộ kinh doanh và người làm nghề tự do địa phương — đăng việc,
-          nhận báo giá, ký quỹ an toàn trên nền tảng Vĩnh Long Connected.
+          Trao việc dễ dàng, tìm Freelancer nhanh chóng.
         </p>
 
         <HeroSearchBar />

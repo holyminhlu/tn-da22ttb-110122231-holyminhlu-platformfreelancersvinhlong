@@ -53,6 +53,7 @@ export type AccountSidebarSection =
   | "contact"
   | "verification"
   | "credentials"
+  | "security"
   | "settings";
 
 type EditAccountSidebarProps = {
@@ -106,7 +107,12 @@ export default function EditAccountSidebar({ active = "contact" }: EditAccountSi
         href="/edit-account/ten-dang-nhap"
         active={active === "credentials"}
       />
-      <SidebarItem icon={<FaShieldAlt />} label="Bảo mật tài khoản" disabled />
+      <SidebarItem
+        icon={<FaShieldAlt />}
+        label="Bảo mật tài khoản"
+        href="/edit-account/bao-mat"
+        active={active === "security"}
+      />
 
       <SidebarGroup label="Gói & Thanh toán" />
       <SidebarItem icon={<FaWallet />} label="Phương thức chuyển tiền" href="/payments" />

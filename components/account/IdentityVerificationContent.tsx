@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   FaCamera,
   FaCheck,
@@ -40,6 +40,20 @@ const STEPS: { id: VerifyStep; title: string }[] = [
   { id: 3, title: "Gửi để xem xét" },
 ];
 
+function resolveVerifyStep(
+  items: ReturnType<typeof buildVerifyItems>,
+  idv: IdentityVerificationResponse,
+): VerifyStep {
+  const submitted = Boolean(idv.verification?.submitted_for_review_at);
+  const allDone = items.every((i) => i.completed);
+  const cardVerified = Boolean(idv.verification?.card_verified_at);
+
+  if (submitted) return 3;
+  if (cardVerified && allDone) return 3;
+  if (allDone) return 2;
+  return 1;
+}
+
 const RING_RADIUS = 14;
 const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
 
@@ -67,6 +81,8 @@ export default function IdentityVerificationContent() {
   const [submitting, setSubmitting] = useState(false);
   const [loadError, setLoadError] = useState("");
   const [pendingOrderCode, setPendingOrderCode] = useState<number | null>(null);
+  const prevCompletedCountRef = useRef(0);
+  const prevCardVerifiedRef = useRef(false);
 
   const verifyPayment = searchParams.get("verifyPayment");
   const returnOrderCode = Number(searchParams.get("orderCode"));
@@ -80,6 +96,9 @@ export default function IdentityVerificationContent() {
       setIdvData(idv);
       const items = buildVerifyItems(me.user, idv);
       setSelectedId(defaultSelectedId(items));
+      setActiveStep(resolveVerifyStep(items, idv));
+      prevCompletedCountRef.current = items.filter((i) => i.completed).length;
+      prevCardVerifiedRef.current = Boolean(idv.verification?.card_verified_at);
     } catch (err) {
       setUser(null);
       setIdvData(null);
@@ -133,6 +152,46 @@ export default function IdentityVerificationContent() {
   const completedCount = items.filter((i) => i.completed).length;
   const totalCount = items.length;
   const ringOffset = RING_CIRCUMFERENCE * (1 - completedCount / totalCount);
+  const cardVerified = Boolean(idvData?.verification?.card_verified_at);
+  const allItemsDone = completedCount === totalCount;
+
+  useEffect(() => {
+    if (loading || !idvData) return;
+
+    const submitted = Boolean(idvData.verification?.submitted_for_review_at);
+    if (submitted) {
+      setActiveStep(3);
+      prevCompletedCountRef.current = completedCount;
+      prevCardVerifiedRef.current = cardVerified;
+      return;
+    }
+
+    const justFinishedItems =
+      activeStep === 1 &&
+      allItemsDone &&
+      prevCompletedCountRef.current < totalCount &&
+      completedCount >= totalCount;
+
+    const justVerifiedCard =
+      activeStep === 2 && cardVerified && !prevCardVerifiedRef.current;
+
+    if (justFinishedItems) {
+      setActiveStep(2);
+    } else if (justVerifiedCard) {
+      setActiveStep(3);
+    }
+
+    prevCompletedCountRef.current = completedCount;
+    prevCardVerifiedRef.current = cardVerified;
+  }, [
+    activeStep,
+    allItemsDone,
+    cardVerified,
+    completedCount,
+    idvData,
+    loading,
+    totalCount,
+  ]);
 
   const reviewStatus = getAdminReviewStatus(idvData);
   const submittedForReview = Boolean(idvData?.verification?.submitted_for_review_at);
@@ -254,8 +313,18 @@ export default function IdentityVerificationContent() {
           </div>
 
           <div className="idv-detail-wrap">
-            <VerifyDetailPanel selectedId={selectedId} data={idvData} onSaved={() => void load()} />
+            <VerifyDetailPanel
+              selectedId={selectedId}
+              data={idvData}
+              onSaved={() => void load()}
+            />
           </div>
+
+          {allItemsDone ? (
+            <p className="idv-footer__hint idv-footer__hint--success" role="status">
+              Đã hoàn thành tất cả mục nhận dạng. Chuyển sang bước xác minh thẻ tín dụng.
+            </p>
+          ) : null}
 
           <div className="idv-footer">
             <button
@@ -283,6 +352,11 @@ export default function IdentityVerificationContent() {
             pendingOrderCode={pendingOrderCode}
             onPaymentPollComplete={clearPaymentQuery}
           />
+          {cardVerified ? (
+            <p className="idv-footer__hint idv-footer__hint--success" role="status">
+              Thẻ đã xác minh. Chuyển sang bước gửi hồ sơ để xem xét.
+            </p>
+          ) : null}
         </div>
       ) : (
         <div className="idv-panel">

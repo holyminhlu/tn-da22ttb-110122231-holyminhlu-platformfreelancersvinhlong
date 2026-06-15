@@ -107,7 +107,6 @@ export function quoteRatingPercent(quote: JobQuoteRow): number {
 }
 
 export type QuoteClientActions = {
-  canOffer: boolean;
   canDecline: boolean;
   canHire: boolean;
   isPending: boolean;
@@ -116,10 +115,10 @@ export type QuoteClientActions = {
 /** Quy tắc hiển thị nút client — khớp PATCH /api/jobs/me/quotes/:id */
 export function quoteClientActions(status: string): QuoteClientActions {
   const s = String(status).toLowerCase();
+  const actionable = ["pending", "shortlisted", "interviewing", "offered"].includes(s);
   return {
-    canOffer: ["pending", "shortlisted", "interviewing"].includes(s),
-    canDecline: ["pending", "shortlisted", "interviewing", "offered"].includes(s),
-    canHire: s === "offered",
+    canDecline: actionable,
+    canHire: actionable,
     isPending: s === "pending" || s === "shortlisted",
   };
 }
