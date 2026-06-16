@@ -1,13 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
+  FaArrowLeft,
   FaCalendarAlt,
   FaCheckCircle,
   FaClipboardList,
   FaInfoCircle,
   FaPaperPlane,
+  FaTimesCircle,
   FaUserClock,
 } from "react-icons/fa";
 import type { ContractMilestone, WorkflowContract } from "@/lib/api/contracts";
@@ -31,7 +33,7 @@ type SelectionAgreementPanelProps = {
   onSubmitProposal: (payload: { proposalText: string }) => void;
   onAcceptProposal: () => void;
   onWithdrawProposal?: () => void;
-  onRejectProposal?: () => void;
+  onRejectProposal?: (reason: string) => void;
   onCancelOrder?: () => void;
 };
 
@@ -84,10 +86,27 @@ export default function SelectionAgreementPanel({
     [contract.proposal_text],
   );
 
+  const hasRejection =
+    !isClient && !hasProposal && Boolean(contract.last_rejected_proposal_text?.trim());
+
+  const rejectedParsed = useMemo(
+    () => parseProposalSections(contract.last_rejected_proposal_text || ""),
+    [contract.last_rejected_proposal_text],
+  );
+
   const [scope, setScope] = useState(parsed.scope);
   const [deliveryDays, setDeliveryDays] = useState<number | null>(() =>
     parseTimelineDays(parsed.timeline),
   );
+  const [rejectOpen, setRejectOpen] = useState(false);
+  const [rejectReason, setRejectReason] = useState("");
+
+  useEffect(() => {
+    if (!hasProposal) {
+      setRejectOpen(false);
+      setRejectReason("");
+    }
+  }, [hasProposal]);
 
   const agreedDisplay =
     contract.agreed_price != null ? formatVnd(contract.agreed_price) : "Thỏa thuận";
@@ -117,13 +136,15 @@ export default function SelectionAgreementPanel({
           <p className="hire-selection__lead">
             {isClient
               ? "Xem đề xuất từ freelancer, trao đổi làm rõ yêu cầu, sau đó chấp nhận để chuyển sang ký quỹ (Escrow)."
-              : "Trình bày phạm vi công việc và chọn thời gian hoàn thành dự kiến."}
+              : hasRejection
+                ? "Client đã từ chối đề xuất trước. Xem lý do và nội dung cũ, sau đó gửi đề xuất mới."
+                : "Trình bày phạm vi công việc và chọn thời gian hoàn thành dự kiến."}
           </p>
         </div>
         <ul className="hire-selection__steps" aria-label="Các bước trong giai đoạn">
-          <li className={`hire-selection__step${hasProposal ? " hire-selection__step--done" : " hire-selection__step--current"}`}>
+          <li className={`hire-selection__step${hasProposal ? " hire-selection__step--done" : hasRejection ? " hire-selection__step--rejected" : " hire-selection__step--current"}`}>
             <span className="hire-selection__step-icon" aria-hidden>
-              {hasProposal ? <FaCheckCircle /> : "1"}
+              {hasProposal ? <FaCheckCircle /> : hasRejection ? <FaTimesCircle /> : "1"}
             </span>
             <span>Freelancer gửi đề xuất</span>
           </li>
@@ -192,6 +213,39 @@ export default function SelectionAgreementPanel({
         </aside>
 
         <div className="hire-selection__main">
+          {!isClient && !hasProposal && hasRejection ? (
+            <div className="hire-selection__state-card hire-selection__state-card--rejected">
+              <FaTimesCircle className="hire-selection__state-icon" aria-hidden />
+              <h3 className="hire-selection__state-title">Đề xuất trước bị Client từ chối</h3>
+              {contract.last_rejected_proposal_at ? (
+                <p className="hire-selection__state-meta">
+                  Từ chối lúc {formatDate(contract.last_rejected_proposal_at)}
+                </p>
+              ) : null}
+              <div className="hire-selection__rejection-reason">
+                <h4 className="hire-selection__rejection-reason-title">Lý do từ chối</h4>
+                <p className="hire-selection__rejection-reason-body">
+                  {contract.proposal_rejection_note?.trim()
+                    ? contract.proposal_rejection_note
+                    : "Client không ghi lý do cụ thể. Bạn có thể trao đổi thêm qua tin nhắn trước khi gửi đề xuất mới."}
+                </p>
+              </div>
+              <div className="hire-selection__proposal-preview">
+                <p className="hire-selection__rejection-preview-label">Nội dung đề xuất đã gửi</p>
+                <ProposalSectionView title="Phạm vi & giải pháp" body={rejectedParsed.scope} />
+                <ProposalSectionView
+                  title="Tiến độ dự kiến"
+                  body={formatTimelineDisplay(rejectedParsed.timeline)}
+                />
+                {!rejectedParsed.scope && contract.last_rejected_proposal_text ? (
+                  <p className="hire-selection__proposal-block-body">
+                    {contract.last_rejected_proposal_text}
+                  </p>
+                ) : null}
+              </div>
+            </div>
+          ) : null}
+
           {!isClient && !hasProposal ? (
             <form
               className="hire-selection__form"
@@ -203,9 +257,13 @@ export default function SelectionAgreementPanel({
               <header className="hire-selection__form-head">
                 <FaPaperPlane className="hire-selection__form-head-icon" aria-hidden />
                 <div>
-                  <h3 className="hire-selection__form-title">Gửi đề xuất cho Client</h3>
+                  <h3 className="hire-selection__form-title">
+                    {hasRejection ? "Gửi đề xuất mới" : "Gửi đề xuất cho Client"}
+                  </h3>
                   <p className="hire-selection__form-sub">
-                    Mô tả phạm vi công việc và chọn số ngày bàn giao dự kiến.
+                    {hasRejection
+                      ? "Điều chỉnh phạm vi hoặc tiến độ theo phản hồi của Client, rồi gửi lại."
+                      : "Mô tả phạm vi công việc và chọn số ngày bàn giao dự kiến."}
                   </p>
                 </div>
               </header>
@@ -263,7 +321,7 @@ export default function SelectionAgreementPanel({
                   className="hire-selection__btn hire-selection__btn--primary"
                   disabled={busy || !canSubmit}
                 >
-                  {busy ? "Đang gửi..." : "Gửi đề xuất cho Client"}
+                  {busy ? "Đang gửi..." : hasRejection ? "Gửi đề xuất mới" : "Gửi đề xuất cho Client"}
                 </button>
                 <p className="hire-selection__form-note">
                   Sau khi gửi, bạn có thể trao đổi thêm trước khi client chấp nhận.
@@ -353,39 +411,101 @@ export default function SelectionAgreementPanel({
                 </p>
               ) : null}
 
-              <div className="hire-selection__review-actions">
-                <button
-                  type="button"
-                  className="hire-selection__btn hire-selection__btn--primary"
-                  disabled={busy}
-                  onClick={onAcceptProposal}
+              {rejectOpen && onRejectProposal ? (
+                <form
+                  className="hire-selection__reject-form"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    onRejectProposal(rejectReason.trim());
+                  }}
                 >
-                  {busy ? "Đang xử lý..." : "Chấp nhận đề xuất"}
-                </button>
-                {onRejectProposal ? (
                   <button
                     type="button"
-                    className="hire-selection__btn hire-selection__btn--outline"
+                    className="hire-selection__reject-back"
                     disabled={busy}
-                    onClick={onRejectProposal}
+                    onClick={() => {
+                      setRejectOpen(false);
+                      setRejectReason("");
+                    }}
                   >
-                    Từ chối đề xuất
+                    <FaArrowLeft aria-hidden />
+                    Quay lại
                   </button>
-                ) : null}
-                {onCancelOrder ? (
+                  <h4 className="hire-selection__reject-title">Từ chối đề xuất</h4>
+                  <p className="hire-selection__reject-lead">
+                    Ghi rõ lý do để freelancer điều chỉnh và gửi đề xuất mới. Bạn có thể để trống nếu
+                    muốn trao đổi trực tiếp qua tin nhắn.
+                  </p>
+                  <label className="hire-selection__field" htmlFor="sel-reject-reason">
+                    <span>Lý do từ chối (tùy chọn)</span>
+                    <textarea
+                      id="sel-reject-reason"
+                      className="hire-selection__textarea"
+                      rows={4}
+                      maxLength={2000}
+                      value={rejectReason}
+                      onChange={(e) => setRejectReason(e.target.value)}
+                      placeholder="Ví dụ: Tiến độ 5 ngày quá gấp, cần bổ sung phần bảo trì sau bàn giao..."
+                      disabled={busy}
+                    />
+                    <span className="hire-selection__counter">{rejectReason.length}/2000</span>
+                  </label>
+                  <div className="hire-selection__reject-actions">
+                    <button
+                      type="submit"
+                      className="hire-selection__btn hire-selection__btn--danger"
+                      disabled={busy}
+                    >
+                      {busy ? "Đang xử lý..." : "Xác nhận từ chối"}
+                    </button>
+                    <button
+                      type="button"
+                      className="hire-selection__btn hire-selection__btn--outline"
+                      disabled={busy}
+                      onClick={() => {
+                        setRejectOpen(false);
+                        setRejectReason("");
+                      }}
+                    >
+                      Hủy
+                    </button>
+                  </div>
+                </form>
+              ) : (
+                <div className="hire-selection__review-actions">
                   <button
                     type="button"
-                    className="hire-selection__btn hire-selection__btn--ghost"
+                    className="hire-selection__btn hire-selection__btn--primary"
                     disabled={busy}
-                    onClick={onCancelOrder}
+                    onClick={onAcceptProposal}
                   >
-                    Hủy đơn
+                    {busy ? "Đang xử lý..." : "Chấp nhận đề xuất"}
                   </button>
-                ) : null}
-                <Link href="/help/employer" className="hire-selection__btn hire-selection__btn--outline">
-                  Cần trao đổi thêm?
-                </Link>
-              </div>
+                  {onRejectProposal ? (
+                    <button
+                      type="button"
+                      className="hire-selection__btn hire-selection__btn--outline"
+                      disabled={busy}
+                      onClick={() => setRejectOpen(true)}
+                    >
+                      Từ chối đề xuất
+                    </button>
+                  ) : null}
+                  {onCancelOrder ? (
+                    <button
+                      type="button"
+                      className="hire-selection__btn hire-selection__btn--ghost"
+                      disabled={busy}
+                      onClick={onCancelOrder}
+                    >
+                      Hủy đơn
+                    </button>
+                  ) : null}
+                  <Link href="/help/employer" className="hire-selection__btn hire-selection__btn--outline">
+                    Cần trao đổi thêm?
+                  </Link>
+                </div>
+              )}
             </div>
           ) : null}
 

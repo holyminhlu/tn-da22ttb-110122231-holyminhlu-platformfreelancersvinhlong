@@ -53,6 +53,74 @@ function normalizeOAuthRole(raw) {
   return role === "freelancer" ? "freelancer" : "client";
 }
 
+function isGoogleAvatarUrl(url) {
+  const value = String(url || "").trim();
+  if (!value) return false;
+  return /googleusercontent\.com|ggpht\.com/i.test(value);
+}
+
+function normalizeGooglePictureUrl(url) {
+  const value = String(url || "").trim();
+  if (!value || !isGoogleAvatarUrl(value)) return value || null;
+  if (/=s\d+/i.test(value)) return value;
+  return `${value}=s96-c`;
+}
+
+function decodeJwtPayload(token) {
+  try {
+    const part = String(token || "").split(".")[1];
+    if (!part) return null;
+    return JSON.parse(Buffer.from(part, "base64url").toString("utf8"));
+  } catch {
+    return null;
+  }
+}
+
+async function syncGoogleUserProfile(client, userId, { fullName, avatarUrl, existing }) {
+  const hasAvatar = Boolean(String(avatarUrl || "").trim());
+  const hasName = Boolean(String(fullName || "").trim());
+  const existingAvatar = String(existing?.avatar_url || "").trim();
+  const existingName = String(existing?.full_name || "").trim();
+
+  const shouldSyncAvatar =
+    hasAvatar && (!existingAvatar || isGoogleAvatarUrl(existingAvatar));
+  const shouldSyncName = hasName && !existingName;
+
+  if (!shouldSyncAvatar && !shouldSyncName) {
+    return {
+      full_name: existing?.full_name ?? null,
+      avatar_url: existing?.avatar_url ?? null,
+    };
+  }
+
+  const result = await client.query(
+    `INSERT INTO public.user_profiles (user_id, full_name, avatar_url, updated_at)
+     VALUES ($1, $2, $3, CURRENT_TIMESTAMP)
+     ON CONFLICT (user_id) DO UPDATE SET
+       full_name = COALESCE(NULLIF(TRIM(public.user_profiles.full_name), ''), EXCLUDED.full_name),
+       avatar_url = CASE
+         WHEN EXCLUDED.avatar_url IS NOT NULL
+           AND (
+             public.user_profiles.avatar_url IS NULL
+             OR TRIM(public.user_profiles.avatar_url) = ''
+             OR public.user_profiles.avatar_url LIKE '%googleusercontent.com%'
+             OR public.user_profiles.avatar_url LIKE '%ggpht.com%'
+           )
+         THEN EXCLUDED.avatar_url
+         ELSE public.user_profiles.avatar_url
+       END,
+       updated_at = CURRENT_TIMESTAMP
+     RETURNING full_name, avatar_url`,
+    [userId, fullName || null, avatarUrl || null],
+  );
+
+  const row = result.rows[0] || {};
+  return {
+    full_name: row.full_name ?? existing?.full_name ?? fullName,
+    avatar_url: row.avatar_url ?? existing?.avatar_url ?? avatarUrl,
+  };
+}
+
 function encodeOAuthState({ next, role }) {
   return jwt.sign(
     {
@@ -190,22 +258,43 @@ async function exchangeGoogleCode(code, redirectUri) {
   return data;
 }
 
-async function fetchGoogleProfile(accessToken) {
-  const response = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
-    headers: { Authorization: `Bearer ${accessToken}` },
-  });
-  const data = await response.json();
-  if (!response.ok || !data.sub || !data.email) {
+async function fetchGoogleProfile(accessToken, idToken) {
+  let data = {};
+  if (accessToken) {
+    const response = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    data = await response.json();
+    if (!response.ok) {
+      data = {};
+    }
+  }
+
+  const idClaims = decodeJwtPayload(idToken) || {};
+  const profile = {
+    sub: data.sub || idClaims.sub,
+    email: data.email || idClaims.email,
+    name: data.name || idClaims.name,
+    given_name: data.given_name || idClaims.given_name,
+    picture: data.picture || idClaims.picture,
+  };
+
+  if (!profile.sub || !profile.email) {
     throw new Error("Không thể lấy thông tin tài khoản Google.");
   }
-  return data;
+
+  if (profile.picture) {
+    profile.picture = normalizeGooglePictureUrl(profile.picture);
+  }
+
+  return profile;
 }
 
 async function findOrCreateGoogleUser(client, profile, preferredRole, req) {
   const googleId = String(profile.sub);
   const email = normalizeEmail(profile.email);
   const fullName = String(profile.name || profile.given_name || email.split("@")[0]).trim();
-  const avatarUrl = profile.picture ? String(profile.picture) : null;
+  const avatarUrl = profile.picture ? normalizeGooglePictureUrl(String(profile.picture)) : null;
   const ipAddress = getClientIp(req);
 
   let userResult = await client.query(
@@ -242,13 +331,13 @@ async function findOrCreateGoogleUser(client, profile, preferredRole, req) {
         [existing.id, googleId],
       );
     }
-    if (avatarUrl && !existing.avatar_url) {
-      await client.query(
-        `UPDATE public.user_profiles SET avatar_url = $2, updated_at = CURRENT_TIMESTAMP WHERE user_id = $1`,
-        [existing.id, avatarUrl],
-      );
-      existing.avatar_url = avatarUrl;
-    }
+    const syncedProfile = await syncGoogleUserProfile(client, existing.id, {
+      fullName,
+      avatarUrl,
+      existing,
+    });
+    existing.full_name = syncedProfile.full_name;
+    existing.avatar_url = syncedProfile.avatar_url;
     await logLoginAttempt(client, { email, ip: ipAddress, success: true });
     await maybeAlertNewLogin(client, existing.id, ipAddress, req.headers["user-agent"] || null);
     await client.query(
@@ -261,7 +350,7 @@ async function findOrCreateGoogleUser(client, profile, preferredRole, req) {
       email: existing.email,
       role: existing.role,
       fullName: existing.full_name || fullName,
-      avatarUrl: existing.avatar_url || avatarUrl,
+      avatarUrl: existing.avatar_url || avatarUrl || null,
     };
   }
 
@@ -276,11 +365,11 @@ async function findOrCreateGoogleUser(client, profile, preferredRole, req) {
   );
   const user = created.rows[0];
 
-  await client.query(
-    `INSERT INTO public.user_profiles (user_id, full_name, avatar_url)
-     VALUES ($1, $2, $3)`,
-    [user.id, fullName, avatarUrl],
-  );
+  await syncGoogleUserProfile(client, user.id, {
+    fullName,
+    avatarUrl,
+    existing: null,
+  });
 
   if (role === "freelancer") {
     await client.query(
@@ -628,7 +717,7 @@ async function googleCallback(req, res) {
 
   try {
     const tokenData = await exchangeGoogleCode(code, redirectUri);
-    const profile = await fetchGoogleProfile(tokenData.access_token);
+    const profile = await fetchGoogleProfile(tokenData.access_token, tokenData.id_token);
 
     await client.query("BEGIN");
     const user = await findOrCreateGoogleUser(client, profile, role, req);

@@ -8,6 +8,7 @@ export const REFUND_REASON_OPTIONS = [
 ] as const;
 
 export const DISPUTE_ISSUE_OPTIONS = [
+  { value: "cancel_rejected", label: "Phản đối yêu cầu hủy đơn" },
   { value: "quality", label: "Chất lượng dịch vụ kém" },
   { value: "not_delivered", label: "Không nhận được hàng / bàn giao" },
   { value: "scope_mismatch", label: "Không đúng phạm vi đã thỏa thuận" },
@@ -66,8 +67,25 @@ export function adminResolveActionLabel(code: string | null | undefined): string
       return "Giải ngân cho freelancer";
     case "dismiss":
       return "Bác tranh chấp — tiếp tục đơn";
+    case "split":
+      return "Admin phân chia tiền";
     default:
       return code || "—";
+  }
+}
+
+export function adminRefundRequestStatusLabel(status: string | null | undefined): string {
+  switch (String(status || "").toLowerCase()) {
+    case "pending":
+      return "Chờ freelancer phản hồi";
+    case "approved":
+      return "Đã hoàn tiền";
+    case "auto_approved":
+      return "Tự động hoàn tiền";
+    case "rejected":
+      return "Chuyển tranh chấp";
+    default:
+      return status || "—";
   }
 }
 

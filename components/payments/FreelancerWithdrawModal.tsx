@@ -60,7 +60,10 @@ export default function FreelancerWithdrawModal({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [resultMessage, setResultMessage] = useState("");
+  const [autoCloseIn, setAutoCloseIn] = useState(5);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const autoCloseRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prefetchedAmountRef = useRef<string | null>(null);
 
   const amount = Number(amountDigits.replace(/\D/g, "") || 0);
@@ -87,6 +90,7 @@ export default function FreelancerWithdrawModal({
     setOrder(null);
     setError("");
     setResultMessage("");
+    setAutoCloseIn(5);
 
     const parsed = Number(digits || 0);
     const canPrefetch =
@@ -95,24 +99,10 @@ export default function FreelancerWithdrawModal({
       parsed <= balance &&
       payoutProfile.isConfigured &&
       prefetchedAmountRef.current !== digits;
-
     if (canPrefetch) {
+      // Không tự tạo lệnh rút trong lúc mở modal.
+      // Chỉ tạo khi freelancer bấm "Tiếp tục".
       prefetchedAmountRef.current = digits;
-      setStep("verify");
-      setBusy(true);
-      void requestFreelancerWithdrawal(parsed)
-        .then((result) => setOrder(result.order))
-        .catch((err) => {
-          prefetchedAmountRef.current = null;
-          setStep("amount");
-          const message =
-            err && typeof err === "object" && "message" in err
-              ? String((err as { message: string }).message)
-              : "Không thể tạo lệnh rút tiền.";
-          setError(message);
-        })
-        .finally(() => setBusy(false));
-      return;
     }
 
     setStep("amount");
@@ -131,8 +121,56 @@ export default function FreelancerWithdrawModal({
   useEffect(() => {
     return () => {
       if (pollRef.current) clearInterval(pollRef.current);
+      if (autoCloseRef.current) clearInterval(autoCloseRef.current);
+      if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
     };
   }, []);
+
+  useEffect(() => {
+    if (autoCloseRef.current) {
+      clearInterval(autoCloseRef.current);
+      autoCloseRef.current = null;
+    }
+    if (!open || step !== "done" || !order) return;
+
+    setAutoCloseIn(5);
+    autoCloseRef.current = setInterval(() => {
+      setAutoCloseIn((current) => {
+        if (current <= 1) {
+          if (autoCloseRef.current) {
+            clearInterval(autoCloseRef.current);
+            autoCloseRef.current = null;
+          }
+          return 0;
+        }
+        return current - 1;
+      });
+    }, 1000);
+
+    return () => {
+      if (autoCloseRef.current) {
+        clearInterval(autoCloseRef.current);
+        autoCloseRef.current = null;
+      }
+    };
+  }, [open, step, order]);
+
+  useEffect(() => {
+    if (!open || step !== "done" || !order || autoCloseIn !== 0) return;
+    if (closeTimeoutRef.current) {
+      clearTimeout(closeTimeoutRef.current);
+      closeTimeoutRef.current = null;
+    }
+    closeTimeoutRef.current = setTimeout(() => {
+      onClose();
+    }, 0);
+    return () => {
+      if (closeTimeoutRef.current) {
+        clearTimeout(closeTimeoutRef.current);
+        closeTimeoutRef.current = null;
+      }
+    };
+  }, [autoCloseIn, open, step, order, onClose]);
 
   function stopPolling() {
     if (pollRef.current) {
@@ -188,7 +226,10 @@ export default function FreelancerWithdrawModal({
     try {
       const result = await requestFreelancerWithdrawal(amount);
       setOrder(result.order);
-      setStep("verify");
+      setStep("done");
+      setResultMessage(
+        `Đã tạo yêu cầu rút ${formatVnd(result.order.amount)}. Dự kiến nhận tiền trong 5-30 phút sau khi hệ thống xử lý.`,
+      );
     } catch (err) {
       const message =
         err && typeof err === "object" && "message" in err
@@ -437,18 +478,30 @@ export default function FreelancerWithdrawModal({
             <div className="fl-withdraw-modal__status" aria-live="polite">
               {order.status === "SUCCEEDED" ? (
                 <FaCheckCircle className="fl-withdraw-modal__icon fl-withdraw-modal__icon--ok" aria-hidden />
-              ) : (
+              ) : order.status === "FAILED" || order.status === "CANCELLED" ? (
                 <FaTimesCircle className="fl-withdraw-modal__icon fl-withdraw-modal__icon--fail" aria-hidden />
+              ) : (
+                <FaSpinner className="fl-withdraw-modal__spinner" aria-hidden />
               )}
               <p className="fl-withdraw-modal__status-title">
-                {order.status === "SUCCEEDED" ? "Rút tiền thành công" : "Rút tiền thất bại"}
+                {order.status === "SUCCEEDED"
+                  ? "Rút tiền thành công"
+                  : order.status === "FAILED" || order.status === "CANCELLED"
+                    ? "Rút tiền thất bại"
+                    : "Đã tạo yêu cầu rút tiền"}
               </p>
               <p className="payments-muted">{resultMessage}</p>
               <p className="fl-withdraw-modal__summary">
                 {formatVnd(order.amount)} → {order.bankName} ·{" "}
                 {maskAccountNumber("", order.accountLast4)}
               </p>
+              {order.status !== "SUCCEEDED" &&
+              order.status !== "FAILED" &&
+              order.status !== "CANCELLED" ? (
+                <p className="payments-muted">Thời gian dự kiến nhận: 5-30 phút.</p>
+              ) : null}
               <footer className="pay-method-modal__footer">
+                <p className="payments-muted">Tự động đóng sau {autoCloseIn}s.</p>
                 <button type="button" className="payments-btn payments-btn--primary" onClick={onClose}>
                   Đóng
                 </button>

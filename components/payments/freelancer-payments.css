@@ -155,6 +155,34 @@
   text-decoration: underline;
 }
 
+.fl-payments__tx-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  padding: 0.15rem 0.55rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: #f3f4f6;
+  color: #4b5563;
+  white-space: nowrap;
+}
+
+.fl-payments__tx-status--ok {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.fl-payments__tx-status--fail {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.fl-payments__tx-status--pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
 .fl-payout--empty {
   display: flex;
   flex-direction: column;

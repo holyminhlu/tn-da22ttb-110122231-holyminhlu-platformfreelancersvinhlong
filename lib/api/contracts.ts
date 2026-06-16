@@ -133,6 +133,9 @@ export type WorkflowContract = ContractRow & {
   delivery_review_deadline_at?: string | null;
   auto_accepted_at?: string | null;
   revision_requested_at?: string | null;
+  last_rejected_proposal_text?: string | null;
+  last_rejected_proposal_at?: string | null;
+  proposal_rejection_note?: string | null;
 };
 
 export type CancelRequest = {
@@ -200,6 +203,7 @@ export type ServiceOrderListItem = {
   service_title: string | null;
   job_title: string | null;
   counterparty_name: string | null;
+  counterparty_avatar_url?: string | null;
   viewer_role: string;
   stage_deadline_at?: string | null;
   escrow_deadline_at?: string | null;

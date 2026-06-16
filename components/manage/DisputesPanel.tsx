@@ -15,7 +15,7 @@ import {
   disputeProgressIndex,
   disputeResolutionLabel,
 } from "@/lib/orders/refundDisputeData";
-import ResolutionProgressBar from "@/components/orders/ResolutionProgressBar";
+import DisputeProgressSteps from "@/components/manage/DisputeProgressSteps";
 import ResolutionCenterThread from "@/components/orders/ResolutionCenterThread";
 import type { ResolutionAudience } from "./RefundRequestsPanel";
 
@@ -175,25 +175,29 @@ export default function DisputesPanel({
 
   return (
     <div className="resolution-disputes-layout">
-      <ul className="resolution-list resolution-list--compact">
-        {rows.map((row) => (
-          <li key={row.id}>
-            <button
-              type="button"
-              className={`resolution-card resolution-card--selectable${row.id === selected?.id ? " resolution-card--active" : ""}`}
-              onClick={() => setSelectedId(row.id)}
-            >
-              <h3 className="resolution-card__title">{orderTitle(row)}</h3>
-              <p className="resolution-card__meta">
-                {disputeIssueLabel(row.issue_category)} · {formatDate(row.created_at)}
-              </p>
-              <span className={`resolution-card__status resolution-card__status--${row.status}`}>
-                {row.status === "open" ? "Đang mở" : "Đã đóng"}
-              </span>
-            </button>
-          </li>
-        ))}
-      </ul>
+      <aside className="resolution-disputes-sidebar" aria-label="Danh sách tranh chấp">
+        <ul className="resolution-list resolution-list--compact">
+          {rows.map((row) => (
+            <li key={row.id}>
+              <button
+                type="button"
+                className={`resolution-card resolution-card--selectable${row.id === selected?.id ? " resolution-card--active" : ""}`}
+                onClick={() => setSelectedId(row.id)}
+              >
+                <div className="resolution-card__row">
+                  <h3 className="resolution-card__title">{orderTitle(row)}</h3>
+                  <span className={`resolution-card__status resolution-card__status--${row.status}`}>
+                    {row.status === "open" ? "Mở" : "Đóng"}
+                  </span>
+                </div>
+                <p className="resolution-card__meta">
+                  {disputeIssueLabel(row.issue_category)} · {formatDate(row.created_at)}
+                </p>
+              </button>
+            </li>
+          ))}
+        </ul>
+      </aside>
 
       <div className="resolution-disputes-detail">
         {selected ? (
@@ -204,30 +208,41 @@ export default function DisputesPanel({
                 {audience === "freelancer" ? "Client" : "Freelancer"}:{" "}
                 {selected.counterparty_name} · {formatVnd(selected.agreed_price)}
               </p>
-              <ResolutionProgressBar
+              <DisputeProgressSteps
                 steps={DISPUTE_PROGRESS_STEPS}
                 activeIndex={disputeProgressIndex(selected.dispute_stage, selected.status)}
               />
-              <dl className="resolution-card__details">
-                <div>
-                  <dt>Vấn đề</dt>
-                  <dd>{disputeIssueLabel(selected.issue_category)}</dd>
+              <div className="dispute-highlights">
+                <div className="dispute-highlight dispute-highlight--issue">
+                  <span className="dispute-highlight__label">Vấn đề</span>
+                  <span className="dispute-highlight__value">
+                    {disputeIssueLabel(selected.issue_category)}
+                  </span>
                 </div>
-                <div>
-                  <dt>Yêu cầu từ {audience === "freelancer" ? "client" : "bạn"}</dt>
-                  <dd>{disputeResolutionLabel(selected.desired_resolution)}</dd>
+                <div className="dispute-highlight dispute-highlight--request">
+                  <span className="dispute-highlight__label">
+                    {audience === "freelancer" ? "Yêu cầu từ client" : "Yêu cầu của bạn"}
+                  </span>
+                  <span className="dispute-highlight__value">
+                    {disputeResolutionLabel(selected.desired_resolution)}
+                  </span>
                 </div>
-              </dl>
+                <Link
+                  href={orderHref(selected.contract_id, audience)}
+                  className="dispute-highlight dispute-highlight--action"
+                >
+                  <span className="dispute-highlight__label">Đơn hàng</span>
+                  <span className="dispute-highlight__value dispute-highlight__value--link">
+                    Xem đơn hàng
+                    <span className="dispute-highlight__arrow" aria-hidden>
+                      →
+                    </span>
+                  </span>
+                </Link>
+              </div>
               <p className="resolution-card__meta resolution-card__meta--note">
-                Workflow đơn tạm dừng trong lúc tranh chấp. Xem tóm tắt đơn hoặc tiếp tục trao đổi bên
-                dưới.
+                Workflow đơn tạm dừng trong lúc tranh chấp. Tiếp tục trao đổi bên dưới.
               </p>
-              <Link
-                href={orderHref(selected.contract_id, audience)}
-                className="resolution-card__link"
-              >
-                Xem đơn hàng (workflow tạm dừng)
-              </Link>
             </div>
 
             {detailLoading ? (

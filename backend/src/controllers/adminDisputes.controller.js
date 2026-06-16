@@ -4,6 +4,7 @@ const { parseUuidParam } = require("../utils/validators");
 const {
   refundEscrowToClient,
   releasePaymentToFreelancer,
+  settleCancelRefund,
   logWorkflowEvent,
 } = require("../utils/workflowSla");
 
@@ -268,10 +269,12 @@ async function resolveAdminDispute(req, res) {
 
   const resolution = String(req.body?.resolution || "").toLowerCase();
   const adminNote = String(req.body?.adminNote || "").trim().slice(0, 4000) || null;
+  const clientAmount = Number(req.body?.clientAmount);
+  const freelancerAmount = Number(req.body?.freelancerAmount);
 
-  if (!["full_refund", "release", "dismiss"].includes(resolution)) {
+  if (!["full_refund", "release", "dismiss", "split"].includes(resolution)) {
     return res.status(400).json({
-      message: "Quyết định không hợp lệ. Chọn: full_refund, release hoặc dismiss.",
+      message: "Quyết định không hợp lệ. Chọn: full_refund, release, split hoặc dismiss.",
     });
   }
 
@@ -307,7 +310,47 @@ async function resolveAdminDispute(req, res) {
          WHERE id = $1`,
         [row.contract_id],
       );
+    } else if (resolution === "split") {
+      const total = Number(row.agreed_price) || 0;
+      if (!Number.isFinite(clientAmount) || !Number.isFinite(freelancerAmount)) {
+        await db.query("ROLLBACK");
+        return res.status(400).json({ message: "Vui lòng nhập số tiền hoàn cho Client và thanh toán cho Freelancer." });
+      }
+      if (clientAmount < 0 || freelancerAmount < 0) {
+        await db.query("ROLLBACK");
+        return res.status(400).json({ message: "Số tiền không được âm." });
+      }
+      if (Math.round(clientAmount + freelancerAmount) !== Math.round(total)) {
+        await db.query("ROLLBACK");
+        return res.status(400).json({
+          message: `Tổng chia phải bằng giá trị hợp đồng (${total}).`,
+        });
+      }
+      if (String(row.escrow_status) !== "funded") {
+        await db.query("ROLLBACK");
+        return res.status(409).json({ message: "Ký quỹ không còn ở trạng thái funded để chia." });
+      }
+      await settleCancelRefund(
+        db,
+        row,
+        {
+          client_refund_amount: clientAmount,
+          freelancer_amount: freelancerAmount,
+          platform_fee_amount: 0,
+          split_type: "admin_split",
+          legitimacy: "admin_decided",
+        },
+        payload.sub,
+        adminNote || "Admin phân chia theo tranh chấp",
+      );
     } else if (resolution === "dismiss") {
+      if (String(row.issue_category || "") === "cancel_rejected") {
+        await db.query("ROLLBACK");
+        return res.status(409).json({
+          message:
+            "Không thể bác tranh chấp hủy đơn — hãy phân chia tiền, hoàn cho Client hoặc giải ngân cho Freelancer.",
+        });
+      }
       await db.query(
         `UPDATE public.contracts
          SET status = 'active', updated_at = CURRENT_TIMESTAMP

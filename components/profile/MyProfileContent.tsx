@@ -600,7 +600,12 @@ export default function MyProfileContent() {
               ×
             </button>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={avatarSrc} alt={user.fullName || "Ảnh đại diện"} className="mp-avatar-preview__img" />
+            <img
+              src={avatarSrc}
+              alt={user.fullName || "Ảnh đại diện"}
+              className="mp-avatar-preview__img"
+              referrerPolicy="no-referrer"
+            />
             <div className="mp-avatar-preview__actions">
               <button
                 type="button"

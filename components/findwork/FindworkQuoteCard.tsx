@@ -1,9 +1,8 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import type { JobQuoteRow } from "@/lib/api/jobQuotes";
-import { getUserInitials, resolveAvatarSrc } from "@/lib/authSession";
+import UserAvatar from "@/components/ui/UserAvatar";
 import { formatDate } from "@/lib/format";
 import { quoteStatusLabel } from "@/lib/hire/quoteDisplay";
 import {
@@ -32,7 +31,6 @@ function badgeToneClass(status: string): string {
 export default function FindworkQuoteCard({ quote, busy = false, onWithdraw }: FindworkQuoteCardProps) {
   const status = String(quote.status).toLowerCase();
   const clientName = quote.client_name?.trim() || "Khách hàng";
-  const avatarSrc = resolveAvatarSrc(quote.client_avatar_url);
   const jobHref = `/work/detail/${quote.job_id}`;
   const message = quote.message?.trim() || "";
   const canWithdraw = canWithdrawFreelancerQuote(quote);
@@ -49,20 +47,12 @@ export default function FindworkQuoteCard({ quote, busy = false, onWithdraw }: F
 
       <div className="fw-quotes__card-body">
         <div className="fw-quotes__client-row">
-          {avatarSrc ? (
-            <Image
-              src={avatarSrc}
-              alt=""
-              width={36}
-              height={36}
-              className="fw-quotes__avatar"
-              unoptimized
-            />
-          ) : (
-            <span className="fw-quotes__avatar" aria-hidden>
-              {getUserInitials(clientName)}
-            </span>
-          )}
+          <UserAvatar
+            src={quote.client_avatar_url}
+            name={clientName}
+            size={36}
+            className="fw-quotes__avatar"
+          />
           <p className="fw-quotes__client-name">{clientName}</p>
         </div>
 

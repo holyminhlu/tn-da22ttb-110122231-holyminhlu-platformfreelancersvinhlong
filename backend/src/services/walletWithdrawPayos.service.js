@@ -419,7 +419,8 @@ async function confirmWithdrawal(db, orderId, userId) {
         };
       }
     } else {
-      payosMeta = { payoutId: null, txId: null, txState: "SUCCEEDED" };
+      // Manual transfer mode: keep pending for admin approval.
+      payosMeta = { payoutId: null, txId: null, txState: "PROCESSING" };
     }
 
     const nextStatus = isPayoutSucceeded(payosMeta.txState) ? "SUCCEEDED" : "PROCESSING";
@@ -430,10 +431,17 @@ async function confirmWithdrawal(db, orderId, userId) {
            payos_payout_id = $3,
            payos_tx_id = $4,
            payos_tx_state = $5,
-           paid_at = CASE WHEN $2 = 'SUCCEEDED' THEN NOW() ELSE paid_at END,
+           paid_at = CASE WHEN $6::boolean THEN NOW() ELSE paid_at END,
            updated_at = NOW()
        WHERE id = $1`,
-      [orderRow.id, nextStatus, payosMeta.payoutId, payosMeta.txId, payosMeta.txState],
+      [
+        orderRow.id,
+        nextStatus,
+        payosMeta.payoutId,
+        payosMeta.txId,
+        payosMeta.txState,
+        nextStatus === "SUCCEEDED",
+      ],
     );
 
     if (nextStatus === "SUCCEEDED" && txId) {
@@ -579,6 +587,10 @@ module.exports = {
   isMissingSchemaError: isMissingSchemaError,
   createWithdrawalRequest,
   confirmWithdrawal,
+  markWithdrawalSucceeded,
+  markWithdrawalFailed,
+  refundBalanceForWithdraw,
+  insertWithdrawTransaction,
   syncWithdrawalFromPayos,
   handlePayoutWebhook,
   getWithdrawalOrderForUser,

@@ -1,0 +1,3 @@
+Lỗi hiển thị avatar gg của c bên phía F hoặc có thể nhiều hơn do chưa rà soát
+check và test loi cho file routes
+ấn vào chi tiết card trong /manage/phong-lam-viec thì ra trang của F

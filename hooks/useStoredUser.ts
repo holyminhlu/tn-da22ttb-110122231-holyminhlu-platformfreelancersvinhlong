@@ -59,7 +59,11 @@ export function useStoredUser(options?: { refreshFromApi?: boolean }) {
     getMe()
       .then((data) => {
         if (cancelled || !data.user) return;
+        const prev = getStoredUser();
         const next = toStoredUser(data.user);
+        if (!next.avatarUrl && prev?.avatarUrl) {
+          next.avatarUrl = prev.avatarUrl;
+        }
         persistStoredUser(next);
         if (!cancelled) setUser(next);
       })

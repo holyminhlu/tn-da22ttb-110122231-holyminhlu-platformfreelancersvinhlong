@@ -89,6 +89,7 @@ export default function FreelancerAvatarFrame({
         width={size}
         height={size}
         className={cn("fl-avatar-frame__img", imgClassName)}
+        referrerPolicy="no-referrer"
         unoptimized
       />
     ) : (

@@ -1,16 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { formatVnd } from "@/lib/format";
 import type { RefundRequestPayload } from "@/lib/api/resolution";
-import {
-  REFUND_REASON_OPTIONS,
-  refundMethodLabel,
-} from "@/lib/orders/refundDisputeData";
+import { REFUND_REASON_OPTIONS } from "@/lib/orders/refundDisputeData";
+import { computeRefundSettlement } from "@/lib/orders/refundSettlement";
+import RefundSettlementBreakdown from "./RefundSettlementBreakdown";
 
 type RefundRequestFormProps = {
   agreedPrice: string | number | null;
-  paymentLast4?: string | null;
+  workflowStage?: string | null;
+  hasProgress?: boolean;
   eligible?: boolean;
   busy?: boolean;
   onSubmit: (payload: RefundRequestPayload) => void;
@@ -18,20 +18,32 @@ type RefundRequestFormProps = {
 
 export default function RefundRequestForm({
   agreedPrice,
-  paymentLast4,
+  workflowStage,
+  hasProgress = false,
   eligible = true,
   busy,
   onSubmit,
 }: RefundRequestFormProps) {
   const [reasonCode, setReasonCode] = useState("");
   const [detail, setDetail] = useState("");
-  const [refundMethod, setRefundMethod] = useState<"wallet" | "card">("wallet");
 
-  const amount = agreedPrice != null ? formatVnd(agreedPrice) : "—";
+  const needsOtherDetail = reasonCode === "other";
+  const otherDetailOk = !needsOtherDetail || detail.trim().length >= 10;
+  const canSubmit = Boolean(reasonCode) && otherDetailOk && eligible;
+
+  const settlementPreview = useMemo(() => {
+    if (!reasonCode || !eligible) return null;
+    return computeRefundSettlement({
+      agreedPrice,
+      workflowStage,
+      hasProgress,
+      reasonCode,
+    });
+  }, [agreedPrice, workflowStage, hasProgress, reasonCode, eligible]);
 
   function handleSubmit() {
-    if (!reasonCode) return;
-    onSubmit({ reasonCode, detail: detail.trim() || undefined, refundMethod });
+    if (!canSubmit) return;
+    onSubmit({ reasonCode, detail: detail.trim() || undefined, refundMethod: "wallet" });
   }
 
   return (
@@ -39,30 +51,21 @@ export default function RefundRequestForm({
       <header className="resolution-form__head">
         <h4 className="resolution-form__title">Yêu cầu hoàn tiền</h4>
         <p className="resolution-form__sub">
-          Dùng khi đổi ý hoặc dịch vụ chưa được thực hiện. Freelancer có 3 ngày phản hồi, sau đó
-          hệ thống có thể tự hoàn tiền.
+          Hệ thống phân loại lý do chính đáng / không chính đáng để tính mức hoàn. Freelancer có 3
+          ngày phản hồi; nếu lý do &quot;khác&quot;, admin sẽ xem xét trước khi quyết định.
         </p>
       </header>
 
-      <div className="resolution-form__refund-box">
-        <div>
-          <span className="resolution-form__refund-label">Số tiền hoàn dự kiến</span>
-          <strong className="resolution-form__refund-amount">{amount}</strong>
-        </div>
+      <div className="resolution-form__refund-box resolution-form__refund-box--wallet">
         <div>
           <span className="resolution-form__refund-label">Phương thức nhận lại</span>
-          <select
-            className="resolution-form__select"
-            value={refundMethod}
-            onChange={(e) => setRefundMethod(e.target.value === "card" ? "card" : "wallet")}
-          >
-            <option value="wallet">{refundMethodLabel("wallet")}</option>
-            <option value="card">
-              {paymentLast4
-                ? `Hoàn về thẻ tín dụng đuôi ${paymentLast4}`
-                : refundMethodLabel("card")}
-            </option>
-          </select>
+          <strong className="resolution-form__refund-amount">Ví VLC (mặc định)</strong>
+        </div>
+        <div>
+          <span className="resolution-form__refund-label">Tổng ký quỹ</span>
+          <strong className="resolution-form__refund-amount">
+            {agreedPrice != null ? formatVnd(agreedPrice) : "—"}
+          </strong>
         </div>
       </div>
 
@@ -86,28 +89,62 @@ export default function RefundRequestForm({
       </label>
 
       <label className="resolution-form__field">
-        <span>Chi tiết thêm (tùy chọn)</span>
+        <span>
+          {needsOtherDetail ? (
+            <>
+              Mô tả lý do khác <span className="resolution-form__required">*</span>
+            </>
+          ) : (
+            "Chi tiết thêm (tùy chọn)"
+          )}
+        </span>
         <textarea
           className="resolution-form__textarea"
           rows={3}
           value={detail}
           onChange={(e) => setDetail(e.target.value)}
-          placeholder="Mô tả thêm nếu cần..."
+          placeholder={
+            needsOtherDetail
+              ? "Nhập lý do cụ thể của bạn (tối thiểu 10 ký tự)..."
+              : "Mô tả thêm nếu cần..."
+          }
           disabled={!eligible}
+          required={needsOtherDetail}
+          minLength={needsOtherDetail ? 10 : undefined}
         />
+        {needsOtherDetail ? (
+          <span className="resolution-form__hint">{detail.trim().length}/10 ký tự tối thiểu</span>
+        ) : null}
       </label>
+
+      {settlementPreview ? (
+        <RefundSettlementBreakdown
+          agreedPrice={agreedPrice}
+          workflowStage={workflowStage}
+          hasProgress={hasProgress}
+          reasonCode={reasonCode}
+          legitimacy={settlementPreview.legitimacy}
+          splitType={settlementPreview.splitType}
+          penaltyPercent={settlementPreview.penaltyPercent}
+          clientAmount={settlementPreview.clientAmount}
+          freelancerAmount={settlementPreview.freelancerAmount}
+          platformFeeAmount={settlementPreview.platformFeeAmount}
+          audience="client"
+          compact
+        />
+      ) : null}
 
       {!eligible ? (
         <p className="resolution-form__hint resolution-form__hint--warn">
-          Yêu cầu hoàn tiền nhanh chỉ khả dụng khi đã nạp ký quỹ và freelancer chưa bắt đầu thực hiện
-          (hoặc chưa có cập nhật tiến độ). Nếu đã có tiến độ, hãy dùng chỉnh sửa hoặc mở tranh chấp.
+          Yêu cầu hoàn tiền chỉ khả dụng khi đã nạp ký quỹ và chưa bàn giao. Nếu đã bàn giao, hãy
+          mở tranh chấp.
         </p>
       ) : null}
 
       <button
         type="button"
         className="resolution-form__btn"
-        disabled={busy || !eligible || !reasonCode}
+        disabled={busy || !canSubmit}
         onClick={handleSubmit}
       >
         {busy ? "Đang gửi..." : "Gửi yêu cầu hoàn tiền"}

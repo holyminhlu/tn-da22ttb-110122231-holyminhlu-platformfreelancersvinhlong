@@ -1,5 +1,22 @@
 import type { NextConfig } from "next";
 
+function apiImageRemotePattern(): { protocol: "http" | "https"; hostname: string; port?: string } | null {
+  const raw = process.env.NEXT_PUBLIC_API_URL?.trim() || "http://localhost:5000";
+  try {
+    const url = new URL(raw);
+    if (!url.hostname) return null;
+    return {
+      protocol: url.protocol === "https:" ? "https" : "http",
+      hostname: url.hostname,
+      ...(url.port ? { port: url.port } : {}),
+    };
+  } catch {
+    return { protocol: "http", hostname: "localhost", port: "5000" };
+  }
+}
+
+const apiRemote = apiImageRemotePattern();
+
 const nextConfig: NextConfig = {
   async redirects() {
     return [
@@ -21,6 +38,19 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "images.unsplash.com",
       },
+      {
+        protocol: "https",
+        hostname: "**.googleusercontent.com",
+      },
+      {
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com",
+      },
+      {
+        protocol: "https",
+        hostname: "**.ggpht.com",
+      },
+      ...(apiRemote ? [apiRemote] : []),
     ],
   },
 };

@@ -129,7 +129,11 @@ const WORKFLOW_NOTIFICATIONS = {
     category: "order",
     action: "proposal_rejected",
     title: "Client từ chối đề xuất",
-    body: (ctx) => `Đề xuất của bạn cho đơn «${ctx.orderTitle}» đã bị từ chối.`,
+    body: (ctx) => {
+      const base = `Đề xuất của bạn cho đơn «${ctx.orderTitle}» đã bị từ chối.`;
+      if (ctx.rejectionNote) return `${base} Lý do: ${ctx.rejectionNote}`;
+      return base;
+    },
   },
   cancel_order: {
     recipient: "counterparty",
@@ -195,7 +199,16 @@ const WORKFLOW_NOTIFICATIONS = {
     body: (ctx) =>
       ctx.agree
         ? `Freelancer đồng ý hủy đơn «${ctx.orderTitle}» và hoàn tiền.`
-        : `Freelancer phản đối yêu cầu hủy đơn «${ctx.orderTitle}».`,
+        : `Freelancer phản đối yêu cầu hủy đơn «${ctx.orderTitle}». Đơn chuyển sang tranh chấp — Admin sẽ phán xử.`,
+  },
+  cancel_rejection_dispute: {
+    recipient: "both_parties",
+    category: "order",
+    action: "cancel_rejection_dispute",
+    title: "Tranh chấp hủy đơn — cần bổ sung bằng chứng",
+    body: (ctx) =>
+      `Đơn «${ctx.orderTitle}» đang tranh chấp sau khi Freelancer phản đối yêu cầu hủy. ` +
+      `Vui lòng nộp bằng chứng trong ${ctx.evidenceDays || 2} ngày tại Trung tâm giải quyết.`,
   },
   open_dispute: {
     recipient: "counterparty",
@@ -231,6 +244,30 @@ async function notifyWorkflowAction(db, contract, action, actorId, extra = {}) {
       String(actorId) === String(contract.client_id)
         ? contract.freelancer_id
         : contract.client_id;
+  } else if (config.recipient === "both_parties") {
+    const evidenceDays = extra.evidenceDays ?? 2;
+    const ctx = { actorName, orderTitle, evidenceDays };
+    const body = typeof config.body === "function" ? config.body(ctx) : config.body;
+    const basePayload = {
+      actorId,
+      category: config.category,
+      action: config.action,
+      title: config.title,
+      body,
+      entityType: "contract",
+      entityId: contract.id,
+    };
+    await notifyUser(db, {
+      ...basePayload,
+      recipientId: contract.client_id,
+      href: `/manage/tranh-chap?contract=${contract.id}`,
+    });
+    await notifyUser(db, {
+      ...basePayload,
+      recipientId: contract.freelancer_id,
+      href: `/dich-vu/tranh-chap?contract=${contract.id}`,
+    });
+    return null;
   }
 
   if (!recipientId) return null;
@@ -240,7 +277,7 @@ async function notifyWorkflowAction(db, contract, action, actorId, extra = {}) {
     ? clientOrderHref(contract.id)
     : freelancerOrderHref(contract.id);
 
-  const ctx = { actorName, orderTitle, agree: extra.agree };
+  const ctx = { actorName, orderTitle, agree: extra.agree, rejectionNote: extra.rejectionNote };
 
   return notifyUser(db, {
     recipientId,

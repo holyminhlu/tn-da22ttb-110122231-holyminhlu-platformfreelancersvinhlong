@@ -16,9 +16,7 @@ export default function ClientManageDisputesPage() {
         <header className="hire-page__head manage-page__head">
           <div>
             <h1 className="hire-page__title">Xử lý tranh chấp</h1>
-            <p className="hire-page__lead">
-              Theo dõi tranh chấp, trao đổi với freelancer và Admin trong Trung tâm giải quyết.
-            </p>
+            
           </div>
         </header>
         <DisputesPanel

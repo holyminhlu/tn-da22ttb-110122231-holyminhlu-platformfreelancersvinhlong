@@ -128,7 +128,7 @@ export type AdminDisputeDetailResponse = {
   role: "admin";
 };
 
-export type AdminResolveDisputeAction = "full_refund" | "release" | "dismiss";
+export type AdminResolveDisputeAction = "full_refund" | "release" | "dismiss" | "split";
 
 export async function listAdminDisputes(params?: {
   status?: AdminDisputeStatusFilter;
@@ -165,10 +165,164 @@ export async function postAdminDisputeMessage(disputeId: string, body: string) {
 
 export async function resolveAdminDispute(
   disputeId: string,
-  body: { resolution: AdminResolveDisputeAction; adminNote?: string },
+  body: {
+    resolution: AdminResolveDisputeAction;
+    adminNote?: string;
+    clientAmount?: number;
+    freelancerAmount?: number;
+  },
 ) {
   const { data } = await fetchApi<{ message: string; resolution: string }>(
     apiPaths.admin.resolveDispute(disputeId),
+    { method: "POST", auth: true, body },
+  );
+  return data;
+}
+
+export type AdminRefundStatusFilter = "pending" | "resolved" | "all";
+
+export type AdminRefundRow = {
+  id: string;
+  contract_id: string;
+  reason: string;
+  reason_code: string | null;
+  detail: string | null;
+  refund_method: string | null;
+  status: string;
+  respond_by_at: string;
+  freelancer_response: string | null;
+  created_at: string;
+  resolved_at: string | null;
+  requested_by: string;
+  agreed_price: string | number | null;
+  escrow_status: string | null;
+  workflow_stage: string | null;
+  contract_status: string | null;
+  job_title: string | null;
+  service_title: string | null;
+  client_id: string;
+  freelancer_id: string;
+  client_name: string | null;
+  freelancer_name: string | null;
+  client_email: string | null;
+  freelancer_email: string | null;
+  legitimacy?: string | null;
+  split_type?: string | null;
+  penalty_percent?: number | string | null;
+  work_done_percent?: number | string | null;
+  client_refund_amount?: number | string | null;
+  freelancer_amount?: number | string | null;
+  platform_fee_amount?: number | string | null;
+  workflow_stage_at_request?: string | null;
+  had_progress_at_request?: boolean | null;
+  admin_note?: string | null;
+};
+
+export type AdminRefundWorkflowEvent = {
+  event_type: string;
+  payload: unknown;
+  created_at: string;
+};
+
+export type AdminRefundDetailResponse = {
+  request: AdminRefundRow;
+  events: AdminRefundWorkflowEvent[];
+  role: "admin";
+};
+
+export type AdminResolveRefundAction = "approve" | "reject";
+
+export async function listAdminRefunds(params?: {
+  status?: AdminRefundStatusFilter;
+  q?: string;
+}) {
+  const search = new URLSearchParams();
+  search.set("status", params?.status ?? "pending");
+  if (params?.q?.trim()) search.set("q", params.q.trim());
+
+  const { data } = await fetchApi<{
+    total: number;
+    requests: AdminRefundRow[];
+  }>(`${apiPaths.admin.refunds}?${search.toString()}`, { auth: true });
+  return data;
+}
+
+export async function getAdminRefundDetail(requestId: string) {
+  const { data } = await fetchApi<AdminRefundDetailResponse>(apiPaths.admin.refund(requestId), {
+    auth: true,
+  });
+  return data;
+}
+
+export async function resolveAdminRefund(
+  requestId: string,
+  body: {
+    resolution: AdminResolveRefundAction;
+    adminNote?: string;
+    legitimacy?: "legitimate" | "unjustified";
+    penaltyPercent?: number;
+  },
+) {
+  const { data } = await fetchApi<{ message: string; resolution: string }>(
+    apiPaths.admin.resolveRefund(requestId),
+    { method: "POST", auth: true, body },
+  );
+  return data;
+}
+
+export type AdminWithdrawalStatusFilter = "pending" | "completed" | "failed" | "all";
+
+export type AdminWithdrawalRow = {
+  id: string;
+  user_id: string;
+  reference_id: string;
+  amount: number;
+  status: string;
+  bank_name: string;
+  account_holder_name: string;
+  account_last4: string;
+  to_bin: string | null;
+  to_account_number: string;
+  description: string | null;
+  failure_reason: string | null;
+  transaction_id: string | null;
+  auth_verified_at: string | null;
+  paid_at: string | null;
+  created_at: string;
+  updated_at: string;
+  freelancer_name: string | null;
+  freelancer_email: string | null;
+  qr_url: string | null;
+};
+
+export async function listAdminWithdrawals(params?: {
+  status?: AdminWithdrawalStatusFilter;
+  q?: string;
+}) {
+  const search = new URLSearchParams();
+  search.set("status", params?.status ?? "pending");
+  if (params?.q?.trim()) search.set("q", params.q.trim());
+  const { data } = await fetchApi<{
+    total: number;
+    requests: AdminWithdrawalRow[];
+  }>(`${apiPaths.admin.withdrawals}?${search.toString()}`, { auth: true });
+  return data;
+}
+
+export async function getAdminWithdrawalDetail(withdrawalId: string) {
+  const { data } = await fetchApi<{ request: AdminWithdrawalRow; role: "admin" }>(
+    apiPaths.admin.withdrawal(withdrawalId),
+    { auth: true },
+  );
+  return data;
+}
+
+export async function resolveAdminWithdrawal(
+  withdrawalId: string,
+  body: { resolution: "approve" | "reject"; adminNote?: string },
+) {
+  const { data } = await fetchApi<{ message: string; resolution: string }>(
+    apiPaths.admin.resolveWithdrawal(withdrawalId),
     { method: "POST", auth: true, body },
   );
   return data;

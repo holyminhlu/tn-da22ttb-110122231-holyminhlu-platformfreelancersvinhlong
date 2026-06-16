@@ -383,6 +383,25 @@
   white-space: nowrap;
 }
 
+.payments-deposit__method-required {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem 0.9rem;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid #fde68a;
+  border-radius: 0.4rem;
+  background: #fffbeb;
+}
+
+.payments-deposit__method-required p {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: #92400e;
+}
+
 .payments-deposit__input {
   flex: 1;
   min-width: 10rem;

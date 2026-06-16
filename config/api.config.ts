@@ -164,6 +164,15 @@ export const apiPaths = {
       `/api/admin/disputes/${encodeURIComponent(disputeId)}/messages`,
     resolveDispute: (disputeId: string) =>
       `/api/admin/disputes/${encodeURIComponent(disputeId)}/resolve`,
+    refunds: "/api/admin/refunds",
+    refund: (requestId: string) => `/api/admin/refunds/${encodeURIComponent(requestId)}`,
+    resolveRefund: (requestId: string) =>
+      `/api/admin/refunds/${encodeURIComponent(requestId)}/resolve`,
+    withdrawals: "/api/admin/withdrawals",
+    withdrawal: (withdrawalId: string) =>
+      `/api/admin/withdrawals/${encodeURIComponent(withdrawalId)}`,
+    resolveWithdrawal: (withdrawalId: string) =>
+      `/api/admin/withdrawals/${encodeURIComponent(withdrawalId)}/resolve`,
   },
   chat: {
     listConversations: "/api/chat/conversations",

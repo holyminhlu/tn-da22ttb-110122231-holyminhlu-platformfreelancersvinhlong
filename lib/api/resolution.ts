@@ -23,6 +23,15 @@ export type RefundRequestRow = {
   service_title: string | null;
   viewer_role: string;
   counterparty_name: string | null;
+  legitimacy?: string | null;
+  split_type?: string | null;
+  penalty_percent?: number | string | null;
+  work_done_percent?: number | string | null;
+  client_refund_amount?: number | string | null;
+  freelancer_amount?: number | string | null;
+  platform_fee_amount?: number | string | null;
+  workflow_stage_at_request?: string | null;
+  had_progress_at_request?: boolean | null;
 };
 
 export type DisputeListRow = {

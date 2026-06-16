@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { FaGavel, FaSignOutAlt, FaUserCheck } from "react-icons/fa";
+import { FaGavel, FaMoneyCheckAlt, FaSignOutAlt, FaUndoAlt, FaUserCheck } from "react-icons/fa";
 import { logout } from "@/lib/api/auth";
 import { clearStoredSession, getUserInitials } from "@/lib/authSession";
 import { ADMIN_HOME } from "@/lib/auth/roleRoutes";
@@ -12,6 +12,8 @@ import "./admin.css";
 
 const NAV = [
   { href: ADMIN_HOME, label: "Duyệt tài khoản", icon: FaUserCheck },
+  { href: "/admin/hoan-tien", label: "Quản lý hoàn tiền", icon: FaUndoAlt },
+  { href: "/admin/rut-tien", label: "Yêu cầu rút tiền", icon: FaMoneyCheckAlt },
   { href: "/admin/tranh-chap", label: "Quản lý tranh chấp", icon: FaGavel },
 ] as const;
 

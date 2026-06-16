@@ -46,6 +46,38 @@ const TX_FILTERS: { value: FreelancerTxFilter; label: string }[] = [
   { value: "other", label: "Khác" },
 ];
 
+function withdrawalStatusLabel(status?: FreelancerTransaction["withdrawalStatus"]) {
+  switch (status) {
+    case "PENDING_AUTH":
+      return "Chờ xác nhận";
+    case "PROCESSING":
+      return "Đang xử lý";
+    case "SUCCEEDED":
+      return "Thành công";
+    case "FAILED":
+      return "Thất bại";
+    case "CANCELLED":
+      return "Đã hủy";
+    default:
+      return "—";
+  }
+}
+
+function withdrawalStatusClass(status?: FreelancerTransaction["withdrawalStatus"]) {
+  switch (status) {
+    case "SUCCEEDED":
+      return "fl-payments__tx-status fl-payments__tx-status--ok";
+    case "FAILED":
+    case "CANCELLED":
+      return "fl-payments__tx-status fl-payments__tx-status--fail";
+    case "PENDING_AUTH":
+    case "PROCESSING":
+      return "fl-payments__tx-status fl-payments__tx-status--pending";
+    default:
+      return "fl-payments__tx-status";
+  }
+}
+
 function monthKey(iso: string) {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "";
@@ -456,6 +488,8 @@ export default function FreelancerPaymentsPage() {
                           <th>Dự án</th>
                           <th>Client</th>
                           <th>Loại</th>
+                          <th>Ngân hàng</th>
+                          <th>Trạng thái</th>
                           <th>Số tiền</th>
                           <th>Tham chiếu</th>
                         </tr>
@@ -475,6 +509,16 @@ export default function FreelancerPaymentsPage() {
                             </td>
                             <td>{item.clientName}</td>
                             <td>{freelancerTransactionCategoryLabel(item.category)}</td>
+                            <td>{item.category === "withdraw" ? item.withdrawalBankName || "—" : "—"}</td>
+                            <td>
+                              {item.category === "withdraw" ? (
+                                <span className={withdrawalStatusClass(item.withdrawalStatus)}>
+                                  {withdrawalStatusLabel(item.withdrawalStatus)}
+                                </span>
+                              ) : (
+                                "—"
+                              )}
+                            </td>
                             <td className={item.amount < 0 ? "payments-neg" : "payments-pos"}>
                               {item.amount >= 0 ? "+" : ""}
                               {formatVnd(item.amount)}

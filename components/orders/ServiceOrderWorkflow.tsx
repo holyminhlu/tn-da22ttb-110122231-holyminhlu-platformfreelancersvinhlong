@@ -18,7 +18,7 @@ import CompletionReviewPanel from "./CompletionReviewPanel";
 import DeliveryAcceptancePanel from "./DeliveryAcceptancePanel";
 import ExecutionReviewPanel from "./ExecutionReviewPanel";
 import SelectionAgreementPanel from "./SelectionAgreementPanel";
-import { cancelTypeLabel, isContractDisputed, isOrderExpiredOrCancelled } from "@/lib/orders/workflowSlaDisplay";
+import { cancelTypeLabel, isAwaitingClientAcceptance, isContractDisputed, isOrderExpiredOrCancelled } from "@/lib/orders/workflowSlaDisplay";
 import { disputeCenterPath } from "@/lib/orders/resolutionLinks";
 import "../hire/hire.css";
 import "../hire/hire-freelancer-detail.css";
@@ -75,6 +75,20 @@ function stageIndex(stage: string) {
   return i >= 0 ? i : 0;
 }
 
+function workflowDisplayStageIndex(
+  workflowStage: string,
+  contract: { delivered_at?: string | null; accepted_at?: string | null },
+  isClient: boolean,
+) {
+  if (isClient && isAwaitingClientAcceptance({ workflow_stage: workflowStage, ...contract })) {
+    return stageIndex("execution");
+  }
+  if (!isClient && isAwaitingClientAcceptance({ workflow_stage: workflowStage, ...contract })) {
+    return stageIndex("delivery");
+  }
+  return stageIndex(workflowStage);
+}
+
 export default function ServiceOrderWorkflow({ backHref, backLabel }: ServiceOrderWorkflowProps) {
   const params = useParams();
   const contractId = String(params?.contractId ?? "");
@@ -118,7 +132,11 @@ export default function ServiceOrderWorkflow({ backHref, backLabel }: ServiceOrd
 
   const contract = data?.contract;
   const role = data?.role;
-  const currentIdx = stageIndex(contract?.workflow_stage ?? "selection");
+  const currentIdx = workflowDisplayStageIndex(
+    contract?.workflow_stage ?? "selection",
+    contract ?? {},
+    role === "client",
+  );
   const runAction = useCallback(
     async (body: Record<string, unknown>) => {
       setBusy(true);
@@ -170,6 +188,7 @@ export default function ServiceOrderWorkflow({ backHref, backLabel }: ServiceOrd
   const stageMeta = STAGES[currentIdx];
   const isClient = role === "client";
   const workflowStage = String(contract.workflow_stage || "selection").toLowerCase();
+  const awaitingClientAcceptance = isAwaitingClientAcceptance(contract);
   const hasProposal = Boolean(contract.proposal_text?.trim());
   const isTerminal = isOrderExpiredOrCancelled(contract.status, contract.cancel_type);
   const isDisputed = isContractDisputed(contract.status);
@@ -192,8 +211,8 @@ export default function ServiceOrderWorkflow({ backHref, backLabel }: ServiceOrd
         <div className="hire-sla-banner hire-sla-banner--info" role="status">
           <strong>Đơn đang trong tranh chấp</strong>
           <span>
-            Workflow tạm dừng trong lúc xử lý. Trao đổi và theo dõi tiến trình tại Trung tâm giải
-            quyết tranh chấp.
+            Workflow tạm dừng. C và F cần nộp bằng chứng tại Trung tâm giải quyết; Admin sẽ phán
+            quyết chia tiền từ ký quỹ. Không thể tiếp tục công việc cho đến khi có quyết định.
           </span>
         </div>
         <div className="hire-order__disputed-summary">
@@ -272,10 +291,7 @@ export default function ServiceOrderWorkflow({ backHref, backLabel }: ServiceOrd
             }
             onAcceptProposal={() => void runAction({ action: "accept_proposal" })}
             onWithdrawProposal={() => void runAction({ action: "withdraw_proposal" })}
-            onRejectProposal={() => {
-              const reason = window.prompt("Lý do từ chối (tùy chọn):", "") ?? "";
-              void runAction({ action: "reject_proposal", reason });
-            }}
+            onRejectProposal={(reason) => void runAction({ action: "reject_proposal", reason })}
             onCancelOrder={confirmCancelOrder}
           />
         ) : workflowStage === "escrow" ? (
@@ -294,7 +310,7 @@ export default function ServiceOrderWorkflow({ backHref, backLabel }: ServiceOrd
             onFundEscrow={() => void runAction({ action: "fund_escrow" })}
             onCancelOrder={confirmCancelOrder}
           />
-        ) : workflowStage === "execution" ? (
+        ) : workflowStage === "execution" && !awaitingClientAcceptance ? (
           <ExecutionReviewPanel
             contract={contract}
             milestones={data.milestones}
@@ -346,7 +362,7 @@ export default function ServiceOrderWorkflow({ backHref, backLabel }: ServiceOrd
               })
             }
           />
-        ) : workflowStage === "delivery" ? (
+        ) : workflowStage === "delivery" || awaitingClientAcceptance ? (
           <DeliveryAcceptancePanel
             contract={contract}
             milestones={data.milestones}
@@ -359,8 +375,17 @@ export default function ServiceOrderWorkflow({ backHref, backLabel }: ServiceOrd
                 ? contract.freelancer_name || "—"
                 : contract.client_name || "—"
             }
+            clientPendingInStage3={isClient && awaitingClientAcceptance}
+            cancelRequest={data.cancelRequest}
             onMarkDelivered={() => void runAction({ action: "mark_delivered" })}
             onAcceptDelivery={() => void runAction({ action: "accept_delivery" })}
+            onRespondCancelRequest={(agree, responseNote) =>
+              void runAction({
+                action: "respond_cancel_request",
+                agree,
+                responseNote,
+              })
+            }
             onOpenDispute={(payload) =>
               void runAction({
                 action: "open_dispute",

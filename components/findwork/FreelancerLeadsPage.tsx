@@ -1,12 +1,11 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useStoredUser } from "@/hooks/useStoredUser";
 import { listServiceOrders, type ServiceOrderListItem } from "@/lib/api/contracts";
 import { listJobs, type JobListing } from "@/lib/api/jobs";
-import { getUserInitials, resolveAvatarSrc } from "@/lib/authSession";
+import UserAvatar from "@/components/ui/UserAvatar";
 import {
   filterJobLeads,
   filterServiceLeads,
@@ -212,8 +211,6 @@ export default function FreelancerLeadsPage() {
                     <ul className="fw-leads__list">
                       {filteredJobs.map((job) => {
                         const kind = jobLeadKind(job);
-                        const avatarSrc = resolveAvatarSrc(job.client_avatar_url);
-                        const initials = getUserInitials(job.client_name ?? undefined);
                         const budgetText =
                           job.budget != null ? formatVnd(job.budget) : "Thỏa thuận";
 
@@ -223,20 +220,12 @@ export default function FreelancerLeadsPage() {
                               href={`/work/detail/${job.id}`}
                               className={`fw-leads__card${kind === "hot" ? " fw-leads__card--hot" : ""}`}
                             >
-                              {avatarSrc ? (
-                                <Image
-                                  src={avatarSrc}
-                                  alt=""
-                                  width={44}
-                                  height={44}
-                                  className="fw-leads__avatar"
-                                  unoptimized
-                                />
-                              ) : (
-                                <span className="fw-leads__avatar" aria-hidden>
-                                  {initials}
-                                </span>
-                              )}
+                              <UserAvatar
+                                src={job.client_avatar_url}
+                                name={job.client_name}
+                                size={44}
+                                className="fw-leads__avatar"
+                              />
                               <div className="fw-leads__card-main">
                                 <p className="fw-leads__card-client">
                                   {job.client_name?.trim() || "Khách hàng"}
@@ -282,9 +271,12 @@ export default function FreelancerLeadsPage() {
                             href={`/findwork/orders/${order.id}`}
                             className="fw-leads__card fw-leads__card--service"
                           >
-                            <span className="fw-leads__avatar" aria-hidden>
-                              {getUserInitials(order.counterparty_name ?? undefined)}
-                            </span>
+                            <UserAvatar
+                              src={order.counterparty_avatar_url}
+                              name={order.counterparty_name}
+                              size={44}
+                              className="fw-leads__avatar"
+                            />
                             <div className="fw-leads__card-main">
                               <p className="fw-leads__card-client">
                                 {order.counterparty_name?.trim() || "Khách hàng"}

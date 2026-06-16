@@ -24,6 +24,7 @@ import {
 } from "@/lib/orders/refundDisputeData";
 import ResolutionProgressBar from "@/components/orders/ResolutionProgressBar";
 import ResolutionCenterThread from "@/components/orders/ResolutionCenterThread";
+import AdminDisputeResolvePanel from "./AdminDisputeResolvePanel";
 import { resolveAvatarSrc } from "@/lib/authSession";
 import "../manage/manage.css";
 import "./admin.css";
@@ -43,6 +44,14 @@ const STAGE_OPTIONS: { id: AdminDisputeStageFilter; label: string }[] = [
 
 function orderTitle(row: AdminDisputeRow) {
   return row.job_title || row.service_title || "Đơn hàng";
+}
+
+function fileNameFromUrl(url: string) {
+  return decodeURIComponent(url.split("/").pop() || "minh-chung");
+}
+
+function isImageUrl(url: string) {
+  return /\.(png|jpe?g|gif|webp)(\?|$)/i.test(url);
 }
 
 function parseEvidenceUrls(evidence: unknown): string[] {
@@ -70,8 +79,8 @@ export default function AdminDisputesPage() {
   );
   const [busy, setBusy] = useState(false);
   const [resolveBusy, setResolveBusy] = useState(false);
-  const [adminNote, setAdminNote] = useState("");
   const [toast, setToast] = useState<{ type: "ok" | "err"; message: string } | null>(null);
+  const [resolveError, setResolveError] = useState("");
   const [actionError, setActionError] = useState("");
 
   useEffect(() => {
@@ -105,7 +114,7 @@ export default function AdminDisputesPage() {
 
   const loadDetail = useCallback(async (disputeId: string) => {
     setDetailLoading(true);
-    setActionError("");
+    setResolveError("");
     try {
       setDetail(await getAdminDisputeDetail(disputeId));
     } catch (err) {
@@ -113,7 +122,7 @@ export default function AdminDisputesPage() {
         err && typeof err === "object" && "message" in err
           ? String((err as { message: string }).message)
           : "Không thể tải chi tiết.";
-      setActionError(message);
+      setResolveError(message);
       setDetail(null);
     } finally {
       setDetailLoading(false);
@@ -140,6 +149,8 @@ export default function AdminDisputesPage() {
     if (selectedId) void loadDetail(selectedId);
   }, [selectedId, loadDetail]);
 
+  const selected = rows.find((r) => r.id === selectedId) ?? rows[0];
+
   async function handleSendMessage(body: string) {
     if (!selectedId) return;
     setBusy(true);
@@ -159,20 +170,39 @@ export default function AdminDisputesPage() {
     }
   }
 
-  async function handleResolve(resolution: AdminResolveDisputeAction) {
+  async function handleResolve(
+    resolution: AdminResolveDisputeAction,
+    payload: { adminNote?: string; clientAmount?: number; freelancerAmount?: number },
+  ) {
     if (!selectedId || !detail) return;
     const label = adminResolveActionLabel(resolution);
     if (!window.confirm(`Xác nhận quyết định: ${label}?`)) return;
 
+    if (resolution === "split") {
+      const total = Number(detail.dispute.agreed_price) || 0;
+      const clientAmount = Number(payload.clientAmount);
+      const freelancerAmount = Number(payload.freelancerAmount);
+      if (
+        !Number.isFinite(clientAmount) ||
+        !Number.isFinite(freelancerAmount) ||
+        Math.round(clientAmount + freelancerAmount) !== Math.round(total)
+      ) {
+        setResolveError(`Tổng chia phải bằng ${formatVnd(total)}.`);
+        return;
+      }
+    }
+
     setResolveBusy(true);
-    setActionError("");
+    setResolveError("");
     try {
       const result = await resolveAdminDispute(selectedId, {
         resolution,
-        adminNote: adminNote.trim() || undefined,
+        adminNote: payload.adminNote,
+        ...(resolution === "split"
+          ? { clientAmount: payload.clientAmount, freelancerAmount: payload.freelancerAmount }
+          : {}),
       });
       setToast({ type: "ok", message: result.message });
-      setAdminNote("");
       await load();
       await loadDetail(selectedId);
     } catch (err) {
@@ -180,23 +210,14 @@ export default function AdminDisputesPage() {
         err && typeof err === "object" && "message" in err
           ? String((err as { message: string }).message)
           : "Không thể xử lý tranh chấp.";
-      setActionError(message);
+      setResolveError(message);
     } finally {
       setResolveBusy(false);
     }
   }
 
-  const selected = rows.find((r) => r.id === selectedId) ?? rows[0];
-  const evidenceUrls = detail
-    ? [
-        ...new Set([
-          ...parseEvidenceUrls(detail.dispute.evidence),
-          ...detail.messages.flatMap((m) =>
-            Array.isArray(m.attachments) ? m.attachments.map((u) => String(u)) : [],
-          ),
-        ]),
-      ]
-    : [];
+  const caseEvidenceUrls = detail ? parseEvidenceUrls(detail.dispute.evidence) : [];
+  const isCancelRejectedDispute = selected?.issue_category === "cancel_rejected";
 
   return (
     <div className="admin-page admin-disputes-page">
@@ -214,11 +235,6 @@ export default function AdminDisputesPage() {
       ) : null}
 
       <div className="admin-disputes-toolbar" aria-label="Bộ lọc tranh chấp">
-        <p className="admin-disputes-toolbar__lead">
-          Xem xét tranh chấp giữa client và freelancer, trao đổi trong Trung tâm giải quyết và đưa
-          ra quyết định cuối cùng.
-        </p>
-
         <button
           type="button"
           className="admin-btn admin-btn--ghost admin-disputes-toolbar__refresh"
@@ -242,7 +258,7 @@ export default function AdminDisputesPage() {
           ))}
         </div>
 
-        <label className="admin-disputes-toolbar__stage">
+        <label className="admin-disputes-toolbar__field">
           <span className="admin-filters__label">Giai đoạn</span>
           <select
             className="admin-filters__select admin-disputes-toolbar__select"
@@ -257,7 +273,7 @@ export default function AdminDisputesPage() {
           </select>
         </label>
 
-        <label className="admin-disputes-toolbar__search">
+        <label className="admin-disputes-toolbar__field admin-disputes-toolbar__field--search">
           <span className="admin-filters__label">Tìm kiếm</span>
           <div className="admin-filters__search-wrap">
             <FaSearch className="admin-filters__search-icon" aria-hidden />
@@ -331,94 +347,97 @@ export default function AdminDisputesPage() {
                     steps={DISPUTE_PROGRESS_STEPS}
                     activeIndex={disputeProgressIndex(selected.dispute_stage, selected.status)}
                   />
-                  <dl className="resolution-card__details">
-                    <div>
-                      <dt>Vấn đề</dt>
-                      <dd>{disputeIssueLabel(selected.issue_category)}</dd>
+
+                  <section className="admin-dispute-case" aria-label="Tóm tắt tranh chấp">
+                    <div className="dispute-highlights admin-dispute-case__highlights">
+                      <div className="dispute-highlight dispute-highlight--issue">
+                        <span className="dispute-highlight__label">Vấn đề</span>
+                        <span className="dispute-highlight__value">
+                          {disputeIssueLabel(selected.issue_category)}
+                        </span>
+                      </div>
+                      <div className="dispute-highlight dispute-highlight--request">
+                        <span className="dispute-highlight__label">Yêu cầu xử lý</span>
+                        <span className="dispute-highlight__value">
+                          {disputeResolutionLabel(selected.desired_resolution)}
+                        </span>
+                      </div>
                     </div>
-                    <div>
-                      <dt>Yêu cầu xử lý</dt>
-                      <dd>{disputeResolutionLabel(selected.desired_resolution)}</dd>
+
+                    <div className="admin-dispute-case__block admin-dispute-case__block--desc">
+                      <span className="admin-dispute-case__label">Mô tả</span>
+                      <p className="admin-dispute-case__text">
+                        {selected.reason?.trim() || "—"}
+                      </p>
                     </div>
-                    <div>
-                      <dt>Mô tả</dt>
-                      <dd>{selected.reason}</dd>
-                    </div>
+
                     {selected.admin_notes ? (
-                      <div>
-                        <dt>Ghi chú admin</dt>
-                        <dd>{selected.admin_notes}</dd>
+                      <div className="admin-dispute-case__block admin-dispute-case__block--note">
+                        <span className="admin-dispute-case__label">Ghi chú admin</span>
+                        <p className="admin-dispute-case__text">{selected.admin_notes}</p>
                       </div>
                     ) : null}
-                  </dl>
-                  {evidenceUrls.length > 0 ? (
-                    <div className="admin-disputes-evidence">
-                      <p className="admin-disputes-evidence__label">Minh chứng</p>
-                      <ul className="admin-disputes-evidence__list">
-                        {evidenceUrls.map((url) => {
-                          const href = resolveAvatarSrc(url) || url;
-                          return (
-                            <li key={url}>
-                              <a href={href} target="_blank" rel="noopener noreferrer">
-                                {url.split("/").pop()}
-                              </a>
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    </div>
-                  ) : null}
+
+                    {caseEvidenceUrls.length > 0 ? (
+                      <div className="admin-dispute-case__block admin-dispute-case__block--evidence">
+                        <span className="admin-dispute-case__label">Minh chứng</span>
+                        <ul className="admin-dispute-case__evidence-grid">
+                          {caseEvidenceUrls.map((url) => {
+                            const href = resolveAvatarSrc(url) || url;
+                            const name = fileNameFromUrl(url);
+                            return (
+                              <li key={url} className="admin-dispute-case__evidence-item">
+                                {isImageUrl(url) ? (
+                                  <a
+                                    href={href}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    title={name}
+                                    className="admin-dispute-case__evidence-image"
+                                  >
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img
+                                      src={href}
+                                      alt={name}
+                                      loading="lazy"
+                                      referrerPolicy="no-referrer"
+                                    />
+                                  </a>
+                                ) : (
+                                  <a
+                                    href={href}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="admin-dispute-case__evidence-file"
+                                  >
+                                    {name}
+                                  </a>
+                                )}
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      </div>
+                    ) : null}
+                  </section>
                 </div>
 
                 {selected.status === "open" ? (
-                  <div className="admin-resolve-panel">
-                    <h4 className="admin-resolve-panel__title">Quyết định của Admin</h4>
-                    <p className="admin-resolve-panel__hint">
-                      Chọn một trong các phương án xử lý. Hành động không thể hoàn tác.
-                    </p>
-                    <label className="admin-field">
-                      <span className="admin-field__label">Ghi chú (tùy chọn)</span>
-                      <textarea
-                        className="admin-textarea"
-                        rows={3}
-                        value={adminNote}
-                        onChange={(e) => setAdminNote(e.target.value)}
-                        placeholder="Lý do quyết định, hướng dẫn cho các bên..."
-                      />
-                    </label>
-                    <div className="admin-resolve-panel__actions">
-                      <button
-                        type="button"
-                        className="admin-btn admin-btn--danger"
-                        disabled={resolveBusy}
-                        onClick={() => void handleResolve("full_refund")}
-                      >
-                        Hoàn tiền client
-                      </button>
-                      <button
-                        type="button"
-                        className="admin-btn admin-btn--primary"
-                        disabled={resolveBusy}
-                        onClick={() => void handleResolve("release")}
-                      >
-                        Giải ngân freelancer
-                      </button>
-                      <button
-                        type="button"
-                        className="admin-btn admin-btn--ghost"
-                        disabled={resolveBusy}
-                        onClick={() => void handleResolve("dismiss")}
-                      >
-                        Bác tranh chấp
-                      </button>
-                    </div>
-                  </div>
+                  <AdminDisputeResolvePanel
+                    key={selected.id}
+                    agreedPrice={selected.agreed_price}
+                    escrowStatus={selected.escrow_status}
+                    isCancelRejectedDispute={isCancelRejectedDispute}
+                    busy={resolveBusy}
+                    error={resolveError}
+                    onResolve={handleResolve}
+                  />
                 ) : null}
 
                 {detailLoading ? (
                   <p className="admin-page__state">Đang tải trao đổi...</p>
                 ) : detail ? (
-                  <>
+                  <div className="admin-disputes-chat">
                     {actionError ? (
                       <p className="admin-toast admin-toast--err" role="alert">
                         {actionError}
@@ -432,7 +451,7 @@ export default function AdminDisputesPage() {
                       busy={busy}
                       onSend={(body) => void handleSendMessage(body)}
                     />
-                  </>
+                  </div>
                 ) : null}
               </>
             ) : null}

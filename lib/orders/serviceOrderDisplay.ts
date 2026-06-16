@@ -1,6 +1,6 @@
 import type { ServiceOrderListItem } from "@/lib/api/contracts";
 import { formatDisplayTitle, markdownToPlainText } from "@/lib/text/displayText";
-import { cancelTypeLabel, isContractDisputed, isOrderExpiredOrCancelled } from "./workflowSlaDisplay";
+import { cancelTypeLabel, isAwaitingClientAcceptance, isContractDisputed, isOrderExpiredOrCancelled } from "./workflowSlaDisplay";
 
 const STAGE_LABELS: Record<string, string> = {  selection: "Chốt thỏa thuận",
   escrow: "Ký quỹ",
@@ -65,6 +65,9 @@ export function orderStatusHint(order: ServiceOrderListItem, asFreelancer: boole
       return "Chờ Client nạp Escrow";
     }
     if (stage === "execution") {
+      if (order.delivered_at && !order.accepted_at) {
+        return "Cần nghiệm thu bàn giao";
+      }
       return "Đang thực hiện";
     }
     if (stage === "delivery" && order.delivered_at) {
@@ -88,6 +91,9 @@ export function orderStatusHint(order: ServiceOrderListItem, asFreelancer: boole
     }
     if (stage === "escrow" && escrow !== "funded") {
       return "Cần nạp Escrow";
+    }
+    if (stage === "execution" && order.delivered_at && !order.accepted_at) {
+      return "Cần nghiệm thu bàn giao";
     }
   }
 
@@ -122,7 +128,10 @@ export function orderCardStatusTone(
   if (stage === "completion") {
     return escrow === "released" ? "success" : "warning";
   }
-  if (stage === "execution") return "active";
+  if (stage === "execution") {
+    if (!asFreelancer && order.delivered_at && !order.accepted_at) return "delivery";
+    return "active";
+  }
   if (stage === "delivery") return "delivery";
 
   if (stage === "escrow") {
@@ -225,13 +234,14 @@ export function filterServiceOrders(
     if (filter === "action") {
       if (asFreelancer) {
         if (stage === "selection" && !order.proposal_text) return true;
-        if (stage === "execution") return true;
+        if (stage === "execution" && !order.delivered_at) return true;
         if (stage === "delivery" && !order.delivered_at) return true;
         return false;
       }
       if (stage === "selection" && order.proposal_text) return true;
       if (stage === "escrow" && escrow !== "funded") return true;
-      if (stage === "execution" || stage === "delivery") return true;
+      if (stage === "execution") return true;
+      if (stage === "delivery" && !order.accepted_at) return true;
       if (stage === "completion" && escrow === "funded") return true;
     }
 

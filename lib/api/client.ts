@@ -4,6 +4,7 @@ import { clearStoredSession, persistAuthTokens } from "@/lib/authSession";
 export type ApiError = {
   status: number;
   message: string;
+  code?: string;
 };
 
 export type FetchApiOptions = RequestInit & {
@@ -108,7 +109,11 @@ export async function fetchApi<T = unknown>(
       typeof data === "object" && data !== null && "message" in data
         ? String((data as { message?: string }).message)
         : `HTTP ${response.status}`;
-    const err: ApiError = { status: response.status, message };
+    const code =
+      typeof data === "object" && data !== null && "code" in data
+        ? String((data as { code?: string }).code || "")
+        : undefined;
+    const err: ApiError = { status: response.status, message, code: code || undefined };
     throw err;
   }
 

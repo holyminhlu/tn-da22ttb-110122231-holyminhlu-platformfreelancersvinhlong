@@ -19,7 +19,7 @@ import {
   FaVideo,
 } from "react-icons/fa";
 import { getJob, type JobListing } from "@/lib/api/jobs";
-import { getUserInitials, resolveAvatarSrc } from "@/lib/authSession";
+import UserAvatar from "@/components/ui/UserAvatar";
 import { formatDate, formatVnd } from "@/lib/format";
 import { useStoredUser } from "@/hooks/useStoredUser";
 import {
@@ -143,7 +143,6 @@ export default function WorkDetailContent() {
   const budgetPrimary = job.budget != null ? formatVnd(job.budget) : "Thỏa thuận";
   const tags = parseJobTags(job.tags);
   const images = parseJobImages(job.images);
-  const avatarSrc = resolveAvatarSrc(job.client_avatar_url);
   const clientName = clientDisplayName(job.client_name);
   const clientLoc = clientLocationLabel(job);
   const categoryLabel = job.category?.trim() || null;
@@ -310,20 +309,13 @@ export default function WorkDetailContent() {
             <section className="wd-card wd-client-card">
               <h2 className="wd-card__title wd-card__title--sm">Khách hàng</h2>
               <div className="wd-client">
-                {avatarSrc ? (
-                  <Image
-                    src={avatarSrc}
-                    alt={clientName}
-                    width={56}
-                    height={56}
-                    className="wd-client__avatar"
-                    unoptimized
-                  />
-                ) : (
-                  <div className="wd-client__avatar wd-client__avatar--placeholder" aria-hidden>
-                    {getUserInitials(job.client_name ?? undefined)}
-                  </div>
-                )}
+                <UserAvatar
+                  src={job.client_avatar_url}
+                  name={job.client_name}
+                  size={56}
+                  className="wd-client__avatar"
+                  alt={clientName}
+                />
                 <div className="wd-client__info">
                   <p className="wd-client__name">{clientName}</p>
                   <p className="wd-client__loc">

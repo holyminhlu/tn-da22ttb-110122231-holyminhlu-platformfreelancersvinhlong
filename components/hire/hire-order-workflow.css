@@ -320,6 +320,17 @@
   color: #047857;
 }
 
+.hire-selection__step--rejected {
+  color: #b45309;
+  font-weight: 600;
+}
+
+.hire-selection__step--rejected .hire-selection__step-icon {
+  background: #fff7ed;
+  color: #ea580c;
+  border: 1px solid #fed7aa;
+}
+
 .hire-selection__step-icon {
   display: inline-flex;
   width: 1.5rem;
@@ -689,6 +700,53 @@
   text-align: left;
 }
 
+.hire-selection__state-card--rejected {
+  text-align: left;
+  margin-bottom: 1rem;
+  border-color: #fed7aa;
+  background: #fffbeb;
+}
+
+.hire-selection__state-card--rejected .hire-selection__state-icon {
+  margin: 0 0 0.65rem;
+  font-size: 1.5rem;
+  color: #ea580c;
+}
+
+.hire-selection__rejection-reason {
+  margin: 0.85rem 0 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: 0.5rem;
+  background: #fff;
+  border: 1px solid #fde68a;
+}
+
+.hire-selection__rejection-reason-title {
+  margin: 0 0 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #92400e;
+}
+
+.hire-selection__rejection-reason-body {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: #78350f;
+  white-space: pre-wrap;
+}
+
+.hire-selection__rejection-preview-label {
+  margin: 0 0 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #6b7280;
+}
+
 .hire-selection__state-icon {
   display: block;
   margin: 0 auto 0.75rem;
@@ -796,6 +854,67 @@
   margin-top: 1.25rem;
   padding-top: 1rem;
   border-top: 1px solid #f3f4f6;
+}
+
+.hire-selection__reject-form {
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid #f3f4f6;
+}
+
+.hire-selection__reject-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0 0 0.75rem;
+  padding: 0;
+  border: none;
+  background: none;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #4b5563;
+  cursor: pointer;
+}
+
+.hire-selection__reject-back:hover:not(:disabled) {
+  color: #111827;
+}
+
+.hire-selection__reject-back:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.hire-selection__reject-title {
+  margin: 0 0 0.35rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.hire-selection__reject-lead {
+  margin: 0 0 1rem;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: #6b7280;
+}
+
+.hire-selection__reject-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.hire-selection__btn--danger {
+  background: #dc2626;
+  border: 1px solid #dc2626;
+  color: #fff;
+}
+
+.hire-selection__btn--danger:hover:not(:disabled) {
+  background: #b91c1c;
+  border-color: #b91c1c;
 }
 
 .hire-selection__error {
@@ -1571,6 +1690,13 @@
   color: #94a3b8;
 }
 
+.hire-execution__revision-hint {
+  margin: 0.45rem 0 0;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: #64748b;
+}
+
 .hire-execution__revision-bar {
   margin-top: 0.55rem;
   height: 0.35rem;
@@ -1585,6 +1711,35 @@
   border-radius: 9999px;
   background: #6366f1;
   transition: width 0.2s;
+}
+
+.hire-execution__frozen-card {
+  padding: 1.25rem 1.35rem;
+  border: 1px solid #fcd34d;
+  border-radius: var(--card-radius);
+  background: #fffbeb;
+  box-shadow: 0 1px 3px rgb(15 23 42 / 0.04);
+}
+
+.hire-execution__frozen-icon {
+  display: block;
+  margin-bottom: 0.65rem;
+  font-size: 1.5rem;
+  color: #d97706;
+}
+
+.hire-execution__frozen-title {
+  margin: 0 0 0.35rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #92400e;
+}
+
+.hire-execution__frozen-desc {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: #78350f;
 }
 
 .hire-execution__milestones {

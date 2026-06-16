@@ -1,11 +1,10 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { FaCheckCircle, FaListUl, FaMapMarkerAlt } from "react-icons/fa";
 import { type JobListing } from "@/lib/api/jobs";
-import { getUserInitials, resolveAvatarSrc } from "@/lib/authSession";
+import UserAvatar from "@/components/ui/UserAvatar";
 import { formatDate, formatVnd } from "@/lib/format";
 import {
   parseJobImages,
@@ -44,7 +43,6 @@ export default function JobCard({ job, onAccepted, onSavedChange, guestMode = fa
   const tags = parseJobTags(job.tags);
   const images = parseJobImages(job.images);
   const hasMedia = images.length > 0;
-  const avatarSrc = resolveAvatarSrc(job.client_avatar_url);
   const clientLocation =
     job.client_district_city?.trim() || job.location_label?.trim() || "—";
   const categoryLabel = job.category?.trim() || null;
@@ -160,23 +158,13 @@ export default function JobCard({ job, onAccepted, onSavedChange, guestMode = fa
           ) : null}
 
           <div className="flex items-center space-x-3">
-            {avatarSrc ? (
-              <Image
-                src={avatarSrc}
-                alt={job.client_name || "Khách hàng"}
-                width={40}
-                height={40}
-                className="h-10 w-10 rounded-full bg-gray-200 object-cover"
-                unoptimized
-              />
-            ) : (
-              <div
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-200 text-xs font-semibold text-gray-600"
-                aria-hidden
-              >
-                {getUserInitials(job.client_name ?? undefined)}
-              </div>
-            )}
+            <UserAvatar
+              src={job.client_avatar_url}
+              name={job.client_name}
+              size={40}
+              className="h-10 w-10"
+              alt={job.client_name || "Khách hàng"}
+            />
             <div>
               <div className="cursor-pointer text-sm font-bold text-blue-600 hover:underline">
                 {job.client_name || "Khách hàng"}

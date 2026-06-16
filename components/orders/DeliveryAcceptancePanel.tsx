@@ -8,18 +8,20 @@ import {
   FaExternalLinkAlt,
   FaInfoCircle,
   FaLink,
+  FaPauseCircle,
   FaThumbsUp,
   FaUserClock,
 } from "react-icons/fa";
-import type { ContractMilestone, WorkflowContract } from "@/lib/api/contracts";
+import type { CancelRequest, ContractMilestone, WorkflowContract } from "@/lib/api/contracts";
 import { formatPackagePrice } from "@/lib/hire/servicePackages";
 import { formatDate, formatVnd } from "@/lib/format";
 import { formatTimelineDisplay, parseProposalSections } from "@/lib/orders/proposalDisplay";
 import WorkflowDeadlineBanner from "./WorkflowDeadlineBanner";
 import ClientVerifyNotice from "@/components/hire/ClientVerifyNotice";
 import { CLIENT_VERIFY_PAYMENT_LEAD } from "@/lib/hire/clientVerification";
-import DisputeOpenForm from "./DisputeOpenForm";
+import ResolutionActionChooser from "./ResolutionActionChooser";
 import type { OpenDisputePayload } from "@/lib/api/resolution";
+import { formatDeadlineCountdown } from "@/lib/orders/workflowSlaDisplay";
 
 type DeliveryAcceptancePanelProps = {
   contract: WorkflowContract;
@@ -29,8 +31,12 @@ type DeliveryAcceptancePanelProps = {
   actionError?: string;
   paymentBlocked?: boolean;
   counterpartyName: string;
+  /** Client vẫn ở giai đoạn 3 khi freelancer đã bàn giao, chưa nghiệm thu. */
+  clientPendingInStage3?: boolean;
+  cancelRequest?: CancelRequest | null;
   onMarkDelivered: () => void;
   onAcceptDelivery: () => void;
+  onRespondCancelRequest?: (agree: boolean, responseNote?: string) => void;
   onOpenDispute?: (payload: OpenDisputePayload) => void;
 };
 
@@ -51,8 +57,11 @@ export default function DeliveryAcceptancePanel({
   actionError,
   paymentBlocked = false,
   counterpartyName,
+  clientPendingInStage3 = false,
+  cancelRequest = null,
   onMarkDelivered,
   onAcceptDelivery,
+  onRespondCancelRequest,
   onOpenDispute,
 }: DeliveryAcceptancePanelProps) {
   const [acceptConfirmed, setAcceptConfirmed] = useState(false);
@@ -70,12 +79,59 @@ export default function DeliveryAcceptancePanel({
   );
   const timelineLabel = formatTimelineDisplay(proposal.timeline);
 
+  const workFrozen = Boolean(cancelRequest);
+
+  const stageEyebrow = clientPendingInStage3 ? "Giai đoạn 3" : "Giai đoạn 4";
+  const stageTitle = clientPendingInStage3 ? "Thực hiện & Kiểm tra" : "Bàn giao & Nghiệm thu";
+  const stageLead = workFrozen
+    ? isClient
+      ? "Đơn đang tạm dừng trong lúc chờ xử lý hoàn tiền. Bạn có thể xem bàn giao đã gửi nhưng chưa thể nghiệm thu."
+      : "Đơn đang tạm dừng. Vui lòng phản hồi yêu cầu hoàn tiền của Client trước khi tiếp tục."
+    : clientPendingInStage3
+      ? "Freelancer đã gửi sản phẩm cuối. Kiểm tra kỹ và nghiệm thu để chuyển sang giai đoạn tiếp theo."
+      : isClient
+        ? "Kiểm tra sản phẩm bàn giao, xác nhận đạt yêu cầu để chuyển sang hoàn tất và giải ngân."
+        : "Client đang rà soát bàn giao. Chờ nghiệm thu để kết thúc hợp đồng.";
+
   return (
     <div className="hire-delivery">
       {paymentBlocked && isClient ? (
         <ClientVerifyNotice message={CLIENT_VERIFY_PAYMENT_LEAD} />
       ) : null}
-      {contract.delivered_at && !contract.accepted_at ? (
+      {cancelRequest ? (
+        <div className="hire-sla-banner hire-sla-banner--warn" role="alert">
+          <strong>
+            {isClient
+              ? "Đơn tạm dừng — chờ Freelancer phản hồi hoàn tiền"
+              : "Đơn tạm dừng — Client yêu cầu hủy & hoàn tiền"}
+          </strong>
+          <span>
+            Bàn giao, nghiệm thu và tranh chấp bị khóa cho đến khi có quyết định.{" "}
+            {formatDeadlineCountdown(cancelRequest.respond_by_at) || "—"} · {cancelRequest.reason}
+          </span>
+          {!isClient && onRespondCancelRequest ? (
+            <div className="hire-sla-banner__actions">
+              <button
+                type="button"
+                className="hire-execution__btn hire-execution__btn--outline"
+                disabled={busy}
+                onClick={() => onRespondCancelRequest(true)}
+              >
+                Đồng ý hủy
+              </button>
+              <button
+                type="button"
+                className="hire-execution__btn hire-execution__btn--outline"
+                disabled={busy}
+                onClick={() => onRespondCancelRequest(false, "Phản đối — chuyển tranh chấp")}
+              >
+                Từ chối → Tranh chấp
+              </button>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+      {contract.delivered_at && !contract.accepted_at && !workFrozen ? (
         <WorkflowDeadlineBanner
           deadlineAt={contract.delivery_review_deadline_at}
           label={
@@ -94,13 +150,9 @@ export default function DeliveryAcceptancePanel({
       ) : null}
       <div className="hire-delivery__hero">
         <div className="hire-delivery__hero-text">
-          <span className="hire-delivery__eyebrow">Giai đoạn 4</span>
-          <h2 className="hire-delivery__title">Bàn giao & Nghiệm thu</h2>
-          <p className="hire-delivery__lead">
-            {isClient
-              ? "Kiểm tra sản phẩm bàn giao, xác nhận đạt yêu cầu để chuyển sang hoàn tất và giải ngân."
-              : "Client đang rà soát bàn giao. Chờ nghiệm thu để kết thúc hợp đồng."}
-          </p>
+          <span className="hire-delivery__eyebrow">{stageEyebrow}</span>
+          <h2 className="hire-delivery__title">{stageTitle}</h2>
+          <p className="hire-delivery__lead">{stageLead}</p>
         </div>
         <ul className="hire-delivery__steps" aria-label="Tiến trình bàn giao">
           <li className="hire-delivery__step hire-delivery__step--done">
@@ -223,7 +275,18 @@ export default function DeliveryAcceptancePanel({
             </div>
           ) : null}
 
-          {!isClient && !isDelivered ? (
+          {!isClient && workFrozen && !isDelivered ? (
+            <div className="hire-execution__frozen-card">
+              <FaPauseCircle className="hire-execution__frozen-icon" aria-hidden />
+              <h3 className="hire-execution__frozen-title">Công việc tạm dừng</h3>
+              <p className="hire-execution__frozen-desc">
+                Client đã gửi yêu cầu hoàn tiền. Bạn không thể xác nhận bàn giao cho đến khi phản
+                hồi ở banner phía trên.
+              </p>
+            </div>
+          ) : null}
+
+          {!isClient && !isDelivered && !workFrozen ? (
             <div className="hire-delivery__work-card">
               <header className="hire-delivery__work-head">
                 <FaBoxOpen className="hire-delivery__work-head-icon" aria-hidden />
@@ -272,8 +335,9 @@ export default function DeliveryAcceptancePanel({
                 <div>
                   <h3 className="hire-delivery__work-title">Nghiệm thu bàn giao</h3>
                   <p className="hire-delivery__work-sub">
-                    Kiểm tra kỹ sản phẩm, demo và tài liệu. Nghiệm thu đồng nghĩa với chấp nhận
-                    hoàn thành — bước tiếp theo là giải ngân Escrow.
+                    {workFrozen
+                      ? "Không thể nghiệm thu khi đang chờ xử lý yêu cầu hoàn tiền."
+                      : "Kiểm tra kỹ sản phẩm, demo và tài liệu. Nghiệm thu đồng nghĩa với chấp nhận hoàn thành — bước tiếp theo là giải ngân Escrow."}
                   </p>
                 </div>
               </header>
@@ -322,7 +386,7 @@ export default function DeliveryAcceptancePanel({
                 <input
                   type="checkbox"
                   checked={acceptConfirmed}
-                  disabled={paymentBlocked}
+                  disabled={paymentBlocked || workFrozen}
                   onChange={(e) => setAcceptConfirmed(e.target.checked)}
                 />
                 <span>
@@ -335,18 +399,26 @@ export default function DeliveryAcceptancePanel({
                 <button
                   type="button"
                   className="hire-delivery__btn hire-delivery__btn--success"
-                  disabled={busy || !acceptConfirmed || paymentBlocked}
+                  disabled={busy || !acceptConfirmed || paymentBlocked || workFrozen}
                   onClick={onAcceptDelivery}
                 >
-                  {busy ? "Đang xử lý..." : "Nghiệm thu → Hoàn tất"}
+                  {busy
+                    ? "Đang xử lý..."
+                    : clientPendingInStage3
+                      ? "Nghiệm thu → Giai đoạn 4"
+                      : "Nghiệm thu → Hoàn tất"}
                 </button>
               </footer>
             </div>
           ) : null}
 
-          {isClient && onOpenDispute ? (
+          {isClient && onOpenDispute && !workFrozen ? (
             <div className="hire-execution__cancel-box">
-              <DisputeOpenForm busy={busy} onSubmit={onOpenDispute} />
+              <ResolutionActionChooser
+                busy={busy || paymentBlocked}
+                showDispute
+                onOpenDispute={onOpenDispute}
+              />
             </div>
           ) : null}
 

@@ -4,7 +4,10 @@ const SLA_DAYS = {
   AWAIT_PROPOSAL: 7,
   AWAIT_ACCEPT: 7,
   AWAIT_ESCROW: 5,
-  CANCEL_RESPONSE: 3,
+  /** Freelancer phản hồi yêu cầu hủy — sau đó auto-approve hoàn tiền */
+  CANCEL_RESPONSE: 2,
+  /** Bổ sung bằng chứng khi tranh chấp từ chối hủy */
+  DISPUTE_EVIDENCE: 2,
   DELIVERY_REVIEW: 7,
 };
 
@@ -16,6 +19,10 @@ function addDays(fromDate, days) {
 
 function isMissingSchemaError(err) {
   return err?.code === "42703" || err?.code === "42P01";
+}
+
+function isSkippableLedgerError(err) {
+  return isMissingSchemaError(err) || err?.code === "23514";
 }
 
 function isPreFunded(contract) {
@@ -157,8 +164,96 @@ async function recordRefundTransaction(db, userId, amount, contractId) {
       [userId, amount, contractId],
     );
   } catch (err) {
-    if (!isMissingSchemaError(err)) throw err;
+    if (!isSkippableLedgerError(err)) throw err;
   }
+}
+
+async function recordFreelancerCompensation(db, userId, amount, contractId, description) {
+  if (amount <= 0) return;
+  try {
+    await db.query(
+      `INSERT INTO public.transactions
+         (user_id, amount, currency, direction, category, description, occurred_at, status, type, contract_id)
+       VALUES ($1, $2, 'VND', 'in', 'escrow_release', $3, NOW(), 'completed', 'escrow_release', $4)`,
+      [userId, amount, description || "Thanh toán hủy đơn / phần việc đã làm", contractId],
+    );
+  } catch (err) {
+    if (!isSkippableLedgerError(err)) throw err;
+  }
+}
+
+async function settleCancelRefund(db, contract, cancelRequest, actorId, reason) {
+  const total = Number(contract.agreed_price) || 0;
+  let clientAmount = Number(cancelRequest.client_refund_amount);
+  let freelancerAmount = Number(cancelRequest.freelancer_amount);
+
+  if (!Number.isFinite(clientAmount) || !Number.isFinite(freelancerAmount)) {
+    clientAmount = total;
+    freelancerAmount = 0;
+  }
+
+  if (clientAmount > 0) {
+    await creditClient(db, contract.client_id, clientAmount);
+    await recordRefundTransaction(db, contract.client_id, clientAmount, contract.id);
+  }
+
+  if (freelancerAmount > 0) {
+    await ensureAccount(db, contract.freelancer_id);
+    try {
+      await db.query(
+        `UPDATE public.accounts SET balance = balance + $1, updated_at = CURRENT_TIMESTAMP
+         WHERE user_id = $2 AND currency = 'VND'`,
+        [freelancerAmount, contract.freelancer_id],
+      );
+    } catch (err) {
+      if (isMissingSchemaError(err)) {
+        await db.query(
+          `UPDATE public.accounts SET balance = balance + $1 WHERE user_id = $2 AND currency = 'VND'`,
+          [freelancerAmount, contract.freelancer_id],
+        );
+      } else {
+        throw err;
+      }
+    }
+    await recordFreelancerCompensation(
+      db,
+      contract.freelancer_id,
+      freelancerAmount,
+      contract.id,
+      "Thanh toán hủy đơn / phần việc đã làm",
+    );
+  }
+
+  await db.query(
+    `UPDATE public.contracts
+     SET escrow_status = 'refunded',
+         status = 'cancelled',
+         cancel_type = 'refund',
+         cancel_reason = $1,
+         cancelled_by = $2,
+         cancelled_at = CURRENT_TIMESTAMP,
+         stage_deadline_at = NULL,
+         escrow_deadline_at = NULL,
+         delivery_review_deadline_at = NULL,
+         updated_at = CURRENT_TIMESTAMP
+     WHERE id = $3`,
+    [reason, actorId, contract.id],
+  );
+  await closeJobIfAny(db, contract.job_id);
+  await logWorkflowEvent(
+    db,
+    contract.id,
+    "escrow_refunded",
+    {
+      clientAmount,
+      freelancerAmount,
+      platformFeeAmount: cancelRequest.platform_fee_amount,
+      splitType: cancelRequest.split_type,
+      legitimacy: cancelRequest.legitimacy,
+      reason,
+    },
+    actorId,
+  );
 }
 
 async function refundEscrowToClient(db, contract, reason, actorId = null) {
@@ -278,7 +373,8 @@ async function loadPendingCancelRequest(db, contractId) {
 async function loadOpenDispute(db, contractId) {
   try {
     const res = await db.query(
-      `SELECT id, reason, status, evidence, created_at, opened_by, resolution, admin_notes
+      `SELECT id, reason, status, evidence, created_at, opened_by, resolution, admin_notes,
+              issue_category, desired_resolution, dispute_stage, respond_by_at
        FROM public.contract_disputes
        WHERE contract_id = $1 AND status = 'open'
        ORDER BY created_at DESC
@@ -290,6 +386,77 @@ async function loadOpenDispute(db, contractId) {
     if (isMissingSchemaError(err)) return null;
     throw err;
   }
+}
+
+/**
+ * Khi F phản đối yêu cầu hủy: mở tranh chấp, khóa đơn (status=disputed), chờ bằng chứng & admin.
+ */
+async function openCancelRejectionDispute(db, contract, cancelRequest, freelancerId, responseNote) {
+  const respondBy = addDays(new Date(), SLA_DAYS.DISPUTE_EVIDENCE);
+  const clientDetail = String(cancelRequest.detail || cancelRequest.reason || "").trim();
+  const flResponse = String(responseNote || "Phản đối — tiếp tục thực hiện").trim();
+  const evidence = {
+    source: "cancel_rejection",
+    cancelRequestId: cancelRequest.id,
+    reasonCode: cancelRequest.reason_code,
+    clientReason: cancelRequest.reason,
+    clientDetail: cancelRequest.detail,
+    freelancerResponse: flResponse,
+    files: [],
+  };
+
+  const disputeRes = await db.query(
+    `INSERT INTO public.contract_disputes (
+       contract_id, opened_by, reason, evidence,
+       issue_category, desired_resolution, desired_resolution_note,
+       dispute_stage, respond_by_at
+     )
+     VALUES ($1, $2, $3, $4::jsonb, $5, $6, $7, 'awaiting_response', $8)
+     RETURNING id`,
+    [
+      contract.id,
+      freelancerId,
+      `Freelancer phản đối yêu cầu hủy: ${flResponse}`,
+      JSON.stringify(evidence),
+      "cancel_rejected",
+      "refund_100",
+      clientDetail || null,
+      respondBy,
+    ],
+  );
+  const disputeId = disputeRes.rows[0].id;
+
+  await db.query(
+    `INSERT INTO public.contract_dispute_messages (dispute_id, author_id, author_role, body, attachments)
+     VALUES ($1, NULL, 'system', $2, '[]'::jsonb)`,
+    [
+      disputeId,
+      `Client yêu cầu hủy & hoàn tiền (${cancelRequest.reason || "—"}). Freelancer phản đối. ` +
+        `Cả hai bên có ${SLA_DAYS.DISPUTE_EVIDENCE} ngày để bổ sung bằng chứng. Sau đó Admin phán xử chia tiền.`,
+    ],
+  );
+  await db.query(
+    `INSERT INTO public.contract_dispute_messages (dispute_id, author_id, author_role, body, attachments)
+     VALUES ($1, $2, 'client', $3, '[]'::jsonb)`,
+    [disputeId, cancelRequest.requested_by, clientDetail || cancelRequest.reason || "Yêu cầu hủy & hoàn tiền"],
+  );
+  await db.query(
+    `INSERT INTO public.contract_dispute_messages (dispute_id, author_id, author_role, body, attachments)
+     VALUES ($1, $2, 'freelancer', $3, '[]'::jsonb)`,
+    [disputeId, freelancerId, flResponse],
+  );
+  await db.query(
+    `UPDATE public.contracts SET status = 'disputed', updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
+    [contract.id],
+  );
+  await logWorkflowEvent(
+    db,
+    contract.id,
+    "cancel_rejection_dispute",
+    { disputeId, cancelRequestId: cancelRequest.id, respondBy },
+    freelancerId,
+  );
+  return disputeId;
 }
 
 async function processSlaReminders(db) {
@@ -356,7 +523,7 @@ async function processAutoAcceptDelivery(db) {
        FROM public.contracts c
        WHERE c.deleted_at IS NULL
          AND c.cancel_type IS NULL
-         AND c.workflow_stage = 'delivery'
+         AND c.workflow_stage IN ('execution', 'delivery')
          AND c.delivered_at IS NOT NULL
          AND c.accepted_at IS NULL
          AND c.delivery_review_deadline_at IS NOT NULL
@@ -377,10 +544,46 @@ async function processAutoAcceptDelivery(db) {
   }
 }
 
+async function processExpiredDisputeEvidence(db) {
+  try {
+    const res = await db.query(
+      `SELECT d.id, d.contract_id
+       FROM public.contract_disputes d
+       INNER JOIN public.contracts c ON c.id = d.contract_id
+       WHERE d.status = 'open'
+         AND d.dispute_stage = 'awaiting_response'
+         AND d.respond_by_at IS NOT NULL
+         AND d.respond_by_at < NOW()
+         AND c.deleted_at IS NULL`,
+    );
+    for (const row of res.rows) {
+      await db.query(
+        `UPDATE public.contract_disputes
+         SET dispute_stage = 'admin_review', updated_at = CURRENT_TIMESTAMP
+         WHERE id = $1`,
+        [row.id],
+      );
+      await db.query(
+        `INSERT INTO public.contract_dispute_messages (dispute_id, author_id, author_role, body, attachments)
+         VALUES ($1, NULL, 'system', $2, '[]'::jsonb)`,
+        [
+          row.id,
+          "Hết hạn nộp bằng chứng — tranh chấp chuyển cho Admin xem xét và phán quyết.",
+        ],
+      );
+      await logWorkflowEvent(db, row.contract_id, "dispute_evidence_expired", { disputeId: row.id });
+    }
+    return res.rowCount;
+  } catch (err) {
+    if (isMissingSchemaError(err)) return 0;
+    throw err;
+  }
+}
+
 async function processExpiredCancelRequests(db) {
   try {
     const res = await db.query(
-      `SELECT r.id AS request_id, r.contract_id, r.reason, c.*
+      `SELECT r.*, c.*
        FROM public.contract_cancel_requests r
        INNER JOIN public.contracts c ON c.id = r.contract_id
        WHERE r.status = 'pending'
@@ -393,13 +596,28 @@ async function processExpiredCancelRequests(db) {
         `UPDATE public.contract_cancel_requests
          SET status = 'auto_approved', resolved_at = CURRENT_TIMESTAMP
          WHERE id = $1`,
-        [row.request_id],
+        [row.id],
       );
-      await refundEscrowToClient(
+      const contract = {
+        id: row.contract_id,
+        client_id: row.client_id,
+        freelancer_id: row.freelancer_id,
+        agreed_price: row.agreed_price,
+        job_id: row.job_id,
+      };
+      const cancelRequest = {
+        client_refund_amount: row.client_refund_amount,
+        freelancer_amount: row.freelancer_amount,
+        platform_fee_amount: row.platform_fee_amount,
+        split_type: row.split_type,
+        legitimacy: row.legitimacy,
+      };
+      await settleCancelRefund(
         db,
-        row,
-        `Tự động hoàn tiền — freelancer không phản hồi yêu cầu hủy: ${row.reason}`,
+        contract,
+        cancelRequest,
         row.client_id,
+        `Tự động hoàn tiền — freelancer không phản hồi: ${row.reason}`,
       );
     }
     return res.rowCount;
@@ -414,11 +632,13 @@ async function runWorkflowSlaTick(db) {
     expiredPreEscrow: 0,
     autoAcceptDelivery: 0,
     autoRefunds: 0,
+    disputeEvidenceExpired: 0,
     reminders: true,
   };
   await processSlaReminders(db);
   summary.expiredPreEscrow = await processExpiredPreEscrow(db);
   summary.autoAcceptDelivery = await processAutoAcceptDelivery(db);
+  summary.disputeEvidenceExpired = await processExpiredDisputeEvidence(db);
   summary.autoRefunds = await processExpiredCancelRequests(db);
   return summary;
 }
@@ -436,9 +656,11 @@ module.exports = {
   markContractCancelled,
   closeJobIfAny,
   refundEscrowToClient,
+  settleCancelRefund,
   releasePaymentToFreelancer,
   acceptDeliveryInternal,
   loadPendingCancelRequest,
   loadOpenDispute,
+  openCancelRejectionDispute,
   runWorkflowSlaTick,
 };

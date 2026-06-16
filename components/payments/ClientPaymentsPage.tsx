@@ -19,6 +19,7 @@ import {
   type BillingProfile,
   type BillingTransaction,
 } from "@/lib/api/payments";
+import type { ApiError } from "@/lib/api/client";
 import { formatDate, formatVnd } from "@/lib/format";
 import { useClientIdentityVerification } from "@/hooks/useClientIdentityVerification";
 import ClientVerifyNotice from "@/components/hire/ClientVerifyNotice";
@@ -86,6 +87,7 @@ export default function ClientPaymentsPage() {
   const [error, setError] = useState("");
   const [savingProfile, setSavingProfile] = useState(false);
   const [depositBusy, setDepositBusy] = useState(false);
+  const [depositNeedsMethod, setDepositNeedsMethod] = useState(false);
   const [depositAmount, setDepositAmount] = useState(String(DEPOSIT_PRESETS[1]));
   const [profileForm, setProfileForm] = useState<BillingProfile>({
     companyName: "",
@@ -112,6 +114,9 @@ export default function ClientPaymentsPage() {
       const overview = await getClientBillingOverview();
       setData(overview);
       setProfileForm(overview.billingProfile);
+      if ((overview.billingMethods?.length ?? 0) > 0) {
+        setDepositNeedsMethod(false);
+      }
     } catch (err) {
       const message =
         err && typeof err === "object" && "message" in err
@@ -206,6 +211,7 @@ export default function ClientPaymentsPage() {
       return;
     }
     setDepositBusy(true);
+    setDepositNeedsMethod(false);
     try {
       const result = await createPaymentLink(amount);
       if (!result.checkoutUrl) {
@@ -214,10 +220,14 @@ export default function ClientPaymentsPage() {
       }
       window.location.href = result.checkoutUrl;
     } catch (err) {
+      const apiErr = err as ApiError;
       const message =
         err && typeof err === "object" && "message" in err
           ? String((err as { message: string }).message)
           : "Không thể tạo link nạp tiền.";
+      if (apiErr?.code === "BILLING_METHOD_REQUIRED") {
+        setDepositNeedsMethod(true);
+      }
       setToast({ message, variant: "error" });
     } finally {
       setDepositBusy(false);
@@ -377,6 +387,21 @@ export default function ClientPaymentsPage() {
                         "Thanh toán"
                       )}
                     </button>
+                    {depositNeedsMethod ? (
+                      <div className="payments-deposit__method-required" role="alert">
+                        <p>
+                          Bạn cần thêm phương thức thanh toán trước khi nạp tiền vào ví.
+                        </p>
+                        <button
+                          type="button"
+                          className="payments-btn payments-btn--secondary"
+                          disabled={paymentBlocked}
+                          onClick={() => setMethodModalOpen(true)}
+                        >
+                          Thêm phương thức thanh toán
+                        </button>
+                      </div>
+                    ) : null}
                   </div>
                 </div>
               </div>

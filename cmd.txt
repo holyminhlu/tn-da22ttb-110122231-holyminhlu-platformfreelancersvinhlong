@@ -1,0 +1,15 @@
+BAK-Script: pg_dump -U postgres -s -d vl_freelancer > D:/schema_only2.sql
+
+
+ACC Test
+Password@123.
+
+Client: client.vip@example.com
+
+Freelancer: freelancer.pro@example.com
+
+Nếu bạn muốn, bước tiếp theo mình có thể chuẩn hóa thêm tầng API:
+
+tạo apiGet/apiPost wrapper chung (retry, error mapping),
+tách endpoint theo domain (AUTH_ENDPOINTS, USER_ENDPOINTS, ...),
+thêm typing chặt hơn cho response/error theo từng module.

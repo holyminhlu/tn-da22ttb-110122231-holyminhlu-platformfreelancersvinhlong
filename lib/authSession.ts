@@ -20,7 +20,7 @@ export function toStoredUser(user: AuthUser): StoredUser {
     email: user.email,
     role: user.role,
     fullName: user.fullName || "",
-    avatarUrl: user.avatarUrl || "",
+    avatarUrl: user.avatarUrl?.trim() || "",
     completedJobs: user.completedJobs ?? 0,
   };
 }

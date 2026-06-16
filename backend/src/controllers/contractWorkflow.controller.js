@@ -20,11 +20,14 @@ const {
   markContractCancelled,
   closeJobIfAny,
   refundEscrowToClient,
+  settleCancelRefund,
   releasePaymentToFreelancer,
   acceptDeliveryInternal,
   loadPendingCancelRequest,
   loadOpenDispute,
+  openCancelRejectionDispute,
 } = require("../utils/workflowSla");
+const { computeRefundSettlement } = require("../utils/refundSettlement");
 const {
   notifyWorkflowAction,
   notifyServiceOrderCreated,
@@ -40,6 +43,22 @@ function fireWorkflowNotification(db, contract, action, actorId, extra = {}) {
 
 function terminalResponse(res) {
   return res.status(409).json({ message: "Đơn đã hủy, hết hạn hoặc đã kết thúc — không thể thực hiện thao tác này." });
+}
+
+const REFUND_PENDING_MESSAGE =
+  "Đơn đang tạm dừng — chờ xử lý yêu cầu hoàn tiền. Freelancer cần phản hồi (đồng ý hoặc phản đối) trước khi tiếp tục công việc.";
+
+async function rejectIfPendingCancelRequest(db, contractId, res) {
+  const pending = await loadPendingCancelRequest(db, contractId);
+  if (pending) {
+    await db.query("ROLLBACK");
+    res.status(409).json({
+      message: REFUND_PENDING_MESSAGE,
+      code: "REFUND_PENDING",
+    });
+    return true;
+  }
+  return false;
 }
 
 async function ensureClientPaymentAllowed(db, isClient, userId, res) {
@@ -70,6 +89,15 @@ function dbSchemaMigrationHint(error) {
   }
   if (msg.includes("contract_dispute_messages") || msg.includes("dispute_stage") || msg.includes("reason_code")) {
     return "Chạy backend/sql/refund_dispute_center.sql trên PostgreSQL.";
+  }
+  if (msg.includes("last_rejected_proposal_text") || msg.includes("proposal_rejection_note")) {
+    return "Chạy backend/sql/proposal_rejection_snapshot.sql trên PostgreSQL.";
+  }
+  if (msg.includes("client_refund_amount") || msg.includes("split_type")) {
+    return "Chạy backend/sql/refund_settlement.sql trên PostgreSQL.";
+  }
+  if (msg.includes("transactions_category_check") || msg.includes("transactions_category")) {
+    return "Chạy backend/sql/transactions_refund_categories.sql trên PostgreSQL.";
   }
   return "Chạy backend/sql/service_order_workflow.sql, client_billing_payments.sql và workflow_sla.sql trên PostgreSQL.";
 }
@@ -123,6 +151,10 @@ function parseRevisionLimit(revisionsText) {
   const match = String(revisionsText || "").match(/(\d+)/);
   if (match) return Math.min(20, Math.max(0, Number.parseInt(match[1], 10)));
   return 2;
+}
+
+function contractHasUnlimitedRevisions(contract) {
+  return Boolean(contract.job_id) && !contract.service_id;
 }
 
 function defaultMilestones(totalPrice) {
@@ -268,6 +300,21 @@ async function createFromServiceQuote(req, res) {
     return res.status(500).json({ message: "Không thể tạo yêu cầu báo giá." });
   } finally {
     db.release();
+  }
+}
+
+async function countProgressEntries(db, contractId) {
+  try {
+    const res = await db.query(
+      `SELECT COUNT(*)::int AS n
+       FROM public.contract_progress_entries
+       WHERE contract_id = $1 AND entry_type = 'progress'`,
+      [contractId],
+    );
+    return res.rows[0]?.n ?? 0;
+  } catch (err) {
+    if (err?.code === "42703" || err?.code === "42P01") return 0;
+    throw err;
   }
 }
 
@@ -441,7 +488,13 @@ async function patchContractWorkflow(req, res) {
       }
       await db.query(
         `UPDATE public.contracts
-         SET proposal_text = $1, proposal_budget = $2, proposal_submitted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+         SET proposal_text = $1,
+             proposal_budget = $2,
+             proposal_submitted_at = CURRENT_TIMESTAMP,
+             last_rejected_proposal_text = NULL,
+             last_rejected_proposal_at = NULL,
+             proposal_rejection_note = NULL,
+             updated_at = CURRENT_TIMESTAMP
          WHERE id = $3`,
         [proposalText, proposalBudget, contractId],
       );
@@ -484,16 +537,33 @@ async function patchContractWorkflow(req, res) {
         return res.status(409).json({ message: "Không có đề xuất để từ chối." });
       }
       const note = String(req.body?.reason || "").trim().slice(0, 2000);
+      const rejectedText = contract.proposal_text;
       await db.query(
         `UPDATE public.contracts
-         SET proposal_text = NULL, proposal_budget = NULL, proposal_submitted_at = NULL, updated_at = CURRENT_TIMESTAMP
+         SET proposal_text = NULL,
+             proposal_budget = NULL,
+             proposal_submitted_at = NULL,
+             last_rejected_proposal_text = $2,
+             last_rejected_proposal_at = CURRENT_TIMESTAMP,
+             proposal_rejection_note = $3,
+             updated_at = CURRENT_TIMESTAMP
          WHERE id = $1`,
-        [contractId],
+        [contractId, rejectedText, note || null],
       );
       await setStageDeadline(db, contractId, SLA_DAYS.AWAIT_PROPOSAL);
-      await logWorkflowEvent(db, contractId, "proposal_rejected", { note }, payload.sub);
+      await logWorkflowEvent(
+        db,
+        contractId,
+        "proposal_rejected",
+        {
+          note,
+          proposalText: rejectedText,
+          proposalBudget: contract.proposal_budget,
+        },
+        payload.sub,
+      );
       await db.query("COMMIT");
-      fireWorkflowNotification(db, contract, "reject_proposal", payload.sub);
+      fireWorkflowNotification(db, contract, "reject_proposal", payload.sub, { rejectionNote: note });
       return res.json({ message: "Đã từ chối đề xuất. Freelancer có thể gửi đề xuất mới." });
     }
 
@@ -595,6 +665,7 @@ async function patchContractWorkflow(req, res) {
         await db.query("ROLLBACK");
         return res.status(403).json({ message: "Chỉ freelancer cập nhật tiến độ." });
       }
+      if (await rejectIfPendingCancelRequest(db, contractId, res)) return;
       const progressNote = String(req.body?.progressNote || "").trim().slice(0, 4000);
       const demoUrl = String(req.body?.demoUrl || "").trim().slice(0, 2000) || null;
       if (!progressNote && !demoUrl) {
@@ -637,9 +708,10 @@ async function patchContractWorkflow(req, res) {
         await db.query("ROLLBACK");
         return res.status(403).json({ message: "Chỉ client yêu cầu chỉnh sửa." });
       }
+      if (await rejectIfPendingCancelRequest(db, contractId, res)) return;
       const used = Number(contract.revisions_used) || 0;
       const limit = Number(contract.revisions_limit) || 2;
-      if (used >= limit) {
+      if (!contractHasUnlimitedRevisions(contract) && used >= limit) {
         await db.query("ROLLBACK");
         return res.status(409).json({ message: "Đã hết lượt chỉnh sửa trong gói." });
       }
@@ -669,12 +741,16 @@ async function patchContractWorkflow(req, res) {
         await db.query("ROLLBACK");
         return res.status(403).json({ message: "Chỉ freelancer bàn giao." });
       }
+      if (await rejectIfPendingCancelRequest(db, contractId, res)) return;
+      if (stage !== "execution") {
+        await db.query("ROLLBACK");
+        return res.status(409).json({ message: "Chỉ bàn giao được ở giai đoạn thực hiện." });
+      }
       const deliveredAt = contract.delivered_at ? new Date(contract.delivered_at) : new Date();
       const reviewDeadline = addDays(deliveredAt, SLA_DAYS.DELIVERY_REVIEW);
       await db.query(
         `UPDATE public.contracts
-         SET workflow_stage = 'delivery',
-             delivered_at = COALESCE(delivered_at, CURRENT_TIMESTAMP),
+         SET delivered_at = COALESCE(delivered_at, CURRENT_TIMESTAMP),
              delivery_review_deadline_at = $2,
              revision_requested_at = NULL,
              updated_at = CURRENT_TIMESTAMP
@@ -689,13 +765,22 @@ async function patchContractWorkflow(req, res) {
       await logWorkflowEvent(db, contractId, "marked_delivered", { reviewDeadline }, payload.sub);
       await db.query("COMMIT");
       fireWorkflowNotification(db, contract, "mark_delivered", payload.sub);
-      return res.json({ message: "Đã gửi bàn giao cho Client nghiệm thu." });
+      return res.json({ message: "Đã gửi bàn giao. Client sẽ kiểm tra và nghiệm thu ở giai đoạn 3." });
     }
 
     if (action === "accept_delivery") {
       if (!isClient) {
         await db.query("ROLLBACK");
         return res.status(403).json({ message: "Chỉ client nghiệm thu." });
+      }
+      if (await rejectIfPendingCancelRequest(db, contractId, res)) return;
+      if (!contract.delivered_at) {
+        await db.query("ROLLBACK");
+        return res.status(409).json({ message: "Freelancer chưa bàn giao." });
+      }
+      if (!["execution", "delivery"].includes(stage)) {
+        await db.query("ROLLBACK");
+        return res.status(409).json({ message: "Không ở giai đoạn nghiệm thu bàn giao." });
       }
       if (!(await ensureClientPaymentAllowed(db, isClient, payload.sub, res))) {
         return;
@@ -729,28 +814,71 @@ async function patchContractWorkflow(req, res) {
       }
       const reasonCode = String(req.body?.reasonCode || "").trim().slice(0, 64) || null;
       const detail = String(req.body?.detail || "").trim().slice(0, 2000) || null;
-      const refundMethod = String(req.body?.refundMethod || "wallet").trim().toLowerCase() === "card"
-        ? "card"
-        : "wallet";
+      const refundMethod = "wallet";
       const reasonLegacy = String(req.body?.reason || "").trim().slice(0, 2000);
       const reasonLabel = reasonLegacy || detail || reasonCode || "Yêu cầu hủy";
       if (!reasonCode && !reasonLegacy && !detail) {
         await db.query("ROLLBACK");
         return res.status(400).json({ message: "Vui lòng chọn lý do hủy." });
       }
+      if (reasonCode === "other" && !detail) {
+        await db.query("ROLLBACK");
+        return res.status(400).json({ message: "Vui lòng mô tả lý do khác." });
+      }
+      if (reasonCode === "other" && detail.length < 10) {
+        await db.query("ROLLBACK");
+        return res.status(400).json({ message: "Lý do khác cần ít nhất 10 ký tự." });
+      }
+
+      const progressCount = await countProgressEntries(db, contractId);
+      const hasProgress = progressCount > 0 || Boolean(contract.progress_note?.trim());
+      const settlement = computeRefundSettlement({
+        agreedPrice: contract.agreed_price,
+        workflowStage: stage,
+        hasProgress,
+        reasonCode,
+      });
+
       const respondBy = addDays(new Date(), SLA_DAYS.CANCEL_RESPONSE);
       await db.query(
         `INSERT INTO public.contract_cancel_requests (
-           contract_id, requested_by, reason, reason_code, detail, refund_method, respond_by_at
+           contract_id, requested_by, reason, reason_code, detail, refund_method, respond_by_at,
+           legitimacy, split_type, penalty_percent, work_done_percent,
+           client_refund_amount, freelancer_amount, platform_fee_amount,
+           workflow_stage_at_request, had_progress_at_request
          )
-         VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-        [contractId, payload.sub, reasonLabel, reasonCode, detail, refundMethod, respondBy],
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)`,
+        [
+          contractId,
+          payload.sub,
+          reasonLabel,
+          reasonCode,
+          detail,
+          refundMethod,
+          respondBy,
+          settlement.legitimacy,
+          settlement.splitType,
+          settlement.penaltyPercent,
+          settlement.workDonePercent,
+          settlement.clientAmount,
+          settlement.freelancerAmount,
+          settlement.platformFeeAmount,
+          stage,
+          hasProgress,
+        ],
       );
       await logWorkflowEvent(
         db,
         contractId,
         "cancel_refund_requested",
-        { reason: reasonLabel, reasonCode, detail, refundMethod, respondBy },
+        {
+          reason: reasonLabel,
+          reasonCode,
+          detail,
+          refundMethod,
+          respondBy,
+          settlement,
+        },
         payload.sub,
       );
       await db.query("COMMIT");
@@ -779,7 +907,16 @@ async function patchContractWorkflow(req, res) {
            WHERE id = $2`,
           [responseNote || "Đồng ý hủy", pending.id],
         );
-        await refundEscrowToClient(db, contract, pending.reason, payload.sub);
+        const fullPending = (
+          await db.query(`SELECT * FROM public.contract_cancel_requests WHERE id = $1`, [pending.id])
+        ).rows[0];
+        await settleCancelRefund(
+          db,
+          contract,
+          fullPending || pending,
+          payload.sub,
+          pending.reason,
+        );
       } else {
         await db.query(
           `UPDATE public.contract_cancel_requests
@@ -787,16 +924,40 @@ async function patchContractWorkflow(req, res) {
            WHERE id = $2`,
           [responseNote || "Phản đối yêu cầu hủy", pending.id],
         );
-        await logWorkflowEvent(db, contractId, "cancel_refund_rejected", { responseNote }, payload.sub);
+        const fullPending = (
+          await db.query(`SELECT * FROM public.contract_cancel_requests WHERE id = $1`, [pending.id])
+        ).rows[0];
+        const disputeId = await openCancelRejectionDispute(
+          db,
+          contract,
+          fullPending || pending,
+          payload.sub,
+          responseNote,
+        );
+        await logWorkflowEvent(
+          db,
+          contractId,
+          "cancel_refund_rejected",
+          { responseNote, disputeId },
+          payload.sub,
+        );
       }
       await db.query("COMMIT");
       fireWorkflowNotification(db, contract, "respond_cancel_request", payload.sub, { agree });
+      if (!agree) {
+        fireWorkflowNotification(db, contract, "cancel_rejection_dispute", payload.sub, {
+          evidenceDays: SLA_DAYS.DISPUTE_EVIDENCE,
+        });
+      }
       return res.json({
-        message: agree ? "Đã đồng ý hủy và hoàn tiền cho Client." : "Đã phản đối yêu cầu hủy.",
+        message: agree
+          ? "Đã đồng ý hủy và hoàn tiền cho Client."
+          : "Đã phản đối — đơn chuyển sang tranh chấp. Admin sẽ phán xử chia tiền.",
       });
     }
 
     if (action === "open_dispute") {
+      if (await rejectIfPendingCancelRequest(db, contractId, res)) return;
       const issueCategory = String(req.body?.issueCategory || "").trim().slice(0, 64);
       const desiredResolution = String(req.body?.desiredResolution || "").trim().slice(0, 64);
       const resolutionNote = String(req.body?.resolutionNote || "").trim().slice(0, 2000);
@@ -958,6 +1119,10 @@ async function listServiceOrders(req, res) {
            WHEN c.client_id = $1 THEN fup.full_name
            ELSE cup.full_name
          END AS counterparty_name,
+         CASE
+           WHEN c.client_id = $1 THEN fup.avatar_url
+           ELSE cup.avatar_url
+         END AS counterparty_avatar_url,
          CASE
            WHEN c.client_id = $1 THEN 'client'
            ELSE 'freelancer'

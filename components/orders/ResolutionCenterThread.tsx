@@ -75,6 +75,10 @@ function DisputeAttachments({ urls }: { urls: string[] }) {
   );
 }
 
+function isCenteredRole(role: string) {
+  return role === "admin" || role === "system";
+}
+
 export default function ResolutionCenterThread({
   messages,
   respondByAt,
@@ -89,7 +93,20 @@ export default function ResolutionCenterThread({
   return (
     <div className="resolution-thread">
       <header className="resolution-thread__head">
-        <h4 className="resolution-thread__title">Trung tâm giải quyết tranh chấp</h4>
+        <div className="resolution-thread__head-top">
+          <h4 className="resolution-thread__title">Trung tâm giải quyết tranh chấp</h4>
+          <div className="resolution-thread__legend" aria-label="Màu theo vai trò">
+            <span className="resolution-thread__legend-item resolution-thread__legend-item--client">
+              Khách hàng
+            </span>
+            <span className="resolution-thread__legend-item resolution-thread__legend-item--freelancer">
+              Freelancer
+            </span>
+            <span className="resolution-thread__legend-item resolution-thread__legend-item--admin">
+              Admin
+            </span>
+          </div>
+        </div>
         {countdown && disputeOpen ? (
           <p className="resolution-thread__countdown" role="status">
             Hạn phản hồi: <strong>{countdown}</strong>
@@ -114,19 +131,35 @@ export default function ResolutionCenterThread({
             const attachments = parseAttachments(msg.attachments);
             const displayName = msg.author_name?.trim() || roleLabel(msg.author_role);
 
+            const centered = isCenteredRole(msg.author_role);
+            const rowClass = centered
+              ? "resolution-thread__row resolution-thread__row--center"
+              : mine
+                ? "resolution-thread__row resolution-thread__row--mine"
+                : "resolution-thread__row resolution-thread__row--other";
+
             return (
-              <article
-                key={msg.id}
-                className={`resolution-thread__msg${mine ? " resolution-thread__msg--mine" : ""} resolution-thread__msg--${msg.author_role}`}
-              >
-                <header className="resolution-thread__msg-head">
-                  <strong>{displayName}</strong>
-                  <span className="resolution-thread__msg-role">{roleLabel(msg.author_role)}</span>
-                  <time dateTime={msg.created_at}>{formatDate(msg.created_at)}</time>
-                </header>
-                <p className="resolution-thread__msg-body">{msg.body}</p>
-                <DisputeAttachments urls={attachments} />
-              </article>
+              <div key={msg.id} className={rowClass}>
+                <article
+                  className={`resolution-thread__bubble resolution-thread__bubble--${msg.author_role}${
+                    mine ? " resolution-thread__bubble--mine" : ""
+                  }`}
+                >
+                  <header
+                    className={`resolution-thread__msg-head${mine ? " resolution-thread__msg-head--mine" : ""}`}
+                  >
+                    <span
+                      className={`resolution-thread__msg-role resolution-thread__msg-role--${msg.author_role}`}
+                    >
+                      {roleLabel(msg.author_role)}
+                    </span>
+                    {!mine ? <strong>{displayName}</strong> : null}
+                    <time dateTime={msg.created_at}>{formatDate(msg.created_at)}</time>
+                  </header>
+                  <p className="resolution-thread__msg-body">{msg.body}</p>
+                  <DisputeAttachments urls={attachments} />
+                </article>
+              </div>
             );
           })
         )}

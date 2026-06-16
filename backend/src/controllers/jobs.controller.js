@@ -1069,9 +1069,9 @@ async function patchJobQuote(req, res) {
       const contractResult = await dbClient.query(
         `INSERT INTO public.contracts (
            job_id, service_id, client_id, freelancer_id, agreed_price, status,
-           workflow_stage, escrow_status
+           workflow_stage, escrow_status, revisions_limit
          )
-         VALUES ($1, NULL, $2, $3, $4, 'pending', 'selection', 'none')
+         VALUES ($1, NULL, $2, $3, $4, 'pending', 'selection', 'none', 0)
          RETURNING id, job_id, agreed_price, status, workflow_stage, created_at`,
         [quote.job_id, quote.client_id, quote.freelancer_id, agreedPrice],
       );

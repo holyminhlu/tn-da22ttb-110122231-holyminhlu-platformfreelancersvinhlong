@@ -97,6 +97,8 @@ export type FreelancerTransaction = {
   jobId: string | null;
   clientId: string | null;
   contractId: string | null;
+  withdrawalStatus?: "PENDING_AUTH" | "PROCESSING" | "SUCCEEDED" | "FAILED" | "CANCELLED" | null;
+  withdrawalBankName?: string | null;
 };
 
 export type FreelancerWithdrawalPinStatus = {

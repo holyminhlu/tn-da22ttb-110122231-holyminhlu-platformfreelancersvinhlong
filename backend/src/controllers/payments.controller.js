@@ -368,6 +368,8 @@ async function loadFilterOptions(db, userId, transactions) {
 function mapFreelancerTransactionRow(row) {
   const amount = Number(row.amount) || 0;
   const signedAmount = row.direction === "out" ? -amount : amount;
+  const withdrawalStatus = row.withdrawal_status || null;
+  const withdrawalBankName = row.withdrawal_bank_name || null;
   return {
     id: row.id,
     occurredAt: row.occurred_at || row.created_at,
@@ -380,6 +382,8 @@ function mapFreelancerTransactionRow(row) {
     jobId: row.job_id || null,
     clientId: row.client_id || null,
     contractId: row.contract_id || null,
+    withdrawalStatus,
+    withdrawalBankName,
   };
 }
 
@@ -456,10 +460,16 @@ async function loadFreelancerTransactionsFromTable(db, userId) {
        COALESCE(j.title, t.description, 'Giao dịch') AS project_title,
        cup.full_name AS client_name,
        NULL::text AS invoice_number,
-       j.client_id
+       j.client_id,
+       w.status AS withdrawal_status,
+       w.bank_name AS withdrawal_bank_name
      FROM public.transactions t
      LEFT JOIN public.jobs j ON j.id = t.job_id
      LEFT JOIN public.user_profiles cup ON cup.user_id = j.client_id
+     LEFT JOIN public.freelancer_withdrawal_orders w
+       ON w.user_id = t.user_id
+      AND t.category = 'withdraw'
+      AND w.reference_id = REPLACE(COALESCE(t.description, ''), 'Rút tiền về ', '')
      WHERE t.user_id = $1
      ORDER BY COALESCE(t.occurred_at, t.created_at) DESC
      LIMIT 200`,
@@ -1213,6 +1223,14 @@ async function createPaymentLink(req, res) {
   try {
     if (!(await assertClientPaymentAllowed(db, role, payload.sub, res))) {
       return;
+    }
+    const billingMethods = await loadBillingMethods(db, payload.sub);
+    if (!billingMethods.length) {
+      return res.status(409).json({
+        message:
+          "Bạn chưa có phương thức thanh toán. Vui lòng thêm thẻ/phương thức thanh toán trước khi nạp tiền.",
+        code: "BILLING_METHOD_REQUIRED",
+      });
     }
 
     const result = await createPayosPaymentLink(db, payload.sub, amount);

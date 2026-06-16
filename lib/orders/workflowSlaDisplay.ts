@@ -57,6 +57,17 @@ export function isOrderExpiredOrCancelled(
   return s === "cancelled";
 }
 
+/** Freelancer đã bàn giao, client chưa nghiệm thu — client vẫn ở giai đoạn 3. */
+export function isAwaitingClientAcceptance(order: {
+  workflow_stage?: string | null;
+  delivered_at?: string | null;
+  accepted_at?: string | null;
+}): boolean {
+  if (!order.delivered_at || order.accepted_at) return false;
+  const stage = String(order.workflow_stage || "").toLowerCase();
+  return stage === "execution" || stage === "delivery";
+}
+
 type OrderDeadlineFields = {
   status: string;
   cancel_type?: string | null;
@@ -73,7 +84,11 @@ export function orderEffectiveDeadline(order: OrderDeadlineFields): string | nul
   if (isOrderExpiredOrCancelled(order.status, order.cancel_type)) return null;
 
   const stage = String(order.workflow_stage || "").toLowerCase();
-  if (stage === "delivery" && order.delivered_at && order.delivery_review_deadline_at) {
+  if (
+    (stage === "execution" || stage === "delivery") &&
+    order.delivered_at &&
+    order.delivery_review_deadline_at
+  ) {
     return order.delivery_review_deadline_at;
   }
   if (stage === "escrow") {

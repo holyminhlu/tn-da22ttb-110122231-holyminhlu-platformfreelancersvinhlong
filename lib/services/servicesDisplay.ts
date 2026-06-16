@@ -40,7 +40,13 @@ export function classifyServiceOrder(order: ServiceOrderListItem): ServiceOrderB
   const escrow = String(order.escrow_status || "").toLowerCase();
 
   if (stage === "completion" && escrow === "released") return "completed";
-  if (stage === "delivery" && order.delivered_at) return "awaiting_review";
+  if (
+    order.delivered_at &&
+    !order.accepted_at &&
+    (stage === "execution" || stage === "delivery")
+  ) {
+    return "awaiting_review";
+  }
   if (stage === "execution" || (stage === "escrow" && escrow === "funded")) return "in_progress";
   if (stage === "selection" && order.proposal_text && escrow === "funded") return "new";
   if (stage === "selection" && order.proposal_text) return "new";

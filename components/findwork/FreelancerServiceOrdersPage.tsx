@@ -23,6 +23,7 @@ import {
 } from "@/lib/orders/serviceOrderDisplay";
 import { orderDeadlineSubtitle } from "@/lib/orders/workflowSlaDisplay";
 import { formatDate } from "@/lib/format";
+import UserAvatar from "@/components/ui/UserAvatar";
 import FreelancerWorkShell from "./FreelancerWorkShell";
 import "./findwork-orders.css";
 
@@ -123,7 +124,7 @@ export default function FreelancerServiceOrdersPage() {
               const deadlineLine = orderDeadlineSubtitle(order);
               const urgent =
                 (order.workflow_stage === "selection" && !order.proposal_text) ||
-                (order.workflow_stage === "delivery" && !order.delivered_at);
+                (order.workflow_stage === "execution" && !order.delivered_at);
 
               const briefPreview = orderCardPreviewText(order.client_brief);
               const statusTone = orderCardStatusTone(order, true);
@@ -139,10 +140,18 @@ export default function FreelancerServiceOrdersPage() {
                     className={`fw-orders__card ${orderCardToneClass(statusTone)}${urgent ? " fw-orders__card--urgent" : ""}`}
                   >
                     <div className="fw-orders__card-top">
+                      <UserAvatar
+                        src={order.counterparty_avatar_url}
+                        name={order.counterparty_name}
+                        size={40}
+                        className="fw-orders__card-avatar"
+                      />
+                      <div className="fw-orders__card-top-main">
                       <h2 className="fw-orders__card-title">
                         {orderCardTitle(order.service_title, order.job_title, "Hợp đồng")}
                       </h2>
                       <span className={orderStatusBadgeClass(badgeTone)}>{hint}</span>
+                      </div>
                     </div>
                     <p className="fw-orders__card-meta">
                       Khách hàng: <strong>{order.counterparty_name || "—"}</strong>

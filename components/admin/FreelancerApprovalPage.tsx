@@ -149,10 +149,6 @@ export default function FreelancerApprovalPage() {
     <div className="admin-page">
       <header className="admin-page__head">
         <h1 className="admin-page__title">Duyệt xác minh danh tính</h1>
-        <p className="admin-page__lead">
-          Client và Freelancer phải hoàn thành 3 bước (thông tin nhận dạng, thẻ tín dụng, gửi xem
-          xét) trước khi admin duyệt. Freelancer cần được duyệt để báo giá và thao tác với job.
-        </p>
       </header>
 
       {toast ? (

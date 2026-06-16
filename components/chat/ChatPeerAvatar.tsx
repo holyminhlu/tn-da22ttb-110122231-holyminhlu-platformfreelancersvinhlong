@@ -1,7 +1,7 @@
 "use client";
 
-import Image from "next/image";
 import FreelancerAvatarFrame from "@/components/freelancer/FreelancerAvatarFrame";
+import UserAvatar from "@/components/ui/UserAvatar";
 import type { ChatConversation } from "@/lib/api/chat";
 import { resolveAvatarSrc } from "@/lib/authSession";
 
@@ -18,7 +18,6 @@ export default function ChatPeerAvatar({
   size,
   className,
   imgClassName,
-  fallbackClassName,
 }: ChatPeerAvatarProps) {
   const avatarSrc = resolveAvatarSrc(conversation.peerAvatarUrl);
   const initial = (conversation.peerName || "?").charAt(0).toUpperCase();
@@ -40,18 +39,13 @@ export default function ChatPeerAvatar({
 
   return (
     <div className={className} aria-hidden>
-      {avatarSrc ? (
-        <Image
-          src={avatarSrc}
-          alt=""
-          width={size}
-          height={size}
-          className={imgClassName}
-          unoptimized
-        />
-      ) : (
-        <span className={fallbackClassName}>{initial}</span>
-      )}
+      <UserAvatar
+        src={conversation.peerAvatarUrl}
+        name={conversation.peerName}
+        size={size}
+        className={imgClassName}
+        imgClassName={imgClassName}
+      />
     </div>
   );
 }
