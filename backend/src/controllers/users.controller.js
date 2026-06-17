@@ -1075,6 +1075,85 @@ async function changePassword(req, res) {
   }
 }
 
+function toInt(value) {
+  const n = Number(value);
+  return Number.isFinite(n) ? Math.max(0, Math.round(n)) : 0;
+}
+
+function toMoney(value) {
+  const n = Number(value);
+  return Number.isFinite(n) ? Math.max(0, n) : 0;
+}
+
+async function getPublicHomeStats(_req, res) {
+  const db = await pool.connect();
+  try {
+    // Ưu tiên dữ liệu có released_at để phản ánh giao dịch đã giải ngân thực.
+    let statsQuery = `
+      SELECT
+        (SELECT COUNT(*)::int FROM public.users u
+         WHERE u.deleted_at IS NULL AND LOWER(COALESCE(u.role, '')) = 'client') AS total_clients,
+        (SELECT COUNT(*)::int FROM public.contracts c
+         WHERE c.deleted_at IS NULL AND c.released_at IS NOT NULL) AS paid_invoices,
+        (SELECT COALESCE(SUM(c.agreed_price), 0) FROM public.contracts c
+         WHERE c.deleted_at IS NULL AND c.released_at IS NOT NULL) AS paid_to_freelancers,
+        (SELECT
+           CASE
+             WHEN COUNT(*) = 0 THEN 0
+             ELSE ROUND(100.0 * SUM(CASE WHEN cr.rating >= 4 THEN 1 ELSE 0 END) / COUNT(*), 0)::int
+           END
+         FROM public.contract_reviews cr) AS satisfaction_rate
+    `;
+
+    let rows;
+    try {
+      const result = await db.query(statsQuery);
+      rows = result.rows;
+    } catch (error) {
+      if (error.code !== "42703") throw error;
+      // Fallback cho DB cũ chưa có released_at.
+      statsQuery = `
+        SELECT
+          (SELECT COUNT(*)::int FROM public.users u
+           WHERE u.deleted_at IS NULL AND LOWER(COALESCE(u.role, '')) = 'client') AS total_clients,
+          (SELECT COUNT(*)::int FROM public.contracts c
+           WHERE c.deleted_at IS NULL AND LOWER(COALESCE(c.status, '')) = 'completed') AS paid_invoices,
+          (SELECT COALESCE(SUM(c.agreed_price), 0) FROM public.contracts c
+           WHERE c.deleted_at IS NULL AND LOWER(COALESCE(c.status, '')) = 'completed') AS paid_to_freelancers,
+          (SELECT
+             CASE
+               WHEN COUNT(*) = 0 THEN 0
+               ELSE ROUND(100.0 * SUM(CASE WHEN cr.rating >= 4 THEN 1 ELSE 0 END) / COUNT(*), 0)::int
+             END
+           FROM public.contract_reviews cr) AS satisfaction_rate
+      `;
+      const result = await db.query(statsQuery);
+      rows = result.rows;
+    }
+
+    const row = rows[0] || {};
+    return res.json({
+      stats: {
+        totalClients: toInt(row.total_clients),
+        paidInvoices: toInt(row.paid_invoices),
+        paidToFreelancers: toMoney(row.paid_to_freelancers),
+        satisfactionRate: Math.min(100, toInt(row.satisfaction_rate)),
+      },
+      updatedAt: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error("getPublicHomeStats failed:", error.message);
+    if (error.code === "42P01") {
+      return res.status(503).json({
+        message: "Thiếu bảng dữ liệu thống kê. Chạy backend/sql/client_billing_payments.sql và contracts_reviews.sql.",
+      });
+    }
+    return res.status(500).json({ message: "Không thể tải thống kê trang chủ." });
+  } finally {
+    db.release();
+  }
+}
+
 module.exports = {
   updateAvatar,
   updateProfile,
@@ -1088,4 +1167,5 @@ module.exports = {
   listMyFeedback,
   changeEmail,
   changePassword,
+  getPublicHomeStats,
 };

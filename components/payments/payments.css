@@ -383,6 +383,7 @@
   white-space: nowrap;
 }
 
+
 .payments-deposit__method-required {
   grid-column: 1 / -1;
   display: flex;
@@ -486,6 +487,7 @@
     justify-self: stretch;
     width: 100%;
   }
+
 }
 
 .payments-chip {
@@ -544,6 +546,7 @@
 .payments-btn--with-icon {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.4rem;
 }
 

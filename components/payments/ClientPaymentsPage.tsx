@@ -32,19 +32,56 @@ import PaymentMethodIcon from "@/components/payments/PaymentMethodIcon";
 import PaymentMethodMenu from "@/components/payments/PaymentMethodMenu";
 import PaymentsSectionTitle from "@/components/payments/PaymentsSectionTitle";
 import PaymentsToast from "@/components/payments/PaymentsToast";
+import FreelancerPayoutAccountPanel from "@/components/payments/FreelancerPayoutAccountPanel";
+import FreelancerWithdrawModal from "@/components/payments/FreelancerWithdrawModal";
+import { BankNameWithLogo } from "@/components/payments/BankBadgeIcon";
 import {
   validateBillingProfile,
   type BillingProfileErrors,
   type BillingProfileField,
 } from "@/lib/payments/billingProfileValidation";
 import { groupClientBillingTransactions } from "@/lib/payments/clientTransactionDisplay";
+import { MIN_WITHDRAW_VND, WITHDRAW_AMOUNT_PRESETS } from "@/lib/payments/withdrawLimits";
 import { FaCalendarAlt, FaChartPie, FaHistory, FaPlus, FaSpinner } from "react-icons/fa";
 import "@/components/hire/hire.css";
 import "@/components/dashboard/dashboardPagination.css";
 import "./payments.css";
+import "./freelancer-payments.css";
 
 const TX_PAGE_SIZE = 8;
 const DEPOSIT_PRESETS = [500_000, 1_000_000, 2_000_000, 5_000_000];
+
+function withdrawalStatusLabel(status?: string) {
+  switch (status) {
+    case "PENDING_AUTH":
+      return "Chờ xác nhận";
+    case "PROCESSING":
+      return "Đang xử lý";
+    case "SUCCEEDED":
+      return "Thành công";
+    case "FAILED":
+      return "Bị từ chối";
+    case "CANCELLED":
+      return "Đã hủy";
+    default:
+      return "—";
+  }
+}
+
+function withdrawalStatusClass(status?: string) {
+  switch (status) {
+    case "SUCCEEDED":
+      return "fl-payments__tx-status fl-payments__tx-status--ok";
+    case "FAILED":
+    case "CANCELLED":
+      return "fl-payments__tx-status fl-payments__tx-status--fail";
+    case "PENDING_AUTH":
+    case "PROCESSING":
+      return "fl-payments__tx-status fl-payments__tx-status--pending";
+    default:
+      return "fl-payments__tx-status";
+  }
+}
 
 function monthKey(iso: string) {
   const d = new Date(iso);
@@ -89,6 +126,8 @@ export default function ClientPaymentsPage() {
   const [depositBusy, setDepositBusy] = useState(false);
   const [depositNeedsMethod, setDepositNeedsMethod] = useState(false);
   const [depositAmount, setDepositAmount] = useState(String(DEPOSIT_PRESETS[1]));
+  const [withdrawOpen, setWithdrawOpen] = useState(false);
+  const [withdrawAmount, setWithdrawAmount] = useState(String(WITHDRAW_AMOUNT_PRESETS[1]));
   const [profileForm, setProfileForm] = useState<BillingProfile>({
     companyName: "",
     companyAddress: "",
@@ -237,6 +276,52 @@ export default function ClientPaymentsPage() {
   const activeDepositPreset = DEPOSIT_PRESETS.find(
     (preset) => Number(depositAmount) === preset,
   );
+  const withdrawNumeric = Number(withdrawAmount.replace(/\D/g, "") || 0);
+  const activeWithdrawPreset = WITHDRAW_AMOUNT_PRESETS.includes(
+    withdrawNumeric as (typeof WITHDRAW_AMOUNT_PRESETS)[number],
+  )
+    ? withdrawNumeric
+    : null;
+
+  function openWithdrawFlow() {
+    if (!data?.payoutProfile?.isConfigured) {
+      setToast({ message: "Bạn chưa liên kết tài khoản ngân hàng nhận tiền.", variant: "error" });
+      return;
+    }
+    if (!data.withdrawalPin?.isConfigured) {
+      setToast({ message: "Bạn chưa thiết lập mã PIN rút tiền.", variant: "error" });
+      return;
+    }
+    if (withdrawNumeric < MIN_WITHDRAW_VND) {
+      setToast({ message: `Số tiền rút tối thiểu ${formatVnd(MIN_WITHDRAW_VND)}.`, variant: "error" });
+      return;
+    }
+    if (withdrawNumeric > data.account.balance) {
+      setToast({ message: `Số dư khả dụng không đủ (${formatVnd(data.account.balance)}).`, variant: "error" });
+      return;
+    }
+    setWithdrawOpen(true);
+  }
+
+  function handleWithdrawCompleted(account: {
+    balance: number;
+    currency: string;
+    pendingBalance?: number;
+    totalEarned?: number;
+  }) {
+    setData((prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        account: {
+          ...prev.account,
+          balance: account.balance,
+          currency: account.currency,
+        },
+      };
+    });
+    void load();
+  }
 
   function updateProfileField(field: BillingProfileField, value: string) {
     setProfileForm((prev) => ({ ...prev, [field]: value }));
@@ -384,7 +469,7 @@ export default function ClientPaymentsPage() {
                           Đang xử lý...
                         </>
                       ) : (
-                        "Thanh toán"
+                        "Nạp tiền"
                       )}
                     </button>
                     {depositNeedsMethod ? (
@@ -406,6 +491,95 @@ export default function ClientPaymentsPage() {
                 </div>
               </div>
             </section>
+
+            <section className="payments-panel fl-payments__withdraw-panel">
+              <div className="payments-panel__head">
+                <h2 className="payments-panel__title">Rút tiền về tài khoản ngân hàng</h2>
+              </div>
+              <div className="payments-deposit-card fl-payments__withdraw-card">
+                <div className="payments-deposit-card__head">
+                  <h3 className="payments-deposit-card__title">Yêu cầu rút tiền</h3>
+                  <p className="payments-deposit-card__hint">
+                    Dành cho số dư ví khả dụng, tối thiểu {formatVnd(MIN_WITHDRAW_VND)}.
+                  </p>
+                </div>
+                <div className="payments-deposit__controls">
+                  <PaymentsMoneyInput
+                    id="client-withdraw-amount"
+                    className="payments-money-input--deposit"
+                    value={withdrawAmount}
+                    onChange={setWithdrawAmount}
+                    disabled={data.account.balance < MIN_WITHDRAW_VND || paymentBlocked}
+                    aria-label="Số tiền rút về ngân hàng"
+                  />
+                  <div className="payments-deposit__presets">
+                    {WITHDRAW_AMOUNT_PRESETS.map((preset) => (
+                      <button
+                        key={preset}
+                        type="button"
+                        className={
+                          activeWithdrawPreset === preset
+                            ? "payments-chip payments-chip--active"
+                            : "payments-chip"
+                        }
+                        aria-pressed={activeWithdrawPreset === preset}
+                        disabled={preset > data.account.balance || paymentBlocked}
+                        onClick={() => setWithdrawAmount(String(preset))}
+                      >
+                        {formatVnd(preset)}
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    className="payments-btn payments-btn--primary payments-deposit__submit"
+                    disabled={data.account.balance < MIN_WITHDRAW_VND || paymentBlocked}
+                    onClick={openWithdrawFlow}
+                  >
+                    Rút tiền
+                  </button>
+                </div>
+              </div>
+            </section>
+
+            {data.payoutProfile ? (
+              <section className="payments-panel" id="payout-account">
+                <div className="payments-panel__head">
+                  <h2 className="payments-panel__title">Tài khoản nhận tiền</h2>
+                </div>
+                <FreelancerPayoutAccountPanel
+                  profile={data.payoutProfile}
+                  onUpdated={load}
+                  audience="client"
+                />
+              </section>
+            ) : null}
+
+            {(data.activeWithdrawals?.length ?? 0) > 0 ? (
+              <section className="payments-panel" id="client-withdrawals">
+                <h2 className="payments-panel__title">Yêu cầu rút tiền đang xử lý</h2>
+                <ul className="fl-payments__withdraw-list">
+                  {data.activeWithdrawals?.map((item) => (
+                    <li key={item.id} className="fl-payments__withdraw-item">
+                      <div className="fl-payments__withdraw-item-main">
+                        <p className="fl-payments__withdraw-item-amount">{formatVnd(item.amount)}</p>
+                        <p className="fl-payments__withdraw-item-meta">
+                          <BankNameWithLogo
+                            bankName={item.bankName}
+                            size={20}
+                            suffix={`${item.accountLast4 ? ` · ****${item.accountLast4}` : ""} · ${formatDate(item.createdAt)}`}
+                          />
+                        </p>
+                        <p className="fl-payments__withdraw-item-ref">{item.referenceId}</p>
+                      </div>
+                      <span className={withdrawalStatusClass(item.status)}>
+                        {withdrawalStatusLabel(item.status)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ) : null}
 
             <section className="payments-panel">
               <div className="payments-panel__head">
@@ -746,6 +920,18 @@ export default function ClientPaymentsPage() {
               setToast({ message: "Đã thêm phương thức thanh toán.", variant: "success" });
               void load();
             }}
+          />
+        ) : null}
+
+        {data?.payoutProfile && data?.withdrawalPin ? (
+          <FreelancerWithdrawModal
+            open={withdrawOpen}
+            balance={data.account.balance}
+            initialAmount={withdrawAmount}
+            payoutProfile={data.payoutProfile}
+            withdrawalPin={data.withdrawalPin}
+            onClose={() => setWithdrawOpen(false)}
+            onCompleted={handleWithdrawCompleted}
           />
         ) : null}
 

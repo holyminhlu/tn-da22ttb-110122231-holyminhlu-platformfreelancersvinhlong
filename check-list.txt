@@ -1,3 +1,10 @@
-Lỗi hiển thị avatar gg của c bên phía F hoặc có thể nhiều hơn do chưa rà soát
-check và test loi cho file routes
-ấn vào chi tiết card trong /manage/phong-lam-viec thì ra trang của F
+*check và test loi cho file routes
+*ấn vào chi tiết card trong /manage/phong-lam-viec thì ra trang của F
+Lam ro logic cac luong giu tien trong du an
+Tang cuong do uy tin cho website (sap hoan thanh)
+thiet ke chuc nang rut tien cho F va lam sao cho F co niem tin o du an
+
+Chuc nag bao mat: spam API login,...
+Chuc nang dat lai mat khau bang email
+Chuc nang AI vao du an, goi y AI
+LM noi bat cac yeu to lien quan den Vinh Long

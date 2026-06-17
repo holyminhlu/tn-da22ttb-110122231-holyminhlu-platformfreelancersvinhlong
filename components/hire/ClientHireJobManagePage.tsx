@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { FaArrowLeft, FaBriefcase, FaCheckCircle, FaCommentDots } from "react-icons/fa";
+import { FaArrowLeft, FaBriefcase, FaCheckCircle, FaCommentDots, FaListUl } from "react-icons/fa";
+import WorkDetailGallery from "@/components/findwork/WorkDetailGallery";
+import JobSiteMapPanel from "@/components/jobs/JobSiteMapPanel";
 import FreelancerChatWidget from "@/components/chat/FreelancerChatWidget";
 import FreelancerAvatarFrame from "@/components/freelancer/FreelancerAvatarFrame";
 import { listMyContracts } from "@/lib/api/contracts";
@@ -16,7 +18,7 @@ import {
 import { getJob, type JobListing } from "@/lib/api/jobs";
 import { getUserInitials, resolveAvatarSrc } from "@/lib/authSession";
 import { formatDate, formatVnd } from "@/lib/format";
-import { jobStatusLabel, jobStatusTone } from "@/lib/jobsDisplay";
+import { jobStatusLabel, jobStatusTone, parseJobImages, parseJobTags } from "@/lib/jobsDisplay";
 import {
   formatQuoteAmount,
   quoteClientActions,
@@ -99,6 +101,13 @@ export default function ClientHireJobManagePage() {
 
   const pendingCount = quotes.filter((q) => String(q.status).toLowerCase() === "pending").length;
 
+  const jobImages = useMemo(
+    () => (job ? parseJobImages(job.images) : []),
+    [job],
+  );
+  const jobTags = useMemo(() => (job ? parseJobTags(job.tags) : []), [job]);
+  const jobCategory = job?.category?.trim() || null;
+
   async function handleQuoteAction(quoteId: string, action: PatchJobQuoteAction) {
     setActionError("");
     setBusyQuoteId(quoteId);
@@ -169,7 +178,7 @@ export default function ClientHireJobManagePage() {
                 </dl>
               </div>
               <div className="hire-manage__head-actions">
-                <Link href={`/work/detail/${job.id}`} className="hire-page__post-btn hire-page__post-btn--ghost">
+                <Link href={`/work/detail/${job.id}?preview=1`} className="hire-page__post-btn hire-page__post-btn--ghost">
                   Xem tin công khai
                 </Link>
                 <Link href="/hire/quotes" className="hire-page__post-btn">
@@ -388,16 +397,58 @@ export default function ClientHireJobManagePage() {
                     <dt>Vị trí</dt>
                     <dd>{job.location_label?.trim() || "—"}</dd>
                   </div>
+                  {jobCategory ? (
+                    <div>
+                      <dt>Danh mục</dt>
+                      <dd>{jobCategory}</dd>
+                    </div>
+                  ) : null}
                 </dl>
+
+                {jobImages.length > 0 ? (
+                  <section className="hire-manage__job-section hire-manage__job-section--gallery">
+                    <h3 className="hire-manage__job-section-title">Ảnh minh họa</h3>
+                    <div className="hire-manage__job-gallery">
+                      <WorkDetailGallery images={jobImages} title={job.title} />
+                    </div>
+                  </section>
+                ) : null}
+
                 <div className="hire-manage__job-desc-block">
                   <h3 className="hire-manage__job-desc-title">
                     <FaBriefcase aria-hidden />
                     Nội dung chi tiết
                   </h3>
-                  <p className="hire-manage__job-desc">{job.description?.trim() || "Chưa có mô tả chi tiết."}</p>
+                  <p className="hire-manage__job-desc">
+                    {job.description?.trim() || "Chưa có mô tả chi tiết."}
+                  </p>
                 </div>
+
+                <JobSiteMapPanel job={job} />
+
+                {jobCategory || jobTags.length > 0 ? (
+                  <section className="hire-manage__job-section">
+                    <h3 className="hire-manage__job-section-title">
+                      <FaListUl aria-hidden />
+                      Danh mục & kỹ năng yêu cầu
+                    </h3>
+                    <div className="hire-manage__job-tags">
+                      {jobCategory ? (
+                        <span className="hire-manage__job-tag hire-manage__job-tag--category">
+                          {jobCategory}
+                        </span>
+                      ) : null}
+                      {jobTags.map((tag) => (
+                        <span key={tag} className="hire-manage__job-tag">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </section>
+                ) : null}
+
                 <div className="hire-manage__job-links">
-                  <Link href={`/work/detail/${job.id}`} className="hire-joblist__link-btn">
+                  <Link href={`/work/detail/${job.id}?preview=1`} className="hire-joblist__link-btn">
                     Xem trang tuyển dụng công khai
                   </Link>
                   <Link href="/hire/joblist" className="hire-joblist__link-btn hire-joblist__link-btn--muted">

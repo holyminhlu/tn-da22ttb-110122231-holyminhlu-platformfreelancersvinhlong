@@ -39,13 +39,18 @@ function mapApprovalRow(row) {
   const step1Blockers = getClientBlockers(row, row);
   const workBlockers =
     role === "freelancer" ? getFreelancerWorkBlockers(row) : getClientAdminReviewBlockers(row);
+  const legalName = [row.legal_first_name, row.legal_last_name].filter(Boolean).join(" ").trim();
   return {
     userId: row.user_id || row.id,
     role,
     email: row.email,
-    fullName: [row.legal_first_name, row.legal_last_name].filter(Boolean).join(" ").trim() || row.full_name || "",
+    fullName: legalName || row.full_name || "",
     phone: row.profile_phone || row.phone || null,
     avatarUrl: row.profile_avatar_url || row.avatar_url || null,
+    profileBio: row.profile_bio || row.bio || null,
+    profileDistrictCity: row.profile_district_city || row.district_city || null,
+    isPhoneVerified: Boolean(row.is_phone_verified),
+    isEmailVerified: Boolean(row.is_email_verified),
     userStatus: row.user_status,
     submittedAt: row.submitted_for_review_at,
     adminReviewStatus: row.admin_review_status || "pending",
@@ -56,12 +61,40 @@ function mapApprovalRow(row) {
     step3Complete: Boolean(row.submitted_for_review_at),
     canApprove: isFreelancerReadyForAdminReview(row),
     blockers: workBlockers,
-    selfieUrl: row.selfie_url,
-    idFrontUrl: row.id_front_url,
-    idBackUrl: row.id_back_url,
-    addressProofUrl: row.address_proof_url,
-    cardLast4: row.card_last4,
-    cardVerifiedAt: row.card_verified_at,
+    accountType: row.account_type || "personal",
+    useExistingAccountInfo: row.use_existing_account_info !== false,
+    legalFirstName: row.legal_first_name || null,
+    legalLastName: row.legal_last_name || null,
+    addressSearch: row.address_search || null,
+    addressStreet: row.address_street || null,
+    addressCountry: row.address_country || null,
+    addressState: row.address_state || null,
+    addressCity: row.address_city || null,
+    addressPostal: row.address_postal || null,
+    contactConfirmed: Boolean(row.contact_confirmed),
+    contactConfirmedAt: row.contact_confirmed_at || null,
+    selfieUrl: row.selfie_url || row.profile_avatar_url || null,
+    idDocType: row.id_doc_type || null,
+    idFrontUrl: row.id_front_url || null,
+    idBackUrl: row.id_back_url || null,
+    addressProofType: row.address_proof_type || null,
+    addressProofUrl: row.address_proof_url || null,
+    phoneSubmittedAt: row.phone_submitted_at || null,
+    photoSubmittedAt: row.photo_submitted_at || null,
+    idSubmittedAt: row.id_submitted_at || null,
+    addressProofSubmittedAt: row.address_proof_submitted_at || null,
+    cardLast4: row.card_last4 || null,
+    cardBrand: row.card_brand || null,
+    cardExpiry: row.card_expiry || null,
+    cardholderName: row.cardholder_name || null,
+    isBusinessCard: Boolean(row.is_business_card),
+    billingStreet: row.billing_street || null,
+    billingCountry: row.billing_country || null,
+    billingState: row.billing_state || null,
+    billingCity: row.billing_city || null,
+    billingPostal: row.billing_postal || null,
+    billingPhone: row.billing_phone || null,
+    cardVerifiedAt: row.card_verified_at || null,
   };
 }
 
@@ -118,6 +151,9 @@ async function listFreelancerApprovals(req, res) {
          up.full_name,
          up.phone AS profile_phone,
          up.avatar_url AS profile_avatar_url,
+         up.bio AS profile_bio,
+         up.district_city AS profile_district_city,
+         u.is_email_verified,
          iv.*
        FROM public.users u
        INNER JOIN public.identity_verifications iv ON iv.user_id = u.id
@@ -170,12 +206,32 @@ async function getFreelancerApproval(req, res) {
   const db = await pool.connect();
 
   try {
-    const row = await loadFreelancerVerification(db, userId);
+    const result = await db.query(
+      `SELECT
+         u.id AS user_id,
+         u.email,
+         u.role,
+         u.status AS user_status,
+         u.is_email_verified,
+         up.full_name,
+         up.phone AS profile_phone,
+         up.avatar_url AS profile_avatar_url,
+         up.bio AS profile_bio,
+         up.district_city AS profile_district_city,
+         iv.*
+       FROM public.users u
+       INNER JOIN public.identity_verifications iv ON iv.user_id = u.id
+       LEFT JOIN public.user_profiles up ON up.user_id = u.id
+       WHERE u.id = $1 AND u.deleted_at IS NULL
+       LIMIT 1`,
+      [userId],
+    );
+    const row = result.rows[0];
     const role = String(row?.role || "").toLowerCase();
     if (!row || !["freelancer", "client"].includes(role)) {
       return res.status(404).json({ message: "Không tìm thấy hồ sơ xác minh." });
     }
-    return res.json({ item: mapApprovalRow({ ...row, user_id: userId, id: userId }) });
+    return res.json({ item: mapApprovalRow(row) });
   } catch (error) {
     console.error("getFreelancerApproval failed:", error.message);
     return res.status(500).json({ message: "Không thể tải hồ sơ freelancer." });

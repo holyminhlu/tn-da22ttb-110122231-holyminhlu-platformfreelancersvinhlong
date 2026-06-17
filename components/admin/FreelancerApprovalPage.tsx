@@ -5,12 +5,14 @@ import { FaRedo, FaSearch } from "react-icons/fa";
 import { formatDate } from "@/lib/format";
 import {
   approveFreelancerAccount,
+  getFreelancerApproval,
   listFreelancerApprovals,
   rejectFreelancerAccount,
   type AdminReviewStatus,
   type AdminRoleFilter,
   type FreelancerApprovalItem,
 } from "@/lib/api/admin";
+import AdminIdentityReviewDetail from "./AdminIdentityReviewDetail";
 import "./admin.css";
 
 const TABS: { id: AdminReviewStatus; label: string }[] = [
@@ -53,6 +55,8 @@ export default function FreelancerApprovalPage() {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [toast, setToast] = useState<{ type: "ok" | "err"; message: string } | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [detailItem, setDetailItem] = useState<FreelancerApprovalItem | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
 
   useEffect(() => {
     const timer = window.setTimeout(() => setSearchQuery(searchInput.trim()), 350);
@@ -98,6 +102,30 @@ export default function FreelancerApprovalPage() {
 
   const hasActiveFilters =
     roleFilter !== "all" || searchQuery !== "" || readyOnly || incompleteOnly;
+
+  async function toggleDetail(userId: string) {
+    if (expandedId === userId) {
+      setExpandedId(null);
+      setDetailItem(null);
+      return;
+    }
+    setExpandedId(userId);
+    setDetailLoading(true);
+    setDetailItem(null);
+    try {
+      const data = await getFreelancerApproval(userId);
+      setDetailItem(data.item);
+    } catch (err) {
+      const msg =
+        err && typeof err === "object" && "message" in err
+          ? String((err as { message: string }).message)
+          : "Không thể tải chi tiết hồ sơ.";
+      setToast({ type: "err", message: msg });
+      setExpandedId(null);
+    } finally {
+      setDetailLoading(false);
+    }
+  }
 
   async function handleApprove(userId: string, role: string) {
     const label = role === "client" ? "client" : "freelancer";
@@ -314,11 +342,9 @@ export default function FreelancerApprovalPage() {
                         <button
                           type="button"
                           className="admin-btn"
-                          onClick={() =>
-                            setExpandedId((prev) => (prev === item.userId ? null : item.userId))
-                          }
+                          onClick={() => void toggleDetail(item.userId)}
                         >
-                          Chi tiết
+                          {expandedId === item.userId ? "Thu gọn" : "Chi tiết"}
                         </button>
                       </div>
                     </td>
@@ -326,40 +352,10 @@ export default function FreelancerApprovalPage() {
                   {expandedId === item.userId ? (
                     <tr>
                       <td colSpan={8}>
-                        <div className="admin-detail">
-                          <div className="admin-detail__grid">
-                            <div>
-                              <span className="admin-detail__label">Điện thoại</span>
-                              {item.phone || "—"}
-                            </div>
-                            <div>
-                              <span className="admin-detail__label">Thẻ (last4)</span>
-                              {item.cardLast4 ? `**** ${item.cardLast4}` : "—"}
-                            </div>
-                            <div>
-                              <span className="admin-detail__label">Xác minh thẻ</span>
-                              {item.cardVerifiedAt ? formatDate(item.cardVerifiedAt) : "—"}
-                            </div>
-                            <div>
-                              <span className="admin-detail__label">Trạng thái user</span>
-                              {item.userStatus}
-                            </div>
-                          </div>
-                          {item.blockers.length > 0 ? (
-                            <ul className="admin-detail__list">
-                              {item.blockers.map((b) => (
-                                <li key={b}>{b}</li>
-                              ))}
-                            </ul>
-                          ) : (
-                            <p className="admin-detail__ok">Đủ điều kiện duyệt.</p>
-                          )}
-                          {item.adminReviewNote ? (
-                            <p className="admin-detail__note">
-                              <strong>Ghi chú:</strong> {item.adminReviewNote}
-                            </p>
-                          ) : null}
-                        </div>
+                        <AdminIdentityReviewDetail
+                          item={detailItem || item}
+                          loading={detailLoading && !detailItem}
+                        />
                       </td>
                     </tr>
                   ) : null}

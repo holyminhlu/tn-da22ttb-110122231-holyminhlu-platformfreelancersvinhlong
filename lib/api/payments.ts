@@ -45,14 +45,20 @@ export type BillingTransaction = {
 };
 
 export type BillingOverview = {
+  role?: "client";
   account: {
     balance: number;
     escrowBalance: number;
     currency: string;
+    pendingBalance?: number;
+    totalEarned?: number;
   };
   billingProfile: BillingProfile;
   billingMethods: BillingMethod[];
   defaultMethod: BillingMethod | null;
+  payoutProfile?: FreelancerPayoutProfile;
+  withdrawalPin?: FreelancerWithdrawalPinStatus;
+  activeWithdrawals?: FreelancerActiveWithdrawal[];
   transactions: BillingTransaction[];
   filterOptions: {
     jobs: { id: string; title: string }[];
@@ -99,6 +105,19 @@ export type FreelancerTransaction = {
   contractId: string | null;
   withdrawalStatus?: "PENDING_AUTH" | "PROCESSING" | "SUCCEEDED" | "FAILED" | "CANCELLED" | null;
   withdrawalBankName?: string | null;
+  withdrawalReferenceId?: string | null;
+  withdrawalFailureReason?: string | null;
+};
+
+export type FreelancerActiveWithdrawal = {
+  id: string;
+  referenceId: string;
+  amount: number;
+  status: "PENDING_AUTH" | "PROCESSING" | string;
+  bankName: string;
+  accountLast4: string | null;
+  failureReason: string | null;
+  createdAt: string;
 };
 
 export type FreelancerWithdrawalPinStatus = {
@@ -119,6 +138,7 @@ export type FreelancerBillingOverview = {
   payoutProfile: FreelancerPayoutProfile;
   withdrawalPin: FreelancerWithdrawalPinStatus;
   pendingItems: FreelancerPendingEarning[];
+  activeWithdrawals: FreelancerActiveWithdrawal[];
   transactions: FreelancerTransaction[];
   filterOptions: {
     jobs: { id: string; title: string }[];

@@ -13,7 +13,8 @@ import "./admin.css";
 const NAV = [
   { href: ADMIN_HOME, label: "Duyệt tài khoản", icon: FaUserCheck },
   { href: "/admin/hoan-tien", label: "Quản lý hoàn tiền", icon: FaUndoAlt },
-  { href: "/admin/rut-tien", label: "Yêu cầu rút tiền", icon: FaMoneyCheckAlt },
+  { href: "/admin/rut-tien", label: "Rút tiền Freelancer", icon: FaMoneyCheckAlt },
+  { href: "/admin/rut-tien-client", label: "Rút tiền Client", icon: FaMoneyCheckAlt },
   { href: "/admin/tranh-chap", label: "Quản lý tranh chấp", icon: FaGavel },
 ] as const;
 

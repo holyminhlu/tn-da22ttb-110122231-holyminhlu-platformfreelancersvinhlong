@@ -54,7 +54,7 @@ export default function HireJoblistCard({ job, selected, onSelect }: HireJoblist
       </div>
 
       <h2 className="hire-joblist__title">
-        <Link href={`/work/detail/${job.id}`}>{job.title}</Link>
+        <Link href={`/hire/joblist/${job.id}`}>{job.title}</Link>
       </h2>
 
       <p className="hire-joblist__budget">{budgetLine}</p>
@@ -121,8 +121,11 @@ export default function HireJoblistCard({ job, selected, onSelect }: HireJoblist
         <Link href="/hire/quotes" className="hire-joblist__link-btn">
           Tất cả báo giá
         </Link>
-        <Link href={`/work/detail/${job.id}`} className="hire-joblist__link-btn hire-joblist__link-btn--muted">
-          Chi tiết
+        <Link
+          href={`/work/detail/${job.id}?preview=1`}
+          className="hire-joblist__link-btn hire-joblist__link-btn--muted"
+        >
+          Xem tin công khai
         </Link>
       </div>
     </article>

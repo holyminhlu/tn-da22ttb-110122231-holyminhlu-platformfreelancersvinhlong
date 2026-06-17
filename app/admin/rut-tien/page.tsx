@@ -6,6 +6,6 @@ export const metadata = {
 };
 
 export default function AdminRutTienPage() {
-  return <AdminWithdrawalsPage />;
+  return <AdminWithdrawalsPage audience="freelancer" />;
 }
 

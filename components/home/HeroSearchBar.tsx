@@ -1,8 +1,12 @@
 "use client";
 
 import { FaSearch } from "./icons";
+import { useRouter } from "next/navigation";
+import PostJobButton from "./PostJobButton";
 
 export default function HeroSearchBar() {
+  const router = useRouter();
+
   return (
     <div className="hero-search-bar mx-auto mb-4 w-full max-w-xl">
       <div className="hero-search-bar__card">
@@ -20,7 +24,11 @@ export default function HeroSearchBar() {
               autoComplete="off"
             />
           </div>
-          <button type="button" className="hero-search-bar__search-btn">
+          <button
+            type="button"
+            className="hero-search-bar__search-btn"
+            onClick={() => router.push("/findwork")}
+          >
             Tìm kiếm
           </button>
         </div>
@@ -29,10 +37,10 @@ export default function HeroSearchBar() {
           <span className="hero-search-bar__or">Hoặc</span>
         </div>
 
-        <button type="button" className="hero-search-bar__cta">
+        <PostJobButton className="hero-search-bar__cta" ariaLabel="Đăng việc miễn phí">
           <span>Đăng việc</span>
           <span className="hero-search-bar__cta-badge">Miễn phí</span>
-        </button>
+        </PostJobButton>
       </div>
     </div>
   );

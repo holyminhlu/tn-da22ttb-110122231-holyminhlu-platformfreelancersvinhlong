@@ -1,0 +1,47 @@
+.bank-badge-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+  border-radius: 0.35rem;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  box-sizing: border-box;
+}
+
+.bank-badge-icon__img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  padding: 0.12rem;
+  box-sizing: border-box;
+}
+
+.bank-badge-icon--fallback {
+  color: #fff;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  border: none;
+}
+
+.bank-name-with-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.bank-name-with-logo__text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bank-name-with-logo__suffix {
+  flex-shrink: 0;
+  color: inherit;
+}

@@ -30,6 +30,7 @@ export const apiPaths = {
     refresh: "/api/auth/refresh",
   },
   users: {
+    publicHomeStats: "/api/users/public/home-stats",
     me: "/api/users/me",
     credentials: "/api/users/me/credentials",
     feedback: "/api/users/me/feedback",

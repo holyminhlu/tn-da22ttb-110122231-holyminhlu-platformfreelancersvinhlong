@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import {
   FaArrowLeft,
@@ -83,6 +83,8 @@ function StatCard({
 export default function WorkDetailContent() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isPublicPreview = searchParams.get("preview") === "1";
   const { user, ready, isClient } = useStoredUser({ refreshFromApi: false });
   const isGuest = ready && !user;
   const rawId = params?.id;
@@ -93,6 +95,7 @@ export default function WorkDetailContent() {
   const [error, setError] = useState("");
   const [proposalOpen, setProposalOpen] = useState(false);
   const [clientNoticeOpen, setClientNoticeOpen] = useState(false);
+  const [redirecting, setRedirecting] = useState(false);
 
   const loadJob = useCallback(async () => {
     if (!jobId) {
@@ -121,7 +124,15 @@ export default function WorkDetailContent() {
     void loadJob();
   }, [loadJob]);
 
-  if (loading) {
+  useEffect(() => {
+    if (!ready || loading || !job || !user || !isClient || isPublicPreview) return;
+    if (String(user.id) === String(job.client_id)) {
+      setRedirecting(true);
+      router.replace(`/hire/joblist/${job.id}`);
+    }
+  }, [ready, loading, job, user, isClient, isPublicPreview, router]);
+
+  if (loading || redirecting) {
     return <WorkDetailSkeleton />;
   }
 

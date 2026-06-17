@@ -15,6 +15,7 @@ router.use((req, _res, next) => {
 });
 
 router.options("/me/avatar", (_req, res) => res.sendStatus(204));
+router.get("/public/home-stats", users.getPublicHomeStats);
 router.get("/me", users.getMe);
 router.get("/me/credentials", users.getCredentials);
 router.get("/me/feedback", users.listMyFeedback);

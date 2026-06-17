@@ -8,6 +8,10 @@ const {
 } = require("../services/walletWithdrawPayos.service");
 const { notifyUser } = require("../utils/notificationService");
 const { resolveBankBin } = require("../utils/vnBankBins");
+const {
+  REASON_CODES,
+  buildWithdrawalRejectMessage,
+} = require("../utils/withdrawalRejectReasons");
 
 function schemaHint() {
   return "Chạy backend/sql/freelancer_withdrawal_payos.sql và client_billing_payments.sql trên PostgreSQL.";
@@ -49,8 +53,11 @@ function mapRow(row) {
     paid_at: row.paid_at,
     created_at: row.created_at,
     updated_at: row.updated_at,
-    freelancer_name: row.freelancer_name,
-    freelancer_email: row.freelancer_email,
+    requester_name: row.requester_name,
+    requester_email: row.requester_email,
+    requester_role: row.requester_role,
+    freelancer_name: row.requester_name,
+    freelancer_email: row.requester_email,
     qr_url: qrUrl,
   };
 }
@@ -58,8 +65,9 @@ function mapRow(row) {
 async function loadWithdrawal(db, withdrawalId) {
   const rs = await db.query(
     `SELECT w.*,
-            up.full_name AS freelancer_name,
-            u.email AS freelancer_email
+            up.full_name AS requester_name,
+            u.email AS requester_email,
+            u.role AS requester_role
      FROM public.freelancer_withdrawal_orders w
      LEFT JOIN public.user_profiles up ON up.user_id = w.user_id
      LEFT JOIN public.users u ON u.id = w.user_id
@@ -75,7 +83,11 @@ async function listAdminWithdrawals(req, res) {
   if (!payload) return;
 
   const status = String(req.query.status || "pending").toLowerCase();
+  const audience = String(req.query.audience || "freelancer").toLowerCase();
   const q = String(req.query.q || "").trim().slice(0, 120);
+  if (!["all", "freelancer", "client"].includes(audience)) {
+    return res.status(400).json({ message: "Bộ lọc đối tượng không hợp lệ." });
+  }
   const db = await pool.connect();
   try {
     const where = [];
@@ -94,12 +106,17 @@ async function listAdminWithdrawals(req, res) {
         `(w.reference_id ILIKE $${params.length} OR up.full_name ILIKE $${params.length} OR u.email ILIKE $${params.length} OR w.bank_name ILIKE $${params.length})`,
       );
     }
+    if (audience !== "all") {
+      params.push(audience);
+      where.push(`LOWER(COALESCE(u.role, '')) = $${params.length}`);
+    }
     const whereSql = where.length ? `WHERE ${where.join(" AND ")}` : "";
 
     const result = await db.query(
       `SELECT w.*,
-              up.full_name AS freelancer_name,
-              u.email AS freelancer_email
+              up.full_name AS requester_name,
+              u.email AS requester_email,
+              u.role AS requester_role
        FROM public.freelancer_withdrawal_orders w
        LEFT JOIN public.user_profiles up ON up.user_id = w.user_id
        LEFT JOIN public.users u ON u.id = w.user_id
@@ -117,6 +134,7 @@ async function listAdminWithdrawals(req, res) {
 
     return res.json({
       status,
+      audience,
       q,
       total: result.rows.length,
       requests: result.rows.map(mapRow),
@@ -161,8 +179,17 @@ async function resolveAdminWithdrawal(req, res) {
 
   const resolution = String(req.body?.resolution || "").toLowerCase();
   const adminNote = String(req.body?.adminNote || "").trim().slice(0, 2000);
+  const rejectReason = String(req.body?.rejectReason || "").trim();
   if (!["approve", "reject"].includes(resolution)) {
-    return res.status(400).json({ message: "Quyết định không hợp lệ. Chọn approve hoặc reject." });
+    return res.status(400).json({ message: "Quyết định không hợp lệ. Chọn duyệt hoặc từ chối." });
+  }
+  if (resolution === "reject") {
+    if (!rejectReason || !REASON_CODES.has(rejectReason)) {
+      return res.status(400).json({ message: "Vui lòng chọn lý do từ chối hợp lệ." });
+    }
+    if (rejectReason === "other" && !adminNote) {
+      return res.status(400).json({ message: "Vui lòng nhập ghi chú khi chọn lý do Khác." });
+    }
   }
 
   const db = await pool.connect();
@@ -211,16 +238,17 @@ async function resolveAdminWithdrawal(req, res) {
     await markWithdrawalFailed(
       db,
       row,
-      adminNote || "Admin từ chối yêu cầu rút tiền",
+      buildWithdrawalRejectMessage(rejectReason, adminNote),
       true,
     );
+    const rejectMessage = buildWithdrawalRejectMessage(rejectReason, adminNote);
     await notifyUser(db, {
       recipientId: row.user_id,
       actorId: payload.sub,
       category: "payment",
       action: "withdrawal_rejected",
       title: "Yêu cầu rút tiền bị từ chối",
-      body: adminNote || "Admin từ chối yêu cầu rút tiền. Số dư đã hoàn lại ví.",
+      body: `Yêu cầu rút ${Number(row.amount).toLocaleString("vi-VN")}đ về ${row.bank_name} bị từ chối. Lý do: ${rejectMessage}. Số dư đã hoàn lại ví.`,
       href: "/payments",
       entityType: "withdrawal",
       entityId: row.id,

@@ -186,28 +186,37 @@ export default function JobCard({ job, onAccepted, onSavedChange, guestMode = fa
         {hasMedia ? <JobCardMedia images={images} title={job.title} /> : null}
 
         <div className="fw-card__aside flex flex-col items-end">
-          <div className="mb-3 flex space-x-2">
-            {!isOwnJob ? (
-              <SaveJobButton jobId={job.id} onToggled={onSavedChange} />
-            ) : null}
+          <div className="mb-3 flex flex-col items-end gap-2">
             {guestMode ? (
-              <Link
-                href="/dang-nhap?next=/findwork"
-                className="fw-btn-primary rounded px-4 py-1.5 text-sm font-semibold text-white"
-              >
-                Đăng nhập để báo giá
-              </Link>
-            ) : quoteChip ? (
-              quoteChip
+              <>
+                <Link
+                  href="/dang-nhap?next=/findwork"
+                  className="fw-btn-primary whitespace-nowrap rounded px-4 py-1.5 text-sm font-semibold text-white"
+                >
+                  Đăng nhập để báo giá
+                </Link>
+                {!isOwnJob ? (
+                  <SaveJobButton jobId={job.id} onToggled={onSavedChange} />
+                ) : null}
+              </>
             ) : (
-              <button
-                type="button"
-                disabled={!canSubmit}
-                onClick={openQuoteFlow}
-                className="fw-btn-primary rounded px-4 py-1.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-55"
-              >
-                Gửi báo giá
-              </button>
+              <div className="flex space-x-2">
+                {!isOwnJob ? (
+                  <SaveJobButton jobId={job.id} onToggled={onSavedChange} />
+                ) : null}
+                {quoteChip ? (
+                  quoteChip
+                ) : (
+                  <button
+                    type="button"
+                    disabled={!canSubmit}
+                    onClick={openQuoteFlow}
+                    className="fw-btn-primary rounded px-4 py-1.5 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-55"
+                  >
+                    Gửi báo giá
+                  </button>
+                )}
+              </div>
             )}
           </div>
           {guestMode ? (

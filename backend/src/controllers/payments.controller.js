@@ -370,6 +370,9 @@ function mapFreelancerTransactionRow(row) {
   const signedAmount = row.direction === "out" ? -amount : amount;
   const withdrawalStatus = row.withdrawal_status || null;
   const withdrawalBankName = row.withdrawal_bank_name || null;
+  const withdrawalReferenceId = row.withdrawal_reference_id || null;
+  const withdrawalFailureReason = row.withdrawal_failure_reason || null;
+  const descriptionRef = String(row.description || "").replace(/^Rút tiền về\s*/i, "").trim();
   return {
     id: row.id,
     occurredAt: row.occurred_at || row.created_at,
@@ -378,12 +381,14 @@ function mapFreelancerTransactionRow(row) {
     category: row.category || row.type || "other",
     amount: row.direction ? signedAmount : amount,
     currency: row.currency || "VND",
-    reference: row.invoice_number || row.contract_id || null,
+    reference: withdrawalReferenceId || row.invoice_number || row.contract_id || descriptionRef || null,
     jobId: row.job_id || null,
     clientId: row.client_id || null,
     contractId: row.contract_id || null,
     withdrawalStatus,
     withdrawalBankName,
+    withdrawalReferenceId,
+    withdrawalFailureReason,
   };
 }
 
@@ -462,7 +467,9 @@ async function loadFreelancerTransactionsFromTable(db, userId) {
        NULL::text AS invoice_number,
        j.client_id,
        w.status AS withdrawal_status,
-       w.bank_name AS withdrawal_bank_name
+       w.bank_name AS withdrawal_bank_name,
+       w.reference_id AS withdrawal_reference_id,
+       w.failure_reason AS withdrawal_failure_reason
      FROM public.transactions t
      LEFT JOIN public.jobs j ON j.id = t.job_id
      LEFT JOIN public.user_profiles cup ON cup.user_id = j.client_id
@@ -502,6 +509,36 @@ async function loadFreelancerTransactions(db, userId) {
   }
   merged.sort((a, b) => new Date(b.occurredAt).getTime() - new Date(a.occurredAt).getTime());
   return merged.slice(0, 200);
+}
+
+async function loadActiveWithdrawals(db, userId) {
+  const result = await db.query(
+    `SELECT
+       id,
+       reference_id,
+       amount,
+       status,
+       bank_name,
+       account_last4,
+       failure_reason,
+       created_at
+     FROM public.freelancer_withdrawal_orders
+     WHERE user_id = $1
+       AND status IN ('PENDING_AUTH', 'PROCESSING')
+     ORDER BY created_at DESC
+     LIMIT 10`,
+    [userId],
+  );
+  return result.rows.map((row) => ({
+    id: row.id,
+    referenceId: row.reference_id,
+    amount: Number(row.amount) || 0,
+    status: row.status,
+    bankName: row.bank_name,
+    accountLast4: row.account_last4,
+    failureReason: row.failure_reason,
+    createdAt: row.created_at,
+  }));
 }
 
 async function loadFreelancerPendingEarnings(db, userId) {
@@ -648,8 +685,9 @@ async function saveFreelancerPayoutAccount(req, res) {
   if (!payload) return;
 
   const userId = payload.sub;
-  if (String(payload.role || "").toLowerCase() !== "freelancer") {
-    return res.status(403).json({ message: "Chỉ freelancer được liên kết tài khoản nhận tiền." });
+  const role = String(payload.role || "").toLowerCase();
+  if (role !== "freelancer" && role !== "client") {
+    return res.status(403).json({ message: "Chỉ client hoặc freelancer được liên kết tài khoản nhận tiền." });
   }
 
   const bankName = String(req.body?.bankName || "").trim().slice(0, 120);
@@ -714,8 +752,9 @@ async function unlinkFreelancerPayoutAccount(req, res) {
   const payload = verifyAccessToken(req, res);
   if (!payload) return;
 
-  if (String(payload.role || "").toLowerCase() !== "freelancer") {
-    return res.status(403).json({ message: "Chỉ freelancer được thao tác tài khoản nhận tiền." });
+  const role = String(payload.role || "").toLowerCase();
+  if (role !== "freelancer" && role !== "client") {
+    return res.status(403).json({ message: "Chỉ client hoặc freelancer được thao tác tài khoản nhận tiền." });
   }
 
   const db = await pool.connect();
@@ -760,6 +799,10 @@ async function getFreelancerBilling(req, res, userId) {
     const account = await loadAccountBalances(db, userId);
     const earnings = await loadFreelancerEarningsSummary(db, userId);
     const pendingItems = await loadFreelancerPendingEarnings(db, userId);
+    const activeWithdrawals = await loadActiveWithdrawals(db, userId).catch((err) => {
+      if (isMissingSchemaError(err)) return [];
+      throw err;
+    });
     const transactions = await loadFreelancerTransactions(db, userId);
     const filterOptions = await loadFreelancerFilterOptions(transactions);
     const payoutProfile = await loadFreelancerPayoutProfile(db, userId);
@@ -776,6 +819,7 @@ async function getFreelancerBilling(req, res, userId) {
       payoutProfile,
       withdrawalPin,
       pendingItems,
+      activeWithdrawals,
       transactions,
       filterOptions,
       platformFeeNote:
@@ -803,6 +847,12 @@ async function getClientBilling(req, res, userId) {
     const billingProfile = await loadBillingProfile(db, userId);
     const transactions = await loadTransactions(db, userId);
     const filterOptions = await loadFilterOptions(db, userId, transactions);
+    const payoutProfile = await loadFreelancerPayoutProfile(db, userId);
+    const withdrawalPin = await loadWithdrawalPinStatus(db, userId);
+    const activeWithdrawals = await loadActiveWithdrawals(db, userId).catch((err) => {
+      if (isMissingSchemaError(err)) return [];
+      throw err;
+    });
 
     const defaultMethod = billingMethods.find((m) => m.isPrimary) || billingMethods[0] || null;
 
@@ -812,6 +862,9 @@ async function getClientBilling(req, res, userId) {
       billingProfile,
       billingMethods,
       defaultMethod,
+      payoutProfile,
+      withdrawalPin,
+      activeWithdrawals,
       transactions,
       filterOptions,
     });
@@ -1396,8 +1449,9 @@ async function requestWithdrawal(req, res) {
   const payload = verifyAccessToken(req, res);
   if (!payload) return;
 
-  if (String(payload.role || "").toLowerCase() !== "freelancer") {
-    return res.status(403).json({ message: "Chỉ freelancer được rút tiền về tài khoản." });
+  const role = String(payload.role || "").toLowerCase();
+  if (role !== "freelancer" && role !== "client") {
+    return res.status(403).json({ message: "Chỉ client hoặc freelancer được rút tiền về tài khoản." });
   }
 
   const amount = Number(req.body?.amount);
@@ -1428,8 +1482,9 @@ async function getWithdrawalPinSettings(req, res) {
   const payload = verifyAccessToken(req, res);
   if (!payload) return;
 
-  if (String(payload.role || "").toLowerCase() !== "freelancer") {
-    return res.status(403).json({ message: "Chỉ freelancer được quản lý PIN rút tiền." });
+  const role = String(payload.role || "").toLowerCase();
+  if (role !== "freelancer" && role !== "client") {
+    return res.status(403).json({ message: "Chỉ client hoặc freelancer được quản lý PIN rút tiền." });
   }
 
   const db = await pool.connect();
@@ -1453,8 +1508,9 @@ async function saveWithdrawalPinSettings(req, res) {
   const payload = verifyAccessToken(req, res);
   if (!payload) return;
 
-  if (String(payload.role || "").toLowerCase() !== "freelancer") {
-    return res.status(403).json({ message: "Chỉ freelancer được thiết lập PIN rút tiền." });
+  const role = String(payload.role || "").toLowerCase();
+  if (role !== "freelancer" && role !== "client") {
+    return res.status(403).json({ message: "Chỉ client hoặc freelancer được thiết lập PIN rút tiền." });
   }
 
   const db = await pool.connect();
@@ -1487,8 +1543,9 @@ async function confirmWithdrawalOrder(req, res) {
   const payload = verifyAccessToken(req, res);
   if (!payload) return;
 
-  if (String(payload.role || "").toLowerCase() !== "freelancer") {
-    return res.status(403).json({ message: "Chỉ freelancer được rút tiền về tài khoản." });
+  const role = String(payload.role || "").toLowerCase();
+  if (role !== "freelancer" && role !== "client") {
+    return res.status(403).json({ message: "Chỉ client hoặc freelancer được rút tiền về tài khoản." });
   }
 
   const orderId = String(req.params.orderId || "").trim();
@@ -1544,8 +1601,9 @@ async function getWithdrawalOrderStatus(req, res) {
   const payload = verifyAccessToken(req, res);
   if (!payload) return;
 
-  if (String(payload.role || "").toLowerCase() !== "freelancer") {
-    return res.status(403).json({ message: "Chỉ freelancer được xem lệnh rút tiền." });
+  const role = String(payload.role || "").toLowerCase();
+  if (role !== "freelancer" && role !== "client") {
+    return res.status(403).json({ message: "Chỉ client hoặc freelancer được xem lệnh rút tiền." });
   }
 
   const orderId = String(req.params.orderId || "").trim();

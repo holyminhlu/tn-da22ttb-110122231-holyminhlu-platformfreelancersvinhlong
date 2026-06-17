@@ -31,17 +31,43 @@ const BANK_COLORS: Record<string, string> = {
   agribank: "#ae1c3f",
   techcombank: "#ed1c24",
   "mb bank": "#141ed2",
+  mbbank: "#141ed2",
   acb: "#0033a0",
   vpbank: "#00a651",
   sacombank: "#0054a6",
   tpbank: "#5c2d91",
 };
 
+const BANK_LOGOS: Record<string, string> = {
+  vietcombank: "/Media/Icon-Vietcombank.webp",
+  bidv: "/Media/Logo_Bidv_mới.svg.png",
+  vietinbank: "/Media/Logo-VietinBank-CTG-Ori.webp",
+  agribank: "/Media/Icon-Agribank.png",
+  techcombank: "/Media/Techcombank_logo.png",
+  "mb bank": "/Media/Logo_MB_new.png",
+  mbbank: "/Media/Logo_MB_new.png",
+  acb: "/Media/acbbank.jpg",
+  vpbank: "/Media/Icon-VPBank.webp",
+  sacombank: "/Media/Logo-Sacombank-new.png",
+  tpbank: "/Media/Logo_TPBank.svg.png",
+};
+
 export type BankVisual = {
   name: string;
   color: string;
   abbr: string;
+  logoSrc: string | null;
 };
+
+function matchBankEntry<T>(bankName: string, table: Record<string, T>): T | null {
+  const label = String(bankName || "").toLowerCase().trim();
+  if (!label) return null;
+  const keys = Object.keys(table).sort((a, b) => b.length - a.length);
+  for (const bank of keys) {
+    if (label.includes(bank)) return table[bank] ?? null;
+  }
+  return null;
+}
 
 export function maskAccountNumber(accountNumber: string, last4?: string): string {
   const digits = String(accountNumber || "").replace(/\D/g, "");
@@ -51,21 +77,23 @@ export function maskAccountNumber(accountNumber: string, last4?: string): string
 }
 
 export function resolveBankBin(bankName: string): string | null {
-  const label = String(bankName || "").toLowerCase().trim();
-  for (const [bank, bin] of Object.entries(BANK_BINS)) {
-    if (label.includes(bank)) return bin;
-  }
-  return null;
+  return matchBankEntry(bankName, BANK_BINS);
+}
+
+export function resolveBankLogo(bankName: string): string | null {
+  return matchBankEntry(bankName, BANK_LOGOS);
 }
 
 export function resolveBankVisual(bankName: string): BankVisual {
   const label = String(bankName || "").toLowerCase().trim();
-  for (const [bank, color] of Object.entries(BANK_COLORS)) {
+  const keys = Object.keys(BANK_COLORS).sort((a, b) => b.length - a.length);
+  for (const bank of keys) {
     if (label.includes(bank)) {
       return {
         name: bankName,
-        color,
-        abbr: bank.slice(0, 2).toUpperCase(),
+        color: BANK_COLORS[bank],
+        abbr: bank.replace(/\s+/g, "").slice(0, 2).toUpperCase(),
+        logoSrc: BANK_LOGOS[bank] ?? null,
       };
     }
   }
@@ -75,5 +103,5 @@ export function resolveBankVisual(bankName: string): BankVisual {
     .join("")
     .slice(0, 2)
     .toUpperCase();
-  return { name: bankName, color: "#2563eb", abbr: abbr || "NH" };
+  return { name: bankName, color: "#2563eb", abbr: abbr || "NH", logoSrc: null };
 }

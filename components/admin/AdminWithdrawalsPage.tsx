@@ -10,6 +10,11 @@ import {
   type AdminWithdrawalStatusFilter,
 } from "@/lib/api/admin";
 import { formatDate, formatVnd } from "@/lib/format";
+import { BankNameWithLogo } from "@/components/payments/BankBadgeIcon";
+import {
+  WITHDRAWAL_REJECT_REASONS,
+  type WithdrawalRejectReasonCode,
+} from "@/lib/payments/withdrawalRejectReasons";
 import "./admin.css";
 
 const STATUS_TABS: { id: AdminWithdrawalStatusFilter; label: string }[] = [
@@ -21,13 +26,17 @@ const STATUS_TABS: { id: AdminWithdrawalStatusFilter; label: string }[] = [
 
 function statusLabel(status: string) {
   const s = String(status).toUpperCase();
-  if (s === "PENDING_AUTH" || s === "PROCESSING") return "Pending";
-  if (s === "SUCCEEDED") return "Completed";
-  if (s === "FAILED" || s === "CANCELLED") return "Rejected";
+  if (s === "PENDING_AUTH" || s === "PROCESSING") return "Đang chờ";
+  if (s === "SUCCEEDED") return "Đã duyệt";
+  if (s === "FAILED" || s === "CANCELLED") return "Đã từ chối";
   return s;
 }
 
-export default function AdminWithdrawalsPage() {
+export default function AdminWithdrawalsPage({
+  audience = "freelancer",
+}: {
+  audience?: "freelancer" | "client";
+}) {
   const [statusTab, setStatusTab] = useState<AdminWithdrawalStatusFilter>("pending");
   const [searchInput, setSearchInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
@@ -38,7 +47,9 @@ export default function AdminWithdrawalsPage() {
   const [detail, setDetail] = useState<{ request: AdminWithdrawalRow } | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
   const [resolveBusy, setResolveBusy] = useState(false);
-  const [adminNote, setAdminNote] = useState("");
+  const [approveNote, setApproveNote] = useState("");
+  const [rejectReason, setRejectReason] = useState<WithdrawalRejectReasonCode | "">("");
+  const [rejectNote, setRejectNote] = useState("");
   const [toast, setToast] = useState<{ type: "ok" | "err"; message: string } | null>(null);
 
   useEffect(() => {
@@ -49,7 +60,7 @@ export default function AdminWithdrawalsPage() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await listAdminWithdrawals({ status: statusTab, q: searchQuery });
+      const data = await listAdminWithdrawals({ status: statusTab, q: searchQuery, audience });
       const nextRows = data.requests ?? [];
       setRows(nextRows);
       setTotal(data.total ?? 0);
@@ -70,7 +81,7 @@ export default function AdminWithdrawalsPage() {
     } finally {
       setLoading(false);
     }
-  }, [statusTab, searchQuery, selectedId]);
+  }, [statusTab, searchQuery, selectedId, audience]);
 
   const loadDetail = useCallback(async (withdrawalId: string) => {
     setDetailLoading(true);
@@ -95,6 +106,9 @@ export default function AdminWithdrawalsPage() {
 
   useEffect(() => {
     if (selectedId) void loadDetail(selectedId);
+    setApproveNote("");
+    setRejectReason("");
+    setRejectNote("");
   }, [selectedId, loadDetail]);
 
   const selected = rows.find((r) => r.id === selectedId) ?? rows[0];
@@ -104,16 +118,41 @@ export default function AdminWithdrawalsPage() {
 
   async function handleResolve(resolution: "approve" | "reject") {
     if (!selected) return;
-    const label = resolution === "approve" ? "Approve" : "Reject";
-    if (!window.confirm(`Xác nhận ${label} yêu cầu rút tiền này?`)) return;
+
+    if (resolution === "reject") {
+      if (!rejectReason) {
+        setToast({ type: "err", message: "Vui lòng chọn lý do từ chối." });
+        return;
+      }
+      if (rejectReason === "other" && !rejectNote.trim()) {
+        setToast({ type: "err", message: "Vui lòng nhập ghi chú khi chọn lý do Khác." });
+        return;
+      }
+      if (
+        !window.confirm(
+          "Xác nhận từ chối yêu cầu rút tiền? Freelancer sẽ nhận thông báo và được hoàn tiền vào ví.",
+        )
+      ) {
+        return;
+      }
+    } else if (!window.confirm("Xác nhận duyệt yêu cầu rút tiền sau khi đã chuyển khoản?")) {
+      return;
+    }
+
     setResolveBusy(true);
     try {
       const result = await resolveAdminWithdrawal(selected.id, {
         resolution,
-        adminNote: adminNote.trim() || undefined,
+        adminNote:
+          resolution === "reject"
+            ? rejectNote.trim() || undefined
+            : approveNote.trim() || undefined,
+        rejectReason: resolution === "reject" ? rejectReason : undefined,
       });
       setToast({ type: "ok", message: result.message });
-      setAdminNote("");
+      setApproveNote("");
+      setRejectReason("");
+      setRejectNote("");
       await load();
       await loadDetail(selected.id);
     } catch (err) {
@@ -130,9 +169,11 @@ export default function AdminWithdrawalsPage() {
   return (
     <div className="admin-page admin-refunds-page admin-withdrawals-page">
       <header className="admin-page__head admin-refunds-page__head admin-withdrawals-page__head">
-        <h1 className="admin-page__title">Yêu cầu rút tiền từ Freelancer</h1>
+        <h1 className="admin-page__title">
+          Yêu cầu rút tiền từ {audience === "client" ? "Client" : "Freelancer"}
+        </h1>
         <p className="admin-page__lead">
-          Theo dõi các lệnh rút tiền pending, thực hiện chuyển khoản tay và bấm Approve khi hoàn tất.
+          Theo dõi các lệnh rút tiền đang chờ, thực hiện chuyển khoản thủ công và duyệt khi hoàn tất.
         </p>
       </header>
 
@@ -187,23 +228,30 @@ export default function AdminWithdrawalsPage() {
                     className={`resolution-card resolution-card--selectable admin-withdrawals-card${row.id === selected?.id ? " resolution-card--active" : ""}`}
                     onClick={() => setSelectedId(row.id)}
                   >
-                    <div className="admin-withdrawals-card__top">
-                      <h3 className="resolution-card__title admin-withdrawals-card__title">
-                        {row.freelancer_name || row.freelancer_email || "Freelancer"}
+                    <div className="admin-withdrawals-card__row">
+                      <h3 className="admin-withdrawals-card__title">
+                        {row.requester_name || row.requester_email || "Người dùng"}
                       </h3>
-                      <strong className="admin-withdrawals-card__amount">{formatVnd(row.amount)}</strong>
+                      <span
+                        className={`admin-withdrawals-card__status admin-withdrawals-card__status--${String(row.status).toUpperCase()}`}
+                      >
+                        {statusLabel(row.status)}
+                      </span>
                     </div>
-                    <p className="resolution-card__meta admin-withdrawals-card__meta admin-withdrawals-card__meta--ref">
-                      {row.reference_id}
+                    <strong className="admin-withdrawals-card__amount">{formatVnd(row.amount)}</strong>
+                    <p className="admin-withdrawals-card__meta" title={row.reference_id}>
+                      <span className="admin-withdrawals-card__ref">{row.reference_id}</span>
+                      <span className="admin-withdrawals-card__meta-sep" aria-hidden>
+                        ·
+                      </span>
+                      <span className="admin-withdrawals-card__bank">
+                        <BankNameWithLogo
+                          bankName={row.bank_name}
+                          size={18}
+                          suffix={` · ****${row.account_last4 || "----"}`}
+                        />
+                      </span>
                     </p>
-                    <p className="resolution-card__meta admin-withdrawals-card__meta">
-                      {row.bank_name} · ****{row.account_last4 || "----"}
-                    </p>
-                    <span
-                      className={`resolution-card__status admin-withdrawals-card__status admin-withdrawals-card__status--${String(row.status).toUpperCase()}`}
-                    >
-                      {statusLabel(row.status)}
-                    </span>
                   </button>
                 </li>
               ))}
@@ -213,36 +261,47 @@ export default function AdminWithdrawalsPage() {
           <div className="admin-refunds-detail admin-withdrawals-detail">
             {selected ? (
               <div className="admin-withdrawal-workspace">
-                <div className="resolution-card resolution-card--flat admin-withdrawal-summary-card">
-                  <h3 className="resolution-card__title">Chi tiết yêu cầu rút tiền</h3>
-                  <p className="resolution-card__meta">
-                    Freelancer: <strong>{selected.freelancer_name || "—"}</strong> ({selected.freelancer_email || "—"})
-                  </p>
-                  <dl className="resolution-card__details admin-refund-case__details admin-withdrawal-summary-card__details">
-                    <div>
+                <section className="admin-withdrawal-summary-card" aria-label="Chi tiết yêu cầu rút tiền">
+                  <header className="admin-withdrawal-summary-card__head">
+                    <h3 className="admin-withdrawal-summary-card__title">Chi tiết yêu cầu rút tiền</h3>
+                    <p className="admin-withdrawal-summary-card__freelancer">
+                      <strong>{selected.requester_name || "—"}</strong>
+                      {selected.requester_email ? ` · ${selected.requester_email}` : ""}
+                    </p>
+                  </header>
+                  <dl className="admin-withdrawal-summary-card__grid">
+                    <div className="admin-withdrawal-summary-card__item">
                       <dt>Mã yêu cầu</dt>
-                      <dd>{selected.reference_id}</dd>
+                      <dd className="admin-withdrawal-summary-card__ref" title={selected.reference_id}>
+                        {selected.reference_id}
+                      </dd>
                     </div>
-                    <div>
+                    <div className="admin-withdrawal-summary-card__item">
                       <dt>Số tiền</dt>
-                      <dd>{formatVnd(selected.amount)}</dd>
+                      <dd className="admin-withdrawal-summary-card__amount">{formatVnd(selected.amount)}</dd>
                     </div>
-                    <div>
+                    <div className="admin-withdrawal-summary-card__item">
                       <dt>Trạng thái</dt>
-                      <dd>{statusLabel(selected.status)}</dd>
+                      <dd>
+                        <span
+                          className={`admin-withdrawals-card__status admin-withdrawals-card__status--${String(selected.status).toUpperCase()}`}
+                        >
+                          {statusLabel(selected.status)}
+                        </span>
+                      </dd>
                     </div>
-                    <div>
+                    <div className="admin-withdrawal-summary-card__item">
                       <dt>Tạo lúc</dt>
                       <dd>{formatDate(selected.created_at)}</dd>
                     </div>
                     {selected.paid_at ? (
-                      <div>
+                      <div className="admin-withdrawal-summary-card__item admin-withdrawal-summary-card__item--wide">
                         <dt>Hoàn tất lúc</dt>
                         <dd>{formatDate(selected.paid_at)}</dd>
                       </div>
                     ) : null}
                   </dl>
-                </div>
+                </section>
 
                 <section className="admin-withdrawal-transfer-card" aria-label="Chuyển khoản cho freelancer">
                   <header className="admin-withdrawal-transfer-card__head">
@@ -253,7 +312,9 @@ export default function AdminWithdrawalsPage() {
                     <dl className="admin-withdrawal-transfer-card__bank">
                       <div>
                         <dt>Ngân hàng</dt>
-                        <dd>{selected.bank_name}</dd>
+                        <dd>
+                          <BankNameWithLogo bankName={selected.bank_name} size={24} showName />
+                        </dd>
                       </div>
                       <div>
                         <dt>Chủ tài khoản</dt>
@@ -279,60 +340,110 @@ export default function AdminWithdrawalsPage() {
                   </div>
                 </section>
 
-                <div className="resolution-card resolution-card--flat">
-                  <h4 className="resolution-card__title">Thông tin nhận tiền</h4>
-                  <dl className="resolution-card__details admin-refund-case__details admin-withdrawal-bank-card__details">
-                    <div>
+                <section className="admin-withdrawal-bank-card" aria-label="Thông tin nhận tiền">
+                  <header className="admin-withdrawal-bank-card__head">
+                    <h4 className="admin-withdrawal-bank-card__title">Thông tin nhận tiền</h4>
+                  </header>
+                  <dl className="admin-withdrawal-bank-card__grid">
+                    <div className="admin-withdrawal-bank-card__item">
                       <dt>Ngân hàng nhận</dt>
-                      <dd>{selected.bank_name}</dd>
+                      <dd>
+                        <BankNameWithLogo bankName={selected.bank_name} size={24} showName />
+                      </dd>
                     </div>
-                    <div>
+                    <div className="admin-withdrawal-bank-card__item">
                       <dt>Chủ tài khoản</dt>
                       <dd>{selected.account_holder_name}</dd>
                     </div>
-                    <div>
+                    <div className="admin-withdrawal-bank-card__item admin-withdrawal-bank-card__item--wide">
                       <dt>Số tài khoản</dt>
-                      <dd>{selected.to_account_number}</dd>
+                      <dd className="admin-withdrawal-bank-card__account">{selected.to_account_number}</dd>
                     </div>
                   </dl>
-                </div>
+                </section>
 
                 {isPending ? (
-                  <div className="admin-resolve-panel">
-                    <h4 className="admin-resolve-panel__title">Quyết định của Admin</h4>
-                    <p className="admin-resolve-panel__hint">
-                      Luồng giống nạp tiền: admin là người thao tác chuyển khoản thực tế rồi xác nhận trên hệ thống.
-                    </p>
-                    <label className="admin-field">
-                      <span className="admin-field__label">Ghi chú (tùy chọn)</span>
-                      <textarea
-                        className="admin-textarea"
-                        rows={3}
-                        value={adminNote}
-                        onChange={(e) => setAdminNote(e.target.value)}
-                        placeholder="Mã giao dịch ngân hàng, lý do reject..."
-                        disabled={resolveBusy}
-                      />
-                    </label>
-                    <div className="admin-resolve-panel__actions">
-                      <button
-                        type="button"
-                        className="admin-btn admin-btn--primary"
-                        disabled={resolveBusy}
-                        onClick={() => void handleResolve("approve")}
-                      >
-                        <FaCheckCircle aria-hidden /> Approve sau khi đã chuyển khoản
-                      </button>
-                      <button
-                        type="button"
-                        className="admin-btn admin-btn--ghost"
-                        disabled={resolveBusy}
-                        onClick={() => void handleResolve("reject")}
-                      >
-                        <FaTimesCircle aria-hidden /> Reject và hoàn lại ví
-                      </button>
+                  <section className="admin-withdrawal-resolve-card" aria-label="Quyết định của Admin">
+                    <header className="admin-withdrawal-resolve-card__head">
+                      <h4 className="admin-withdrawal-resolve-card__title">Quyết định của Admin</h4>
+                    </header>
+                    <div className="admin-withdrawal-resolve-card__body">
+                      <p className="admin-withdrawal-resolve-card__hint">
+                        Luồng giống nạp tiền: admin là người thao tác chuyển khoản thực tế rồi xác nhận trên hệ
+                        thống.
+                      </p>
+                      <label className="admin-withdrawal-resolve-card__field">
+                        <span className="admin-withdrawal-resolve-card__label">
+                          Ghi chú khi duyệt (tùy chọn)
+                        </span>
+                        <textarea
+                          className="admin-withdrawal-resolve-card__textarea"
+                          rows={2}
+                          value={approveNote}
+                          onChange={(e) => setApproveNote(e.target.value)}
+                          placeholder="Mã giao dịch ngân hàng, ghi chú nội bộ..."
+                          disabled={resolveBusy}
+                        />
+                      </label>
+                      <label className="admin-withdrawal-resolve-card__field">
+                        <span className="admin-withdrawal-resolve-card__label">Lý do từ chối</span>
+                        <select
+                          className="admin-withdrawal-resolve-card__select"
+                          value={rejectReason}
+                          onChange={(e) =>
+                            setRejectReason(e.target.value as WithdrawalRejectReasonCode | "")
+                          }
+                          disabled={resolveBusy}
+                        >
+                          <option value="">— Chọn khi từ chối —</option>
+                          {WITHDRAWAL_REJECT_REASONS.map((reason) => (
+                            <option key={reason.code} value={reason.code}>
+                              {reason.label}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      {rejectReason ? (
+                        <label className="admin-withdrawal-resolve-card__field">
+                          <span className="admin-withdrawal-resolve-card__label">
+                            {rejectReason === "other"
+                              ? "Ghi chú gửi cho freelancer"
+                              : "Ghi chú thêm (tùy chọn)"}
+                          </span>
+                          <textarea
+                            className="admin-withdrawal-resolve-card__textarea"
+                            rows={2}
+                            value={rejectNote}
+                            onChange={(e) => setRejectNote(e.target.value)}
+                            placeholder={
+                              rejectReason === "other"
+                                ? "Mô tả lý do từ chối để freelancer biết..."
+                                : "Bổ sung chi tiết gửi cho freelancer..."
+                            }
+                            disabled={resolveBusy}
+                          />
+                        </label>
+                      ) : null}
+                      <div className="admin-withdrawal-resolve-card__actions">
+                        <button
+                          type="button"
+                          className="admin-btn admin-btn--primary"
+                          disabled={resolveBusy}
+                          onClick={() => void handleResolve("approve")}
+                        >
+                          <FaCheckCircle aria-hidden /> Duyệt sau khi đã chuyển khoản
+                        </button>
+                        <button
+                          type="button"
+                          className="admin-btn admin-btn--ghost"
+                          disabled={resolveBusy || !rejectReason}
+                          onClick={() => void handleResolve("reject")}
+                        >
+                          <FaTimesCircle aria-hidden /> Từ chối và hoàn lại ví
+                        </button>
+                      </div>
                     </div>
-                  </div>
+                  </section>
                 ) : null}
 
                 {detailLoading ? <p className="admin-page__state">Đang tải chi tiết...</p> : null}

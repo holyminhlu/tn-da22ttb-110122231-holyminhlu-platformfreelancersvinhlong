@@ -22,6 +22,7 @@ import {
   type ClientRecentPayment,
 } from "@/lib/api/users";
 import { formatDate, formatVnd } from "@/lib/format";
+import { jobContractHref } from "@/lib/findwork/jobContractsDisplay";
 import { getUserInitials, persistStoredUser, resolveAvatarSrc, toStoredUser } from "@/lib/authSession";
 import DashboardPagination from "./DashboardPagination";
 import "./client-dashboard.css";
@@ -124,9 +125,7 @@ function WidgetManageList({
           const isService = Boolean(item.serviceId);
           const href = isService
             ? `/hire/orders/${item.id}`
-            : item.contractStatus
-              ? `/manage`
-              : `/work/detail/${item.jobId}`;
+            : jobContractHref(item, "client");
           return (
             <li key={`${item.jobId}-${item.id}`} className="client-widget__list-item">
               <Link href={href} className="client-widget__list-title">

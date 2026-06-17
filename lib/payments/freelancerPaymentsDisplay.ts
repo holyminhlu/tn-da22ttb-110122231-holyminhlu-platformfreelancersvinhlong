@@ -29,7 +29,7 @@ export function filterFreelancerTransactions(
       if (key !== month) return false;
     }
     if (!query) return true;
-    const hay = [t.projectTitle, t.clientName, t.reference]
+    const hay = [t.projectTitle, t.clientName, t.reference, t.withdrawalFailureReason]
       .filter(Boolean)
       .join(" ")
       .toLowerCase();

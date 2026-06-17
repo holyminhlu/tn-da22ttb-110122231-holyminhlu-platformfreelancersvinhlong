@@ -1,5 +1,7 @@
 import type { BillingMethod } from "@/lib/api/payments";
 import WalletBrandIcon, { getWalletBrandKey } from "@/components/payments/WalletBrandIcon";
+import BankBadgeIcon from "@/components/payments/BankBadgeIcon";
+import { resolveBankVisual } from "@/lib/payments/bankDisplay";
 import {
   FaCcAmex,
   FaCcJcb,
@@ -8,19 +10,6 @@ import {
   FaCcVisa,
   FaUniversity,
 } from "react-icons/fa";
-
-const BANK_COLORS: Record<string, string> = {
-  vietcombank: "#00673b",
-  bidv: "#006b3f",
-  vietinbank: "#005baa",
-  agribank: "#ae1c3f",
-  techcombank: "#ed1c24",
-  "mb bank": "#141ed2",
-  acb: "#0033a0",
-  vpbank: "#00a651",
-  sacombank: "#0054a6",
-  tpbank: "#5c2d91",
-};
 
 function normalizeKey(value: string) {
   return value.toLowerCase().trim();
@@ -42,20 +31,9 @@ export function resolvePaymentMethodVisual(method: BillingMethod) {
     return { kind: "paypal" as const };
   }
 
-  for (const [bank, color] of Object.entries(BANK_COLORS)) {
-    if (label.includes(bank)) {
-      return { kind: "bank" as const, name: method.label, color, abbr: bank.slice(0, 2).toUpperCase() };
-    }
-  }
-
-  if (method.type === "bank") {
-    const abbr = method.label
-      .split(/\s+/)
-      .map((w) => w[0])
-      .join("")
-      .slice(0, 2)
-      .toUpperCase();
-    return { kind: "bank" as const, name: method.label, color: "#2563eb", abbr: abbr || "NH" };
+  const bankVisual = resolveBankVisual(method.label);
+  if (bankVisual.logoSrc || method.type === "bank") {
+    return { kind: "bank" as const, bankName: method.label };
   }
 
   if (method.type === "card") {
@@ -121,21 +99,7 @@ export default function PaymentMethodIcon({
   }
 
   if (visual.kind === "bank") {
-    return (
-      <span
-        className={`${iconClass} payments-method-icon__badge payments-method-icon__badge--bank`}
-        style={{
-          width: size,
-          height: size,
-          backgroundColor: visual.color,
-          fontSize: size * 0.32,
-        }}
-        title={visual.name}
-        aria-hidden
-      >
-        {visual.abbr}
-      </span>
-    );
+    return <BankBadgeIcon bankName={visual.bankName} size={size} className={className} />;
   }
 
   return (

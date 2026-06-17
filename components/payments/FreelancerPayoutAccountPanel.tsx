@@ -15,11 +15,13 @@ import LinkPayoutAccountModal from "./LinkPayoutAccountModal";
 type FreelancerPayoutAccountPanelProps = {
   profile: FreelancerPayoutProfile;
   onUpdated: () => void | Promise<void>;
+  audience?: "freelancer" | "client";
 };
 
 export default function FreelancerPayoutAccountPanel({
   profile,
   onUpdated,
+  audience = "freelancer",
 }: FreelancerPayoutAccountPanelProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const [unlinkBusy, setUnlinkBusy] = useState(false);
@@ -47,28 +49,32 @@ export default function FreelancerPayoutAccountPanel({
   if (!profile.isConfigured) {
     return (
       <div className="fl-payout fl-payout--empty">
-        <div className="fl-payout-empty-card">
-          <span className="fl-payout-empty-card__icon" aria-hidden>
-            <FaUniversity />
-          </span>
-          <h3 className="fl-payout-empty-card__title">Chưa liên kết tài khoản ngân hàng</h3>
-          <p className="fl-payout-empty-card__text">
-            Liên kết tài khoản nội địa để nhận tiền rút từ ví VLC. Thông tin được bảo mật và chỉ
-            hiển thị một phần số tài khoản.
-          </p>
-          <button
-            type="button"
-            className="payments-btn payments-btn--primary payments-btn--with-icon fl-payout__cta"
-            onClick={() => setModalOpen(true)}
-          >
-            Liên kết tài khoản ngân hàng
-          </button>
-          {profile.contactEmail ? (
-            <p className="fl-payout__email">
-              Email đối chiếu: <strong>{profile.contactEmail}</strong>
+        <section className="fl-payout-card fl-payout-card--empty" aria-label="Chưa liên kết tài khoản">
+          <div className="fl-payout-card__empty-body">
+            <span className="fl-payout-card__empty-icon" aria-hidden>
+              <FaUniversity />
+            </span>
+            <h3 className="fl-payout-card__empty-title">Chưa liên kết tài khoản ngân hàng</h3>
+            <p className="fl-payout-card__empty-text">
+              Liên kết tài khoản nội địa để nhận tiền rút từ ví VLC. Thông tin được bảo mật và chỉ
+              hiển thị một phần số tài khoản.
             </p>
+            <button
+              type="button"
+              className="payments-btn payments-btn--primary payments-btn--with-icon"
+              onClick={() => setModalOpen(true)}
+            >
+              Liên kết tài khoản ngân hàng
+            </button>
+          </div>
+          {profile.contactEmail ? (
+            <footer className="fl-payout-card__foot">
+              <p className="fl-payout-card__email">
+                Email đối chiếu: <strong>{profile.contactEmail}</strong>
+              </p>
+            </footer>
           ) : null}
-        </div>
+        </section>
         <LinkPayoutAccountModal
           open={modalOpen}
           profile={profile}
@@ -80,72 +86,72 @@ export default function FreelancerPayoutAccountPanel({
     );
   }
 
-  const masked =
-    profile.accountMasked || maskAccountNumber("", profile.accountLast4);
+  const masked = profile.accountMasked || maskAccountNumber("", profile.accountLast4);
   const statusLabel = profile.isVerified ? "Đã xác minh" : "Đã liên kết";
 
   return (
     <div className="fl-payout fl-payout--linked">
-      <div className="fl-payout__head">
-        <span
-          className={`fl-payout__badge${profile.isVerified ? " fl-payout__badge--verified" : ""}`}
-        >
-          {profile.isVerified ? (
-            <FaCheckCircle aria-hidden className="fl-payout__badge-icon" />
-          ) : null}
-          {statusLabel}
-        </span>
-        <div className="fl-payout__actions">
-          <button
-            type="button"
-            className="payments-link-btn"
-            onClick={() => setModalOpen(true)}
+      <section className="fl-payout-card" aria-label="Tài khoản nhận tiền đã liên kết">
+        <header className="fl-payout-card__head">
+          <div className="fl-payout-card__brand">
+            <BankBadgeIcon bankName={profile.bankName} size={40} />
+            <div className="fl-payout-card__brand-text">
+              <p className="fl-payout-card__bank-name">{profile.bankName}</p>
+              <p className="fl-payout-card__subtitle">Tài khoản nhận tiền chính</p>
+            </div>
+          </div>
+          <span
+            className={`fl-payout-card__status${profile.isVerified ? " fl-payout-card__status--verified" : ""}`}
           >
+            {profile.isVerified ? <FaCheckCircle aria-hidden /> : null}
+            {statusLabel}
+          </span>
+        </header>
+
+        <dl className="fl-payout-card__grid">
+          <div className="fl-payout-card__item">
+            <dt>Chủ tài khoản</dt>
+            <dd>{profile.accountHolderName || profile.contactName || "—"}</dd>
+          </div>
+          <div className="fl-payout-card__item">
+            <dt>Số tài khoản</dt>
+            <dd className="fl-payout-card__account">{masked}</dd>
+          </div>
+          {profile.linkedAt ? (
+            <div className="fl-payout-card__item fl-payout-card__item--wide">
+              <dt>Liên kết từ</dt>
+              <dd>{formatDate(profile.linkedAt)}</dd>
+            </div>
+          ) : null}
+        </dl>
+
+        <footer className="fl-payout-card__actions">
+          <button type="button" className="payments-link-btn" onClick={() => setModalOpen(true)}>
             Thay đổi tài khoản
           </button>
           <button
             type="button"
-            className="payments-link-btn fl-payout__unlink"
+            className="payments-link-btn fl-payout-card__unlink"
             disabled={unlinkBusy}
             onClick={() => void handleUnlink()}
           >
             {unlinkBusy ? "Đang xử lý..." : "Hủy liên kết"}
           </button>
-        </div>
-      </div>
+        </footer>
 
-      <div className="fl-payout__card">
-        <BankBadgeIcon bankName={profile.bankName} size={48} />
-        <div className="fl-payout__details">
-          <p className="fl-payout__bank">{profile.bankName}</p>
-          <dl className="fl-payout__meta">
-            <div>
-              <dt>Chủ tài khoản</dt>
-              <dd>{profile.accountHolderName || profile.contactName || "—"}</dd>
-            </div>
-            <div>
-              <dt>Số tài khoản</dt>
-              <dd className="fl-payout__account-num">{masked}</dd>
-            </div>
-            {profile.linkedAt ? (
-              <div>
-                <dt>Liên kết từ</dt>
-                <dd>{formatDate(profile.linkedAt)}</dd>
-              </div>
-            ) : null}
-          </dl>
-        </div>
-      </div>
+        {profile.contactEmail ? (
+          <footer className="fl-payout-card__foot">
+            <p className="fl-payout-card__email">
+              Email liên kết: <strong>{profile.contactEmail}</strong>
+            </p>
+          </footer>
+        ) : null}
+      </section>
 
-      {profile.contactEmail ? (
-        <p className="fl-payout__email">
-          Email liên kết: <strong>{profile.contactEmail}</strong>
-        </p>
-      ) : null}
-
-      <p className="fl-payout__footnote">
-        Tiền rút sẽ được chuyển vào tài khoản này trong vòng 24–48 giờ làm việc sau khi yêu cầu
-        được xử lý.
+      <p className="fl-payout-card__footnote">
+        {audience === "client"
+          ? "Tiền rút từ ví client sẽ được chuyển vào tài khoản này trong vòng 24–48 giờ làm việc sau khi admin duyệt."
+          : "Tiền rút sẽ được chuyển vào tài khoản này trong vòng 24–48 giờ làm việc sau khi yêu cầu được xử lý."}
       </p>
 
       <LinkPayoutAccountModal

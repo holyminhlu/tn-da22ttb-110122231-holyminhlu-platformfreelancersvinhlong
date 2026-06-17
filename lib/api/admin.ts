@@ -19,6 +19,10 @@ export type FreelancerApprovalItem = {
   fullName: string;
   phone: string | null;
   avatarUrl: string | null;
+  profileBio: string | null;
+  profileDistrictCity: string | null;
+  isPhoneVerified: boolean;
+  isEmailVerified: boolean;
   userStatus: string;
   submittedAt: string | null;
   adminReviewStatus: AdminReviewStatus | string;
@@ -29,11 +33,39 @@ export type FreelancerApprovalItem = {
   step3Complete: boolean;
   canApprove: boolean;
   blockers: string[];
+  accountType: string;
+  useExistingAccountInfo: boolean;
+  legalFirstName: string | null;
+  legalLastName: string | null;
+  addressSearch: string | null;
+  addressStreet: string | null;
+  addressCountry: string | null;
+  addressState: string | null;
+  addressCity: string | null;
+  addressPostal: string | null;
+  contactConfirmed: boolean;
+  contactConfirmedAt: string | null;
   selfieUrl: string | null;
+  idDocType: string | null;
   idFrontUrl: string | null;
   idBackUrl: string | null;
+  addressProofType: string | null;
   addressProofUrl: string | null;
+  phoneSubmittedAt: string | null;
+  photoSubmittedAt: string | null;
+  idSubmittedAt: string | null;
+  addressProofSubmittedAt: string | null;
   cardLast4: string | null;
+  cardBrand: string | null;
+  cardExpiry: string | null;
+  cardholderName: string | null;
+  isBusinessCard: boolean;
+  billingStreet: string | null;
+  billingCountry: string | null;
+  billingState: string | null;
+  billingCity: string | null;
+  billingPostal: string | null;
+  billingPhone: string | null;
   cardVerifiedAt: string | null;
 };
 
@@ -61,6 +93,14 @@ export async function listFreelancerApprovals(params: AdminApprovalListParams = 
     total: number;
     items: FreelancerApprovalItem[];
   }>(`${apiPaths.admin.freelancerApprovals}?${search.toString()}`, { auth: true });
+  return data;
+}
+
+export async function getFreelancerApproval(userId: string) {
+  const { data } = await fetchApi<{ item: FreelancerApprovalItem }>(
+    apiPaths.admin.freelancerApproval(userId),
+    { auth: true },
+  );
   return data;
 }
 
@@ -290,6 +330,9 @@ export type AdminWithdrawalRow = {
   paid_at: string | null;
   created_at: string;
   updated_at: string;
+  requester_name: string | null;
+  requester_email: string | null;
+  requester_role: string | null;
   freelancer_name: string | null;
   freelancer_email: string | null;
   qr_url: string | null;
@@ -298,13 +341,16 @@ export type AdminWithdrawalRow = {
 export async function listAdminWithdrawals(params?: {
   status?: AdminWithdrawalStatusFilter;
   q?: string;
+  audience?: "freelancer" | "client" | "all";
 }) {
   const search = new URLSearchParams();
   search.set("status", params?.status ?? "pending");
+  search.set("audience", params?.audience ?? "freelancer");
   if (params?.q?.trim()) search.set("q", params.q.trim());
   const { data } = await fetchApi<{
     total: number;
     requests: AdminWithdrawalRow[];
+    audience: string;
   }>(`${apiPaths.admin.withdrawals}?${search.toString()}`, { auth: true });
   return data;
 }
@@ -319,7 +365,11 @@ export async function getAdminWithdrawalDetail(withdrawalId: string) {
 
 export async function resolveAdminWithdrawal(
   withdrawalId: string,
-  body: { resolution: "approve" | "reject"; adminNote?: string },
+  body: {
+    resolution: "approve" | "reject";
+    adminNote?: string;
+    rejectReason?: string;
+  },
 ) {
   const { data } = await fetchApi<{ message: string; resolution: string }>(
     apiPaths.admin.resolveWithdrawal(withdrawalId),

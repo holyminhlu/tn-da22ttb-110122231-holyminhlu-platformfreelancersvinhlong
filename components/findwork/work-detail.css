@@ -535,6 +535,7 @@
   width: 100%;
   align-items: center;
   justify-content: center;
+  white-space: nowrap;
   gap: 0.4rem;
   border-radius: 0.35rem;
   border: none;

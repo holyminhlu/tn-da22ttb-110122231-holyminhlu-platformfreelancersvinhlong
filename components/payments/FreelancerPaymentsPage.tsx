@@ -23,7 +23,7 @@ import {
 import PaymentsBalanceCard from "@/components/payments/PaymentsBalanceCard";
 import PaymentsMoneyInput from "@/components/payments/PaymentsMoneyInput";
 import PaymentsSectionTitle from "@/components/payments/PaymentsSectionTitle";
-import BankBadgeIcon from "@/components/payments/BankBadgeIcon";
+import BankBadgeIcon, { BankNameWithLogo } from "@/components/payments/BankBadgeIcon";
 import FreelancerPayoutAccountPanel from "@/components/payments/FreelancerPayoutAccountPanel";
 import FreelancerWithdrawModal from "@/components/payments/FreelancerWithdrawModal";
 import { FaChartLine, FaHistory } from "react-icons/fa";
@@ -46,7 +46,7 @@ const TX_FILTERS: { value: FreelancerTxFilter; label: string }[] = [
   { value: "other", label: "Khác" },
 ];
 
-function withdrawalStatusLabel(status?: FreelancerTransaction["withdrawalStatus"]) {
+function withdrawalStatusLabel(status?: FreelancerTransaction["withdrawalStatus"] | string) {
   switch (status) {
     case "PENDING_AUTH":
       return "Chờ xác nhận";
@@ -55,7 +55,7 @@ function withdrawalStatusLabel(status?: FreelancerTransaction["withdrawalStatus"
     case "SUCCEEDED":
       return "Thành công";
     case "FAILED":
-      return "Thất bại";
+      return "Bị từ chối";
     case "CANCELLED":
       return "Đã hủy";
     default:
@@ -63,7 +63,7 @@ function withdrawalStatusLabel(status?: FreelancerTransaction["withdrawalStatus"
   }
 }
 
-function withdrawalStatusClass(status?: FreelancerTransaction["withdrawalStatus"]) {
+function withdrawalStatusClass(status?: FreelancerTransaction["withdrawalStatus"] | string) {
   switch (status) {
     case "SUCCEEDED":
       return "fl-payments__tx-status fl-payments__tx-status--ok";
@@ -401,6 +401,32 @@ export default function FreelancerPaymentsPage() {
               </section>
             ) : null}
 
+            {(data.activeWithdrawals?.length ?? 0) > 0 ? (
+              <section className="payments-panel" id="withdrawals">
+                <h2 className="payments-panel__title">Yêu cầu rút tiền</h2>
+                <ul className="fl-payments__withdraw-list">
+                  {data.activeWithdrawals.map((item) => (
+                    <li key={item.id} className="fl-payments__withdraw-item">
+                      <div className="fl-payments__withdraw-item-main">
+                        <p className="fl-payments__withdraw-item-amount">{formatVnd(item.amount)}</p>
+                        <p className="fl-payments__withdraw-item-meta">
+                          <BankNameWithLogo
+                            bankName={item.bankName}
+                            size={20}
+                            suffix={`${item.accountLast4 ? ` · ****${item.accountLast4}` : ""} · ${formatDate(item.createdAt)}`}
+                          />
+                        </p>
+                        <p className="fl-payments__withdraw-item-ref">{item.referenceId}</p>
+                      </div>
+                      <span className={withdrawalStatusClass(item.status)}>
+                        {withdrawalStatusLabel(item.status)}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ) : null}
+
             <section className="payments-panel">
               <div className="payments-panel__head payments-tx-panel__head">
                 <PaymentsSectionTitle icon={<FaHistory />}>
@@ -509,12 +535,32 @@ export default function FreelancerPaymentsPage() {
                             </td>
                             <td>{item.clientName}</td>
                             <td>{freelancerTransactionCategoryLabel(item.category)}</td>
-                            <td>{item.category === "withdraw" ? item.withdrawalBankName || "—" : "—"}</td>
+                            <td>
+                              {item.category === "withdraw" && item.withdrawalBankName ? (
+                                <BankNameWithLogo
+                                  bankName={item.withdrawalBankName}
+                                  size={20}
+                                  showName
+                                />
+                              ) : (
+                                "—"
+                              )}
+                            </td>
                             <td>
                               {item.category === "withdraw" ? (
-                                <span className={withdrawalStatusClass(item.withdrawalStatus)}>
-                                  {withdrawalStatusLabel(item.withdrawalStatus)}
-                                </span>
+                                <div className="fl-payments__tx-status-wrap">
+                                  <span className={withdrawalStatusClass(item.withdrawalStatus)}>
+                                    {withdrawalStatusLabel(item.withdrawalStatus)}
+                                  </span>
+                                  {item.withdrawalFailureReason ? (
+                                    <span
+                                      className="fl-payments__tx-fail-reason"
+                                      title={item.withdrawalFailureReason}
+                                    >
+                                      {item.withdrawalFailureReason}
+                                    </span>
+                                  ) : null}
+                                </div>
                               ) : (
                                 "—"
                               )}
@@ -523,7 +569,7 @@ export default function FreelancerPaymentsPage() {
                               {item.amount >= 0 ? "+" : ""}
                               {formatVnd(item.amount)}
                             </td>
-                            <td>{item.reference || "—"}</td>
+                            <td>{item.withdrawalReferenceId || item.reference || "—"}</td>
                           </tr>
                         ))}
                       </tbody>

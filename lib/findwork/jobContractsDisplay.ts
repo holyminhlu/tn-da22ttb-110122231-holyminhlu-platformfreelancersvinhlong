@@ -88,5 +88,7 @@ export function jobContractHref(
       ? `/hire/orders/${item.id}`
       : `/findwork/orders/${item.id}`;
   }
-  return `/work/detail/${item.jobId}`;
+  return role === "client"
+    ? `/hire/joblist/${item.jobId}`
+    : `/work/detail/${item.jobId}`;
 }

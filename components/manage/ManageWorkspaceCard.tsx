@@ -10,6 +10,7 @@ import {
   contractStatusLabel,
   type JobsListItem,
 } from "@/components/jobs/jobs-filter";
+import { jobContractHref } from "@/lib/findwork/jobContractsDisplay";
 
 type ManageWorkspaceCardProps = {
   item: JobsListItem;
@@ -112,7 +113,9 @@ export default function ManageWorkspaceCard({ item, onChanged }: ManageWorkspace
   const showActions = canClose || canEdit || canDelete || jobClosed;
   const jobCode = item.jobId ? item.jobId.slice(0, 8).toUpperCase() : null;
   const isServiceOrder = Boolean(item.serviceId);
-  const detailHref = isServiceOrder ? `/hire/orders/${item.id}` : `/work/detail/${item.jobId}`;
+  const detailHref = isServiceOrder
+    ? `/hire/orders/${item.id}`
+    : jobContractHref(item, "client");
   const hasNewProposal =
     isServiceOrder &&
     Boolean(item.proposalText?.trim()) &&

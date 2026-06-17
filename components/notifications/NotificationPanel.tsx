@@ -7,6 +7,8 @@ import DashboardPagination from "@/components/dashboard/DashboardPagination";
 import "@/components/dashboard/dashboardPagination.css";
 import type { AppNotification } from "@/lib/api/notifications";
 import { getNotificationCategoryMeta } from "@/lib/notifications/display";
+import { resolveNotificationHref } from "@/lib/notifications/navigation";
+import { useStoredUser } from "@/hooks/useStoredUser";
 import "./notifications.css";
 
 const PAGE_SIZE = 10;
@@ -75,6 +77,12 @@ export default function NotificationPanel({
   onDeleteRead,
 }: NotificationPanelProps) {
   const router = useRouter();
+  const { user } = useStoredUser({ refreshFromApi: false });
+  const viewerRole = (() => {
+    const role = String(user?.role || "").toLowerCase();
+    if (role === "client" || role === "freelancer" || role === "admin") return role;
+    return null;
+  })();
   const panelId = useId();
   const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [search, setSearch] = useState("");
@@ -135,8 +143,9 @@ export default function NotificationPanel({
       await onMarkRead(notification.id);
     }
     onClose();
-    if (notification.href) {
-      router.push(notification.href);
+    const nextHref = resolveNotificationHref(notification, viewerRole);
+    if (nextHref) {
+      router.push(nextHref);
     }
   }
 

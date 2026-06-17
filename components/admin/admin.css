@@ -438,6 +438,231 @@
   font-size: 0.8125rem;
 }
 
+.admin-idv-detail {
+  margin-top: 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0;
+  background: #fff;
+  overflow: hidden;
+}
+
+.admin-idv-detail__loading {
+  margin: 0;
+  padding: 1.25rem;
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.admin-idv-detail__head {
+  padding: 0.75rem 0.9rem;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.admin-idv-detail__profile {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.admin-idv-detail__avatar {
+  width: 3rem;
+  height: 3rem;
+  flex-shrink: 0;
+  object-fit: cover;
+  border: 1px solid #e2e8f0;
+  border-radius: 0;
+  background: #fff;
+}
+
+.admin-idv-detail__avatar--placeholder {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #475569;
+  background: #e2e8f0;
+}
+
+.admin-idv-detail__name {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.admin-idv-detail__email {
+  margin: 0.15rem 0 0;
+  font-size: 0.8125rem;
+  color: #475569;
+}
+
+.admin-idv-detail__meta {
+  margin: 0.15rem 0 0;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.admin-idv-detail__section {
+  padding: 0.75rem 0.9rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.admin-idv-detail__section-title {
+  margin: 0 0 0.6rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.admin-idv-detail__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
+  margin: 0;
+  border: 1px solid #e2e8f0;
+}
+
+.admin-idv-detail__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+  padding: 0.55rem 0.65rem;
+  border-top: 1px solid #e2e8f0;
+  border-right: 1px solid #e2e8f0;
+  text-align: left;
+}
+
+.admin-idv-detail__field:nth-child(-n + 2) {
+  border-top: none;
+}
+
+.admin-idv-detail__field:nth-child(2n) {
+  border-right: none;
+}
+
+.admin-idv-detail__field--wide {
+  grid-column: 1 / -1;
+  border-right: none;
+}
+
+.admin-idv-detail__field dt {
+  margin: 0;
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748b;
+}
+
+.admin-idv-detail__field dd {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: #0f172a;
+  word-break: break-word;
+}
+
+.admin-idv-detail__evidence-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.admin-idv-detail__evidence {
+  margin: 0;
+  border: 1px solid #e2e8f0;
+  border-radius: 0;
+  background: #fafafa;
+  overflow: hidden;
+}
+
+.admin-idv-detail__evidence-label {
+  padding: 0.45rem 0.55rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #334155;
+  border-bottom: 1px solid #e2e8f0;
+  background: #fff;
+}
+
+.admin-idv-detail__evidence-link {
+  display: block;
+}
+
+.admin-idv-detail__evidence-img {
+  display: block;
+  width: 100%;
+  max-height: 14rem;
+  object-fit: contain;
+  background: #f1f5f9;
+}
+
+.admin-idv-detail__evidence-empty {
+  margin: 0;
+  padding: 1.25rem 0.65rem;
+  font-size: 0.75rem;
+  color: #94a3b8;
+  text-align: center;
+}
+
+.admin-idv-detail__evidence-meta {
+  margin: 0;
+  padding: 0.35rem 0.55rem;
+  font-size: 0.6875rem;
+  color: #64748b;
+  border-top: 1px solid #e2e8f0;
+  background: #fff;
+}
+
+.admin-idv-detail__section--status {
+  background: #fafafa;
+}
+
+.admin-idv-detail__blockers {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.8125rem;
+  color: #b45309;
+}
+
+.admin-idv-detail__ready {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: #166534;
+  font-weight: 600;
+}
+
+.admin-idv-detail__note,
+.admin-idv-detail__reviewed {
+  margin: 0.55rem 0 0;
+  font-size: 0.8125rem;
+  color: #475569;
+}
+
+@media (max-width: 900px) {
+  .admin-idv-detail__grid,
+  .admin-idv-detail__evidence-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-idv-detail__field {
+    border-right: none;
+  }
+
+  .admin-idv-detail__field:nth-child(-n + 2) {
+    border-top: 1px solid #e2e8f0;
+  }
+
+  .admin-idv-detail__field:first-child {
+    border-top: none;
+  }
+}
+
 .admin-toast {
   margin-bottom: 1rem;
   padding: 0.625rem 0.875rem;
@@ -802,10 +1027,37 @@
   gap: 0.85rem;
 }
 
+.admin-withdrawals-list {
+  width: 100%;
+  min-width: 0;
+}
+
+.admin-withdrawals-list__inner {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  align-content: start;
+  padding: 0.4rem;
+}
+
+.admin-withdrawals-list__inner > li {
+  width: 100%;
+  min-width: 0;
+}
+
 .admin-withdrawals-card {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.2rem;
+  width: 100%;
+  box-sizing: border-box;
   border-color: #cbd5e1;
   background: #fff;
-  padding: 0.85rem;
+  padding: 0.5rem 0.55rem;
+  border-radius: 0;
+  text-align: left;
+  overflow: hidden;
 }
 
 .admin-withdrawals-card:hover {
@@ -813,43 +1065,107 @@
   background: #f8fbff;
 }
 
-.admin-withdrawals-card__top {
+.admin-withdrawals-card.resolution-card--active {
+  border-color: #3b82f6;
+  background: #eff6ff;
+  box-shadow: 0 0 0 2px rgb(59 130 246 / 0.14);
+}
+
+.admin-withdrawals-card__row {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 0.5rem;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.35rem;
+  min-width: 0;
+  width: 100%;
 }
 
 .admin-withdrawals-card__title {
-  color: #0f172a;
-  font-weight: 700;
+  flex: 1 1 auto;
+  min-width: 0;
   margin: 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #0f172a;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .admin-withdrawals-card__amount {
-  flex-shrink: 0;
-  font-size: 0.9rem;
+  align-self: flex-start;
+  font-size: 0.875rem;
   font-weight: 800;
+  line-height: 1.25;
   color: #1d4ed8;
+  text-align: left;
 }
 
 .admin-withdrawals-card__meta {
-  color: #475569;
-  margin-top: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.25rem;
+  min-width: 0;
+  width: 100%;
+  margin: 0;
+  font-size: 0.625rem;
+  line-height: 1.35;
+  color: #64748b;
+  text-align: left;
 }
 
-.admin-withdrawals-card__meta--ref {
+.admin-withdrawals-card__ref {
+  flex-shrink: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
-  font-size: 0.74rem;
-  color: #64748b;
+}
+
+.admin-withdrawals-card__meta-sep {
+  flex-shrink: 0;
+  color: #cbd5e1;
+}
+
+.admin-withdrawal-bank-card__item dd .bank-name-with-logo,
+.admin-withdrawal-transfer-card__bank dd .bank-name-with-logo {
+  margin-top: 0.1rem;
+}
+
+.admin-withdrawals-card__bank {
+  flex-shrink: 0;
+  max-width: 55%;
+  color: #475569;
+}
+
+.admin-withdrawals-card__bank .bank-name-with-logo {
+  max-width: 100%;
 }
 
 .admin-withdrawals-card__status {
+  flex-shrink: 0;
+  margin-left: auto;
+  font-size: 0.5625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 0.1rem 0.35rem;
+  border-radius: 999px;
   border: 1px solid #dbeafe;
   background: #eff6ff;
   color: #1d4ed8;
-  margin-top: 0.45rem;
-  width: fit-content;
+  line-height: 1.2;
+}
+
+.admin-withdrawals-card__status--PENDING_AUTH,
+.admin-withdrawals-card__status--PROCESSING {
+  border-color: #fde68a;
+  background: #fffbeb;
+  color: #b45309;
 }
 
 .admin-withdrawals-card__status--SUCCEEDED {
@@ -865,30 +1181,294 @@
   color: #b91c1c;
 }
 
-.admin-withdrawal-summary-card .resolution-card__details dt {
+.admin-withdrawal-summary-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 0;
+  background: #fff;
+  overflow: hidden;
+}
+
+.admin-withdrawal-summary-card__head {
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+  text-align: left;
+}
+
+.admin-withdrawal-summary-card__title {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.admin-withdrawal-summary-card__freelancer {
+  margin: 0.2rem 0 0;
+  font-size: 0.75rem;
+  line-height: 1.4;
   color: #64748b;
 }
 
-.admin-withdrawal-summary-card .resolution-card__details dd {
+.admin-withdrawal-summary-card__freelancer strong {
   color: #0f172a;
   font-weight: 600;
 }
 
-.admin-withdrawal-summary-card__details,
-.admin-withdrawal-bank-card__details {
+.admin-withdrawal-summary-card__grid {
+  display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+  gap: 0;
 }
 
-.admin-withdrawal-summary-card__details > div,
-.admin-withdrawal-bank-card__details > div {
-  padding: 0.45rem 0.55rem;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.45rem;
+.admin-withdrawal-summary-card__item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  min-width: 0;
+  padding: 0.55rem 0.75rem;
+  border-top: 1px solid #e2e8f0;
+  border-right: 1px solid #e2e8f0;
+  text-align: left;
+}
+
+.admin-withdrawal-summary-card__item:nth-child(-n + 2) {
+  border-top: none;
+}
+
+.admin-withdrawal-summary-card__item:nth-child(2n) {
+  border-right: none;
+}
+
+.admin-withdrawal-summary-card__item--wide {
+  grid-column: 1 / -1;
+  border-right: none;
+}
+
+.admin-withdrawal-summary-card__item dt {
+  margin: 0;
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748b;
+  line-height: 1.3;
+}
+
+.admin-withdrawal-summary-card__item dd {
+  margin: 0;
+  width: 100%;
+  min-width: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: #0f172a;
+}
+
+.admin-withdrawal-summary-card__ref {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #334155;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-withdrawal-summary-card__amount {
+  font-size: 0.9375rem;
+  font-weight: 800;
+  color: #1d4ed8;
+}
+
+.admin-withdrawal-summary-card__item .admin-withdrawals-card__status {
+  margin: 0;
+}
+
+.admin-withdrawal-bank-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 0;
+  background: #fff;
+  overflow: hidden;
+}
+
+.admin-withdrawal-bank-card__head {
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+  text-align: left;
+}
+
+.admin-withdrawal-bank-card__title {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.admin-withdrawal-bank-card__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+  gap: 0;
+}
+
+.admin-withdrawal-bank-card__item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  min-width: 0;
+  padding: 0.55rem 0.75rem;
+  border-top: 1px solid #e2e8f0;
+  border-right: 1px solid #e2e8f0;
+  text-align: left;
+}
+
+.admin-withdrawal-bank-card__item:nth-child(-n + 2) {
+  border-top: none;
+}
+
+.admin-withdrawal-bank-card__item:nth-child(2n) {
+  border-right: none;
+}
+
+.admin-withdrawal-bank-card__item--wide {
+  grid-column: 1 / -1;
+  border-right: none;
+}
+
+.admin-withdrawal-bank-card__item dt {
+  margin: 0;
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748b;
+  line-height: 1.3;
+}
+
+.admin-withdrawal-bank-card__item dd {
+  margin: 0;
+  width: 100%;
+  min-width: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: #0f172a;
+}
+
+.admin-withdrawal-bank-card__account {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.admin-withdrawal-resolve-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 0;
+  background: #fff;
+  overflow: hidden;
+}
+
+.admin-withdrawal-resolve-card__head {
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8fafc;
+  text-align: left;
+}
+
+.admin-withdrawal-resolve-card__title {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.admin-withdrawal-resolve-card__body {
+  padding: 0.65rem 0.75rem 0.75rem;
+  text-align: left;
+}
+
+.admin-withdrawal-resolve-card__hint {
+  margin: 0 0 0.65rem;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid #fde68a;
+  border-radius: 0;
+  background: #fffbeb;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: #92400e;
+}
+
+.admin-withdrawal-resolve-card__field {
+  display: block;
+  margin: 0;
+}
+
+.admin-withdrawal-resolve-card__label {
+  display: block;
+  margin-bottom: 0.3rem;
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #64748b;
+}
+
+.admin-withdrawal-resolve-card__textarea {
+  width: 100%;
+  box-sizing: border-box;
+  resize: vertical;
+  min-height: 4.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0;
+  padding: 0.5rem 0.6rem;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: #0f172a;
   background: #fff;
 }
 
-.admin-withdrawal-summary-card__details > div {
+.admin-withdrawal-resolve-card__textarea:focus {
+  outline: none;
+  border-color: #93c5fd;
+  box-shadow: 0 0 0 2px rgb(59 130 246 / 0.12);
+}
+
+.admin-withdrawal-resolve-card__textarea:disabled {
   background: #f8fafc;
+  color: #94a3b8;
+}
+
+.admin-withdrawal-resolve-card__select {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #e2e8f0;
+  border-radius: 0;
+  padding: 0.45rem 0.55rem;
+  font-size: 0.8125rem;
+  color: #0f172a;
+  background: #fff;
+}
+
+.admin-withdrawal-resolve-card__select:focus {
+  outline: none;
+  border-color: #93c5fd;
+  box-shadow: 0 0 0 2px rgb(59 130 246 / 0.12);
+}
+
+.admin-withdrawal-resolve-card__field + .admin-withdrawal-resolve-card__field {
+  margin-top: 0.55rem;
+}
+
+.admin-withdrawal-resolve-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.65rem;
 }
 
 .admin-withdrawal-transfer-card {
@@ -1413,8 +1993,27 @@
     height: 240px;
   }
 
-  .admin-withdrawal-summary-card__details,
-  .admin-withdrawal-bank-card__details {
+  .admin-withdrawal-summary-card__grid,
+  .admin-withdrawal-bank-card__grid {
     grid-template-columns: 1fr;
+  }
+
+  .admin-withdrawal-summary-card__item,
+  .admin-withdrawal-bank-card__item {
+    border-right: none;
+  }
+
+  .admin-withdrawal-summary-card__item:nth-child(-n + 2),
+  .admin-withdrawal-bank-card__item:nth-child(-n + 2) {
+    border-top: 1px solid #e2e8f0;
+  }
+
+  .admin-withdrawal-summary-card__item:first-child,
+  .admin-withdrawal-bank-card__item:first-child {
+    border-top: none;
+  }
+
+  .admin-withdrawal-resolve-card__actions .admin-btn {
+    flex: 1 1 100%;
   }
 }
