@@ -9,7 +9,6 @@ import {
   FaBriefcase,
   FaClock,
   FaExternalLinkAlt,
-  FaHeart,
   FaImage,
   FaLaptopCode,
   FaMapMarkerAlt,
@@ -19,10 +18,7 @@ import {
 import FreelancerAvatarFrame from "@/components/freelancer/FreelancerAvatarFrame";
 import { getFreelancer, type FreelancerProfilePayload } from "@/lib/api/freelancers";
 import { getUserInitials, resolveAvatarSrc } from "@/lib/authSession";
-import {
-  toggleFavoriteFreelancerId,
-  readFavoriteFreelancerIds,
-} from "@/lib/hire/favoriteFreelancersStorage";
+import { useClientFavoriteFreelancers } from "@/hooks/useClientFavoriteFreelancers";
 import {
   displayMembershipBadges,
   featuredServiceDescriptionText,
@@ -42,6 +38,7 @@ import { useClientIdentityVerification } from "@/hooks/useClientIdentityVerifica
 import { CLIENT_VERIFY_PAGE } from "@/lib/hire/clientVerification";
 import { formatDate } from "@/lib/format";
 import FreelancerChatWidget from "@/components/chat/FreelancerChatWidget";
+import FreelancerLikeButton from "./FreelancerLikeButton";
 import HireShell from "./HireShell";
 import FindFreelancersPage from "@/components/freelancers/FindFreelancersPage";
 import { useStoredUser } from "@/hooks/useStoredUser";
@@ -100,8 +97,9 @@ export default function ClientHireFreelancerDetailPage({
   const [data, setData] = useState<FreelancerProfilePayload | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [isFavorite, setIsFavorite] = useState(false);
+  const [favoriteCount, setFavoriteCount] = useState(0);
   const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
+  const { isFavorite, toggleFavorite } = useClientFavoriteFreelancers({ enabled: canHire });
 
   const load = useCallback(async () => {
     if (!freelancerId) {
@@ -117,6 +115,7 @@ export default function ClientHireFreelancerDetailPage({
         serviceQuery || undefined,
       );
       setData(payload);
+      setFavoriteCount(payload.freelancer.favorite_count ?? 0);
     } catch (err) {
       const message =
         err && typeof err === "object" && "message" in err
@@ -132,12 +131,6 @@ export default function ClientHireFreelancerDetailPage({
   useEffect(() => {
     void load();
   }, [load]);
-
-  useEffect(() => {
-    if (freelancerId) {
-      setIsFavorite(readFavoriteFreelancerIds().includes(freelancerId));
-    }
-  }, [freelancerId]);
 
   useEffect(() => {
     if (!data) {
@@ -176,10 +169,17 @@ export default function ClientHireFreelancerDetailPage({
 
   const PageShell = publicBrowse ? PublicDetailShell : HireShell;
 
-  function handleToggleFavorite() {
-    if (!freelancerId) return;
-    const next = toggleFavoriteFreelancerId(freelancerId);
-    setIsFavorite(next);
+  async function handleToggleFavorite(id: string) {
+    try {
+      const result = await toggleFavorite(id);
+      setFavoriteCount(result.favoriteCount);
+    } catch (err) {
+      const message =
+        err && typeof err === "object" && "message" in err
+          ? String((err as { message: string }).message)
+          : "Không thể cập nhật yêu thích.";
+      window.alert(message);
+    }
   }
 
   if (loading) {
@@ -346,25 +346,21 @@ export default function ClientHireFreelancerDetailPage({
               </Link>
             ) : null}
             {isGuest ? (
-              <Link
-                href={`/dang-nhap?next=${encodeURIComponent(`/freelancers/${freelancerId}`)}`}
-                className="hire-fl-detail__btn hire-fl-detail__btn--heart"
-                aria-label="Đăng nhập để lưu yêu thích"
-              >
-                <FaHeart aria-hidden />
-                Lưu yêu thích
-              </Link>
-            ) : (
-              <button
-                type="button"
-                className={`hire-fl-detail__btn hire-fl-detail__btn--heart${isFavorite ? " hire-fl-detail__btn--heart-active" : ""}`}
-                onClick={handleToggleFavorite}
-                aria-pressed={isFavorite}
-              >
-                <FaHeart aria-hidden />
-                {isFavorite ? "Đã lưu yêu thích" : "Lưu yêu thích"}
-              </button>
-            )}
+              <FreelancerLikeButton
+                freelancerId={freelancerId}
+                isFavorite={false}
+                favoriteCount={favoriteCount}
+                onToggle={() => {}}
+                guestHref={`/dang-nhap?next=${encodeURIComponent(publicBrowse ? `/freelancers/${freelancerId}` : `/hire/search/${freelancerId}`)}`}
+              />
+            ) : canHire ? (
+              <FreelancerLikeButton
+                freelancerId={freelancerId}
+                isFavorite={isFavorite(freelancerId)}
+                favoriteCount={favoriteCount}
+                onToggle={(id) => void handleToggleFavorite(id)}
+              />
+            ) : null}
           </div>
         </header>
 

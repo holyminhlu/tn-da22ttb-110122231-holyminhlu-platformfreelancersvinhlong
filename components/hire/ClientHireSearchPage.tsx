@@ -13,10 +13,7 @@ import {
 } from "react-icons/fa";
 import { listFreelancers, type FreelancerSearchRow } from "@/lib/api/freelancers";
 import { useClientIdentityVerification } from "@/hooks/useClientIdentityVerification";
-import {
-  readFavoriteFreelancerIds,
-  toggleFavoriteFreelancerId,
-} from "@/lib/hire/favoriteFreelancersStorage";
+import { useClientFavoriteFreelancers } from "@/hooks/useClientFavoriteFreelancers";
 import HireSearchFreelancerCard from "./HireSearchFreelancerCard";
 import HireShell from "./HireShell";
 import "./hire.css";
@@ -50,7 +47,8 @@ export default function ClientHireSearchPage() {
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
+  const [favoriteCounts, setFavoriteCounts] = useState<Record<string, number>>({});
+  const { isFavorite, toggleFavorite } = useClientFavoriteFreelancers({ enabled: true });
 
   const skillRef = useRef<HTMLDivElement>(null);
   const districtRef = useRef<HTMLDivElement>(null);
@@ -90,8 +88,16 @@ export default function ClientHireSearchPage() {
   }, [searchQuery, skill, district, category, offset]);
 
   useEffect(() => {
-    setFavoriteIds(readFavoriteFreelancerIds());
-  }, []);
+    setFavoriteCounts((prev) => {
+      const next = { ...prev };
+      for (const row of rows) {
+        if (next[row.id] === undefined) {
+          next[row.id] = row.favorite_count ?? 0;
+        }
+      }
+      return next;
+    });
+  }, [rows]);
 
   useEffect(() => {
     void load();
@@ -168,9 +174,17 @@ export default function ClientHireSearchPage() {
     });
   }
 
-  function handleToggleFavorite(id: string) {
-    toggleFavoriteFreelancerId(id);
-    setFavoriteIds(readFavoriteFreelancerIds());
+  async function handleToggleFavorite(id: string) {
+    try {
+      const result = await toggleFavorite(id);
+      setFavoriteCounts((prev) => ({ ...prev, [id]: result.favoriteCount }));
+    } catch (err) {
+      const message =
+        err && typeof err === "object" && "message" in err
+          ? String((err as { message: string }).message)
+          : "Không thể cập nhật yêu thích.";
+      window.alert(message);
+    }
   }
 
   return (
@@ -405,8 +419,9 @@ export default function ClientHireSearchPage() {
                   row={row}
                   selected={selectedIds.has(row.id)}
                   onSelect={handleSelect}
-                  isFavorite={favoriteIds.includes(row.id)}
-                  onToggleFavorite={handleToggleFavorite}
+                  isFavorite={isFavorite(row.id)}
+                  favoriteCount={favoriteCounts[row.id] ?? row.favorite_count ?? 0}
+                  onToggleFavorite={(id) => void handleToggleFavorite(id)}
                   clientIdentityVerified={clientIdentityVerified}
                   clientIdentityLoading={clientIdentityLoading}
                 />

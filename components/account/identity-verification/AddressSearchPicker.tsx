@@ -11,10 +11,10 @@ import {
 } from "@/lib/geo/nominatim";
 import {
   isInsideVinhLongBbox,
-  osmEmbedUrl,
   VINH_LONG_MAP_CENTER,
 } from "@/lib/geo/vinhLongBounds";
 import { VINH_LONG_COMMUNES_2025, VINH_LONG_PROVINCE } from "@/lib/geo/vinhLongCommunes2025";
+import GoogleRoutePreviewMap from "@/components/maps/GoogleRoutePreviewMap";
 
 /** Chi tiết địa chỉ — điền tự động từ GPS/xã-phường/OSM, lưu DB khi submit (không hiển thị form riêng). */
 export type AddressFormSlice = {
@@ -69,6 +69,11 @@ export default function AddressSearchPicker({
   const mapLat = lat ?? VINH_LONG_MAP_CENTER.lat;
   const mapLng = lng ?? VINH_LONG_MAP_CENTER.lng;
   const hasPin = lat != null && lng != null;
+  const routeOrigin = useMemo(
+    () => ({ lat: VINH_LONG_MAP_CENTER.lat, lng: VINH_LONG_MAP_CENTER.lng }),
+    [],
+  );
+  const routeDestination = hasPin ? { lat: lat!, lng: lng! } : null;
 
   useEffect(() => {
     setQuery(value.addressSearch);
@@ -290,19 +295,22 @@ export default function AddressSearchPicker({
 
       <div className="idv-address-picker__map-wrap">
         <p className="idv-address-picker__map-label">
-          Bản đồ tham chiếu (OpenStreetMap)
-          {hasPin ? " — vị trí đã chọn" : " — trung tâm tỉnh Vĩnh Long"}
+          Bản đồ tham chiếu (Google Maps)
+          {hasPin ? " — A: Trung tâm tỉnh → B: địa chỉ đã chọn" : " — trung tâm tỉnh Vĩnh Long"}
         </p>
-        <iframe
-          title="Bản đồ địa chỉ Vĩnh Long"
-          className="idv-address-picker__map"
-          src={osmEmbedUrl(mapLat, mapLng, hasPin ? 15 : VINH_LONG_MAP_CENTER.zoom)}
-          loading="lazy"
-          referrerPolicy="no-referrer-when-downgrade"
+        <GoogleRoutePreviewMap
+          className="idv-address-picker__google-map"
+          origin={hasPin ? routeOrigin : null}
+          destination={routeDestination}
+          originLabel="Trung tâm tỉnh Vĩnh Long"
+          destinationLabel="Địa chỉ của bạn"
+          fallbackCenter={{ lat: mapLat, lng: mapLng }}
+          fallbackZoom={hasPin ? 15 : VINH_LONG_MAP_CENTER.zoom}
+          mapHeight={220}
         />
         {hasPin ? (
           <p className="idv-address-picker__coords">
-            GPS: {lat!.toFixed(5)}, {lng!.toFixed(5)}
+            GPS (B): {lat!.toFixed(5)}, {lng!.toFixed(5)}
           </p>
         ) : null}
       </div>

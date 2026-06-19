@@ -348,7 +348,8 @@ export default function EditAccountContent() {
                 </button>
               </div>
               <p className="ea-address-hint">
-                Địa chỉ được lấy từ GPS hiện tại và đối chiếu bản đồ (trong phạm vi Vĩnh Long).
+                Địa chỉ được lấy từ GPS hiện tại và đối chiếu bản đồ (trong phạm vi Vĩnh Long). Khi
+                sửa địa chỉ, bản đồ thử nghiệm hiển thị tuyến A → B trên Google Maps.
               </p>
               <div className="ea-address-grid">
                 <div className="ea-address-span-full">
@@ -388,14 +389,15 @@ export default function EditAccountContent() {
             {dialog.field === "address" ? (
               <div className="ea-dialog-address">
                 <p className="ea-dialog-address-lead">
-                  Hệ thống lấy vị trí GPS hiện tại, đối chiếu OpenStreetMap và điền địa chỉ tự
-                  động. Bạn có thể chỉnh tìm kiếm hoặc bấm <strong>Dùng GPS</strong> để cập nhật lại.
+                  Hệ thống lấy vị trí GPS hiện tại, đối chiếu bản đồ và điền địa chỉ tự động. Khi
+                  có tọa độ, bản đồ hiển thị tuyến <strong>A → B</strong> (trung tâm tỉnh đến địa
+                  chỉ bạn chọn) bằng đường màu đỏ trên Google Maps.
                 </p>
                 <AddressSearchPicker
                   value={dialog.address}
                   lat={dialog.lat}
                   lng={dialog.lng}
-                  requestGpsOnMount
+                  requestGpsOnMount={false}
                   onChange={(address) =>
                     setDialog((current) =>
                       current?.field === "address" ? { ...current, address } : current,

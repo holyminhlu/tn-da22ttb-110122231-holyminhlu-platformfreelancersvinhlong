@@ -6,16 +6,13 @@ import { FaHeart, FaSearch } from "react-icons/fa";
 import { getMyWork } from "@/lib/api/contracts";
 import { getFreelancer } from "@/lib/api/freelancers";
 import {
-  readFavoriteFreelancerIds,
-  toggleFavoriteFreelancerId,
-} from "@/lib/hire/favoriteFreelancersStorage";
-import {
   applyFreelancerProfile,
   entriesFromWorkedJobs,
   filterFavoriteEntries,
   mergeFavoriteIds,
 } from "./clientHireFavorites";
 import { useClientIdentityVerification } from "@/hooks/useClientIdentityVerification";
+import { useClientFavoriteFreelancers } from "@/hooks/useClientFavoriteFreelancers";
 import FreelancerChatWidget from "@/components/chat/FreelancerChatWidget";
 import HireFavoriteCard from "./HireFavoriteCard";
 import type { HireFavoriteEntry, HireFavoriteSource } from "./hireFavoritesTypes";
@@ -34,20 +31,21 @@ export default function ClientHireFavoritesPage() {
   const { verified: clientIdentityVerified, loading: clientIdentityLoading } =
     useClientIdentityVerification({ refreshOnVisible: false });
   const [entries, setEntries] = useState<HireFavoriteEntry[]>([]);
-  const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [searchInput, setSearchInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [tab, setTab] = useState<TabFilter>("all");
   const [chatEntry, setChatEntry] = useState<HireFavoriteEntry | null>(null);
+  const { favoriteIds: favoriteIdSet, toggleFavorite, ready: favoritesReady } =
+    useClientFavoriteFreelancers({ enabled: true });
+  const favoriteIds = useMemo(() => [...favoriteIdSet], [favoriteIdSet]);
 
   const load = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
-      const storedFavorites = readFavoriteFreelancerIds();
-      setFavoriteIds(storedFavorites);
+      const storedFavorites = [...favoriteIdSet];
 
       const data = await getMyWork();
       if (data.role !== "client") {
@@ -88,11 +86,12 @@ export default function ClientHireFavoritesPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [favoriteIdSet]);
 
   useEffect(() => {
+    if (!favoritesReady) return;
     void load();
-  }, [load]);
+  }, [load, favoritesReady]);
 
   const filtered = useMemo(
     () => filterFavoriteEntries(entries, tab, searchQuery),
@@ -119,59 +118,66 @@ export default function ClientHireFavoritesPage() {
     }
   }
 
-  function handleToggleFavorite(id: string) {
-    const nowFavorite = toggleFavoriteFreelancerId(id);
-    const nextIds = readFavoriteFreelancerIds();
-    setFavoriteIds(nextIds);
+  async function handleToggleFavorite(id: string) {
+    try {
+      const result = await toggleFavorite(id);
+      const nowFavorite = result.isFavorite;
 
-    setEntries((prev) => {
-      const existing = prev.find((e) => e.id === id);
-      if (nowFavorite) {
-        if (existing) {
-          return prev.map((e) =>
-            e.id === id && !e.sources.includes("favorite")
-              ? { ...e, sources: [...e.sources, "favorite" as HireFavoriteSource] }
-              : e,
-          );
+      setEntries((prev) => {
+        const existing = prev.find((e) => e.id === id);
+        if (nowFavorite) {
+          if (existing) {
+            return prev.map((e) =>
+              e.id === id && !e.sources.includes("favorite")
+                ? { ...e, sources: [...e.sources, "favorite" as HireFavoriteSource] }
+                : e,
+            );
+          }
+          return [
+            ...prev,
+            {
+              id,
+              name: "Freelancer",
+              email: null,
+              title: null,
+              avatarUrl: null,
+              districtCity: null,
+              hourlyRate: null,
+              ratingAvg: null,
+              totalReviews: null,
+              skills: [],
+              lastJobTitle: null,
+              lastWorkedAt: null,
+              featuredServiceId: null,
+              sources: ["favorite"],
+            },
+          ];
         }
-        return [
-          ...prev,
-          {
-            id,
-            name: "Freelancer",
-            email: null,
-            title: null,
-            avatarUrl: null,
-            districtCity: null,
-            hourlyRate: null,
-            ratingAvg: null,
-            totalReviews: null,
-            skills: [],
-            lastJobTitle: null,
-            lastWorkedAt: null,
-            featuredServiceId: null,
-            sources: ["favorite"],
-          },
-        ];
+
+        if (!existing) return prev;
+
+        const nextSources = existing.sources.filter((s) => s !== "favorite");
+        if (nextSources.length === 0) {
+          return prev.filter((e) => e.id !== id);
+        }
+        return prev.map((e) => (e.id === id ? { ...e, sources: nextSources } : e));
+      });
+
+      if (nowFavorite) {
+        void getFreelancer(id)
+          .then((payload) => {
+            setEntries((prev) =>
+              prev.map((e) => (e.id === id ? applyFreelancerProfile(e, payload.freelancer) : e)),
+            );
+          })
+          .catch(() => undefined);
       }
-
-      if (!existing) return prev;
-
-      const nextSources = existing.sources.filter((s) => s !== "favorite");
-      if (nextSources.length === 0) {
-        return prev.filter((e) => e.id !== id);
-      }
-      return prev.map((e) => (e.id === id ? { ...e, sources: nextSources } : e));
-    });
-
-    if (nowFavorite) {
-      void getFreelancer(id)
-        .then((payload) => {
-          setEntries((prev) =>
-            prev.map((e) => (e.id === id ? applyFreelancerProfile(e, payload.freelancer) : e)),
-          );
-        })
-        .catch(() => undefined);
+    } catch (err) {
+      const message =
+        err && typeof err === "object" && "message" in err
+          ? String((err as { message: string }).message)
+          : "Không thể cập nhật yêu thích.";
+      window.alert(message);
     }
   }
 

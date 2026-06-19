@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Be_Vietnam_Pro, Geist, Inter } from "next/font/google";
 import UserPreferencesInit from "@/components/providers/UserPreferencesInit";
+import VlcAiSupportWidget from "@/components/support/VlcAiSupportWidget";
 import ScrollNavButtons from "@/components/ui/ScrollNavButtons";
 import "./globals.css";
 import { cn } from "@/lib/utils";
@@ -45,6 +46,7 @@ export default function RootLayout({
           Bỏ qua đến nội dung chính
         </a>
         {children}
+        <VlcAiSupportWidget />
         <ScrollNavButtons />
       </body>
     </html>

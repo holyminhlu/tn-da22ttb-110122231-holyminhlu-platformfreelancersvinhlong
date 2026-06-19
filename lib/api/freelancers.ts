@@ -32,6 +32,7 @@ export type FreelancerSearchRow = {
   featured_service_min_package: string | number | null;
   featured_service_thumbnail: string | null;
   has_demo_video: boolean;
+  favorite_count: number;
 };
 
 /** @deprecated — dùng FreelancerSearchRow */

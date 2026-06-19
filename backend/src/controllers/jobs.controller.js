@@ -1,6 +1,7 @@
 const { pool } = require("../db/pool");
 const { verifyAccessToken, tryVerifyAccessToken } = require("../utils/authTokens");
 const { normalizeJobImageUrls, parseUuidParam, parseJobDueAt } = require("../utils/validators");
+const { compareJobQuotesWithGemini } = require("../services/geminiQuoteCompare.service");
 const { uploadJobImages: uploadJobImagesMw } = require("../middleware/jobImagesUpload");
 const {
   isClientIdentityVerified: checkClientIdentityVerified,
@@ -1840,6 +1841,113 @@ async function unsaveJob(req, res) {
   }
 }
 
+async function compareJobQuoteWithAi(req, res) {
+  const payload = verifyAccessToken(req, res);
+  if (!payload) return;
+
+  if (payload.role !== "client") {
+    return res.status(403).json({ message: "Chỉ client được dùng gợi ý AI so sánh báo giá." });
+  }
+
+  const quoteId = parseUuidParam(req.params.quoteId);
+  if (!quoteId) {
+    return res.status(400).json({ message: "Mã báo giá không hợp lệ." });
+  }
+
+  const db = await pool.connect();
+  try {
+    const focusResult = await db.query(
+      `SELECT jq.*, j.client_id, j.title AS job_title, j.description AS job_description,
+              j.budget AS job_budget, j.budget_type AS job_budget_type
+       FROM public.job_quotes jq
+       INNER JOIN public.jobs j ON j.id = jq.job_id AND j.deleted_at IS NULL
+       WHERE jq.id = $1 AND jq.status NOT IN ('withdrawn')`,
+      [quoteId],
+    );
+
+    if (focusResult.rowCount === 0) {
+      return res.status(404).json({ message: "Không tìm thấy báo giá." });
+    }
+
+    const focusRow = focusResult.rows[0];
+    if (String(focusRow.client_id) !== String(payload.sub)) {
+      return res.status(403).json({ message: "Bạn không có quyền phân tích báo giá này." });
+    }
+
+    const allResult = await db.query(
+      `SELECT
+         jq.id,
+         jq.job_id,
+         j.title AS job_title,
+         jq.freelancer_id,
+         jq.amount,
+         jq.currency,
+         jq.pricing_type,
+         jq.message,
+         jq.status,
+         jq.created_at,
+         jq.updated_at,
+         fup.full_name AS freelancer_name,
+         fu.email AS freelancer_email,
+         fup.avatar_url AS freelancer_avatar_url,
+         fup.tagline AS freelancer_title,
+         fup.bio AS freelancer_bio,
+         COALESCE(fup.district_city, fup.city) AS freelancer_location,
+         fp.job_success_score,
+         COALESCE(rv.rating_avg, 0)::float8 AS rating_avg,
+         COALESCE(rv.total_reviews, 0)::int AS total_reviews,
+         COALESCE(ct.completed_jobs, 0)::int AS completed_jobs
+       FROM public.job_quotes jq
+       ${JOB_QUOTE_FREELANCER_JOINS}
+       WHERE jq.job_id = $1
+         AND j.client_id = $2
+         AND jq.status NOT IN ('withdrawn')
+       ORDER BY jq.created_at DESC`,
+      [focusRow.job_id, payload.sub],
+    );
+
+    const allQuotes = allResult.rows.map(mapJobQuoteRow);
+    const focusedQuote = allQuotes.find((row) => row.id === quoteId);
+    const job = {
+      id: focusRow.job_id,
+      title: focusRow.job_title,
+      description: focusRow.job_description,
+      budget: focusRow.job_budget,
+      budget_type: focusRow.job_budget_type,
+    };
+
+    const result = await compareJobQuotesWithGemini({
+      job,
+      focusedQuote,
+      allQuotes,
+    });
+
+    return res.json(result);
+  } catch (error) {
+    if (error.code === "GEMINI_NOT_CONFIGURED") {
+      return res.status(503).json({
+        message:
+          "Chưa cấu hình GEMINI_API_KEY. Thêm key vào file .env và khởi động lại backend.",
+        code: error.code,
+      });
+    }
+    if (error.code === "INSUFFICIENT_QUOTES") {
+      return res.status(400).json({ message: error.message, code: error.code });
+    }
+    if (error.code === "GEMINI_API_ERROR") {
+      console.error("Gemini quote compare failed:", error.message);
+      return res.status(502).json({
+        message: "Không thể kết nối Gemini API. Kiểm tra GEMINI_API_KEY và thử lại.",
+        code: error.code,
+      });
+    }
+    console.error("Compare job quote with AI failed:", error.message);
+    return res.status(500).json({ message: "Không thể phân tích báo giá bằng AI." });
+  } finally {
+    db.release();
+  }
+}
+
 module.exports = {
   listJobs,
   listMyJobs,
@@ -1852,6 +1960,7 @@ module.exports = {
   acceptJob,
   listMyJobQuotes,
   patchJobQuote,
+  compareJobQuoteWithAi,
   listSavedJobIds,
   listSavedJobs,
   saveJob,

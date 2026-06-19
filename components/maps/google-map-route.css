@@ -1,0 +1,96 @@
+.google-map-route {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.google-map-route__canvas {
+  width: 100%;
+  min-height: 220px;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.375rem;
+  overflow: hidden;
+  background: #f3f4f6;
+}
+
+.google-map-route__canvas--loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  font-size: 0.8125rem;
+}
+
+.google-map-route__error {
+  margin: 0;
+  font-size: 0.75rem;
+  color: #b45309;
+  line-height: 1.4;
+}
+
+.google-map-route__fallback {
+  width: 100%;
+  min-height: 220px;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.375rem;
+}
+
+.google-map-route__fallback--google {
+  border: 1px solid #dbeafe;
+}
+
+.google-map-route__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.75rem;
+  font-size: 0.6875rem;
+  color: #6b7280;
+}
+
+.google-map-route__legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.google-map-route__legend-item::before {
+  content: "";
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.google-map-route__legend-item--a::before {
+  background: #2563eb;
+}
+
+.google-map-route__legend-item--b::before {
+  background: #059669;
+}
+
+.google-map-route__legend-route {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.google-map-route__legend-route::before {
+  content: "";
+  width: 1.1rem;
+  height: 0.2rem;
+  border-radius: 999px;
+  background: #dc2626;
+}
+
+.google-map-route__link {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #2563eb;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.google-map-route__link:hover {
+  color: #1d4ed8;
+}

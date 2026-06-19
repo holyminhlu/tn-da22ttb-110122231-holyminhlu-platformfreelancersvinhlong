@@ -1,4 +1,9 @@
 import type { NextConfig } from "next";
+import { loadEnvConfig } from "@next/env";
+
+loadEnvConfig(process.cwd());
+
+const googleMapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY?.trim() ?? "";
 
 function apiImageRemotePattern(): { protocol: "http" | "https"; hostname: string; port?: string } | null {
   const raw = process.env.NEXT_PUBLIC_API_URL?.trim() || "http://localhost:5000";
@@ -18,6 +23,9 @@ function apiImageRemotePattern(): { protocol: "http" | "https"; hostname: string
 const apiRemote = apiImageRemotePattern();
 
 const nextConfig: NextConfig = {
+  env: {
+    NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: googleMapsApiKey,
+  },
   async redirects() {
     return [
       {

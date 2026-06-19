@@ -6,7 +6,6 @@ import { useCallback, useEffect, useState } from "react";
 import {
   FaChevronDown,
   FaExternalLinkAlt,
-  FaHeart,
   FaImage,
   FaLaptopCode,
   FaListUl,
@@ -39,6 +38,7 @@ import {
 } from "@/lib/hire/freelancerSearchDisplay";
 import { formatDate } from "@/lib/format";
 import { CLIENT_VERIFY_PAGE } from "@/lib/hire/clientVerification";
+import FreelancerLikeButton from "./FreelancerLikeButton";
 
 type DetailTab = "services" | "portfolio" | "performance" | "about";
 
@@ -47,7 +47,8 @@ type HireSearchFreelancerCardProps = {
   selected: boolean;
   onSelect: (id: string, checked: boolean) => void;
   isFavorite: boolean;
-  onToggleFavorite: (id: string) => void;
+  favoriteCount: number;
+  onToggleFavorite: (id: string) => void | Promise<void>;
   /** Khách chưa đăng nhập — xem công khai, thuê qua đăng nhập. */
   guestMode?: boolean;
   /** Client đã hoàn tất xác minh danh tính. */
@@ -151,6 +152,7 @@ export default function HireSearchFreelancerCard({
   selected,
   onSelect,
   isFavorite,
+  favoriteCount,
   onToggleFavorite,
   guestMode = false,
   clientIdentityVerified = true,
@@ -530,25 +532,14 @@ export default function HireSearchFreelancerCard({
             </div>
 
             <div className="hire-search__card-actions">
-              {guestMode ? (
-                <Link
-                  href={favoriteHref()}
-                  className="hire-search__heart"
-                  aria-label="Đăng nhập để lưu yêu thích"
-                >
-                  <FaHeart aria-hidden />
-                </Link>
-              ) : (
-                <button
-                  type="button"
-                  className={`hire-search__heart${isFavorite ? " hire-search__heart--active" : ""}`}
-                  aria-pressed={isFavorite}
-                  aria-label={isFavorite ? "Bỏ yêu thích" : "Thêm vào danh sách yêu thích"}
-                  onClick={() => onToggleFavorite(row.id)}
-                >
-                  <FaHeart aria-hidden />
-                </button>
-              )}
+              <FreelancerLikeButton
+                freelancerId={row.id}
+                isFavorite={isFavorite}
+                favoriteCount={favoriteCount}
+                onToggle={onToggleFavorite}
+                guestHref={guestMode ? favoriteHref() : undefined}
+                compact
+              />
               <Link
                 href={quoteHref(row.featured_service_id)}
                 className="hire-search__quote-btn"

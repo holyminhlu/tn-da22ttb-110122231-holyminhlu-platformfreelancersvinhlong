@@ -1,6 +1,22 @@
 const { pool } = require("../db/pool");
 const { parseUuidParam } = require("../utils/validators");
 
+const FAVORITE_COUNT_JOIN = `
+  LEFT JOIN (
+    SELECT freelancer_id, COUNT(*)::int AS favorite_count
+    FROM public.client_favorite_freelancers
+    GROUP BY freelancer_id
+  ) fav ON fav.freelancer_id = fp.user_id
+`;
+
+const FAVORITE_COUNT_JOIN_USER = `
+  LEFT JOIN (
+    SELECT freelancer_id, COUNT(*)::int AS favorite_count
+    FROM public.client_favorite_freelancers
+    GROUP BY freelancer_id
+  ) fav ON fav.freelancer_id = u.id
+`;
+
 async function listFreelancers(req, res) {
 
   const limit = Math.min(Math.max(Number.parseInt(String(req.query.limit || ""), 10) || 48, 1), 100);
@@ -119,10 +135,12 @@ async function listFreelancers(req, res) {
          feat.service_price AS featured_service_price,
          feat.service_min_package AS featured_service_min_package,
          feat.service_thumbnail AS featured_service_thumbnail,
-         COALESCE(feat.has_demo_video, false) AS has_demo_video
+         COALESCE(feat.has_demo_video, false) AS has_demo_video,
+         COALESCE(fav.favorite_count, 0)::int AS favorite_count
        FROM public.freelancer_profiles fp
        INNER JOIN public.users u ON u.id = fp.user_id
        LEFT JOIN public.user_profiles up ON up.user_id = fp.user_id
+       ${FAVORITE_COUNT_JOIN}
        LEFT JOIN (
          SELECT freelancer_id, ROUND(AVG(rating)::numeric, 2) AS rating_avg, COUNT(*)::int AS total_reviews
          FROM public.contract_reviews
@@ -247,7 +265,8 @@ async function listFreelancers(req, res) {
     console.error("List freelancers failed:", error.message);
     if (error.code === "42P01") {
       return res.status(503).json({
-        message: "Thiếu bảng contract_reviews. Chạy backend/sql/contracts_reviews.sql trên PostgreSQL.",
+        message:
+          "Thiếu bảng dữ liệu. Chạy backend/sql/contracts_reviews.sql và backend/sql/client_favorite_freelancers.sql trên PostgreSQL.",
       });
     }
     if (error.code === "42703") {
@@ -322,10 +341,12 @@ async function getFreelancer(req, res) {
          COALESCE(rv.total_reviews, 0)::int AS total_reviews,
          COALESCE(ct.completed_jobs, 0)::int AS completed_jobs,
          COALESCE(sk.skill_names, ARRAY[]::text[]) AS skills,
-         COALESCE(fp.languages, '[]'::jsonb) AS languages
+         COALESCE(fp.languages, '[]'::jsonb) AS languages,
+         COALESCE(fav.favorite_count, 0)::int AS favorite_count
        FROM public.users u
        INNER JOIN public.freelancer_profiles fp ON fp.user_id = u.id AND fp.deleted_at IS NULL
        LEFT JOIN public.user_profiles up ON up.user_id = u.id
+       ${FAVORITE_COUNT_JOIN_USER}
        LEFT JOIN (
          SELECT freelancer_id, ROUND(AVG(rating)::numeric, 2) AS rating_avg, COUNT(*)::int AS total_reviews
          FROM public.contract_reviews

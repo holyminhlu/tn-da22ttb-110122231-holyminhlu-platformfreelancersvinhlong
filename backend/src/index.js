@@ -32,6 +32,12 @@ if (
   );
 }
 
+if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY === "your-gemini-api-key") {
+  console.warn(
+    "[ai] Gemini chưa cấu hình — gợi ý AI so sánh báo giá cần GEMINI_API_KEY trong .env (lấy tại https://aistudio.google.com/apikey).",
+  );
+}
+
 const { pool, query } = require("./db/pool");
 const authRoutes = require("./routes/auth.routes");
 const usersRoutes = require("./routes/users.routes");
@@ -48,6 +54,8 @@ const paymentsRoutes = require("./routes/payments.routes");
 const chatRoutes = require("./routes/chat.routes");
 const notificationsRoutes = require("./routes/notifications.routes");
 const adminRoutes = require("./routes/admin.routes");
+const supportRoutes = require("./routes/support.routes");
+const mapsRoutes = require("./routes/maps.routes");
 const { initChatSocket } = require("./socket/chatSocket");
 const { setNotificationIo } = require("./utils/notificationService");
 const { runWorkflowSlaTick } = require("./utils/workflowSla");
@@ -77,6 +85,8 @@ app.use("/api/payments", paymentsRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/notifications", notificationsRoutes);
+app.use("/api/support", supportRoutes);
+app.use("/api/maps", mapsRoutes);
 
 /** Legacy: /api/auth/me/*, /api/auth/freelancers, … */
 app.use("/api/auth", usersRoutes);

@@ -14,6 +14,7 @@ import {
   quoteStatusLabel,
 } from "@/lib/hire/quoteDisplay";
 import { CLIENT_VERIFY_PAGE } from "@/lib/hire/clientVerification";
+import AiQuoteSuggestButton from "./AiQuoteSuggestButton";
 
 type HireQuoteGridCardProps = {
   quote: JobQuoteRow;
@@ -21,6 +22,9 @@ type HireQuoteGridCardProps = {
   busy?: boolean;
   onAction?: (quoteId: string, action: PatchJobQuoteAction) => void;
   onChat?: (quote: JobQuoteRow) => void;
+  onAiCompare?: (quote: JobQuoteRow) => void;
+  canAiCompare?: boolean;
+  aiCompareBusy?: boolean;
   clientIdentityVerified?: boolean;
   clientIdentityLoading?: boolean;
 };
@@ -31,6 +35,9 @@ export default function HireQuoteGridCard({
   busy = false,
   onAction,
   onChat,
+  onAiCompare,
+  canAiCompare = false,
+  aiCompareBusy = false,
   clientIdentityVerified = true,
   clientIdentityLoading = false,
 }: HireQuoteGridCardProps) {
@@ -49,6 +56,21 @@ export default function HireQuoteGridCard({
         <span className={`hire-favorites__badge ${quoteStatusBadgeClass(quote.status)}`}>
           {quoteStatusLabel(quote.status)}
         </span>
+
+        {onAiCompare ? (
+          <div className="hire-quote-product-card__ai-wrap">
+            <AiQuoteSuggestButton
+              onClick={() => onAiCompare(quote)}
+              disabled={!canAiCompare}
+              loading={aiCompareBusy}
+              title={
+                canAiCompare
+                  ? "Gợi ý AI so sánh với các báo giá khác"
+                  : "Cần ít nhất 2 báo giá để so sánh"
+              }
+            />
+          </div>
+        ) : null}
 
         <FreelancerAvatarFrame
           completedJobs={quote.completed_jobs}

@@ -14,11 +14,8 @@ import {
 } from "react-icons/fa";
 import HireSearchFreelancerCard from "@/components/hire/HireSearchFreelancerCard";
 import { useStoredUser } from "@/hooks/useStoredUser";
+import { useClientFavoriteFreelancers } from "@/hooks/useClientFavoriteFreelancers";
 import { listFreelancers, type FreelancerSearchRow } from "@/lib/api/freelancers";
-import {
-  readFavoriteFreelancerIds,
-  toggleFavoriteFreelancerId,
-} from "@/lib/hire/favoriteFreelancersStorage";
 
 const PAGE_SIZE = 12;
 const ALL = "Tất cả";
@@ -29,6 +26,8 @@ export default function FindFreelancersBody() {
 
   const { user, ready, isClient } = useStoredUser({ refreshFromApi: false });
   const isGuest = ready && !user;
+  const canFavorite = ready && user && isClient;
+  const { isFavorite, toggleFavorite } = useClientFavoriteFreelancers({ enabled: canFavorite });
 
   const [rows, setRows] = useState<FreelancerSearchRow[]>([]);
   const [total, setTotal] = useState(0);
@@ -53,7 +52,7 @@ export default function FindFreelancersBody() {
   const [filtersOpen, setFiltersOpen] = useState(false);
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [favoriteIds, setFavoriteIds] = useState<string[]>([]);
+  const [favoriteCounts, setFavoriteCounts] = useState<Record<string, number>>({});
 
   const skillRef = useRef<HTMLDivElement>(null);
   const districtRef = useRef<HTMLDivElement>(null);
@@ -93,10 +92,16 @@ export default function FindFreelancersBody() {
   }, [searchQuery, skill, district, category, offset]);
 
   useEffect(() => {
-    if (!isGuest) {
-      setFavoriteIds(readFavoriteFreelancerIds());
-    }
-  }, [isGuest]);
+    setFavoriteCounts((prev) => {
+      const next = { ...prev };
+      for (const row of rows) {
+        if (next[row.id] === undefined) {
+          next[row.id] = row.favorite_count ?? 0;
+        }
+      }
+      return next;
+    });
+  }, [rows]);
 
   useEffect(() => {
     void load();
@@ -173,9 +178,18 @@ export default function FindFreelancersBody() {
     });
   }
 
-  function handleToggleFavorite(id: string) {
-    toggleFavoriteFreelancerId(id);
-    setFavoriteIds(readFavoriteFreelancerIds());
+  async function handleToggleFavorite(id: string) {
+    if (!canFavorite) return;
+    try {
+      const result = await toggleFavorite(id);
+      setFavoriteCounts((prev) => ({ ...prev, [id]: result.favoriteCount }));
+    } catch (err) {
+      const message =
+        err && typeof err === "object" && "message" in err
+          ? String((err as { message: string }).message)
+          : "Không thể cập nhật yêu thích.";
+      window.alert(message);
+    }
   }
 
   return (
@@ -444,8 +458,9 @@ export default function FindFreelancersBody() {
                 row={row}
                 selected={selectedIds.has(row.id)}
                 onSelect={handleSelect}
-                isFavorite={favoriteIds.includes(row.id)}
-                onToggleFavorite={handleToggleFavorite}
+                isFavorite={canFavorite ? isFavorite(row.id) : false}
+                favoriteCount={favoriteCounts[row.id] ?? row.favorite_count ?? 0}
+                onToggleFavorite={(id) => void handleToggleFavorite(id)}
                 guestMode={isGuest}
                 publicProfile
               />

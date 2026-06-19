@@ -2,6 +2,7 @@ const express = require("express");
 const users = require("../controllers/users.controller");
 const profileStats = require("../controllers/profileStats.controller");
 const identityVerification = require("../controllers/identityVerification.controller");
+const favoriteFreelancers = require("../controllers/favoriteFreelancers.controller");
 
 const security = require("../controllers/security.controller");
 
@@ -49,5 +50,9 @@ router.post("/me/portfolio", users.createPortfolio);
 router.post("/me/exclusive-resources", users.createExclusiveResource);
 router.post("/me/profile-files", users.createProfileFile);
 router.post("/me/profile-file-upload", users.uploadProfileFileAsset);
+router.get("/me/favorite-freelancers/ids", favoriteFreelancers.listFavoriteFreelancerIds);
+router.post("/me/favorite-freelancers/sync", favoriteFreelancers.syncFavoriteFreelancers);
+router.post("/me/favorite-freelancers/:freelancerId", favoriteFreelancers.addFavoriteFreelancer);
+router.delete("/me/favorite-freelancers/:freelancerId", favoriteFreelancers.removeFavoriteFreelancer);
 
 module.exports = router;

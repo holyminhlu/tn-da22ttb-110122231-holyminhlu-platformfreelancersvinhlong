@@ -9,6 +9,11 @@
   gap: 0.75rem;
 }
 
+/* Chat freelancer nằm trên nút VLC AI (AI ở dưới cùng góc phải) */
+.vlc-chat-fab-wrap--above-ai-support {
+  bottom: calc(1.5rem + var(--vlc-ai-fab-stack, 3.5rem));
+}
+
 .vlc-chat-fab-wrap--inline {
   position: static;
   z-index: auto;
@@ -380,4 +385,10 @@
 
 .vlc-chat-panel__verify-link:hover {
   background: #0052a3;
+}
+
+@media (max-width: 480px) {
+  .vlc-chat-fab-wrap--above-ai-support {
+    bottom: calc(0.75rem + var(--vlc-ai-fab-stack, 3.5rem));
+  }
 }

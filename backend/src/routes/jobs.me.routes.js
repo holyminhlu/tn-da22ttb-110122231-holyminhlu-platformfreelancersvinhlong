@@ -10,6 +10,7 @@ router.patch("/jobs/:jobId", jobs.updateMyJob);
 router.delete("/jobs/:jobId", jobs.deleteMyJob);
 router.post("/jobs/:jobId/accept", jobs.acceptJob);
 router.get("/quotes", jobs.listMyJobQuotes);
+router.post("/quotes/:quoteId/ai-compare", jobs.compareJobQuoteWithAi);
 router.patch("/quotes/:quoteId", jobs.patchJobQuote);
 router.get("/saved-jobs/ids", jobs.listSavedJobIds);
 router.get("/saved-jobs", jobs.listSavedJobs);

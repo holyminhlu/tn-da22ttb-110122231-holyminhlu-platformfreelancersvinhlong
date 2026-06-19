@@ -181,7 +181,7 @@ export default function FreelancerChatWidget({
 
     if (mode === "floating") {
       return (
-        <div className="vlc-chat-fab-wrap">
+        <div className="vlc-chat-fab-wrap vlc-chat-fab-wrap--above-ai-support">
           {open ? (
             <div className="vlc-chat-panel vlc-chat-panel--verify" role="dialog" aria-label="Yêu cầu xác minh">
               <div className="vlc-chat-panel__head">
@@ -232,7 +232,7 @@ export default function FreelancerChatWidget({
   const wrapClass = isEmbedded
     ? "vlc-chat-fab-wrap vlc-chat-fab-wrap--embedded"
     : mode === "floating"
-      ? "vlc-chat-fab-wrap"
+      ? "vlc-chat-fab-wrap vlc-chat-fab-wrap--above-ai-support"
       : "vlc-chat-fab-wrap vlc-chat-fab-wrap--inline";
 
   const panelVisible = isEmbedded || open;

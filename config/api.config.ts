@@ -65,6 +65,10 @@ export const apiPaths = {
     exclusiveResources: "/api/users/me/exclusive-resources",
     profileFiles: "/api/users/me/profile-files",
     profileFileUpload: "/api/users/me/profile-file-upload",
+    favoriteFreelancerIds: "/api/users/me/favorite-freelancers/ids",
+    favoriteFreelancersSync: "/api/users/me/favorite-freelancers/sync",
+    favoriteFreelancer: (freelancerId: string) =>
+      `/api/users/me/favorite-freelancers/${encodeURIComponent(freelancerId)}`,
   },
   contracts: {
     list: "/api/contracts",
@@ -102,6 +106,7 @@ export const apiPaths = {
     accept: (jobId: string) => `/api/jobs/me/jobs/${jobId}/accept`,
     quotes: "/api/jobs/me/quotes",
     quote: (quoteId: string) => `/api/jobs/me/quotes/${quoteId}`,
+    quoteAiCompare: (quoteId: string) => `/api/jobs/me/quotes/${quoteId}/ai-compare`,
     savedJobs: "/api/jobs/me/saved-jobs",
     savedJobIds: "/api/jobs/me/saved-jobs/ids",
     savedJob: (jobId: string) => `/api/jobs/me/saved-jobs/${jobId}`,
@@ -192,5 +197,8 @@ export const apiPaths = {
     deleteRead: "/api/notifications/read",
     read: (id: string) => `/api/notifications/${id}/read`,
     delete: (id: string) => `/api/notifications/${id}`,
+  },
+  support: {
+    aiChat: "/api/support/ai-chat",
   },
 } as const;

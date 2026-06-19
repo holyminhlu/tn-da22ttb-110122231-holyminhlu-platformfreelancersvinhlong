@@ -4,6 +4,8 @@ Lam ro logic cac luong giu tien trong du an
 Tang cuong do uy tin cho website (sap hoan thanh)
 thiet ke chuc nang rut tien cho F va lam sao cho F co niem tin o du an
 
+Dôi thanh Api cua gg map de hien duong do hien thi vi tri A den B
+
 Chuc nag bao mat: spam API login,...
 Chuc nang dat lai mat khau bang email
 Chuc nang AI vao du an, goi y AI
