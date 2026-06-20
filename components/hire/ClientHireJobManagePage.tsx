@@ -1,5 +1,7 @@
 "use client";
 
+import { formatDateUi, tUi, formatVndUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -17,7 +19,6 @@ import {
 } from "@/lib/api/jobQuotes";
 import { getJob, type JobListing } from "@/lib/api/jobs";
 import { getUserInitials, resolveAvatarSrc } from "@/lib/authSession";
-import { formatDate, formatVnd } from "@/lib/format";
 import { jobStatusLabel, jobStatusTone, parseJobImages, parseJobTags } from "@/lib/jobsDisplay";
 import {
   formatQuoteAmount,
@@ -32,9 +33,9 @@ import "./hire.css";
 type ManageTab = "proposals" | "contract" | "job";
 
 const MANAGE_TABS: { value: ManageTab; label: string }[] = [
-  { value: "proposals", label: "Báo giá" },
-  { value: "contract", label: "Hợp đồng" },
-  { value: "job", label: "Mô tả công việc" },
+  { value: "proposals", label: tUi("Báo giá") },
+  { value: "contract", label: tUi("Hợp đồng") },
+  { value: "job", label: tUi("Mô tả công việc") },
 ];
 
 function recommendationScore(quote: JobQuoteRow): number {
@@ -44,7 +45,8 @@ function recommendationScore(quote: JobQuoteRow): number {
   return rating * 0.7 + reviews * 2 + completed * 2;
 }
 
-export default function ClientHireJobManagePage() {
+export default function ClientHireJobManagePage() {  const { t, formatVnd, formatDate } = useTranslation();
+
   const params = useParams();
   const router = useRouter();
   const jobId = typeof params.jobId === "string" ? params.jobId : "";
@@ -61,7 +63,7 @@ export default function ClientHireJobManagePage() {
 
   const load = useCallback(async () => {
     if (!jobId) {
-      setError("Mã công việc không hợp lệ.");
+      setError(t("Mã công việc không hợp lệ."));
       setLoading(false);
       return;
     }
@@ -109,6 +111,9 @@ export default function ClientHireJobManagePage() {
   const jobCategory = job?.category?.trim() || null;
 
   async function handleQuoteAction(quoteId: string, action: PatchJobQuoteAction) {
+  const t = tUi;
+  const formatDate = formatDateUi;
+  const formatVnd = formatVndUi;
     setActionError("");
     setBusyQuoteId(quoteId);
     try {
@@ -138,7 +143,7 @@ export default function ClientHireJobManagePage() {
         </Link>
 
         {loading ? (
-          <p className="hire-page__state">Đang tải quản lý tuyển dụng...</p>
+          <p className="hire-page__state">{t("Đang tải quản lý tuyển dụng...")}</p>
         ) : error ? (
           <p className="hire-page__state hire-page__state--error" role="alert">
             {error}
@@ -158,22 +163,22 @@ export default function ClientHireJobManagePage() {
                 </p>
                 <dl className="hire-manage__head-meta">
                   <div>
-                    <dt>Ngân sách</dt>
+                    <dt>{t("Ngân sách")}</dt>
                     <dd>
-                      {job.budget != null ? formatVnd(job.budget) : "Thỏa thuận"}
+                      {job.budget != null ? formatVndUi(job.budget) : "Thỏa thuận"}
                       {job.budget_type === "hourly" ? "/giờ" : ""}
                     </dd>
                   </div>
                   <div>
-                    <dt>Báo giá</dt>
+                    <dt>{t("Báo giá")}</dt>
                     <dd>
                       {quotes.length} hồ sơ
                       {pendingCount > 0 ? ` · ${pendingCount} chờ xử lý` : ""}
                     </dd>
                   </div>
                   <div>
-                    <dt>Đăng ngày</dt>
-                    <dd>{formatDate(job.created_at)}</dd>
+                    <dt>{t("Đăng ngày")}</dt>
+                    <dd>{formatDateUi(job.created_at)}</dd>
                   </div>
                 </dl>
               </div>
@@ -187,7 +192,7 @@ export default function ClientHireJobManagePage() {
               </div>
             </header>
 
-            <nav className="hire-manage__tabs" aria-label="Điều hướng quản lý tuyển dụng">
+            <nav className="hire-manage__tabs" aria-label={t("Điều hướng quản lý tuyển dụng")}>
               {MANAGE_TABS.map((item) => (
                 <button
                   key={item.value}
@@ -200,7 +205,7 @@ export default function ClientHireJobManagePage() {
                     <span className="hire-manage__tab-count">{quotes.length}</span>
                   ) : null}
                   {item.value === "contract" && contractId ? (
-                    <span className="hire-manage__tab-dot" aria-label="Đã có hợp đồng" />
+                    <span className="hire-manage__tab-dot" aria-label={t("Đã có hợp đồng")} />
                   ) : null}
                 </button>
               ))}
@@ -215,7 +220,7 @@ export default function ClientHireJobManagePage() {
             {tab === "proposals" ? (
               <section className="hire-manage__panel">
                 <div className="hire-manage__panel-intro">
-                  <h2 className="hire-manage__panel-title">Báo giá từ freelancer</h2>
+                  <h2 className="hire-manage__panel-title">{t("Báo giá từ freelancer")}</h2>
                   <p className="hire-manage__panel-note">
                     Xem hồ sơ và chốt tuyển để tạo hợp đồng.
                   </p>
@@ -223,7 +228,7 @@ export default function ClientHireJobManagePage() {
 
                 {quotes.length === 0 ? (
                   <div className="hire-manage__empty">
-                    <p>Chưa có freelancer gửi báo giá cho công việc này.</p>
+                    <p>{t("Chưa có freelancer gửi báo giá cho công việc này.")}</p>
                     <Link href="/hire/search" className="hire-manage__empty-link">
                       Mời freelancer từ danh sách
                     </Link>
@@ -281,7 +286,7 @@ export default function ClientHireJobManagePage() {
                               </p>
                             ) : null}
                             <p className="hire-manage__quote-message">
-                              {quote.message?.trim() || "Freelancer chưa gửi thư đề xuất."}
+                              {quote.message?.trim() || t("Freelancer chưa gửi thư đề xuất.")}
                             </p>
 
                             <div className="hire-manage__quote-actions">
@@ -337,7 +342,7 @@ export default function ClientHireJobManagePage() {
 
             {tab === "contract" ? (
               <section className="hire-manage__panel">
-                <h2 className="hire-manage__panel-title">Hợp đồng & triển khai</h2>
+                <h2 className="hire-manage__panel-title">{t("Hợp đồng & triển khai")}</h2>
                 {contractId ? (
                   <>
                     <p className="hire-manage__panel-note">
@@ -346,7 +351,7 @@ export default function ClientHireJobManagePage() {
                     <div className="hire-manage__contract-cta">
                       <FaCheckCircle aria-hidden />
                       <div>
-                        <p className="hire-manage__contract-label">Mã hợp đồng</p>
+                        <p className="hire-manage__contract-label">{t("Mã hợp đồng")}</p>
                         <p className="hire-manage__contract-id">{contractId.slice(0, 8).toUpperCase()}</p>
                       </div>
                       <button
@@ -360,7 +365,7 @@ export default function ClientHireJobManagePage() {
                   </>
                 ) : (
                   <div className="hire-manage__empty">
-                    <p>Chưa có hợp đồng. Hãy chọn báo giá phù hợp, gửi offer và chốt tuyển freelancer.</p>
+                    <p>{t("Chưa có hợp đồng. Hãy chọn báo giá phù hợp, gửi offer và chốt tuyển freelancer.")}</p>
                     <button
                       type="button"
                       className="hire-manage__empty-link"
@@ -375,31 +380,31 @@ export default function ClientHireJobManagePage() {
 
             {tab === "job" ? (
               <section className="hire-manage__panel">
-                <h2 className="hire-manage__panel-title">Mô tả công việc</h2>
+                <h2 className="hire-manage__panel-title">{t("Mô tả công việc")}</h2>
                 <dl className="hire-manage__job-stats">
                   <div>
-                    <dt>Ngân sách</dt>
+                    <dt>{t("Ngân sách")}</dt>
                     <dd>
-                      {job.budget != null ? formatVnd(job.budget) : "Thỏa thuận"}
+                      {job.budget != null ? formatVndUi(job.budget) : "Thỏa thuận"}
                       {job.budget_type === "hourly" ? "/giờ" : ""}
-                      {job.budget_max != null ? ` – ${formatVnd(job.budget_max)}` : ""}
+                      {job.budget_max != null ? ` – ${formatVndUi(job.budget_max)}` : ""}
                     </dd>
                   </div>
                   <div>
-                    <dt>Hạn hoàn thành</dt>
-                    <dd>{job.due_at ? formatDate(job.due_at) : "Không giới hạn"}</dd>
+                    <dt>{t("Hạn hoàn thành")}</dt>
+                    <dd>{job.due_at ? formatDateUi(job.due_at) : "Không giới hạn"}</dd>
                   </div>
                   <div>
-                    <dt>Trạng thái</dt>
+                    <dt>{t("Trạng thái")}</dt>
                     <dd>{jobStatusLabel(job.status)}</dd>
                   </div>
                   <div>
-                    <dt>Vị trí</dt>
+                    <dt>{t("Vị trí")}</dt>
                     <dd>{job.location_label?.trim() || "—"}</dd>
                   </div>
                   {jobCategory ? (
                     <div>
-                      <dt>Danh mục</dt>
+                      <dt>{t("Danh mục")}</dt>
                       <dd>{jobCategory}</dd>
                     </div>
                   ) : null}
@@ -407,7 +412,7 @@ export default function ClientHireJobManagePage() {
 
                 {jobImages.length > 0 ? (
                   <section className="hire-manage__job-section hire-manage__job-section--gallery">
-                    <h3 className="hire-manage__job-section-title">Ảnh minh họa</h3>
+                    <h3 className="hire-manage__job-section-title">{t("Ảnh minh họa")}</h3>
                     <div className="hire-manage__job-gallery">
                       <WorkDetailGallery images={jobImages} title={job.title} />
                     </div>
@@ -420,7 +425,7 @@ export default function ClientHireJobManagePage() {
                     Nội dung chi tiết
                   </h3>
                   <p className="hire-manage__job-desc">
-                    {job.description?.trim() || "Chưa có mô tả chi tiết."}
+                    {job.description?.trim() || t("Chưa có mô tả chi tiết.")}
                   </p>
                 </div>
 

@@ -1,5 +1,7 @@
 "use client";
 
+import { tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import { useStoredUser } from "@/hooks/useStoredUser";
@@ -11,10 +13,13 @@ type PostJobButtonProps = {
 };
 
 export default function PostJobButton({ className, children, ariaLabel }: PostJobButtonProps) {
+  const { t } = useTranslation();
+
   const router = useRouter();
   const { user, ready, isClient } = useStoredUser({ refreshFromApi: false });
 
   function handleClick() {
+  const t = tUi;
     if (!ready) return;
 
     if (!user) {

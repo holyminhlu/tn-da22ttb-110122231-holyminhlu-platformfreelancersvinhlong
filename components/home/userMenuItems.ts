@@ -1,4 +1,5 @@
 import { isAdminRole, isClientRole } from "@/hooks/useStoredUser";
+import { tUi } from "@/lib/i18n/runtime";
 import { ADMIN_HOME } from "@/lib/auth/roleRoutes";
 
 export type UserMenuEntry =
@@ -6,28 +7,48 @@ export type UserMenuEntry =
   | { type: "header"; label: string }
   | { type: "logout"; id: string; label: string };
 
-const FREELANCER_MENU: UserMenuEntry[] = [
-  { type: "item", id: "edit-account", label: "Chỉnh sửa tài khoản của tôi", href: "/edit-account" },
-  { type: "item", id: "edit-profile", label: "Chỉnh sửa hồ sơ", href: "/ho-so" },
-  { type: "item", id: "help", label: "Giúp đỡ", href: "/help" },
-  { type: "logout", id: "logout", label: "Đăng xuất" },
+type UserMenuTemplate =
+  | { type: "item"; id: string; labelKey: string; href: string }
+  | { type: "header"; labelKey: string }
+  | { type: "logout"; id: string; labelKey: string };
+
+const FREELANCER_MENU: UserMenuTemplate[] = [
+  { type: "item", id: "edit-account", labelKey: "userMenu.editAccount", href: "/edit-account" },
+  { type: "item", id: "edit-profile", labelKey: "userMenu.editProfile", href: "/ho-so" },
+  { type: "item", id: "help", labelKey: "userMenu.help", href: "/help" },
+  { type: "logout", id: "logout", labelKey: "userMenu.logout" },
 ];
 
-const CLIENT_MENU: UserMenuEntry[] = [
-  { type: "item", id: "edit-account", label: "Chỉnh sửa tài khoản của tôi", href: "/edit-account" },
-  { type: "header", label: "TÀI KHOẢN TIỀN MẶT" },
-  { type: "item", id: "cash-account", label: "Xem tài khoản tiền mặt", href: "/payments" },
-  { type: "item", id: "payment-methods", label: "Phương thức thanh toán", href: "/payments/phuong-thuc" },
-  { type: "item", id: "help", label: "Giúp đỡ", href: "/help" },
-  { type: "logout", id: "logout", label: "Đăng xuất" },
+const CLIENT_MENU: UserMenuTemplate[] = [
+  { type: "item", id: "edit-account", labelKey: "userMenu.editAccount", href: "/edit-account" },
+  { type: "header", labelKey: "userMenu.cashAccountHeader" },
+  { type: "item", id: "cash-account", labelKey: "userMenu.viewCashAccount", href: "/payments" },
+  { type: "item", id: "payment-methods", labelKey: "userMenu.paymentMethods", href: "/payments/phuong-thuc" },
+  { type: "item", id: "help", labelKey: "userMenu.help", href: "/help" },
+  { type: "logout", id: "logout", labelKey: "userMenu.logout" },
 ];
 
-const ADMIN_MENU: UserMenuEntry[] = [
-  { type: "item", id: "admin", label: "Bảng quản trị", href: ADMIN_HOME },
-  { type: "logout", id: "logout", label: "Đăng xuất" },
+const ADMIN_MENU: UserMenuTemplate[] = [
+  { type: "item", id: "admin", labelKey: "userMenu.adminDashboard", href: ADMIN_HOME },
+  { type: "logout", id: "logout", labelKey: "userMenu.logout" },
 ];
 
-export function getUserMenuItems(role?: string | null): UserMenuEntry[] {
-  if (isAdminRole(role)) return ADMIN_MENU;
-  return isClientRole(role) ? CLIENT_MENU : FREELANCER_MENU;
+function translateMenu(template: UserMenuTemplate[], t: (text: string) => string): UserMenuEntry[] {
+  return template.map((entry) => {
+    if (entry.type === "item") {
+      return { type: "item", id: entry.id, label: tUi(entry.labelKey), href: entry.href };
+    }
+    if (entry.type === "header") {
+      return { type: "header", label: tUi(entry.labelKey) };
+    }
+    return { type: "logout", id: entry.id, label: tUi(entry.labelKey) };
+  });
+}
+
+export function getUserMenuItems(
+  role?: string | null,
+  t: (text: string) => string = (text) => text,
+): UserMenuEntry[] {
+  if (isAdminRole(role)) return translateMenu(ADMIN_MENU, t);
+  return translateMenu(isClientRole(role) ? CLIENT_MENU : FREELANCER_MENU, t);
 }

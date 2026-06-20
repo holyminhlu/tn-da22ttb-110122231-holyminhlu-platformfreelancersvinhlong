@@ -1,5 +1,7 @@
 "use client";
 
+import { tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { FaSearch } from "react-icons/fa";
@@ -22,16 +24,20 @@ function filterCategories(
   items: (HelpCategoryItem | null)[],
   query: string,
 ): (HelpCategoryItem | null)[] {
+  const t = tUi;
   const q = query.trim().toLowerCase();
   if (!q) return items;
   return items.map((item) => {
     if (!item) return null;
-    const hay = `${item.title} ${item.desc}`.toLowerCase();
+    const hay = `${tUi(item.title)} ${item.desc}`.toLowerCase();
     return hay.includes(q) ? item : null;
   });
 }
 
-export default function HelpCenter({ initialRole }: HelpCenterProps) {
+export default function HelpCenter({
+  initialRole }: HelpCenterProps) {
+  const { t } = useTranslation();
+
   const [activeTab, setActiveTab] = useState<HelpRole>(initialRole);
   const [search, setSearch] = useState("");
 
@@ -48,7 +54,7 @@ export default function HelpCenter({ initialRole }: HelpCenterProps) {
       <main id="main-content" className="flex-grow">
         <section className="help-center-hero" aria-labelledby="help-center-title">
           <h1 id="help-center-title" className="help-center-hero__title">
-            Chúng tôi có thể giúp gì cho bạn?
+            {t("Chúng tôi có thể giúp gì cho bạn?")}
           </h1>
           <form
             className="help-center-hero__search"
@@ -58,18 +64,18 @@ export default function HelpCenter({ initialRole }: HelpCenterProps) {
             <input
               type="search"
               className="help-center-hero__input"
-              placeholder="Tôi muốn biết về..."
+              placeholder={t("Tôi muốn biết về...")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              aria-label="Tìm trong trung tâm trợ giúp"
+              aria-label={t("Tìm trong trung tâm trợ giúp")}
             />
-            <button type="submit" className="help-center-hero__search-btn" aria-label="Tìm kiếm">
+            <button type="submit" className="help-center-hero__search-btn" aria-label={t("Tìm kiếm")}>
               <FaSearch aria-hidden />
             </button>
           </form>
         </section>
 
-        <section className="help-center-panel" aria-label="Danh mục trợ giúp">
+        <section className="help-center-panel" aria-label={t("Danh mục trợ giúp")}>
           <div className="help-center-panel__tabs">
             <div className="help-center-panel__tab-list" role="tablist">
               <button
@@ -79,7 +85,7 @@ export default function HelpCenter({ initialRole }: HelpCenterProps) {
                 className={`help-center-tab${activeTab === "employer" ? " help-center-tab--active" : ""}`}
                 onClick={() => setActiveTab("employer")}
               >
-                Nhà tuyển dụng
+                {t("Nhà tuyển dụng")}
               </button>
               <button
                 type="button"
@@ -92,23 +98,23 @@ export default function HelpCenter({ initialRole }: HelpCenterProps) {
               </button>
             </div>
             <Link href="/" className="help-center-panel__home-link">
-              Về Vĩnh Long Connected &gt;
+              {t("Về Vĩnh Long Connected &gt;")}
             </Link>
           </div>
 
           <div className="help-center-panel__body">
-            <h2 className="help-center-panel__heading">Chọn danh mục</h2>
+            <h2 className="help-center-panel__heading">{t("Chọn danh mục")}</h2>
             <div className="help-center-panel__accent" aria-hidden />
 
             {!hasVisibleCategory ? (
-              <p className="help-center-empty">Không tìm thấy danh mục phù hợp với từ khóa.</p>
+              <p className="help-center-empty">{t("Không tìm thấy danh mục phù hợp với từ khóa.")}</p>
             ) : (
               <div className="help-category-grid">
                 {categories.map((cat, idx) => (
                   <div key={`${activeTab}-${idx}`} className="help-category-item">
                     {cat ? (
                       <>
-                        <h3 className="help-category-item__title">{cat.title}</h3>
+                        <h3 className="help-category-item__title">{t(cat.title)}</h3>
                         <p className="help-category-item__desc">{cat.desc}</p>
                       </>
                     ) : null}
@@ -120,22 +126,22 @@ export default function HelpCenter({ initialRole }: HelpCenterProps) {
 
           <div className="help-center-cta">
             <div className="help-center-cta__block">
-              <p className="help-center-cta__text">Muốn thuê chuyên gia hoàn thành việc?</p>
+              <p className="help-center-cta__text">{t("Muốn thuê chuyên gia hoàn thành việc?")}</p>
               <Link href="/jobs" className="help-center-cta__btn">
-                Đăng tin việc ngay
+                {t("Đăng tin việc ngay")}
               </Link>
             </div>
             <div className="help-center-cta__block">
-              <p className="help-center-cta__text">Không tìm thấy thông tin bạn cần?</p>
+              <p className="help-center-cta__text">{t("Không tìm thấy thông tin bạn cần?")}</p>
               <Link href="/about" className="help-center-cta__btn">
-                Liên hệ chúng tôi
+                {t("Liên hệ chúng tôi")}
               </Link>
             </div>
           </div>
 
           <p className="help-center-back">
             <Link href="/help" className="text-[#1b75bb] hover:underline">
-              ← Chọn lại loại tài khoản
+              {t("← Chọn lại loại tài khoản")}
             </Link>
           </p>
         </section>

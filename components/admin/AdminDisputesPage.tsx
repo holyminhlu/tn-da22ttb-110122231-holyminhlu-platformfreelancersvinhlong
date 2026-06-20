@@ -1,5 +1,7 @@
 "use client";
 
+import { formatDateUi, tUi, formatVndUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { FaRedo, FaSearch } from "react-icons/fa";
@@ -13,7 +15,6 @@ import {
   type AdminDisputeStatusFilter,
   type AdminResolveDisputeAction,
 } from "@/lib/api/admin";
-import { formatDate, formatVnd } from "@/lib/format";
 import {
   adminResolveActionLabel,
   DISPUTE_PROGRESS_STEPS,
@@ -47,10 +48,12 @@ function orderTitle(row: AdminDisputeRow) {
 }
 
 function fileNameFromUrl(url: string) {
+  const t = tUi;
   return decodeURIComponent(url.split("/").pop() || "minh-chung");
 }
 
 function isImageUrl(url: string) {
+  const t = tUi;
   return /\.(png|jpe?g|gif|webp)(\?|$)/i.test(url);
 }
 
@@ -61,7 +64,7 @@ function parseEvidenceUrls(evidence: unknown): string[] {
   return files.map((u) => String(u)).filter(Boolean);
 }
 
-export default function AdminDisputesPage() {
+export default function AdminDisputesPage() {  const { t, formatVnd, formatDate } = useTranslation();
   const searchParams = useSearchParams();
   const initialDisputeId = searchParams.get("dispute");
 
@@ -152,6 +155,9 @@ export default function AdminDisputesPage() {
   const selected = rows.find((r) => r.id === selectedId) ?? rows[0];
 
   async function handleSendMessage(body: string) {
+  const t = tUi;
+  const formatDate = formatDateUi;
+  const formatVnd = formatVndUi;
     if (!selectedId) return;
     setBusy(true);
     setActionError("");
@@ -174,9 +180,12 @@ export default function AdminDisputesPage() {
     resolution: AdminResolveDisputeAction,
     payload: { adminNote?: string; clientAmount?: number; freelancerAmount?: number },
   ) {
+  const t = tUi;
+  const formatDate = formatDateUi;
+  const formatVnd = formatVndUi;
     if (!selectedId || !detail) return;
     const label = adminResolveActionLabel(resolution);
-    if (!window.confirm(`Xác nhận quyết định: ${label}?`)) return;
+    if (!window.confirm(`${t("Xác nhận quyết định: ")}${label}?`)) return;
 
     if (resolution === "split") {
       const total = Number(detail.dispute.agreed_price) || 0;
@@ -187,7 +196,7 @@ export default function AdminDisputesPage() {
         !Number.isFinite(freelancerAmount) ||
         Math.round(clientAmount + freelancerAmount) !== Math.round(total)
       ) {
-        setResolveError(`Tổng chia phải bằng ${formatVnd(total)}.`);
+        setResolveError(`${t("Tổng chia phải bằng ")}${formatVndUi(total)}.`);
         return;
       }
     }
@@ -222,7 +231,7 @@ export default function AdminDisputesPage() {
   return (
     <div className="admin-page admin-disputes-page">
       <header className="admin-page__head admin-disputes-page__head">
-        <h1 className="admin-page__title">Quản lý tranh chấp</h1>
+        <h1 className="admin-page__title">{t("Quản lý tranh chấp")}</h1>
       </header>
 
       {toast ? (
@@ -230,20 +239,20 @@ export default function AdminDisputesPage() {
           className={`admin-toast admin-toast--${toast.type === "ok" ? "ok" : "err"}`}
           role="status"
         >
-          {toast.message}
+          {t(toast.message)}
         </p>
       ) : null}
 
-      <div className="admin-disputes-toolbar" aria-label="Bộ lọc tranh chấp">
+      <div className="admin-disputes-toolbar" aria-label={t("Bộ lọc tranh chấp")}>
         <button
           type="button"
           className="admin-btn admin-btn--ghost admin-disputes-toolbar__refresh"
           onClick={() => void load()}
         >
-          <FaRedo aria-hidden /> Làm mới
+          <FaRedo aria-hidden /> {t("Làm mới")}
         </button>
 
-        <div className="admin-tabs admin-tabs--inline" role="tablist" aria-label="Trạng thái">
+        <div className="admin-tabs admin-tabs--inline" role="tablist" aria-label={t("Trạng thái")}>
           {STATUS_TABS.map((tab) => (
             <button
               key={tab.id}
@@ -253,13 +262,13 @@ export default function AdminDisputesPage() {
               className={`admin-tab${statusTab === tab.id ? " admin-tab--active" : ""}`}
               onClick={() => setStatusTab(tab.id)}
             >
-              {tab.label}
+              {t(tab.label)}
             </button>
           ))}
         </div>
 
         <label className="admin-disputes-toolbar__field">
-          <span className="admin-filters__label">Giai đoạn</span>
+          <span className="admin-filters__label">{t("Giai đoạn")}</span>
           <select
             className="admin-filters__select admin-disputes-toolbar__select"
             value={stageFilter}
@@ -267,23 +276,23 @@ export default function AdminDisputesPage() {
           >
             {STAGE_OPTIONS.map((opt) => (
               <option key={opt.id} value={opt.id}>
-                {opt.label}
+                {t(opt.label)}
               </option>
             ))}
           </select>
         </label>
 
         <label className="admin-disputes-toolbar__field admin-disputes-toolbar__field--search">
-          <span className="admin-filters__label">Tìm kiếm</span>
+          <span className="admin-filters__label">{t("Tìm kiếm")}</span>
           <div className="admin-filters__search-wrap">
             <FaSearch className="admin-filters__search-icon" aria-hidden />
             <input
               type="search"
               className="admin-filters__input"
-              placeholder="Đơn, client, freelancer..."
+              placeholder={t("Đơn, client, freelancer...")}
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              aria-label="Tìm theo đơn, client, freelancer"
+              aria-label={t("Tìm theo đơn, client, freelancer")}
             />
           </div>
         </label>
@@ -294,14 +303,14 @@ export default function AdminDisputesPage() {
       </div>
 
       {loading ? (
-        <p className="admin-page__state admin-disputes-page__state">Đang tải danh sách tranh chấp...</p>
+        <p className="admin-page__state admin-disputes-page__state">{t("Đang tải danh sách tranh chấp...")}</p>
       ) : !rows.length ? (
         <div className="admin-empty admin-disputes-page__state">
-          <p>Không có tranh chấp phù hợp bộ lọc.</p>
+          <p>{t("Không có tranh chấp phù hợp bộ lọc.")}</p>
         </div>
       ) : (
         <div className="admin-disputes-split">
-          <aside className="admin-disputes-list" aria-label="Danh sách tranh chấp">
+          <aside className="admin-disputes-list" aria-label={t("Danh sách tranh chấp")}>
             <ul className="resolution-list resolution-list--compact admin-disputes-list__inner">
               {rows.map((row) => (
                 <li key={row.id}>
@@ -312,7 +321,7 @@ export default function AdminDisputesPage() {
                   >
                     <h3 className="resolution-card__title">{orderTitle(row)}</h3>
                     <p className="resolution-card__meta">
-                      {disputeIssueLabel(row.issue_category)} · {formatDate(row.created_at)}
+                      {disputeIssueLabel(row.issue_category)} · {formatDateUi(row.created_at)}
                     </p>
                     <p className="resolution-card__meta">
                       {row.client_name} ↔ {row.freelancer_name}
@@ -337,7 +346,7 @@ export default function AdminDisputesPage() {
                   <h3 className="resolution-card__title">{orderTitle(selected)}</h3>
                   <p className="resolution-card__meta">
                     Client: <strong>{selected.client_name}</strong> · Freelancer:{" "}
-                    <strong>{selected.freelancer_name}</strong> · {formatVnd(selected.agreed_price)}
+                    <strong>{selected.freelancer_name}</strong> · {formatVndUi(selected.agreed_price)}
                   </p>
                   <p className="resolution-card__meta">
                     Ký quỹ: {selected.escrow_status || "—"} · Giai đoạn đơn:{" "}
@@ -348,16 +357,16 @@ export default function AdminDisputesPage() {
                     activeIndex={disputeProgressIndex(selected.dispute_stage, selected.status)}
                   />
 
-                  <section className="admin-dispute-case" aria-label="Tóm tắt tranh chấp">
+                  <section className="admin-dispute-case" aria-label={t("Tóm tắt tranh chấp")}>
                     <div className="dispute-highlights admin-dispute-case__highlights">
                       <div className="dispute-highlight dispute-highlight--issue">
-                        <span className="dispute-highlight__label">Vấn đề</span>
+                        <span className="dispute-highlight__label">{t("Vấn đề")}</span>
                         <span className="dispute-highlight__value">
                           {disputeIssueLabel(selected.issue_category)}
                         </span>
                       </div>
                       <div className="dispute-highlight dispute-highlight--request">
-                        <span className="dispute-highlight__label">Yêu cầu xử lý</span>
+                        <span className="dispute-highlight__label">{t("Yêu cầu xử lý")}</span>
                         <span className="dispute-highlight__value">
                           {disputeResolutionLabel(selected.desired_resolution)}
                         </span>
@@ -365,7 +374,7 @@ export default function AdminDisputesPage() {
                     </div>
 
                     <div className="admin-dispute-case__block admin-dispute-case__block--desc">
-                      <span className="admin-dispute-case__label">Mô tả</span>
+                      <span className="admin-dispute-case__label">{t("Mô tả")}</span>
                       <p className="admin-dispute-case__text">
                         {selected.reason?.trim() || "—"}
                       </p>
@@ -373,14 +382,14 @@ export default function AdminDisputesPage() {
 
                     {selected.admin_notes ? (
                       <div className="admin-dispute-case__block admin-dispute-case__block--note">
-                        <span className="admin-dispute-case__label">Ghi chú admin</span>
+                        <span className="admin-dispute-case__label">{t("Ghi chú admin")}</span>
                         <p className="admin-dispute-case__text">{selected.admin_notes}</p>
                       </div>
                     ) : null}
 
                     {caseEvidenceUrls.length > 0 ? (
                       <div className="admin-dispute-case__block admin-dispute-case__block--evidence">
-                        <span className="admin-dispute-case__label">Minh chứng</span>
+                        <span className="admin-dispute-case__label">{t("Minh chứng")}</span>
                         <ul className="admin-dispute-case__evidence-grid">
                           {caseEvidenceUrls.map((url) => {
                             const href = resolveAvatarSrc(url) || url;
@@ -435,7 +444,7 @@ export default function AdminDisputesPage() {
                 ) : null}
 
                 {detailLoading ? (
-                  <p className="admin-page__state">Đang tải trao đổi...</p>
+                  <p className="admin-page__state">{t("Đang tải trao đổi...")}</p>
                 ) : detail ? (
                   <div className="admin-disputes-chat">
                     {actionError ? (

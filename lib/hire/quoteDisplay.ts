@@ -91,7 +91,7 @@ export function quoteStatusBadgeClass(status: string): string {
 }
 
 export function formatQuoteAmount(quote: JobQuoteRow): string {
-  const amount = quote.amount != null ? formatVnd(quote.amount) : "Thỏa thuận";
+  const amount = quote.amount != null ? formatVndUi(quote.amount) : "Thỏa thuận";
   if (quote.pricing_type === "hourly") return `${amount}/giờ`;
   return amount;
 }

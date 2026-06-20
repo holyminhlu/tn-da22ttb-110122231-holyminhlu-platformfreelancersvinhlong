@@ -1,5 +1,7 @@
 "use client";
 
+import { formatDateUi, tUi, formatVndUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import {
   FaComment,
@@ -11,7 +13,6 @@ import {
 } from "react-icons/fa";
 import FreelancerAvatarFrame from "@/components/freelancer/FreelancerAvatarFrame";
 import { getUserInitials, resolveAvatarSrc } from "@/lib/authSession";
-import { formatDate, formatVnd } from "@/lib/format";
 import { CLIENT_VERIFY_PAGE } from "@/lib/hire/clientVerification";
 import type { HireFavoriteEntry } from "./hireFavoritesTypes";
 
@@ -25,6 +26,8 @@ type HireFavoriteCardProps = {
 };
 
 function requestQuoteHref(entry: HireFavoriteEntry) {
+
+  const t = tUi;
   if (entry.featuredServiceId) {
     return `/hire/quote?serviceId=${encodeURIComponent(entry.featuredServiceId)}&freelancerId=${encodeURIComponent(entry.id)}`;
   }
@@ -38,7 +41,8 @@ export default function HireFavoriteCard({
   onMessage,
   clientIdentityVerified = true,
   clientIdentityLoading = false,
-}: HireFavoriteCardProps) {
+}: HireFavoriteCardProps) {  const { t, formatVnd, formatDate } = useTranslation();
+
   const avatarSrc = resolveAvatarSrc(entry.avatarUrl);
   const initials = getUserInitials(entry.name, entry.email);
   const rating =
@@ -72,10 +76,10 @@ export default function HireFavoriteCard({
               {entry.title ? <p className="hire-favorites__title">{entry.title}</p> : null}
               <div className="hire-favorites__badges">
                 {entry.sources.includes("worked") ? (
-                  <span className="hire-favorites__badge hire-favorites__badge--worked">Đã làm việc cùng</span>
+                  <span className="hire-favorites__badge hire-favorites__badge--worked">{t("Đã làm việc cùng")}</span>
                 ) : null}
                 {entry.sources.includes("favorite") ? (
-                  <span className="hire-favorites__badge hire-favorites__badge--saved">Yêu thích</span>
+                  <span className="hire-favorites__badge hire-favorites__badge--saved">{t("Yêu thích")}</span>
                 ) : null}
               </div>
             </div>
@@ -93,7 +97,7 @@ export default function HireFavoriteCard({
           <dl className="hire-favorites__meta">
             {entry.districtCity ? (
               <div>
-                <dt className="hire-favorites__sr-only">Vị trí</dt>
+                <dt className="hire-favorites__sr-only">{t("Vị trí")}</dt>
                 <dd>
                   <FaMapMarkerAlt className="hire-favorites__meta-icon" aria-hidden />
                   {entry.districtCity}
@@ -102,7 +106,7 @@ export default function HireFavoriteCard({
             ) : null}
             {rating ? (
               <div>
-                <dt className="hire-favorites__sr-only">Đánh giá</dt>
+                <dt className="hire-favorites__sr-only">{t("Đánh giá")}</dt>
                 <dd>
                   <FaStar className="hire-favorites__meta-icon hire-favorites__meta-icon--star" aria-hidden />
                   {rating}
@@ -114,23 +118,23 @@ export default function HireFavoriteCard({
             ) : null}
             {entry.hourlyRate != null ? (
               <div>
-                <dt className="hire-favorites__sr-only">Giá giờ</dt>
-                <dd>{formatVnd(entry.hourlyRate)}/giờ</dd>
+                <dt className="hire-favorites__sr-only">{t("Giá giờ")}</dt>
+                <dd>{formatVndUi(entry.hourlyRate)}/giờ</dd>
               </div>
             ) : null}
             {entry.lastJobTitle ? (
               <div className="hire-favorites__meta-wide">
-                <dt>Gần nhất</dt>
+                <dt>{t("Gần nhất")}</dt>
                 <dd>
                   {entry.lastJobTitle}
-                  {entry.lastWorkedAt ? ` · ${formatDate(entry.lastWorkedAt)}` : ""}
+                  {entry.lastWorkedAt ? ` · ${formatDateUi(entry.lastWorkedAt)}` : ""}
                 </dd>
               </div>
             ) : null}
           </dl>
 
           {entry.skills.length > 0 ? (
-            <ul className="hire-favorites__skills" aria-label="Kỹ năng">
+            <ul className="hire-favorites__skills" aria-label={t("Kỹ năng")}>
               {entry.skills.slice(0, 6).map((skill) => (
                 <li key={skill}>{skill}</li>
               ))}

@@ -1,3 +1,4 @@
+import { tUi } from "@/lib/i18n/runtime";
 export const SERVICES_NAV = [
   { id: "create", href: "/dich-vu/tao-moi", label: "Đăng dịch vụ mới", exact: true },
   { id: "manage", href: "/dich-vu/quan-ly", label: "Quản lý dịch vụ", exact: true },
@@ -8,3 +9,12 @@ export const SERVICES_NAV = [
 ] as const;
 
 export type ServicesNavId = (typeof SERVICES_NAV)[number]["id"];
+
+type TranslateFn = (keyOrVi: string) => string;
+
+export function getServicesNav(t: TranslateFn) {
+  return SERVICES_NAV.map((item) => ({
+    ...item,
+    label: tUi(item.label),
+  }));
+}

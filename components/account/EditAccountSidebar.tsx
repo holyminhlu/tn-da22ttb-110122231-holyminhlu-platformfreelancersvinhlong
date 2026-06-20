@@ -13,6 +13,7 @@ import {
   FaWallet,
 } from "react-icons/fa";
 import { useStoredUser } from "@/hooks/useStoredUser";
+import { useTranslation } from "@/hooks/useTranslation";
 
 type SidebarItemProps = {
   icon?: React.ReactNode;
@@ -60,67 +61,70 @@ type EditAccountSidebarProps = {
   active?: AccountSidebarSection;
 };
 
-export default function EditAccountSidebar({ active = "contact" }: EditAccountSidebarProps) {
+export default function EditAccountSidebar({
+  active = "contact" }: EditAccountSidebarProps) {
+  const { t } = useTranslation();
+
   const { ready, isClient } = useStoredUser({ refreshFromApi: false });
   const hideClientMenus = ready && isClient;
 
   return (
-    <aside className="ea-sidebar" aria-label="Cài đặt tài khoản">
-      <SidebarGroup label="Hồ sơ" />
+    <aside className="ea-sidebar" aria-label={t("accountSidebar.ariaLabel")}>
+      <SidebarGroup label={t("accountSidebar.profile")} />
       <SidebarItem
         icon={<FaUser />}
-        label="Hồ sơ của tôi"
+        label={t("accountSidebar.myProfile")}
         href="/ho-so"
         active={active === "profile"}
       />
       <SidebarItem
         icon={<FaThumbsUp />}
-        label="Phản hồi"
+        label={t("accountSidebar.feedback")}
         href="/ho-so/phan-hoi"
         active={active === "feedback"}
       />
       {!hideClientMenus ? (
         <SidebarItem
           icon={<FaChartBar />}
-          label="Thống kê hồ sơ"
+          label={t("accountSidebar.profileStats")}
           href="/ho-so/thong-ke"
           active={active === "stats"}
         />
       ) : null}
 
-      <SidebarGroup label="Cài đặt tài khoản" />
+      <SidebarGroup label={t("accountSidebar.accountSettings")} />
       <SidebarItem
         icon={<FaPhoneAlt />}
-        label="Thông tin liên hệ"
+        label={t("accountSidebar.contactInfo")}
         href="/edit-account"
         active={active === "contact"}
       />
       <SidebarItem
         icon={<FaCheckCircle />}
-        label="Xác minh danh tính"
+        label={t("accountSidebar.identityVerification")}
         href="/edit-account/xac-minh"
         active={active === "verification"}
       />
       <SidebarItem
         icon={<FaKey />}
-        label="Tên đăng nhập & Mật khẩu"
+        label={t("accountSidebar.credentials")}
         href="/edit-account/ten-dang-nhap"
         active={active === "credentials"}
       />
       <SidebarItem
         icon={<FaShieldAlt />}
-        label="Bảo mật tài khoản"
+        label={t("accountSidebar.security")}
         href="/edit-account/bao-mat"
         active={active === "security"}
       />
 
-      <SidebarGroup label="Gói & Thanh toán" />
-      <SidebarItem icon={<FaWallet />} label="Phương thức chuyển tiền" href="/payments" />
+      <SidebarGroup label={t("accountSidebar.billing")} />
+      <SidebarItem icon={<FaWallet />} label={t("accountSidebar.transferMethods")} href="/payments" />
 
-      <SidebarGroup label="Khác" />
+      <SidebarGroup label={t("accountSidebar.other")} />
       <SidebarItem
         icon={<FaCog />}
-        label="Cài đặt"
+        label={t("accountSidebar.settings")}
         href="/edit-account/cai-dat"
         active={active === "settings"}
       />

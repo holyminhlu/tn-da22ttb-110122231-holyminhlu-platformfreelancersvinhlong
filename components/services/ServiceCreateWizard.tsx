@@ -1,5 +1,7 @@
 "use client";
 
+import { tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -110,7 +112,10 @@ type ServiceCreateWizardProps = {
 
 type SubmitMode = "draft" | "pending" | "save";
 
-export default function ServiceCreateWizard({ editServiceId }: ServiceCreateWizardProps = {}) {
+export default function ServiceCreateWizard({
+  editServiceId }: ServiceCreateWizardProps = {}) {
+  const { t } = useTranslation();
+
   const router = useRouter();
   const isEdit = Boolean(editServiceId);
   const [step, setStep] = useState(1);
@@ -290,23 +295,27 @@ export default function ServiceCreateWizard({ editServiceId }: ServiceCreateWiza
   }
 
   function goNext() {
+  const t = tUi;
     if (!validateStep(step)) return;
     setStep((s) => Math.min(5, s + 1));
   }
 
   function goBack() {
+  const t = tUi;
     setStepError("");
     setStep((s) => Math.max(1, s - 1));
   }
 
   function goToStep(id: number) {
+  const t = tUi;
     if (id > step) return;
     setStepError("");
     setStep(id);
   }
 
   async function submit(mode: SubmitMode) {
-    setError("");
+  const t = tUi;
+  setError("");
     if (mode === "pending" || mode === "save") {
       for (let s = 1; s <= 4; s += 1) {
         if (!validateStep(s)) {
@@ -344,32 +353,35 @@ export default function ServiceCreateWizard({ editServiceId }: ServiceCreateWiza
   }
 
   async function handleThumbnail(file: File | null) {
-    if (!file) return;
+  const t = tUi;
+  if (!file) return;
     try {
       const url = await uploadServiceThumbnail(file);
       setThumbnailUrl(url);
     } catch {
-      alert("Không tải được ảnh cover.");
+      alert(t("Không tải được ảnh cover."));
     }
   }
 
   async function handleGallery(files: FileList | null) {
-    if (!files?.length) return;
+  const t = tUi;
+  if (!files?.length) return;
     try {
       const urls = await uploadServiceImages(Array.from(files));
       setMediaUrls((prev) => [...prev, ...urls].slice(0, 12));
     } catch {
-      alert("Không tải được ảnh gallery.");
+      alert(t("Không tải được ảnh gallery."));
     }
   }
 
   async function handleDemo(file: File | null) {
-    if (!file) return;
+  const t = tUi;
+  if (!file) return;
     try {
       const data = await uploadServiceDemo(file);
       setDemoUrl(data.url);
     } catch {
-      alert("Không tải được video demo.");
+      alert(t("Không tải được video demo."));
     }
   }
 
@@ -383,7 +395,7 @@ export default function ServiceCreateWizard({ editServiceId }: ServiceCreateWiza
   if (loadingEdit) {
     return (
       <ServicesShell>
-        <p className="text-sm text-gray-500">Đang tải dịch vụ...</p>
+        <p className="text-sm text-gray-500">{t("Đang tải dịch vụ...")}</p>
       </ServicesShell>
     );
   }
@@ -395,7 +407,7 @@ export default function ServiceCreateWizard({ editServiceId }: ServiceCreateWiza
           {loadEditError}
         </p>
         <Link href="/dich-vu/quan-ly" className="svc-btn svc-btn--secondary mt-3">
-          Về quản lý
+          {t("Về quản lý")}
         </Link>
       </ServicesShell>
     );
@@ -426,7 +438,7 @@ export default function ServiceCreateWizard({ editServiceId }: ServiceCreateWiza
           Bước {step} / {STEPS.length}: {STEPS[step - 1]?.title}
         </p>
 
-        <ol className="post-job-wizard__steps" aria-label="Các bước đăng dịch vụ">
+        <ol className="post-job-wizard__steps" aria-label={t("Các bước đăng dịch vụ")}>
           {STEPS.map((s) => {
             const done = s.id < step;
             const active = s.id === step;
@@ -448,7 +460,7 @@ export default function ServiceCreateWizard({ editServiceId }: ServiceCreateWiza
                   <span className="post-job-wizard__step-num">
                     {done ? <FaCheck aria-hidden /> : s.id}
                   </span>
-                  <span className="post-job-wizard__step-label">{s.title}</span>
+                  <span className="post-job-wizard__step-label">{t(s.title)}</span>
                 </button>
               </li>
             );
@@ -458,28 +470,27 @@ export default function ServiceCreateWizard({ editServiceId }: ServiceCreateWiza
         <div className="post-job-wizard__panel">
           {step === 1 ? (
             <div className="post-job-wizard__fields">
-              <h2 className="post-job-wizard__heading">Tổng quan dịch vụ</h2>
+              <h2 className="post-job-wizard__heading">{t("Tổng quan dịch vụ")}</h2>
               <p className="post-job-wizard__hint">
-                Thông tin hiển thị trên thẻ tìm kiếm và trang chi tiết gig — tiêu đề và danh mục giúp Client
-                tìm thấy bạn.
+                {t("Thông tin hiển thị trên thẻ tìm kiếm và trang chi tiết gig — tiêu đề và danh mục giúp Client tìm thấy bạn.")}
               </p>
               <label className="post-job-field">
-                <span>Tiêu đề dịch vụ *</span>
+                <span>{t("Tiêu đề dịch vụ *")}</span>
                 <input
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="VD: Thiết kế logo thương hiệu chuyên nghiệp"
+                  placeholder={t("VD: Thiết kế logo thương hiệu chuyên nghiệp")}
                   maxLength={120}
                 />
               </label>
               <label className="post-job-field">
-                <span>Danh mục *</span>
+                <span>{t("Danh mục *")}</span>
                 <input
                   type="text"
                   list="svc-category-suggestions"
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  placeholder="Chọn gợi ý hoặc gõ danh mục của bạn"
+                  placeholder={t("Chọn gợi ý hoặc gõ danh mục của bạn")}
                   maxLength={80}
                   autoComplete="off"
                 />
@@ -489,11 +500,11 @@ export default function ServiceCreateWizard({ editServiceId }: ServiceCreateWiza
                   ))}
                 </datalist>
                 <span className="post-job-wizard__hint" style={{ marginTop: "0.35rem" }}>
-                  Chọn từ gợi ý khi gõ, hoặc nhập danh mục mới (VD: Làm vườn, Sửa chữa nhà, Dịch vụ pháp lý…).
+                  {t("Chọn từ gợi ý khi gõ, hoặc nhập danh mục mới (VD: Làm vườn, Sửa chữa nhà, Dịch vụ pháp lý…).")}
                 </span>
               </label>
               {categorySuggestions.length > 0 ? (
-                <div className="svc-category-chips" aria-label="Gợi ý danh mục nhanh">
+                <div className="svc-category-chips" aria-label={t("Gợi ý danh mục nhanh")}>
                   {categorySuggestions.slice(0, 8).map((c) => (
                     <button
                       key={c}
@@ -507,11 +518,11 @@ export default function ServiceCreateWizard({ editServiceId }: ServiceCreateWiza
                 </div>
               ) : null}
               <label className="post-job-field">
-                <span>Từ khóa tìm kiếm (Tags)</span>
+                <span>{t("Từ khóa tìm kiếm (Tags)")}</span>
                 <input
                   value={tagsInput}
                   onChange={(e) => setTagsInput(e.target.value)}
-                  placeholder="logo, branding, Figma — phân cách bằng dấu phẩy"
+                  placeholder={t("logo, branding, Figma — phân cách bằng dấu phẩy")}
                 />
               </label>
               {tags.length > 0 ? (
@@ -528,14 +539,13 @@ export default function ServiceCreateWizard({ editServiceId }: ServiceCreateWiza
 
           {step === 2 ? (
             <div className="post-job-wizard__fields">
-              <h2 className="post-job-wizard__heading">Giá cả &amp; Gói thầu</h2>
+              <h2 className="post-job-wizard__heading">{t("Giá cả &amp; Gói thầu")}</h2>
               <p className="post-job-wizard__hint">
-                Chọn một mức giá cố định cho toàn bộ dịch vụ, hoặc chia thành nhiều gói (Basic / Standard /
-                Premium) để Client lựa chọn mức phù hợp.
+                {t("Chọn một mức giá cố định cho toàn bộ dịch vụ, hoặc chia thành nhiều gói (Basic / Standard / Premium) để Client lựa chọn mức phù hợp.")}
               </p>
 
               <fieldset className="post-job-wizard__radio-group svc-pricing-mode">
-                <legend>Hình thức báo giá</legend>
+                <legend>{t("Hình thức báo giá")}</legend>
                 <label>
                   <input
                     type="radio"
@@ -543,7 +553,7 @@ export default function ServiceCreateWizard({ editServiceId }: ServiceCreateWiza
                     checked={pricingMode === "single"}
                     onChange={() => setPricingMode("single")}
                   />
-                  Một giá duy nhất (trọn gói)
+                  {t("Một giá duy nhất (trọn gói)")}
                 </label>
                 <label>
                   <input
@@ -555,7 +565,7 @@ export default function ServiceCreateWizard({ editServiceId }: ServiceCreateWiza
                       syncPackagesFromBase();
                     }}
                   />
-                  Nhiều gói (Basic · Standard · Premium)
+                  {t("Nhiều gói (Basic · Standard · Premium)")}
                 </label>
               </fieldset>
 
@@ -563,7 +573,7 @@ export default function ServiceCreateWizard({ editServiceId }: ServiceCreateWiza
                 <div className="svc-pricing-single">
                   <div className="post-job-wizard__row-2">
                     <label className="post-job-field">
-                      <span>Giá dịch vụ (VND) *</span>
+                      <span>{t("Giá dịch vụ (VND) *")}</span>
                       <input
                         value={basePrice}
                         onChange={(e) => setBasePrice(e.target.value.replace(/[^\d]/g, ""))}
@@ -571,7 +581,7 @@ export default function ServiceCreateWizard({ editServiceId }: ServiceCreateWiza
                       />
                     </label>
                     <label className="post-job-field">
-                      <span>Thời gian hoàn thành *</span>
+                      <span>{t("Thời gian hoàn thành *")}</span>
                       <select value={deliveryDays} onChange={(e) => setDeliveryDays(e.target.value)}>
                         {[1, 3, 5, 7, 10, 15, 30].map((d) => (
                           <option key={d} value={String(d)}>
@@ -582,12 +592,12 @@ export default function ServiceCreateWizard({ editServiceId }: ServiceCreateWiza
                     </label>
                   </div>
                   <RevisionSelect
-                    label="Số lần chỉnh sửa sau bàn giao"
+                    label={t("Số lần chỉnh sửa sau bàn giao")}
                     value={singleRevisions}
                     onChange={setSingleRevisions}
                   />
                   <p className="post-job-wizard__hint">
-                    Client chỉ thấy <strong>một nút &quot;Mua ngay&quot;</strong> với giá {pricePreview} ·{" "}
+                    {t("Client chỉ thấy")} <strong>{t("một nút &quot;Mua ngay&quot;")}</strong> với giá {pricePreview} ·{" "}
                     {deliveryDays} ngày.
                   </p>
                 </div>
@@ -595,7 +605,7 @@ export default function ServiceCreateWizard({ editServiceId }: ServiceCreateWiza
                 <div className="svc-pricing-tiers">
                   <div className="post-job-wizard__row-2">
                     <label className="post-job-field">
-                      <span>Giá gói Standard (tham chiếu)</span>
+                      <span>{t("Giá gói Standard (tham chiếu)")}</span>
                       <input
                         value={basePrice}
                         onChange={(e) => {
@@ -605,7 +615,7 @@ export default function ServiceCreateWizard({ editServiceId }: ServiceCreateWiza
                       />
                     </label>
                     <label className="post-job-field">
-                      <span>Ngày gói Standard</span>
+                      <span>{t("Ngày gói Standard")}</span>
                       <select
                         value={deliveryDays}
                         onChange={(e) => {
@@ -627,14 +637,14 @@ export default function ServiceCreateWizard({ editServiceId }: ServiceCreateWiza
                     style={{ marginBottom: "0.75rem" }}
                     onClick={() => syncPackagesFromBase()}
                   >
-                    Tính lại giá 3 gói từ Standard
+                    {t("Tính lại giá 3 gói từ Standard")}
                   </button>
                   {packages.map((pkg, idx) => (
                     <div key={pkg.id} className="svc-tier-card">
-                      <h3 className="svc-tier-card__name">{pkg.name}</h3>
+                      <h3 className="svc-tier-card__name">{t(pkg.name)}</h3>
                       <div className="post-job-wizard__row-2">
                         <label className="post-job-field">
-                          <span>Giá (VND)</span>
+                          <span>{t("Giá (VND)")}</span>
                           <input
                             value={String(pkg.price)}
                             onChange={(e) =>
@@ -645,7 +655,7 @@ export default function ServiceCreateWizard({ editServiceId }: ServiceCreateWiza
                           />
                         </label>
                         <label className="post-job-field">
-                          <span>Số ngày</span>
+                          <span>{t("Số ngày")}</span>
                           <input
                             type="number"
                             min={1}
@@ -657,7 +667,7 @@ export default function ServiceCreateWizard({ editServiceId }: ServiceCreateWiza
                         </label>
                         <div style={{ gridColumn: "1 / -1" }}>
                           <RevisionSelect
-                            label="Lần chỉnh sửa"
+                            label={t("Lần chỉnh sửa")}
                             value={pkg.revisions}
                             onChange={(next) => patchPackage(idx, { revisions: next })}
                           />
@@ -675,25 +685,24 @@ export default function ServiceCreateWizard({ editServiceId }: ServiceCreateWiza
 
           {step === 3 ? (
             <div className="post-job-wizard__fields">
-              <h2 className="post-job-wizard__heading">Mô tả chi tiết &amp; FAQ</h2>
+              <h2 className="post-job-wizard__heading">{t("Mô tả chi tiết &amp; FAQ")}</h2>
               <p className="post-job-wizard__hint">
-                Giải thích rõ phạm vi công việc, sản phẩm bàn giao và câu hỏi thường gặp — giúp giảm trao đổi
-                lặp lại trước khi mua.
+                {t("Giải thích rõ phạm vi công việc, sản phẩm bàn giao và câu hỏi thường gặp — giúp giảm trao đổi lặp lại trước khi mua.")}
               </p>
               <label className="post-job-field">
-                <span>Mô tả đầy đủ *</span>
+                <span>{t("Mô tả đầy đủ *")}</span>
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   rows={8}
-                  placeholder="Bạn sẽ làm gì, không làm gì, định dạng file bàn giao, quy trình làm việc..."
+                  placeholder={t("Bạn sẽ làm gì, không làm gì, định dạng file bàn giao, quy trình làm việc...")}
                 />
               </label>
 
               <div className="svc-faq-block">
-                <h3 className="svc-faq-block__title">Câu hỏi thường gặp (FAQ)</h3>
+                <h3 className="svc-faq-block__title">{t("Câu hỏi thường gặp (FAQ)")}</h3>
                 <p className="post-job-wizard__hint" style={{ marginTop: 0 }}>
-                  Thêm câu hỏi Client hay hỏi — có thể xóa từng mục khi không cần nữa.
+                  {t("Thêm câu hỏi Client hay hỏi — có thể xóa từng mục khi không cần nữa.")}
                 </p>
                 <div className="svc-faq-list">
                   {faqs.map((faq, idx) => (
@@ -712,12 +721,12 @@ export default function ServiceCreateWizard({ editServiceId }: ServiceCreateWiza
                           aria-label={`Xóa FAQ ${idx + 1}`}
                           title={faqs.length <= 1 ? "Giữ ít nhất một ô FAQ" : "Xóa FAQ này"}
                         >
-                          <FaTrashAlt aria-hidden /> Xóa
+                          <FaTrashAlt aria-hidden /> {t("Xóa")}
                         </button>
                       </div>
                       <input
                         className="svc-faq-item__input"
-                        placeholder="Câu hỏi (VD: Bạn có hỗ trợ chỉnh sửa sau khi bàn giao không?)"
+                        placeholder={t("Câu hỏi (VD: Bạn có hỗ trợ chỉnh sửa sau khi bàn giao không?)")}
                         value={faq.q}
                         onChange={(e) =>
                           setFaqs((prev) =>
@@ -727,7 +736,7 @@ export default function ServiceCreateWizard({ editServiceId }: ServiceCreateWiza
                       />
                       <textarea
                         className="svc-faq-item__input"
-                        placeholder="Trả lời ngắn gọn, rõ ràng"
+                        placeholder={t("Trả lời ngắn gọn, rõ ràng")}
                         rows={2}
                         value={faq.a}
                         onChange={(e) =>
@@ -744,7 +753,7 @@ export default function ServiceCreateWizard({ editServiceId }: ServiceCreateWiza
                   className="svc-btn svc-btn--secondary"
                   onClick={() => setFaqs((prev) => [...prev, { ...EMPTY_FAQ }])}
                 >
-                  + Thêm FAQ
+                  {t("+ Thêm FAQ")}
                 </button>
               </div>
             </div>
@@ -752,24 +761,22 @@ export default function ServiceCreateWizard({ editServiceId }: ServiceCreateWiza
 
           {step === 4 ? (
             <div className="post-job-wizard__fields">
-              <h2 className="post-job-wizard__heading">Yêu cầu từ Client</h2>
+              <h2 className="post-job-wizard__heading">{t("Yêu cầu từ Client")}</h2>
 
               <div className="svc-req-callout" role="note">
-                <p className="svc-req-callout__title">Mục này dùng để làm gì?</p>
+                <p className="svc-req-callout__title">{t("Mục này dùng để làm gì?")}</p>
                 <p>
-                  Sau khi Client <strong>thanh toán / đặt cọc</strong> và bạn <strong>tiếp nhận đơn</strong>, họ
-                  sẽ thấy danh sách thông tin và file cần gửi trước khi bạn bắt đầu làm. Ghi càng cụ thể càng
-                  giảm trễ deadline do thiếu brief.
+                  {t("Sau khi Client")} <strong>{t("thanh toán / đặt cọc")}</strong> {t("và bạn")} <strong>{t("tiếp nhận đơn")}</strong>{t(", họ sẽ thấy danh sách thông tin và file cần gửi trước khi bạn bắt đầu làm. Ghi càng cụ thể càng giảm trễ deadline do thiếu brief.")}
                 </p>
                 <ul className="svc-req-callout__list">
-                  <li>Mỗi dòng = một yêu cầu bắt buộc hoặc khuyến nghị</li>
-                  <li>Nêu rõ định dạng file (PDF, PNG, Figma link…)</li>
-                  <li>Đánh dấu mục nào là bắt buộc trong nội dung (VD: &quot;(bắt buộc)&quot;)</li>
+                  <li>{t("Mỗi dòng = một yêu cầu bắt buộc hoặc khuyến nghị")}</li>
+                  <li>{t("Nêu rõ định dạng file (PDF, PNG, Figma link…)")}</li>
+                  <li>{t("Đánh dấu mục nào là bắt buộc trong nội dung (VD: &quot;(bắt buộc)&quot;)")}</li>
                 </ul>
               </div>
 
               <div className="svc-req-items">
-                <p className="svc-req-items__label">Danh sách yêu cầu Client cần cung cấp *</p>
+                <p className="svc-req-items__label">{t("Danh sách yêu cầu Client cần cung cấp *")}</p>
                 {requirementItems.map((item, idx) => (
                   <div key={idx} className="svc-req-row">
                     <span className="svc-req-row__num" aria-hidden>
@@ -784,7 +791,7 @@ export default function ServiceCreateWizard({ editServiceId }: ServiceCreateWiza
                           prev.map((r, i) => (i === idx ? e.target.value : r)),
                         )
                       }
-                      placeholder="VD: File brief dự án (Word/PDF) — bắt buộc"
+                      placeholder={t("VD: File brief dự án (Word/PDF) — bắt buộc")}
                     />
                     <button
                       type="button"
@@ -806,11 +813,11 @@ export default function ServiceCreateWizard({ editServiceId }: ServiceCreateWiza
                   className="svc-btn svc-btn--secondary"
                   onClick={() => setRequirementItems((prev) => [...prev, ""])}
                 >
-                  + Thêm mục yêu cầu
+                  {t("+ Thêm mục yêu cầu")}
                 </button>
               </div>
 
-              <p className="svc-req-examples__label">Gợi ý — bấm để thêm nhanh:</p>
+              <p className="svc-req-examples__label">{t("Gợi ý — bấm để thêm nhanh:")}</p>
               <div className="svc-req-examples">
                 {REQUIREMENT_EXAMPLES.map((ex) => (
                   <button
@@ -836,12 +843,12 @@ export default function ServiceCreateWizard({ editServiceId }: ServiceCreateWiza
               </div>
 
               <label className="post-job-field">
-                <span>Ghi chú bổ sung (tùy chọn)</span>
+                <span>{t("Ghi chú bổ sung (tùy chọn)")}</span>
                 <textarea
                   value={requirementNotes}
                   onChange={(e) => setRequirementNotes(e.target.value)}
                   rows={3}
-                  placeholder="VD: Nếu chưa có logo, Client có thể gửi tên thương hiệu và phong cách mong muốn..."
+                  placeholder={t("VD: Nếu chưa có logo, Client có thể gửi tên thương hiệu và phong cách mong muốn...")}
                 />
               </label>
             </div>
@@ -849,17 +856,17 @@ export default function ServiceCreateWizard({ editServiceId }: ServiceCreateWiza
 
           {step === 5 ? (
             <div className="post-job-wizard__fields">
-              <h2 className="post-job-wizard__heading">Hình ảnh &amp; Sản phẩm mẫu</h2>
+              <h2 className="post-job-wizard__heading">{t("Hình ảnh &amp; Sản phẩm mẫu")}</h2>
               <p className="post-job-wizard__hint">
-                Ảnh cover và gallery giúp tăng tỷ lệ chuyển đổi — video/PDF demo thể hiện chất lượng thực tế.
+                {t("Ảnh cover và gallery giúp tăng tỷ lệ chuyển đổi — video/PDF demo thể hiện chất lượng thực tế.")}
               </p>
               <label className="post-job-field">
                 <span>Ảnh cover</span>
                 <input type="file" accept="image/*" onChange={(e) => void handleThumbnail(e.target.files?.[0] ?? null)} />
-                {thumbnailUrl ? <span className="svc-upload-ok">Đã tải ảnh cover</span> : null}
+                {thumbnailUrl ? <span className="svc-upload-ok">{t("Đã tải ảnh cover")}</span> : null}
               </label>
               <label className="post-job-field">
-                <span>Gallery (tối đa 12 ảnh)</span>
+                <span>{t("Gallery (tối đa 12 ảnh)")}</span>
                 <input type="file" accept="image/*" multiple onChange={(e) => void handleGallery(e.target.files)} />
                 {mediaUrls.length > 0 ? (
                   <span className="svc-upload-ok">{mediaUrls.length} ảnh đã tải</span>
@@ -868,7 +875,7 @@ export default function ServiceCreateWizard({ editServiceId }: ServiceCreateWiza
               <label className="post-job-field">
                 <span>Video demo (MP4 / WebM / MOV)</span>
                 <input type="file" accept="video/*" onChange={(e) => void handleDemo(e.target.files?.[0] ?? null)} />
-                {demoUrl ? <span className="svc-upload-ok">Đã tải video demo</span> : null}
+                {demoUrl ? <span className="svc-upload-ok">{t("Đã tải video demo")}</span> : null}
               </label>
             </div>
           ) : null}
@@ -888,14 +895,14 @@ export default function ServiceCreateWizard({ editServiceId }: ServiceCreateWiza
         <div className="svc-wizard__footer">
           {step > 1 ? (
             <button type="button" className="svc-btn svc-btn--secondary" onClick={goBack}>
-              Quay lại
+              {t("Quay lại")}
             </button>
           ) : (
             <span />
           )}
           {step < 5 ? (
             <button type="button" className="svc-btn svc-btn--primary" onClick={goNext}>
-              Tiếp theo
+              {t("Tiếp theo")}
             </button>
           ) : (
             <div className="svc-wizard__submit-group">
@@ -917,7 +924,7 @@ export default function ServiceCreateWizard({ editServiceId }: ServiceCreateWiza
                       disabled={busy}
                       onClick={() => void submit("draft")}
                     >
-                      Lưu nháp
+                      {t("Lưu nháp")}
                     </button>
                   ) : null}
                   <button

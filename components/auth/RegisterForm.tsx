@@ -1,10 +1,12 @@
 "use client";
 
+import { tUi } from "@/lib/i18n/runtime";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import AuthLayout from "./AuthLayout";
 import GoogleButton from "./GoogleButton";
+import { useTranslation } from "@/hooks/useTranslation";
 import { register } from "@/lib/api/auth";
 import styles from "./auth.module.css";
 
@@ -16,6 +18,8 @@ function safeNextPath(raw: string | null): string | null {
 }
 
 export default function RegisterForm() {
+  const { t } = useTranslation();
+
   const router = useRouter();
   const searchParams = useSearchParams();
   const nextPath = safeNextPath(searchParams.get("next"));
@@ -47,12 +51,12 @@ export default function RegisterForm() {
           : styles.strong;
   const strengthLabel =
     strengthScore <= 1
-      ? "Yếu"
+      ? t("auth.passwordWeak")
       : strengthScore <= 3
-        ? "Trung bình"
+        ? t("auth.passwordMedium")
         : strengthScore === 4
-          ? "Khá"
-          : "Mạnh";
+          ? t("auth.passwordGood")
+          : t("auth.passwordStrong");
   const isPasswordStrong = Object.values(checks).every(Boolean);
   const showPasswordFeedback = password.length > 0 && !isPasswordStrong;
 
@@ -72,29 +76,30 @@ export default function RegisterForm() {
   }, [router, success, nextPath]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  const t = tUi;
     event.preventDefault();
     setError("");
     setSuccess("");
 
     if (!isPasswordStrong) {
-      setError("Mật khẩu chưa đủ mạnh. Vui lòng đáp ứng đầy đủ tiêu chí.");
+      setError(t("auth.passwordNotStrong"));
       return;
     }
     if (password !== confirmPassword) {
-      setError("Xác nhận mật khẩu không khớp.");
+      setError(t("auth.passwordMismatch"));
       return;
     }
 
     setLoading(true);
     try {
       const data = await register({ role, fullName, email, password });
-      setSuccess(data.message || "Đăng ký thành công.");
+      setSuccess(data.message || t("auth.registerSuccessFallback"));
     } catch (err) {
       const message =
         err && typeof err === "object" && "message" in err
           ? String((err as { message: string }).message)
           : "";
-      setError(message || "Không thể kết nối máy chủ.");
+      setError(message || t("auth.serverError"));
     } finally {
       setLoading(false);
     }
@@ -102,21 +107,21 @@ export default function RegisterForm() {
 
   return (
     <AuthLayout variant="register">
-      <h2 className={styles.title}>Đăng ký</h2>
-        <p className={styles.subtitle}>Chọn vai trò và tạo tài khoản miễn phí</p>
+      <h2 className={styles.title}>{t("auth.register")}</h2>
+        <p className={styles.subtitle}>{t("auth.registerSubtitle")}</p>
 
         {error ? (
           <div className={styles.toastStack} role="alert" aria-live="assertive">
             <div className={styles.toastError}>
               <div>
-                <p className={styles.toastTitle}>Đăng ký thất bại</p>
+                <p className={styles.toastTitle}>{t("auth.registerFailed")}</p>
                 <p className={styles.toastMessage}>{error}</p>
               </div>
               <button
                 type="button"
                 className={styles.toastClose}
                 onClick={() => setError("")}
-                aria-label="Đóng thông báo"
+                aria-label={t("common.closeNotification")}
               >
                 ×
               </button>
@@ -131,15 +136,15 @@ export default function RegisterForm() {
         ) : null}
 
         <form onSubmit={handleSubmit}>
-          <div className={styles.roleGroup} role="group" aria-label="Vai trò">
+          <div className={styles.roleGroup} role="group" aria-label={t("auth.role")}>
             <button
               type="button"
               className={`${styles.roleBtn}${role === "client" ? ` ${styles.roleBtnActive}` : ""}`}
               aria-pressed={role === "client"}
               onClick={() => setRole("client")}
             >
-              Khách hàng
-              <span>Đăng việc &amp; thuê freelancer</span>
+              {t("auth.client")}
+              <span>{t("auth.clientDesc")}</span>
             </button>
             <button
               type="button"
@@ -147,14 +152,14 @@ export default function RegisterForm() {
               aria-pressed={role === "freelancer"}
               onClick={() => setRole("freelancer")}
             >
-              Freelancer
-              <span>Tìm việc &amp; nhận báo giá</span>
+              {t("common.freelancer")}
+              <span>{t("auth.freelancerDesc")}</span>
             </button>
           </div>
 
           <div className={styles.field}>
             <label className={styles.label} htmlFor="reg-name">
-              Họ và tên
+              {t("auth.fullName")}
             </label>
             <input
               id="reg-name"
@@ -169,7 +174,7 @@ export default function RegisterForm() {
           </div>
           <div className={styles.field}>
             <label className={styles.label} htmlFor="reg-email">
-              Email
+              {t("common.email")}
             </label>
             <input
               id="reg-email"
@@ -184,7 +189,7 @@ export default function RegisterForm() {
           </div>
           <div className={styles.field}>
             <label className={styles.label} htmlFor="reg-password">
-              Mật khẩu
+              {t("common.password")}
             </label>
             <input
               id="reg-password"
@@ -207,22 +212,22 @@ export default function RegisterForm() {
                   style={{ width: `${(strengthScore / 5) * 100}%` }}
                 />
               </div>
-              <p className={styles.meterText}>Độ mạnh: {strengthLabel}</p>
+              <p className={styles.meterText}>{t("auth.passwordStrength", { label: strengthLabel })}</p>
               <ul className={styles.requirements}>
                 <li className={checks.minLength ? styles.requirementOk : styles.requirementMissing}>
-                  Ít nhất 8 ký tự
+                  {t("auth.reqMinLength")}
                 </li>
                 <li className={checks.hasUpper ? styles.requirementOk : styles.requirementMissing}>
-                  Có chữ in hoa (A-Z)
+                  {t("auth.reqUpper")}
                 </li>
                 <li className={checks.hasLower ? styles.requirementOk : styles.requirementMissing}>
-                  Có chữ thường (a-z)
+                  {t("auth.reqLower")}
                 </li>
                 <li className={checks.hasNumber ? styles.requirementOk : styles.requirementMissing}>
-                  Có số (0-9)
+                  {t("auth.reqNumber")}
                 </li>
                 <li className={checks.hasSpecial ? styles.requirementOk : styles.requirementMissing}>
-                  Có ký tự đặc biệt
+                  {t("auth.reqSpecial")}
                 </li>
               </ul>
             </div>
@@ -230,7 +235,7 @@ export default function RegisterForm() {
 
           <div className={styles.field}>
             <label className={styles.label} htmlFor="reg-confirm">
-              Xác nhận mật khẩu
+              {t("auth.confirmPassword")}
             </label>
             <input
               id="reg-confirm"
@@ -245,17 +250,17 @@ export default function RegisterForm() {
           </div>
 
           <button type="submit" className={styles.submit} disabled={loading}>
-            {loading ? "Đang xử lý…" : "Tạo tài khoản"}
+            {loading ? t("common.processing") : t("auth.createAccount")}
           </button>
         </form>
 
-        <div className={styles.divider}>hoặc</div>
+        <div className={styles.divider}>{t("common.or")}</div>
         <GoogleButton nextPath={nextPath} role={role} />
 
       <p className={styles.helperText}>
-        Đã có tài khoản?{" "}
+        {t("auth.hasAccount")}{" "}
         <Link href={nextPath ? `/dang-nhap?next=${encodeURIComponent(nextPath)}` : "/dang-nhap"}>
-          Đăng nhập
+          {t("auth.login")}
         </Link>
       </p>
     </AuthLayout>

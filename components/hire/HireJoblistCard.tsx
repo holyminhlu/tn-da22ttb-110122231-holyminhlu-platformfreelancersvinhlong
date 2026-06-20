@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "@/hooks/useTranslation";
 import Image from "next/image";
 import Link from "next/link";
 import { FaListUl, FaMoneyBillWave, FaThumbsUp } from "react-icons/fa";
@@ -22,7 +23,10 @@ type HireJoblistCardProps = {
   onSelect: (id: string, checked: boolean) => void;
 };
 
-export default function HireJoblistCard({ job, selected, onSelect }: HireJoblistCardProps) {
+export default function HireJoblistCard({
+  job, selected, onSelect }: HireJoblistCardProps) {
+  const { t } = useTranslation();
+
   const tags = parseJobTags(job.tags);
   const categoryLabel = job.category?.trim() || null;
   const quoteCount = job.quote_count ?? 0;

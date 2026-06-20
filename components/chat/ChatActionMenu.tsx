@@ -1,5 +1,7 @@
 "use client";
 
+import { tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useEffect, useRef } from "react";
 
 export type ChatMenuItem = {
@@ -25,19 +27,23 @@ export default function ChatActionMenu({
   anchorRef,
   align = "right",
 }: ChatActionMenuProps) {
+  const { t } = useTranslation();
+
   const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!open) return;
 
     function onPointerDown(event: MouseEvent) {
-      const target = event.target as Node;
+  const t = tUi;
+  const target = event.target as Node;
       if (panelRef.current?.contains(target)) return;
       if (anchorRef?.current?.contains(target)) return;
       onClose();
     }
 
     function onKeyDown(event: KeyboardEvent) {
+  const t = tUi;
       if (event.key === "Escape") onClose();
     }
 
@@ -56,7 +62,7 @@ export default function ChatActionMenu({
       ref={panelRef}
       className={`fw-chat-menu fw-chat-menu--${align}`}
       role="menu"
-      aria-label="Tùy chọn"
+      aria-label={t("Tùy chọn")}
     >
       {items.map((item) => (
         <button
@@ -71,7 +77,7 @@ export default function ChatActionMenu({
             onClose();
           }}
         >
-          {item.label}
+          {t(item.label)}
         </button>
       ))}
     </div>

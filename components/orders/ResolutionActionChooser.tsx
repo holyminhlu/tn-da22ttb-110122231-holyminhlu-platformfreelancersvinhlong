@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "@/hooks/useTranslation";
 import { useState } from "react";
 import { FaArrowLeft, FaGavel, FaUndoAlt } from "react-icons/fa";
 import type { OpenDisputePayload, RefundRequestPayload } from "@/lib/api/resolution";
@@ -29,6 +30,8 @@ export default function ResolutionActionChooser({
   showDispute = false,
   onOpenDispute,
 }: ResolutionActionChooserProps) {
+  const { t } = useTranslation();
+
   const [active, setActive] = useState<ResolutionAction>("none");
 
   const canRefund = showRefund && refundProps;
@@ -46,7 +49,7 @@ export default function ResolutionActionChooser({
           onClick={() => setActive("none")}
         >
           <FaArrowLeft aria-hidden />
-          Quay lại
+          {t("Quay lại")}
         </button>
         <RefundRequestForm
           agreedPrice={refundProps.agreedPrice}
@@ -70,7 +73,7 @@ export default function ResolutionActionChooser({
           onClick={() => setActive("none")}
         >
           <FaArrowLeft aria-hidden />
-          Quay lại
+          {t("Quay lại")}
         </button>
         <DisputeOpenForm busy={busy} onSubmit={onOpenDispute} />
       </div>
@@ -80,13 +83,13 @@ export default function ResolutionActionChooser({
   return (
     <div className="resolution-actions">
       <header className="resolution-actions__head">
-        <h4 className="resolution-actions__title">Cần hỗ trợ thêm?</h4>
+        <h4 className="resolution-actions__title">{t("Cần hỗ trợ thêm?")}</h4>
         <p className="resolution-actions__sub">
           {canRefund && canDispute
-            ? "Chọn một trong các tuỳ chọn bên dưới để gửi yêu cầu hoàn tiền hoặc mở tranh chấp."
+            ? t("Chọn một trong các tuỳ chọn bên dưới để gửi yêu cầu hoàn tiền hoặc mở tranh chấp.")
             : canRefund
-              ? "Nhấn bên dưới để gửi yêu cầu hoàn tiền."
-              : "Nhấn bên dưới để mở tranh chấp với admin hỗ trợ."}
+              ? t("Nhấn bên dưới để gửi yêu cầu hoàn tiền.")
+              : t("Nhấn bên dưới để mở tranh chấp với admin hỗ trợ.")}
         </p>
       </header>
       <div className="resolution-actions__buttons">
@@ -98,7 +101,7 @@ export default function ResolutionActionChooser({
             onClick={() => setActive("refund")}
           >
             <FaUndoAlt aria-hidden />
-            Yêu cầu hoàn tiền
+            {t("Yêu cầu hoàn tiền")}
           </button>
         ) : null}
         {canDispute ? (
@@ -109,7 +112,7 @@ export default function ResolutionActionChooser({
             onClick={() => setActive("dispute")}
           >
             <FaGavel aria-hidden />
-            Mở tranh chấp
+            {t("Mở tranh chấp")}
           </button>
         ) : null}
       </div>

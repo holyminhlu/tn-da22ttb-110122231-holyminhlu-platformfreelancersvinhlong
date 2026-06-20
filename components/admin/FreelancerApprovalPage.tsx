@@ -1,8 +1,9 @@
 "use client";
 
+import { formatDateUi, tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import { Fragment, useCallback, useEffect, useState } from "react";
 import { FaRedo, FaSearch } from "react-icons/fa";
-import { formatDate } from "@/lib/format";
 import {
   approveFreelancerAccount,
   getFreelancerApproval,
@@ -36,13 +37,14 @@ function stepBadge(done: boolean) {
 }
 
 function reviewBadge(status: string) {
+  const t = tUi;
   const s = status.toLowerCase();
-  if (s === "approved") return <span className="admin-badge admin-badge--ok">Đã duyệt</span>;
-  if (s === "rejected") return <span className="admin-badge admin-badge--bad">Từ chối</span>;
-  return <span className="admin-badge admin-badge--pending">Chờ duyệt</span>;
+  if (s === "approved") return <span className="admin-badge admin-badge--ok">{tUi("Đã duyệt")}</span>;
+  if (s === "rejected") return <span className="admin-badge admin-badge--bad">{tUi("Từ chối")}</span>;
+  return <span className="admin-badge admin-badge--pending">{tUi("Chờ duyệt")}</span>;
 }
 
-export default function FreelancerApprovalPage() {
+export default function FreelancerApprovalPage() {  const { t, formatDate } = useTranslation();
   const [tab, setTab] = useState<AdminReviewStatus>("pending");
   const [roleFilter, setRoleFilter] = useState<AdminRoleFilter>("all");
   const [searchInput, setSearchInput] = useState("");
@@ -93,6 +95,8 @@ export default function FreelancerApprovalPage() {
   }, [load]);
 
   function resetFilters() {
+  const t = tUi;
+  const formatDate = formatDateUi;
     setRoleFilter("all");
     setSearchInput("");
     setSearchQuery("");
@@ -104,6 +108,8 @@ export default function FreelancerApprovalPage() {
     roleFilter !== "all" || searchQuery !== "" || readyOnly || incompleteOnly;
 
   async function toggleDetail(userId: string) {
+  const t = tUi;
+  const formatDate = formatDateUi;
     if (expandedId === userId) {
       setExpandedId(null);
       setDetailItem(null);
@@ -128,6 +134,8 @@ export default function FreelancerApprovalPage() {
   }
 
   async function handleApprove(userId: string, role: string) {
+  const t = tUi;
+  const formatDate = formatDateUi;
     const label = role === "client" ? "client" : "freelancer";
     if (
       !window.confirm(
@@ -154,7 +162,9 @@ export default function FreelancerApprovalPage() {
   }
 
   async function handleReject(userId: string) {
-    const note = window.prompt("Lý do từ chối (tuỳ chọn):");
+  const t = tUi;
+  const formatDate = formatDateUi;
+    const note = window.prompt(t("Lý do từ chối (tuỳ chọn):"));
     if (note === null) return;
     setBusyId(userId);
     setToast(null);
@@ -176,40 +186,40 @@ export default function FreelancerApprovalPage() {
   return (
     <div className="admin-page">
       <header className="admin-page__head">
-        <h1 className="admin-page__title">Duyệt xác minh danh tính</h1>
+        <h1 className="admin-page__title">{t("Duyệt xác minh danh tính")}</h1>
       </header>
 
       {toast ? (
         <div className={`admin-toast admin-toast--${toast.type === "ok" ? "ok" : "err"}`} role="status">
-          {toast.message}
+          {t(toast.message)}
         </div>
       ) : null}
 
       <div className="admin-tabs" role="tablist">
-        {TABS.map((t) => (
+        {TABS.map((tabItem) => (
           <button
-            key={t.id}
+            key={tabItem.id}
             type="button"
             role="tab"
-            className={`admin-tab${tab === t.id ? " admin-tab--active" : ""}`}
-            aria-selected={tab === t.id}
-            onClick={() => setTab(t.id)}
+            className={`admin-tab${tab === tabItem.id ? " admin-tab--active" : ""}`}
+            aria-selected={tab === tabItem.id}
+            onClick={() => setTab(tabItem.id)}
           >
-            {t.label}
+            {t(tabItem.label)}
           </button>
         ))}
       </div>
 
-      <div className="admin-filters" aria-label="Bộ lọc hồ sơ">
+      <div className="admin-filters" aria-label={t("Bộ lọc hồ sơ")}>
         <div className="admin-filters__row">
           <label className="admin-filters__field admin-filters__field--search">
-            <span className="admin-filters__label">Tìm kiếm</span>
+            <span className="admin-filters__label">{t("Tìm kiếm")}</span>
             <div className="admin-filters__search-wrap">
               <FaSearch className="admin-filters__search-icon" aria-hidden />
               <input
                 type="search"
                 className="admin-filters__input"
-                placeholder="Email, tên hồ sơ…"
+                placeholder={t("Email, tên hồ sơ…")}
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
               />
@@ -217,7 +227,7 @@ export default function FreelancerApprovalPage() {
           </label>
 
           <label className="admin-filters__field">
-            <span className="admin-filters__label">Vai trò</span>
+            <span className="admin-filters__label">{t("Vai trò")}</span>
             <select
               className="admin-filters__select"
               value={roleFilter}
@@ -225,7 +235,7 @@ export default function FreelancerApprovalPage() {
             >
               {ROLE_OPTIONS.map((opt) => (
                 <option key={opt.id} value={opt.id}>
-                  {opt.label}
+                  {t(opt.label)}
                 </option>
               ))}
             </select>
@@ -241,7 +251,7 @@ export default function FreelancerApprovalPage() {
                   if (e.target.checked) setIncompleteOnly(false);
                 }}
               />
-              <span>Đủ điều kiện duyệt</span>
+              <span>{t("Đủ điều kiện duyệt")}</span>
             </label>
             <label className="admin-filters__check">
               <input
@@ -252,7 +262,7 @@ export default function FreelancerApprovalPage() {
                   if (e.target.checked) setReadyOnly(false);
                 }}
               />
-              <span>Thiếu bước xác minh</span>
+              <span>{t("Thiếu bước xác minh")}</span>
             </label>
           </div>
         </div>
@@ -264,7 +274,7 @@ export default function FreelancerApprovalPage() {
           <div className="admin-filters__actions">
             {hasActiveFilters ? (
               <button type="button" className="admin-btn admin-btn--ghost" onClick={resetFilters}>
-                Xóa bộ lọc
+                {t("Xóa bộ lọc")}
               </button>
             ) : null}
             <button
@@ -273,7 +283,7 @@ export default function FreelancerApprovalPage() {
               onClick={() => void load()}
               disabled={loading}
             >
-              <FaRedo aria-hidden /> Làm mới
+              <FaRedo aria-hidden /> {t("Làm mới")}
             </button>
           </div>
         </div>
@@ -281,7 +291,7 @@ export default function FreelancerApprovalPage() {
 
       <div className="admin-table-wrap">
         {loading ? (
-          <p className="admin-empty">Đang tải…</p>
+          <p className="admin-empty">{t("Đang tải…")}</p>
         ) : items.length === 0 ? (
           <p className="admin-empty">
             {hasActiveFilters
@@ -292,14 +302,14 @@ export default function FreelancerApprovalPage() {
           <table className="admin-table">
             <thead>
               <tr>
-                <th>Người dùng</th>
-                <th>Vai trò</th>
-                <th>Bước 1</th>
-                <th>Bước 2</th>
-                <th>Bước 3</th>
-                <th>Trạng thái</th>
-                <th>Gửi lúc</th>
-                <th>Thao tác</th>
+                <th>{t("Người dùng")}</th>
+                <th>{t("Vai trò")}</th>
+                <th>{t("Bước 1")}</th>
+                <th>{t("Bước 2")}</th>
+                <th>{t("Bước 3")}</th>
+                <th>{t("Trạng thái")}</th>
+                <th>{t("Gửi lúc")}</th>
+                <th>{t("Thao tác")}</th>
               </tr>
             </thead>
             <tbody>
@@ -320,7 +330,7 @@ export default function FreelancerApprovalPage() {
                     <td>{stepBadge(item.step2Complete)}</td>
                     <td>{stepBadge(item.step3Complete)}</td>
                     <td>{reviewBadge(item.adminReviewStatus)}</td>
-                    <td>{item.submittedAt ? formatDate(item.submittedAt) : "—"}</td>
+                    <td>{item.submittedAt ? formatDateUi(item.submittedAt) : "—"}</td>
                     <td>
                       <div className="admin-actions">
                         <button
@@ -329,7 +339,7 @@ export default function FreelancerApprovalPage() {
                           disabled={busyId === item.userId || tab !== "pending" || !item.canApprove}
                           onClick={() => void handleApprove(item.userId, item.role)}
                         >
-                          Duyệt
+                          {t("Duyệt")}
                         </button>
                         <button
                           type="button"
@@ -337,7 +347,7 @@ export default function FreelancerApprovalPage() {
                           disabled={busyId === item.userId || tab !== "pending"}
                           onClick={() => void handleReject(item.userId)}
                         >
-                          Từ chối
+                          {t("Từ chối")}
                         </button>
                         <button
                           type="button"

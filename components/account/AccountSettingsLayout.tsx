@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "@/hooks/useTranslation";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import HomeFooter from "@/components/home/HomeFooter";
@@ -25,6 +26,8 @@ type AccountSettingsLayoutProps = {
 };
 
 export default function AccountSettingsLayout({ children }: AccountSettingsLayoutProps) {
+  const { t } = useTranslation();
+
   const pathname = usePathname();
   const active = resolveActiveSection(pathname);
   const isProfile = active === "profile";

@@ -1,5 +1,7 @@
 "use client";
 
+import { tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useEffect, useId, useRef, useState } from "react";
 import { FaEllipsisV, FaPen, FaTrashAlt } from "react-icons/fa";
 
@@ -16,6 +18,8 @@ export default function PaymentMethodMenu({
   onDelete,
   disabled = false,
 }: PaymentMethodMenuProps) {
+  const { t } = useTranslation();
+
   const [open, setOpen] = useState(false);
   const menuId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
@@ -23,11 +27,13 @@ export default function PaymentMethodMenu({
   useEffect(() => {
     if (!open) return;
     function onPointerDown(event: MouseEvent) {
-      if (!rootRef.current?.contains(event.target as Node)) {
+  const t = tUi;
+  if (!rootRef.current?.contains(event.target as Node)) {
         setOpen(false);
       }
     }
     function onKeyDown(event: KeyboardEvent) {
+  const t = tUi;
       if (event.key === "Escape") setOpen(false);
     }
     document.addEventListener("mousedown", onPointerDown);
@@ -39,14 +45,16 @@ export default function PaymentMethodMenu({
   }, [open]);
 
   function handleDelete() {
+  const t = tUi;
     setOpen(false);
     const confirmed = window.confirm(
-      `Xóa phương thức "${methodLabel}"?\n\nHành động này không thể hoàn tác.`,
+      `${t("Xóa phương thức")} "${methodLabel}"?\n\n${t("Hành động này không thể hoàn tác.")}`,
     );
     if (confirmed) onDelete();
   }
 
   function handleEdit() {
+  const t = tUi;
     setOpen(false);
     onEdit();
   }
@@ -56,7 +64,7 @@ export default function PaymentMethodMenu({
       <button
         type="button"
         className="payments-method-menu__trigger"
-        aria-label={`Tùy chọn cho ${methodLabel}`}
+        aria-label={`${t("Tùy chọn cho")} ${methodLabel}`}
         aria-haspopup="menu"
         aria-expanded={open}
         aria-controls={menuId}
@@ -74,7 +82,7 @@ export default function PaymentMethodMenu({
             onClick={handleEdit}
           >
             <FaPen aria-hidden />
-            Cập nhật
+            {t("Cập nhật")}
           </button>
           <button
             type="button"
@@ -83,7 +91,7 @@ export default function PaymentMethodMenu({
             onClick={handleDelete}
           >
             <FaTrashAlt aria-hidden />
-            Xóa
+            {t("Xóa")}
           </button>
         </div>
       ) : null}

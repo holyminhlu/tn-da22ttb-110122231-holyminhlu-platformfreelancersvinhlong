@@ -11,7 +11,7 @@ export function formatMoneyInputDigits(digits: string): string {
   return new Intl.NumberFormat("vi-VN").format(n);
 }
 
-export function formatVnd(amount: string | number | null | undefined): string {
+export function formatVndUi(amount: string | number | null | undefined): string {
   const n = Number(amount);
   if (!Number.isFinite(n)) return "—";
   return new Intl.NumberFormat("vi-VN", {
@@ -34,10 +34,10 @@ export function formatCompactVnd(amount: string | number | null | undefined): st
   if (n >= 1000) {
     return `${(n / 1000).toFixed(n >= 10_000 ? 0 : 1).replace(/\.0$/, "")}k`;
   }
-  return formatVnd(n);
+  return formatVndUi(n);
 }
 
-export function formatDate(value: string | null | undefined): string {
+export function formatDateUi(value: string | null | undefined): string {
   if (!value) return "—";
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return "—";
@@ -47,6 +47,12 @@ export function formatDate(value: string | null | undefined): string {
     year: "numeric",
   });
 }
+
+/** @deprecated Dùng formatDate từ useTranslation() hoặc formatDateUi từ lib/i18n/runtime */
+export const formatDate = formatDateUi;
+
+/** @deprecated Dùng formatVnd từ useTranslation() hoặc formatVndUi từ lib/i18n/runtime */
+export const formatVnd = formatVndUi;
 
 /** YYYY-MM-DD theo múi giờ máy người dùng — dùng cho input type="date". */
 export function localDateInputValue(date = new Date()): string {

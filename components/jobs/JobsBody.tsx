@@ -1,5 +1,7 @@
 "use client";
 
+import { tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { getMyWork } from "@/lib/api/contracts";
@@ -19,6 +21,7 @@ import {
 } from "./jobs-filter";
 
 export default function JobsBody() {
+  const { t } = useTranslation();
   const [items, setItems] = useState<JobsListItem[]>([]);
   const [role, setRole] = useState<"freelancer" | "client" | null>(null);
   const [loading, setLoading] = useState(true);
@@ -67,10 +70,12 @@ export default function JobsBody() {
     filter === "safepay" || filter === "archived_safepay";
 
   function applySearch() {
+  const t = tUi;
     setSearchQuery(searchInput.trim());
   }
 
   function handleSearchInputChange(value: string) {
+  const t = tUi;
     setSearchInput(value);
     if (!value.trim()) setSearchQuery("");
   }
@@ -79,7 +84,7 @@ export default function JobsBody() {
     <div className="jobs-layout">
       <header className="jobs-header">
         <div>
-          <h1 className="jobs-title">Việc làm</h1>
+          <h1 className="jobs-title">{t("Việc làm")}</h1>
           <p className="jobs-header__lead">
             {role === "client"
               ? "Quản lý công việc bạn đã đăng và hợp đồng với freelancer."
@@ -113,7 +118,7 @@ export default function JobsBody() {
             <div className="jobs-state jobs-state--error" role="alert">
               <p>{error}</p>
               <button type="button" className="jobs-filter__apply" onClick={() => void load()}>
-                Thử lại
+                {t("Thử lại")}
               </button>
             </div>
           ) : visibleItems.length === 0 ? (
@@ -128,20 +133,20 @@ export default function JobsBody() {
                   <p>
                     {role === "client" ? (
                       <>
-                        Hãy <Link href="/findwork">đăng tin</Link> hoặc chờ freelancer gửi báo giá.
+                        {t("Hãy")} <Link href="/findwork">{t("đăng tin")}</Link> {t("hoặc chờ freelancer gửi báo giá.")}
                       </>
                     ) : (
                       <>
-                        Hãy <Link href="/findwork">tìm việc</Link> và nộp đơn hoặc{" "}
-                        <Link href="/findwork">theo dõi</Link> những công việc bạn thích.
+                        {t("Hãy")} <Link href="/findwork">{t("tìm việc")}</Link> và nộp đơn hoặc{" "}
+                        <Link href="/findwork">{t("theo dõi")}</Link> {t("những công việc bạn thích.")}
                       </>
                     )}
                   </p>
                 </>
               ) : (
                 <>
-                  <p className="jobs-empty__title">Không có kết quả phù hợp</p>
-                  <p>Thử đổi bộ lọc hoặc từ khóa tìm kiếm.</p>
+                  <p className="jobs-empty__title">{t("Không có kết quả phù hợp")}</p>
+                  <p>{t("Thử đổi bộ lọc hoặc từ khóa tìm kiếm.")}</p>
                   <button
                     type="button"
                     className="jobs-empty__reset"
@@ -151,14 +156,13 @@ export default function JobsBody() {
                       setSearchQuery("");
                     }}
                   >
-                    Xóa bộ lọc & tìm kiếm
+                    {t("Xóa bộ lọc & tìm kiếm")}
                   </button>
                 </>
               )}
               {showSafepayNote ? (
                 <p className="jobs-safepay-note">
-                  Bộ lọc SafePay sẽ hiển thị khi hợp đồng có quỹ ký quỹ được ghi nhận trên hệ
-                  thống.
+                  {t("Bộ lọc SafePay sẽ hiển thị khi hợp đồng có quỹ ký quỹ được ghi nhận trên hệ thống.")}
                 </p>
               ) : null}
             </div>

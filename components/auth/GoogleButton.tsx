@@ -2,6 +2,7 @@
 
 import styles from "./auth.module.css";
 import GoogleLogo from "@/components/icons/GoogleLogo";
+import { useTranslation } from "@/hooks/useTranslation";
 import { apiPaths, apiUrl, getApiBaseUrl } from "@/config/api.config";
 
 type GoogleButtonProps = {
@@ -9,7 +10,10 @@ type GoogleButtonProps = {
   role?: "client" | "freelancer";
 };
 
-export default function GoogleButton({ nextPath, role }: GoogleButtonProps) {
+export default function GoogleButton({
+  nextPath, role }: GoogleButtonProps) {
+  const { t } = useTranslation();
+
   const apiBaseUrl = getApiBaseUrl();
   const params = new URLSearchParams();
   if (nextPath) params.set("next", nextPath);
@@ -23,7 +27,7 @@ export default function GoogleButton({ nextPath, role }: GoogleButtonProps) {
   return (
     <a href={href} className={styles.googleButton}>
       <GoogleLogo size={20} />
-      Tiếp tục với Google
+      {t("auth.googleContinue")}
     </a>
   );
 }

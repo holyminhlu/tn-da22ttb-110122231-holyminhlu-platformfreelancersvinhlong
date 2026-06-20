@@ -1,5 +1,7 @@
 "use client";
 
+import { tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { FaIdCard, FaLock, FaUniversity } from "react-icons/fa";
 import type { FreelancerPayoutProfile } from "@/lib/api/payments";
@@ -26,6 +28,8 @@ export default function LinkPayoutAccountModal({
   onSaved,
   onSave,
 }: LinkPayoutAccountModalProps) {
+  const { t } = useTranslation();
+
   const [bankName, setBankName] = useState<string>(DOMESTIC_BANKS[0]);
   const [accountNumber, setAccountNumber] = useState("");
   const [accountHolderName, setAccountHolderName] = useState("");
@@ -43,6 +47,7 @@ export default function LinkPayoutAccountModal({
   useEffect(() => {
     if (!open) return;
     function onKeyDown(event: KeyboardEvent) {
+  const t = tUi;
       if (event.key === "Escape" && !saving) onClose();
     }
     window.addEventListener("keydown", onKeyDown);
@@ -64,16 +69,17 @@ export default function LinkPayoutAccountModal({
   if (!open) return null;
 
   async function handleSubmit(event: FormEvent) {
-    event.preventDefault();
+  const t = tUi;
+  event.preventDefault();
     setError("");
     const holder = accountHolderName.trim();
     const number = accountNumber.replace(/\D/g, "");
     if (!holder) {
-      setError("Tên chủ tài khoản là bắt buộc.");
+      setError(t("Tên chủ tài khoản là bắt buộc."));
       return;
     }
     if (number.length < 6) {
-      setError("Số tài khoản phải có ít nhất 6 chữ số.");
+      setError(t("Số tài khoản phải có ít nhất 6 chữ số."));
       return;
     }
     setSaving(true);
@@ -112,7 +118,7 @@ export default function LinkPayoutAccountModal({
           <button
             type="button"
             className="pay-method-modal__close"
-            aria-label="Đóng"
+            aria-label={t("Đóng")}
             disabled={saving}
             onClick={onClose}
           >
@@ -134,12 +140,11 @@ export default function LinkPayoutAccountModal({
           </div>
 
           <p className="pay-method-modal__payout-lead">
-            Nhập tài khoản ngân hàng nội địa để nhận tiền rút từ ví VLC. Thông tin được mã hóa và
-            chỉ dùng cho giải ngân.
+            {t("Nhập tài khoản ngân hàng nội địa để nhận tiền rút từ ví VLC. Thông tin được mã hóa và chỉ dùng cho giải ngân.")}
           </p>
 
           <fieldset className="pay-method-modal__field">
-            <legend className="pay-method-modal__label">Chọn ngân hàng</legend>
+            <legend className="pay-method-modal__label">{t("Chọn ngân hàng")}</legend>
             <div className="pay-method-modal__bank-options">
               {DOMESTIC_BANKS.map((bank) => {
                 const active = bankName === bank;
@@ -164,28 +169,28 @@ export default function LinkPayoutAccountModal({
           </fieldset>
 
           <label className="pay-method-modal__field">
-            <span className="pay-method-modal__label">Tên chủ tài khoản</span>
+            <span className="pay-method-modal__label">{t("Tên chủ tài khoản")}</span>
             <input
               className="pay-method-modal__input pay-method-modal__input--account"
               type="text"
               value={accountHolderName}
               onChange={(e) => setAccountHolderName(e.target.value)}
-              placeholder="VD: NGUYEN VAN A (như in trên thẻ ngân hàng)"
+              placeholder={t("VD: NGUYEN VAN A (như in trên thẻ ngân hàng)")}
               autoComplete="name"
             />
             {verifiedName ? (
               <span className="pay-method-modal__field-hint">
-                Tên đã xác minh: <strong>{verifiedName}</strong> — có thể nhập IN HOA, không dấu.
+                {t("Tên đã xác minh:")} <strong>{verifiedName}</strong> {t("— có thể nhập IN HOA, không dấu.")}
               </span>
             ) : (
               <span className="pay-method-modal__field-hint">
-                Nhập đúng họ tên như trên thẻ ngân hàng (IN HOA, không dấu vẫn được).
+                {t("Nhập đúng họ tên như trên thẻ ngân hàng (IN HOA, không dấu vẫn được).")}
               </span>
             )}
           </label>
 
           <label className="pay-method-modal__field">
-            <span className="pay-method-modal__label">Số tài khoản</span>
+            <span className="pay-method-modal__label">{t("Số tài khoản")}</span>
             <input
               className="pay-method-modal__input pay-method-modal__input--account"
               type="text"
@@ -205,23 +210,20 @@ export default function LinkPayoutAccountModal({
           <p className="pay-method-modal__notice">
             <FaIdCard className="pay-method-modal__notice-icon" aria-hidden />
             <span>
-              Tên trên thẻ ngân hàng thường viết IN HOA, không dấu (vd: NGUYEN VAN A) — khác cách
-              ghi trên CCCD (Nguyễn Văn A) vẫn được chấp nhận nếu cùng một người. Hệ thống so
-              khớp tự động, bỏ qua hoa/thường và dấu tiếng Việt.
+              {t("Tên trên thẻ ngân hàng thường viết IN HOA, không dấu (vd: NGUYEN VAN A) — khác cách ghi trên CCCD (Nguyễn Văn A) vẫn được chấp nhận nếu cùng một người. Hệ thống so khớp tự động, bỏ qua hoa/thường và dấu tiếng Việt.")}
             </span>
           </p>
 
           {profile.contactEmail ? (
             <p className="pay-method-modal__email-ref">
-              Email đối chiếu: <strong>{profile.contactEmail}</strong>
+              {t("Email đối chiếu:")} <strong>{profile.contactEmail}</strong>
             </p>
           ) : null}
 
           <p className="pay-method-modal__trust">
             <FaLock className="pay-method-modal__trust-icon" aria-hidden />
             <span>
-              Số tài khoản được lưu an toàn trên hệ thống. Khi hiển thị, chỉ các số cuối được tiết
-              lộ. Tiền rút sẽ chuyển vào tài khoản này trong 24–48 giờ làm việc.
+              {t("Số tài khoản được lưu an toàn trên hệ thống. Khi hiển thị, chỉ các số cuối được tiết lộ. Tiền rút sẽ chuyển vào tài khoản này trong 24–48 giờ làm việc.")}
             </span>
           </p>
 
@@ -239,7 +241,7 @@ export default function LinkPayoutAccountModal({
             disabled={saving}
             onClick={onClose}
           >
-            Hủy
+            {t("Hủy")}
           </button>
           <button type="submit" className="payments-btn payments-btn--primary" disabled={saving}>
             {saving ? "Đang lưu..." : profile.isConfigured ? "Cập nhật tài khoản" : "Liên kết ngay"}

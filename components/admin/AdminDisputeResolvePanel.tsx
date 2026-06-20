@@ -1,5 +1,7 @@
 "use client";
 
+import { tUi, formatVndUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   FaBalanceScale,
@@ -9,8 +11,6 @@ import {
   FaUserCheck,
 } from "react-icons/fa";
 import type { AdminResolveDisputeAction } from "@/lib/api/admin";
-import { formatVnd } from "@/lib/format";
-
 type ResolveMode = AdminResolveDisputeAction;
 
 type AdminDisputeResolvePanelProps = {
@@ -52,7 +52,8 @@ export default function AdminDisputeResolvePanel({
   busy = false,
   error,
   onResolve,
-}: AdminDisputeResolvePanelProps) {
+}: AdminDisputeResolvePanelProps) {  const { t, formatVnd } = useTranslation();
+
   const total = Math.max(0, Number(agreedPrice) || 0);
   const escrowFunded = String(escrowStatus || "").toLowerCase() === "funded";
 
@@ -112,16 +113,22 @@ export default function AdminDisputeResolvePanel({
   }, [mode, isCancelRejectedDispute]);
 
   function applyClientAmount(next: number) {
-    const clamped = roundVnd(Math.min(total, Math.max(0, next)));
+  const t = tUi;
+  const formatVnd = formatVndUi;
+  const clamped = roundVnd(Math.min(total, Math.max(0, next)));
     setClientAmount(clamped);
   }
 
   function applyPreset(clientPctValue: number) {
-    applyClientAmount(roundVnd(total * clientPctValue));
+  const t = tUi;
+  const formatVnd = formatVndUi;
+  applyClientAmount(roundVnd(total * clientPctValue));
   }
 
   function handleSlider(value: number) {
-    applyClientAmount(roundVnd((value / 100) * total));
+  const t = tUi;
+  const formatVnd = formatVndUi;
+  applyClientAmount(roundVnd((value / 100) * total));
   }
 
   const splitValid = total > 0 && clientAmount + freelancerAmount === total;
@@ -134,11 +141,11 @@ export default function AdminDisputeResolvePanel({
   const confirmLabel = useMemo(() => {
     switch (mode) {
       case "split":
-        return `Xác nhận phân chia — C ${formatVnd(clientAmount)} · F ${formatVnd(freelancerAmount)}`;
+        return `Xác nhận phân chia — C ${formatVndUi(clientAmount)} · F ${formatVndUi(freelancerAmount)}`;
       case "full_refund":
-        return `Xác nhận hoàn ${formatVnd(total)} cho Client`;
+        return `Xác nhận hoàn ${formatVndUi(total)} cho Client`;
       case "release":
-        return `Xác nhận giải ngân ${formatVnd(total)} cho Freelancer`;
+        return `Xác nhận giải ngân ${formatVndUi(total)} cho Freelancer`;
       case "dismiss":
         return "Xác nhận bác tranh chấp";
       default:
@@ -147,6 +154,8 @@ export default function AdminDisputeResolvePanel({
   }, [mode, clientAmount, freelancerAmount, total]);
 
   function handleSubmit() {
+  const t = tUi;
+  const formatVnd = formatVndUi;
     if (!canSubmit) return;
     void onResolve(mode, {
       adminNote: adminNote.trim() || undefined,
@@ -155,12 +164,12 @@ export default function AdminDisputeResolvePanel({
   }
 
   return (
-    <section className="admin-dispute-resolve" aria-label="Quyết định của Admin">
+    <section className="admin-dispute-resolve" aria-label={t("Quyết định của Admin")}>
       <header className="admin-dispute-resolve__head">
         <div className="admin-dispute-resolve__head-text">
           <FaGavel className="admin-dispute-resolve__head-icon" aria-hidden />
           <div>
-            <h4 className="admin-dispute-resolve__title">Quyết định của Admin</h4>
+            <h4 className="admin-dispute-resolve__title">{t("Quyết định của Admin")}</h4>
             <p className="admin-dispute-resolve__lead">
               {isCancelRejectedDispute
                 ? "Tranh chấp từ từ chối hủy đơn — phân chia ký quỹ và đóng case. Không thể bác để tiếp tục đơn."
@@ -169,8 +178,8 @@ export default function AdminDisputeResolvePanel({
           </div>
         </div>
         <div className="admin-dispute-resolve__escrow-badge">
-          <span className="admin-dispute-resolve__escrow-label">Ký quỹ</span>
-          <strong className="admin-dispute-resolve__escrow-value">{formatVnd(total)}</strong>
+          <span className="admin-dispute-resolve__escrow-label">{t("Ký quỹ")}</span>
+          <strong className="admin-dispute-resolve__escrow-value">{formatVndUi(total)}</strong>
           <span
             className={`admin-dispute-resolve__escrow-status${escrowFunded ? "" : " admin-dispute-resolve__escrow-status--warn"}`}
           >
@@ -181,7 +190,7 @@ export default function AdminDisputeResolvePanel({
 
       {!escrowFunded ? (
         <p className="admin-dispute-resolve__warn" role="alert">
-          Ký quỹ không ở trạng thái funded — không thể chia tiền cho đến khi escrow hợp lệ.
+          {t("Ký quỹ không ở trạng thái funded — không thể chia tiền cho đến khi escrow hợp lệ.")}
         </p>
       ) : null}
 
@@ -192,7 +201,7 @@ export default function AdminDisputeResolvePanel({
       ) : null}
 
       <fieldset className="admin-dispute-resolve__modes" disabled={busy || !escrowFunded}>
-        <legend className="admin-dispute-resolve__legend">Phương án xử lý</legend>
+        <legend className="admin-dispute-resolve__legend">{t("Phương án xử lý")}</legend>
         <div className="admin-dispute-resolve__mode-grid">
           {visibleModes.map((opt) => (
             <label
@@ -208,8 +217,8 @@ export default function AdminDisputeResolvePanel({
                 className="admin-dispute-resolve__mode-input"
               />
               <span className="admin-dispute-resolve__mode-icon">{opt.icon}</span>
-              <span className="admin-dispute-resolve__mode-title">{opt.title}</span>
-              <span className="admin-dispute-resolve__mode-desc">{opt.description}</span>
+              <span className="admin-dispute-resolve__mode-title">{t(opt.title)}</span>
+              <span className="admin-dispute-resolve__mode-desc">{t(opt.description)}</span>
             </label>
           ))}
         </div>
@@ -218,17 +227,17 @@ export default function AdminDisputeResolvePanel({
       {mode === "split" && total > 0 ? (
         <div className="admin-dispute-resolve__split">
           <div className="admin-dispute-resolve__split-head">
-            <span className="admin-dispute-resolve__split-label">Tỷ lệ phân chia</span>
+            <span className="admin-dispute-resolve__split-label">{t("Tỷ lệ phân chia")}</span>
             <div className="admin-dispute-resolve__presets">
               {SPLIT_PRESETS.map((preset) => (
                 <button
-                  key={preset.label}
+                  key={t(preset.label)}
                   type="button"
                   className="admin-dispute-resolve__preset"
                   disabled={busy || !escrowFunded}
                   onClick={() => applyPreset(preset.clientPct)}
                 >
-                  {preset.label}
+                  {t(preset.label)}
                 </button>
               ))}
             </div>
@@ -243,7 +252,7 @@ export default function AdminDisputeResolvePanel({
             value={Math.round(clientPct)}
             disabled={busy || !escrowFunded}
             onChange={(e) => handleSlider(Number(e.target.value))}
-            aria-label="Tỷ lệ hoàn cho Client"
+            aria-label={t("Tỷ lệ hoàn cho Client")}
           />
 
           <div className="admin-dispute-resolve__split-bar" aria-hidden>
@@ -259,7 +268,7 @@ export default function AdminDisputeResolvePanel({
 
           <div className="admin-dispute-resolve__amount-row">
             <label className="admin-dispute-resolve__amount-field admin-dispute-resolve__amount-field--client">
-              <span>Client được hoàn</span>
+              <span>{t("Client được hoàn")}</span>
               <input
                 type="number"
                 min={0}
@@ -269,10 +278,10 @@ export default function AdminDisputeResolvePanel({
                 disabled={busy || !escrowFunded}
                 onChange={(e) => applyClientAmount(Number(e.target.value) || 0)}
               />
-              <em>{formatVnd(clientAmount)}</em>
+              <em>{formatVndUi(clientAmount)}</em>
             </label>
             <label className="admin-dispute-resolve__amount-field admin-dispute-resolve__amount-field--freelancer">
-              <span>Freelancer nhận</span>
+              <span>{t("Freelancer nhận")}</span>
               <input
                 type="number"
                 min={0}
@@ -282,13 +291,13 @@ export default function AdminDisputeResolvePanel({
                 disabled={busy || !escrowFunded}
                 onChange={(e) => applyClientAmount(total - (Number(e.target.value) || 0))}
               />
-              <em>{formatVnd(freelancerAmount)}</em>
+              <em>{formatVndUi(freelancerAmount)}</em>
             </label>
           </div>
 
           {!splitValid ? (
             <p className="admin-dispute-resolve__warn" role="alert">
-              Tổng phải bằng {formatVnd(total)} (hiện {formatVnd(clientAmount + freelancerAmount)}).
+              Tổng phải bằng {formatVndUi(total)} (hiện {formatVndUi(clientAmount + freelancerAmount)}).
             </p>
           ) : null}
         </div>
@@ -299,32 +308,32 @@ export default function AdminDisputeResolvePanel({
           <div className="admin-dispute-resolve__preview-row">
             <span>Client</span>
             <strong>
-              {mode === "full_refund" ? formatVnd(total) : mode === "release" ? formatVnd(0) : "—"}
+              {mode === "full_refund" ? formatVndUi(total) : mode === "release" ? formatVndUi(0) : "—"}
             </strong>
           </div>
           <div className="admin-dispute-resolve__preview-row">
             <span>Freelancer</span>
             <strong>
-              {mode === "release" ? formatVnd(total) : mode === "full_refund" ? formatVnd(0) : "—"}
+              {mode === "release" ? formatVndUi(total) : mode === "full_refund" ? formatVndUi(0) : "—"}
             </strong>
           </div>
           {mode === "dismiss" ? (
             <p className="admin-dispute-resolve__preview-note">
-              Không chia tiền — đơn quay lại trạng thái active.
+              {t("Không chia tiền — đơn quay lại trạng thái active.")}
             </p>
           ) : null}
         </div>
       ) : null}
 
       <label className="admin-field admin-dispute-resolve__note">
-        <span className="admin-field__label">Ghi chú gửi các bên (tùy chọn)</span>
+        <span className="admin-field__label">{t("Ghi chú gửi các bên (tùy chọn)")}</span>
         <textarea
           className="admin-textarea"
           rows={3}
           value={adminNote}
           disabled={busy}
           onChange={(e) => setAdminNote(e.target.value)}
-          placeholder="Lý do phán quyết, căn cứ bằng chứng đã xem xét..."
+          placeholder={t("Lý do phán quyết, căn cứ bằng chứng đã xem xét...")}
         />
       </label>
 

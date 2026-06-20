@@ -1,9 +1,16 @@
 import type { Metadata } from "next";
 import { Be_Vietnam_Pro, Geist, Inter } from "next/font/google";
+import SkipToContentLink from "@/components/layout/SkipToContentLink";
+import { LocaleProvider } from "@/components/providers/LocaleProvider";
 import UserPreferencesInit from "@/components/providers/UserPreferencesInit";
 import VlcAiSupportWidget from "@/components/support/VlcAiSupportWidget";
 import ScrollNavButtons from "@/components/ui/ScrollNavButtons";
+import { localeInitScript } from "@/lib/i18n/localeInit";
+import { themeInitScript } from "@/lib/theme";
 import "./globals.css";
+/* Turbopack: import trực tiếp để dark override luôn có trong bundle */
+import "./styles/global/components-dark.css";
+import "./styles/global/hire-dark.css";
 import { cn } from "@/lib/utils";
 
 const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
@@ -35,19 +42,21 @@ export default function RootLayout({
   return (
     <html
       lang="vi"
+      suppressHydrationWarning
       className={cn("scroll-smooth", beVietnam.variable, inter.variable, "font-sans", geist.variable)}
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <script dangerouslySetInnerHTML={{ __html: localeInitScript }} />
+      </head>
       <body className={`${beVietnam.className} flex min-h-screen flex-col bg-background text-foreground antialiased`}>
-        <UserPreferencesInit />
-        <a
-          href="#main-content"
-          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-semibold text-zinc-900 focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-emerald-600"
-        >
-          Bỏ qua đến nội dung chính
-        </a>
-        {children}
-        <VlcAiSupportWidget />
-        <ScrollNavButtons />
+        <LocaleProvider>
+          <UserPreferencesInit />
+          <SkipToContentLink />
+          {children}
+          <VlcAiSupportWidget />
+          <ScrollNavButtons />
+        </LocaleProvider>
       </body>
     </html>
   );

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
@@ -61,6 +62,8 @@ function DepositCancelContent() {
 }
 
 export default function DepositCancelPage() {
+  const { t } = useTranslation();
+
   return (
     <Suspense
       fallback={

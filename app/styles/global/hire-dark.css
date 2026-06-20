@@ -1,0 +1,1619 @@
+/* Hire section — dark theme overrides (quotes, orders, messages, search, …) */
+
+.dark .client-shell__main {
+  background: var(--vlc-page-bg);
+}
+
+.dark .client-shell .hire-page,
+.dark .client-shell [class*="hire-"][class*="--full-width"] {
+  color: var(--vlc-text-secondary);
+}
+
+/* —— Common hire page —— */
+.dark .hire-page__title,
+.dark .hire-quotes__empty-title,
+.dark .hire-favorites__empty-title,
+.dark .hire-joblist__title,
+.dark .hire-joblist__title a,
+.dark .hire-manage__title-row .hire-page__title,
+.dark .hire-manage__panel-title,
+.dark .hire-manage__job-desc-title,
+.dark .hire-manage__job-section-title,
+.dark .hire-fl-detail__name,
+.dark .hire-quote__service-title,
+.dark .hire-quote__section-title,
+.dark .hire-quote__package-name,
+.dark .hire-quote__summary-row strong {
+  color: var(--vlc-text) !important;
+}
+
+.dark .hire-page__lead,
+.dark .hire-page__empty-text,
+.dark .hire-page__state,
+.dark .hire-favorites__lead-sub,
+.dark .hire-favorites__title,
+.dark .hire-favorites__meta,
+.dark .hire-favorites__meta-wide dt,
+.dark .hire-favorites__empty-text,
+.dark .hire-joblist__meta,
+.dark .hire-joblist__budget,
+.dark .hire-joblist__desc,
+.dark .hire-joblist__employer-location,
+.dark .hire-joblist__employer-stats,
+.dark .hire-joblist__results-bar,
+.dark .hire-search__summary,
+.dark .hire-search__location,
+.dark .hire-search__earnings,
+.dark .hire-search__page-label,
+.dark .hire-search__results-bar,
+.dark .hire-manage__head-meta dt,
+.dark .hire-manage__panel-note,
+.dark .hire-manage__job-stats dt,
+.dark .hire-manage__job-desc,
+.dark .hire-fl-detail__tagline,
+.dark .hire-fl-detail__back,
+.dark .hire-quote__freelancer,
+.dark .hire-quote__package-meta,
+.dark .hire-quote__package-features,
+.dark .hire-quote__hint,
+.dark .hire-quote__milestones {
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .hire-page__search-group,
+.dark .hire-page__filter-btn,
+.dark .hire-page__filter-panel,
+.dark .hire-page__search-input,
+.dark .hire-page__search-btn {
+  background: var(--vlc-surface) !important;
+  border-color: var(--vlc-border) !important;
+  color: var(--vlc-text) !important;
+}
+
+.dark .hire-page__search-btn:hover,
+.dark .hire-page__filter-btn:hover,
+.dark .hire-page__filter-option:hover,
+.dark .hire-page__filter-option--active {
+  background: var(--vlc-surface-muted) !important;
+}
+
+.dark .hire-page__filter-option {
+  color: var(--vlc-text-secondary) !important;
+}
+
+.dark .hire-page__banner--success {
+  background: rgb(52 211 153 / 12%) !important;
+  border-color: rgb(52 211 153 / 35%) !important;
+  color: var(--vlc-highlight) !important;
+}
+
+.dark .hire-page__state--error {
+  background: var(--vlc-danger-bg) !important;
+  border-color: var(--vlc-danger-border) !important;
+  color: #fca5a5 !important;
+}
+
+.dark .hire-page__post-btn,
+.dark .hire-search__quote-btn,
+.dark .hire-favorites__action--primary,
+.dark .hire-manage__quote-btn--primary,
+.dark .hire-manage__hire-btn,
+.dark .hire-quote__submit {
+  background: var(--vlc-accent) !important;
+  color: var(--vlc-on-accent) !important;
+  border-color: transparent !important;
+}
+
+.dark .hire-page__post-btn:hover,
+.dark .hire-search__quote-btn:hover,
+.dark .hire-favorites__action--primary:hover,
+.dark .hire-manage__quote-btn--primary:hover:not(:disabled),
+.dark .hire-manage__hire-btn:hover,
+.dark .hire-quote__submit:hover:not(:disabled) {
+  background: var(--vlc-link-hover) !important;
+}
+
+.dark .hire-favorites__action,
+.dark .hire-manage__quote-btn,
+.dark .hire-joblist__link-btn,
+.dark .hire-quote-product-card__icon-btn {
+  background: var(--vlc-surface-elevated) !important;
+  border-color: var(--vlc-border) !important;
+  color: var(--vlc-text-secondary) !important;
+}
+
+.dark .hire-favorites__actions {
+  background: var(--vlc-surface-muted) !important;
+  border-top-color: var(--vlc-border) !important;
+}
+
+.dark .hire-favorites__action:hover:not(:disabled),
+.dark .hire-manage__quote-btn:hover:not(:disabled):not(.hire-manage__quote-btn--placeholder),
+.dark .hire-joblist__link-btn:hover,
+.dark .hire-quote-product-card__icon-btn:hover {
+  background: var(--vlc-surface-muted) !important;
+  color: var(--vlc-text) !important;
+}
+
+/* —— Quotes —— */
+.dark .hire-quotes__layout,
+.dark .hire-quotes__jobs,
+.dark .hire-quotes__panel,
+.dark .hire-quotes__job,
+.dark .hire-quotes__job-chip,
+.dark .hire-quotes__job-summary--bar,
+.dark .hire-quote-card,
+.dark .hire-quote-product-card,
+.dark .hire-quote-detail {
+  background: var(--vlc-surface) !important;
+  border-color: var(--vlc-border) !important;
+  color: var(--vlc-text-secondary) !important;
+}
+
+.dark .hire-quotes__jobs {
+  background: var(--vlc-surface-muted) !important;
+}
+
+.dark .hire-quotes__job--active,
+.dark .hire-quotes__job-chip--active,
+.dark .hire-quote-product-card:hover {
+  background: var(--vlc-surface-elevated) !important;
+  border-color: var(--vlc-accent) !important;
+}
+
+.dark .hire-quotes__job:hover,
+.dark .hire-quotes__job-chip:hover {
+  background: var(--vlc-surface-muted) !important;
+}
+
+.dark .hire-quotes__job-title,
+.dark .hire-quotes__panel-title,
+.dark .hire-quotes__job-chip-title,
+.dark .hire-quote-product-card__name,
+.dark .hire-quote-card__name,
+.dark .hire-quote-detail__price,
+.dark .hire-quote-product-card__price {
+  color: var(--vlc-text) !important;
+}
+
+.dark .hire-quotes__job-meta,
+.dark .hire-quotes__panel-hint,
+.dark .hire-quotes__panel-empty,
+.dark .hire-quotes__detail-meta dt,
+.dark .hire-quotes__detail-meta dd,
+.dark .hire-quotes__detail-desc,
+.dark .hire-quotes__no-quotes,
+.dark .hire-quote-product-card__title,
+.dark .hire-quote-product-card__message,
+.dark .hire-quote-product-card__meta-time,
+.dark .hire-quote-product-card__rating,
+.dark .hire-quote-product-card__price-type,
+.dark .hire-quote-card__title,
+.dark .hire-quote-card__location {
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .hire-quotes__job-link,
+.dark .hire-quotes__invite-link,
+.dark .hire-quote-product-card__job,
+.dark .hire-quote-card__price,
+.dark .hire-favorites__name-link,
+.dark .hire-search__inline-link,
+.dark .hire-search__freelancer-name a,
+.dark .hire-manage__quote-name a,
+.dark .hire-manage__empty-link,
+.dark .hire-manage__back,
+.dark .hire-fl-detail__back:hover {
+  color: var(--vlc-link) !important;
+}
+
+.dark .hire-quote-product-card__media,
+.dark .hire-quote-product-card__avatar-wrap,
+.dark .hire-quote-card__avatar--fallback,
+.dark .hire-quotes__panel-media .wd-gallery__hero,
+.dark .hire-quotes__panel-media .wd-gallery__thumb {
+  background: var(--vlc-surface-muted) !important;
+  border-color: var(--vlc-border) !important;
+}
+
+.dark .hire-quote-card--accepted,
+.dark .hire-quote-product-card--accepted {
+  background: rgb(52 211 153 / 10%) !important;
+  border-color: rgb(52 211 153 / 35%) !important;
+}
+
+.dark .hire-quotes__job-badge {
+  background: var(--vlc-accent-soft) !important;
+  color: var(--vlc-link) !important;
+}
+
+.dark .hire-quotes__action-error {
+  background: var(--vlc-danger-bg) !important;
+  border-color: var(--vlc-danger-border) !important;
+  color: #fca5a5 !important;
+}
+
+/* —— Orders (fw-orders in hire) —— */
+.dark .hire-orders .fw-orders__filter,
+.dark .fw-orders__filter {
+  background: var(--vlc-surface) !important;
+  border-color: var(--vlc-border) !important;
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .hire-orders .fw-orders__filter--active,
+.dark .fw-orders__filter--active {
+  background: var(--vlc-accent-soft) !important;
+  border-color: var(--vlc-accent) !important;
+  color: var(--vlc-link) !important;
+}
+
+.dark .fw-orders__card {
+  background: var(--vlc-surface) !important;
+  border-color: var(--vlc-border) !important;
+  color: var(--vlc-text-secondary) !important;
+}
+
+.dark .fw-orders__card:hover,
+.dark .hire-orders .fw-orders__card:hover {
+  border-color: var(--vlc-accent) !important;
+  box-shadow: 0 4px 12px var(--vlc-shadow) !important;
+}
+
+.dark .fw-orders__card-title {
+  color: var(--vlc-text) !important;
+}
+
+.dark .fw-orders__card-preview,
+.dark .fw-orders__card-meta,
+.dark .fw-orders__card-foot-date,
+.dark .fw-orders__empty {
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .fw-orders__card-preview--proposal {
+  color: var(--vlc-highlight) !important;
+}
+
+.dark .fw-orders__card-foot {
+  border-top-color: var(--vlc-border-subtle) !important;
+}
+
+.dark .fw-orders__empty {
+  background: var(--vlc-surface) !important;
+  border-color: var(--vlc-border) !important;
+}
+
+.dark .fw-orders__card-badge--success,
+.dark .fw-orders__card-chip--success {
+  background: rgb(34 197 94 / 18%) !important;
+  color: #4ade80 !important;
+  border-color: rgb(34 197 94 / 35%) !important;
+}
+
+.dark .fw-orders__card-badge--danger,
+.dark .fw-orders__card-chip--danger {
+  background: rgb(239 68 68 / 18%) !important;
+  color: #f87171 !important;
+  border-color: rgb(239 68 68 / 35%) !important;
+}
+
+.dark .fw-orders__card-badge--warning,
+.dark .fw-orders__card-chip--warning {
+  background: rgb(245 158 11 / 18%) !important;
+  color: #fbbf24 !important;
+  border-color: rgb(245 158 11 / 35%) !important;
+}
+
+.dark .fw-orders__card-badge--active,
+.dark .fw-orders__card-chip--active,
+.dark .fw-orders__card-badge--neutral,
+.dark .fw-orders__card-chip--neutral {
+  background: var(--vlc-accent-soft) !important;
+  color: var(--vlc-link) !important;
+  border-color: rgb(59 130 246 / 35%) !important;
+}
+
+.dark .fw-orders__card-badge--delivery,
+.dark .fw-orders__card-chip--delivery {
+  background: rgb(139 92 246 / 18%) !important;
+  color: #c4b5fd !important;
+  border-color: rgb(139 92 246 / 35%) !important;
+}
+
+.dark .fw-orders__card-badge--escrow,
+.dark .fw-orders__card-chip--escrow {
+  background: rgb(6 182 212 / 18%) !important;
+  color: #67e8f9 !important;
+  border-color: rgb(6 182 212 / 35%) !important;
+}
+
+.dark .fw-orders__card-badge--waiting,
+.dark .fw-orders__card-chip--waiting {
+  background: var(--vlc-surface-muted) !important;
+  color: var(--vlc-text-muted) !important;
+  border-color: var(--vlc-border) !important;
+}
+
+/* —— Job list —— */
+.dark .hire-joblist__card {
+  background: var(--vlc-surface) !important;
+  border-color: var(--vlc-border) !important;
+}
+
+.dark .hire-joblist__employer-avatar,
+.dark .hire-joblist__employer-fallback {
+  background: var(--vlc-surface-muted) !important;
+  border-color: var(--vlc-border) !important;
+}
+
+.dark .hire-joblist__employer-name {
+  color: var(--vlc-text) !important;
+}
+
+.dark .hire-joblist__category,
+.dark .hire-joblist__tag {
+  background: var(--vlc-surface-muted) !important;
+  border-color: var(--vlc-border) !important;
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .hire-joblist__status--open {
+  background: rgb(52 211 153 / 15%) !important;
+  color: var(--vlc-highlight) !important;
+}
+
+.dark .hire-joblist__status--in_progress {
+  background: var(--vlc-accent-soft) !important;
+  color: var(--vlc-link) !important;
+}
+
+.dark .hire-joblist__status--closed,
+.dark .hire-joblist__status--cancelled {
+  background: var(--vlc-surface-muted) !important;
+  color: var(--vlc-text-faint) !important;
+}
+
+.dark .hire-joblist__link-btn--muted {
+  color: var(--vlc-text-faint) !important;
+}
+
+/* —— Favorites —— */
+.dark .hire-favorites__tab {
+  background: var(--vlc-surface) !important;
+  border-color: var(--vlc-border) !important;
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .hire-favorites__tab:hover {
+  border-color: var(--vlc-accent) !important;
+  color: var(--vlc-text) !important;
+}
+
+.dark .hire-favorites__tab--active {
+  background: var(--vlc-accent-soft) !important;
+  border-color: var(--vlc-accent) !important;
+  color: var(--vlc-link) !important;
+}
+
+.dark .hire-favorites__card {
+  background: var(--vlc-surface) !important;
+  border-color: var(--vlc-border) !important;
+}
+
+.dark .hire-favorites__avatar {
+  background: var(--vlc-surface-muted) !important;
+  border-color: var(--vlc-border) !important;
+}
+
+.dark .hire-favorites__name-link {
+  color: var(--vlc-text) !important;
+}
+
+.dark .hire-favorites__name-link:hover {
+  color: var(--vlc-link) !important;
+}
+
+.dark .hire-favorites__badge--worked {
+  background: rgb(52 211 153 / 15%) !important;
+  color: var(--vlc-highlight) !important;
+}
+
+.dark .hire-favorites__badge--saved {
+  background: var(--vlc-accent-soft) !important;
+  color: var(--vlc-link) !important;
+}
+
+.dark .hire-favorites__badge--quote-pending {
+  background: rgb(245 158 11 / 18%) !important;
+  color: #fbbf24 !important;
+}
+
+.dark .hire-favorites__badge--quote-accepted {
+  background: rgb(52 211 153 / 15%) !important;
+  color: var(--vlc-highlight) !important;
+}
+
+.dark .hire-favorites__badge--quote-declined {
+  background: rgb(239 68 68 / 18%) !important;
+  color: #f87171 !important;
+}
+
+.dark .hire-favorites__badge--quote-neutral {
+  background: var(--vlc-surface-muted) !important;
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .hire-favorites__skills li {
+  background: var(--vlc-surface-muted) !important;
+  border-color: var(--vlc-border) !important;
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .hire-favorites__empty {
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .hire-favorites__empty-icon {
+  background: var(--vlc-surface-muted) !important;
+  color: var(--vlc-text-faint) !important;
+}
+
+/* —— Search —— */
+.dark .hire-search__search-wrap,
+.dark .hire-search__filter-chip,
+.dark .hire-search__card,
+.dark .hire-search__page-btn,
+.dark .hire-search__services-modal,
+.dark .hire-search__service-item {
+  background: var(--vlc-surface) !important;
+  border-color: var(--vlc-border) !important;
+  color: var(--vlc-text-secondary) !important;
+}
+
+.dark .hire-search__category-btn,
+.dark .hire-search__search-btn {
+  background: var(--vlc-surface-muted) !important;
+  border-color: var(--vlc-border) !important;
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .hire-search__search-input {
+  background: transparent !important;
+  color: var(--vlc-text) !important;
+}
+
+.dark .hire-search__logo {
+  background: var(--vlc-surface-muted) !important;
+}
+
+.dark .hire-search__freelancer-name a {
+  color: var(--vlc-link) !important;
+}
+
+.dark .hire-search__member-badge {
+  border-color: var(--vlc-border) !important;
+  color: var(--vlc-text-faint) !important;
+}
+
+.dark .hire-search__rating {
+  color: var(--vlc-highlight) !important;
+}
+
+.dark .hire-search__service-headline,
+.dark .hire-search__service-desc,
+.dark .hire-search__service-rate,
+.dark .hire-search__service-min,
+.dark .hire-search__service-item-title,
+.dark .hire-search__service-item-meta,
+.dark .hire-search__service-item-price,
+.dark .hire-search__about-meta-item dd {
+  color: var(--vlc-text-secondary) !important;
+}
+
+.dark .hire-search__services-modal-head {
+  border-bottom-color: var(--vlc-border) !important;
+}
+
+.dark .hire-search__services-modal-title,
+.dark .hire-search__services-modal-subtitle {
+  color: var(--vlc-text) !important;
+}
+
+.dark .hire-search__services-modal-item {
+  background: var(--vlc-surface-muted) !important;
+  border-color: var(--vlc-border) !important;
+}
+
+.dark .hire-search__services-modal-item:hover {
+  border-color: var(--vlc-accent) !important;
+}
+
+.dark .hire-search__service-item:hover {
+  background: var(--vlc-surface-muted) !important;
+  border-color: var(--vlc-accent) !important;
+}
+
+.dark .hire-search__sort strong {
+  color: var(--vlc-text) !important;
+}
+
+.dark .hire-search__dropdown-title {
+  color: var(--vlc-text-muted) !important;
+}
+
+/* —— Job manage —— */
+.dark .hire-manage__panel,
+.dark .hire-manage__quote-card,
+.dark .hire-manage__contract-cta,
+.dark .hire-manage__empty {
+  background: var(--vlc-surface) !important;
+  border-color: var(--vlc-border) !important;
+}
+
+.dark .hire-manage__tab {
+  background: transparent !important;
+  border-color: var(--vlc-border) !important;
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .hire-manage__tab.is-active {
+  background: var(--vlc-accent-soft) !important;
+  border-color: var(--vlc-accent) !important;
+  color: var(--vlc-link) !important;
+}
+
+.dark .hire-manage__quote-name,
+.dark .hire-manage__quote-price,
+.dark .hire-manage__head-meta dd,
+.dark .hire-manage__job-stats dd,
+.dark .hire-manage__contract-id {
+  color: var(--vlc-text) !important;
+}
+
+.dark .hire-manage__quote-title,
+.dark .hire-manage__quote-message,
+.dark .hire-manage__quote-rating {
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .hire-manage__quote-btn--decline {
+  background: rgb(239 68 68 / 15%) !important;
+  border-color: rgb(239 68 68 / 35%) !important;
+  color: #f87171 !important;
+}
+
+.dark .hire-manage__quote-chat {
+  background: var(--vlc-surface-elevated) !important;
+  border-color: var(--vlc-border) !important;
+  color: var(--vlc-link) !important;
+}
+
+.dark .hire-manage__job-tag {
+  background: var(--vlc-surface-muted) !important;
+  border-color: var(--vlc-border) !important;
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .hire-manage__job-tag--category {
+  background: var(--vlc-accent-soft) !important;
+  color: var(--vlc-link) !important;
+}
+
+/* —— Service quote form —— */
+.dark .hire-quote__service-head {
+  border-bottom-color: var(--vlc-border) !important;
+}
+
+.dark .hire-quote__package {
+  background: var(--vlc-surface) !important;
+  border-color: var(--vlc-border) !important;
+}
+
+.dark .hire-quote__package:hover {
+  border-color: var(--vlc-accent) !important;
+}
+
+.dark .hire-quote__package--selected {
+  background: var(--vlc-accent-soft) !important;
+  border-color: var(--vlc-accent) !important;
+}
+
+.dark .hire-quote__package-price {
+  color: var(--vlc-highlight) !important;
+}
+
+.dark .hire-quote__brief {
+  background: var(--vlc-input-bg) !important;
+  border-color: var(--vlc-border) !important;
+  color: var(--vlc-text) !important;
+}
+
+.dark .hire-quote__sidebar {
+  background: var(--vlc-surface-muted) !important;
+  border-color: var(--vlc-border) !important;
+}
+
+.dark .hire-quote__milestones li {
+  border-bottom-color: var(--vlc-border-subtle) !important;
+}
+
+/* —— Freelancer detail —— */
+.dark .hire-fl-detail__hero,
+.dark .hire-fl-detail__section,
+.dark .hire-fl-detail__sidebar-card,
+.dark .hire-fl-detail__service-card,
+.dark .hire-fl-detail__portfolio-card,
+.dark .hire-fl-detail__review,
+.dark .hire-fl-detail__featured,
+.dark .hire-fl-detail__stat {
+  background: var(--vlc-surface) !important;
+  border-color: var(--vlc-border) !important;
+}
+
+.dark .hire-fl-detail__avatar {
+  background: var(--vlc-accent-soft) !important;
+  border-color: var(--vlc-border) !important;
+  color: var(--vlc-link) !important;
+}
+
+.dark .hire-fl-detail__stat-value,
+.dark .hire-fl-detail__section-title,
+.dark .hire-fl-detail__service-title,
+.dark .hire-fl-detail__review-author {
+  color: var(--vlc-text) !important;
+}
+
+.dark .hire-fl-detail__stat-label,
+.dark .hire-fl-detail__meta,
+.dark .hire-fl-detail__service-desc,
+.dark .hire-fl-detail__review-text {
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .hire-fl-detail__btn--primary {
+  background: var(--vlc-accent) !important;
+  color: var(--vlc-on-accent) !important;
+}
+
+.dark .hire-fl-detail__btn--outline {
+  background: transparent !important;
+  border-color: var(--vlc-accent) !important;
+  color: var(--vlc-link) !important;
+}
+
+.dark .hire-fl-detail__btn--outline:hover {
+  background: var(--vlc-accent-soft) !important;
+}
+
+.dark .hire-fl-detail__chip,
+.dark .hire-fl-detail__chip--muted {
+  background: var(--vlc-surface-muted) !important;
+  border-color: var(--vlc-border) !important;
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .hire-fl-detail__service-price,
+.dark .hire-fl-detail__featured-price {
+  color: var(--vlc-highlight) !important;
+}
+
+.dark .hire-fl-detail__sidebar-title,
+.dark .hire-fl-detail__portfolio-title,
+.dark .hire-fl-detail__featured-title {
+  color: var(--vlc-text) !important;
+}
+
+.dark .hire-fl-detail__featured-media {
+  background: var(--vlc-surface-muted) !important;
+  color: var(--vlc-text-faint) !important;
+}
+
+.dark .hire-fl-detail__featured-desc-block {
+  background: var(--vlc-surface-muted) !important;
+  border-color: var(--vlc-border) !important;
+}
+
+.dark .hire-fl-detail__featured-desc-label {
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .hire-fl-detail__featured-desc {
+  color: var(--vlc-text-secondary) !important;
+}
+
+.dark .hire-fl-detail__desc-toggle {
+  color: var(--vlc-link) !important;
+}
+
+.dark .hire-fl-detail__desc-toggle:hover {
+  color: var(--vlc-link-hover) !important;
+}
+
+.dark .hire-fl-detail__featured-meta {
+  color: var(--vlc-text-muted) !important;
+}
+
+/* —— Messages inbox (hire + findwork) —— */
+.dark .fw-messages-inbox {
+  background: var(--vlc-page-bg) !important;
+  border-top-color: var(--vlc-border) !important;
+}
+
+.dark .fw-messages-inbox__state {
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .fw-messages-inbox__state--error {
+  background: var(--vlc-danger-bg) !important;
+  color: #fca5a5 !important;
+}
+
+.dark .fw-inbox-sidebar,
+.dark .fw-inbox-sidebar__item,
+.dark .fw-inbox-chat__head,
+.dark .fw-inbox-chat__search-bar,
+.dark .fw-inbox-chat__composer,
+.dark .fw-chat-emoji-picker,
+.dark .fw-chat-menu {
+  background: var(--vlc-surface) !important;
+  border-color: var(--vlc-border) !important;
+}
+
+.dark .fw-inbox-main {
+  background: var(--vlc-page-bg) !important;
+}
+
+.dark .fw-inbox-sidebar__search-input {
+  background: var(--vlc-surface-muted) !important;
+  color: var(--vlc-text) !important;
+}
+
+.dark .fw-inbox-sidebar__tabs {
+  border-bottom-color: var(--vlc-border-subtle) !important;
+}
+
+.dark .fw-inbox-sidebar__tab {
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .fw-inbox-sidebar__tab--active {
+  color: var(--vlc-link) !important;
+  border-bottom-color: var(--vlc-link) !important;
+}
+
+.dark .fw-inbox-sidebar__item:hover {
+  background: var(--vlc-surface-muted) !important;
+}
+
+.dark .fw-inbox-sidebar__item--active {
+  background: var(--vlc-accent-soft) !important;
+}
+
+.dark .fw-inbox-sidebar__item--active .fw-inbox-sidebar__item-name {
+  color: var(--vlc-link) !important;
+}
+
+.dark .fw-inbox-sidebar__item--active .fw-inbox-sidebar__unread-dot {
+  border-color: var(--vlc-surface-elevated) !important;
+}
+
+.dark .fw-inbox-sidebar__item-name,
+.dark .fw-inbox-sidebar__item--unread .fw-inbox-sidebar__item-name {
+  color: var(--vlc-text) !important;
+}
+
+.dark .fw-inbox-sidebar__item-preview,
+.dark .fw-inbox-sidebar__item--unread .fw-inbox-sidebar__item-preview,
+.dark .fw-inbox-sidebar__item-time,
+.dark .fw-inbox-sidebar__status,
+.dark .fw-inbox-sidebar__empty,
+.dark .fw-inbox-sidebar__empty-hint,
+.dark .fw-inbox-main__empty,
+.dark .fw-inbox-chat__subtitle,
+.dark .fw-inbox-chat__head-actions,
+.dark .fw-inbox-chat__loading,
+.dark .fw-inbox-chat__empty,
+.dark .fw-inbox-chat__uploading {
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .fw-inbox-sidebar__item-topic {
+  color: var(--vlc-link) !important;
+}
+
+.dark .fw-inbox-chat__name {
+  color: var(--vlc-text) !important;
+}
+
+.dark .fw-inbox-chat__back,
+.dark .fw-inbox-chat__search-clear,
+.dark .fw-inbox-sidebar__action {
+  color: var(--vlc-text-secondary) !important;
+}
+
+.dark .fw-inbox-chat__icon-btn--active,
+.dark .fw-inbox-chat__tool--active {
+  color: var(--vlc-link) !important;
+}
+
+.dark .fw-inbox-bubble--sent {
+  background: var(--vlc-accent-soft) !important;
+}
+
+.dark .fw-inbox-bubble--received {
+  background: var(--vlc-surface-elevated) !important;
+}
+
+.dark .fw-inbox-bubble__text {
+  color: var(--vlc-text) !important;
+}
+
+.dark .fw-inbox-bubble__time,
+.dark .fw-inbox-bubble__status {
+  color: var(--vlc-text-faint) !important;
+}
+
+.dark .fw-inbox-bubble__file {
+  color: var(--vlc-link) !important;
+}
+
+.dark .fw-inbox-search-hit {
+  background: rgb(250 204 21 / 35%) !important;
+  color: var(--vlc-text) !important;
+}
+
+.dark .fw-inbox-context-card {
+  background: var(--vlc-accent-soft) !important;
+  border-color: rgb(59 130 246 / 35%) !important;
+}
+
+.dark .fw-inbox-context-card__title {
+  color: var(--vlc-text) !important;
+}
+
+.dark .fw-inbox-context-card__label,
+.dark .fw-inbox-context-card__time {
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .fw-inbox-chat__toolbar {
+  border-bottom-color: var(--vlc-border-subtle) !important;
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .fw-inbox-chat__input {
+  background: transparent !important;
+  color: var(--vlc-text) !important;
+}
+
+.dark .fw-inbox-chat__blocked-banner {
+  background: rgb(245 158 11 / 15%) !important;
+  border-bottom-color: rgb(245 158 11 / 35%) !important;
+  color: #fbbf24 !important;
+}
+
+.dark .fw-inbox-chat__error {
+  background: var(--vlc-danger-bg) !important;
+  color: #fca5a5 !important;
+}
+
+.dark .fw-chat-menu__item {
+  color: var(--vlc-text-secondary) !important;
+}
+
+.dark .fw-chat-menu__item:hover {
+  background: var(--vlc-surface-muted) !important;
+  color: var(--vlc-text) !important;
+}
+
+.dark .fw-chat-emoji-picker__label {
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .fw-chat-emoji-picker__btn:hover {
+  background: var(--vlc-surface-muted) !important;
+}
+
+.dark .fw-inbox-chat__date-sep span {
+  background: var(--vlc-surface-elevated) !important;
+  color: var(--vlc-text-muted) !important;
+}
+
+/* —— Post job —— */
+.dark .post-job-gate,
+.dark .post-job-wizard__panel {
+  background: var(--vlc-surface) !important;
+  border-color: var(--vlc-border) !important;
+}
+
+.dark .post-job-gate__title,
+.dark .post-job-wizard__heading {
+  color: var(--vlc-text) !important;
+}
+
+.dark .post-job-gate__lead,
+.dark .post-job-gate__progress,
+.dark .post-job-field span {
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .post-job-gate__blockers {
+  background: rgb(245 158 11 / 12%) !important;
+  border-color: rgb(245 158 11 / 35%) !important;
+  color: #fbbf24 !important;
+}
+
+.dark .post-job-gate__cta,
+.dark .post-job-wizard__submit {
+  background: var(--vlc-accent) !important;
+  color: var(--vlc-on-accent) !important;
+}
+
+.dark .post-job-wizard__step {
+  color: var(--vlc-text-muted) !important;
+  border-color: var(--vlc-border) !important;
+}
+
+.dark .post-job-wizard__step--active {
+  color: var(--vlc-link) !important;
+}
+
+.dark .post-job-wizard__step--done {
+  color: var(--vlc-highlight) !important;
+}
+
+.dark .post-job-wizard__step-num {
+  background: var(--vlc-surface-muted) !important;
+  border-color: var(--vlc-border) !important;
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .post-job-wizard__step--active .post-job-wizard__step-num {
+  background: var(--vlc-accent-soft) !important;
+  border-color: var(--vlc-accent) !important;
+  color: var(--vlc-link) !important;
+}
+
+.dark .post-job-wizard__step--done .post-job-wizard__step-num {
+  background: rgb(52 211 153 / 15%) !important;
+  border-color: rgb(52 211 153 / 35%) !important;
+  color: var(--vlc-highlight) !important;
+}
+
+.dark .post-job-field input,
+.dark .post-job-field textarea,
+.dark .post-job-field select,
+.dark .post-job-location__mode {
+  background: var(--vlc-input-bg) !important;
+  border-color: var(--vlc-border) !important;
+  color: var(--vlc-text) !important;
+}
+
+.dark .post-job-location__mode--active {
+  background: var(--vlc-accent-soft) !important;
+  border-color: var(--vlc-accent) !important;
+}
+
+.dark .hire-page__post-btn--outline {
+  background: transparent !important;
+  border-color: var(--vlc-accent) !important;
+  color: var(--vlc-link) !important;
+}
+
+.dark .hire-page__post-btn--outline:hover {
+  background: var(--vlc-accent-soft) !important;
+}
+
+/* —— Order workflow (hire/orders/[id]) —— */
+.dark .hire-order__stepper,
+.dark .hire-order__panel,
+.dark .hire-order__review-form,
+.dark .hire-order__field,
+.dark .hire-order__milestone,
+.dark .hire-order__info-box {
+  background: var(--vlc-surface) !important;
+  border-color: var(--vlc-border) !important;
+}
+
+.dark .hire-order__panel-title {
+  color: var(--vlc-text) !important;
+}
+
+.dark .hire-order__panel-desc,
+.dark .hire-order__step {
+  color: var(--vlc-text-secondary) !important;
+}
+
+.dark .hire-order__step-num {
+  color: inherit !important;
+  opacity: 0.78;
+}
+
+.dark .hire-order__step--current .hire-order__step-num,
+.dark .hire-order__step--done .hire-order__step-num {
+  opacity: 0.92;
+}
+
+.dark .hire-order__step {
+  background: var(--vlc-surface-muted) !important;
+  border-color: var(--vlc-border) !important;
+}
+
+.dark .hire-order__step--done {
+  color: var(--vlc-highlight) !important;
+  background: rgb(52 211 153 / 12%) !important;
+}
+
+.dark .hire-order__step--current {
+  color: var(--vlc-link) !important;
+  background: var(--vlc-accent-soft) !important;
+}
+
+.dark .hire-order__info-box {
+  background: var(--vlc-surface-muted) !important;
+  border-color: var(--vlc-border) !important;
+  color: var(--vlc-text-secondary) !important;
+}
+
+.dark .hire-order .hire-quote__section-title {
+  color: var(--vlc-text) !important;
+}
+
+.dark .hire-order__btn--primary {
+  background: var(--vlc-accent) !important;
+  color: var(--vlc-on-accent) !important;
+  border-color: transparent !important;
+}
+
+.dark .hire-order__btn--outline {
+  background: transparent !important;
+  border-color: var(--vlc-border) !important;
+  color: var(--vlc-text-secondary) !important;
+}
+
+.dark .hire-order__btn--outline:hover:not(:disabled) {
+  background: var(--vlc-surface-muted) !important;
+  color: var(--vlc-text) !important;
+}
+
+.dark .hire-order__status-banner--info {
+  background: var(--vlc-accent-soft) !important;
+  border-color: rgb(59 130 246 / 35%) !important;
+  color: var(--vlc-link) !important;
+}
+
+.dark .hire-order__status-banner--success {
+  background: rgb(52 211 153 / 12%) !important;
+  border-color: rgb(52 211 153 / 35%) !important;
+  color: var(--vlc-highlight) !important;
+}
+
+.dark .hire-order__disputed-summary {
+  background: rgb(245 158 11 / 12%) !important;
+  border-color: rgb(245 158 11 / 35%) !important;
+  color: #fbbf24 !important;
+}
+
+.dark .hire-order__field input,
+.dark .hire-order__field textarea,
+.dark .hire-order__field select {
+  background: var(--vlc-input-bg) !important;
+  border-color: var(--vlc-border) !important;
+  color: var(--vlc-text) !important;
+}
+
+.dark .hire-order__milestone-status--funded,
+.dark .hire-order__milestone-status--in_progress {
+  color: var(--vlc-link) !important;
+}
+
+.dark .hire-order__milestone-status--submitted,
+.dark .hire-order__milestone-status--approved,
+.dark .hire-order__milestone-status--paid {
+  color: var(--vlc-highlight) !important;
+}
+
+/* Order workflow nested stages (selection, escrow, execution, …) */
+.dark .hire-order .hire-selection__hero,
+.dark .hire-order .hire-escrow__hero,
+.dark .hire-order .hire-execution__hero,
+.dark .hire-order .hire-delivery__hero,
+.dark .hire-order .hire-completion__hero {
+  background: var(--vlc-surface) !important;
+  border-color: var(--vlc-border) !important;
+}
+
+.dark .hire-order [class*="__summary-card"],
+.dark .hire-order [class*="__summary-card--amount"],
+.dark .hire-order [class*="__wait-amount"],
+.dark .hire-order [class*="__amount-box"],
+.dark .hire-order [class*="__days-chip"],
+.dark .hire-order [class*="__price-chip"],
+.dark .hire-order [class*="__legend"],
+.dark .hire-order [class*="__day-option"],
+.dark .hire-order [class*="__confirm"],
+.dark .hire-order [class*="__history-item"],
+.dark .hire-order [class*="__feed-item"],
+.dark .hire-order [class*="__status-feed--latest"],
+.dark .hire-order [class*="__revision-bar"],
+.dark .hire-order [class*="__demo-box"],
+.dark .hire-order [class*="__note-box"],
+.dark .hire-order [class*="__checklist"],
+.dark .hire-order [class*="__proposal-preview"],
+.dark .hire-order [class*="__proposal-doc"],
+.dark .hire-order [class*="__rejection-reason"],
+.dark .hire-order [class*="__safepay"],
+.dark .hire-order [class*="__delivery-block"],
+.dark .hire-order [class*="__frozen-card"],
+.dark .hire-order [class*="__revision-card"] {
+  background: var(--vlc-surface) !important;
+  border-color: var(--vlc-border) !important;
+}
+
+.dark .hire-order [class*="__step-icon"] {
+  background: var(--vlc-surface-elevated) !important;
+  color: var(--vlc-text-muted) !important;
+  border-color: var(--vlc-border) !important;
+}
+
+.dark .hire-order [class*="__step--current"] [class*="__step-icon"] {
+  background: var(--vlc-accent) !important;
+  color: var(--vlc-on-accent) !important;
+  border-color: transparent !important;
+}
+
+.dark .hire-order [class*="__step--done"] [class*="__step-icon"] {
+  background: rgb(52 211 153 / 18%) !important;
+  color: var(--vlc-highlight) !important;
+  border-color: rgb(52 211 153 / 35%) !important;
+}
+
+.dark .hire-order [class*="__step--rejected"] [class*="__step-icon"] {
+  background: rgb(245 158 11 / 15%) !important;
+  color: #fbbf24 !important;
+  border-color: rgb(245 158 11 / 35%) !important;
+}
+
+.dark .hire-order [class*="__hero"],
+.dark .hire-order [class*="__context-card"],
+.dark .hire-order [class*="__state-card"],
+.dark .hire-order [class*="__form"],
+.dark .hire-order [class*="__review"],
+.dark .hire-order [class*="__work-card"],
+.dark .hire-order [class*="__fund-card"],
+.dark .hire-order [class*="__summary-card"],
+.dark .hire-order [class*="__accept-card"],
+.dark .hire-order [class*="__milestone"],
+.dark .hire-order [class*="__revision-card"],
+.dark .hire-order [class*="__frozen-card"],
+.dark .hire-order [class*="__rejection-reason"],
+.dark .hire-order [class*="__amount-box"],
+.dark .hire-order [class*="__note-box"],
+.dark .hire-order [class*="__demo-box"],
+.dark .hire-order [class*="__history-item"],
+.dark .hire-order [class*="__history"],
+.dark .hire-order [class*="__status-feed"],
+.dark .hire-order [class*="__feed-item"],
+.dark .hire-order [class*="__empty-feed"],
+.dark .hire-order [class*="__checklist"],
+.dark .hire-order [class*="__proposal-preview"],
+.dark .hire-order [class*="__proposal-doc"],
+.dark .hire-order [class*="__price-chip"],
+.dark .hire-order [class*="__days-chip"],
+.dark .hire-order [class*="__wait-amount"],
+.dark .hire-order [class*="__wait-tips"],
+.dark .hire-order [class*="__safepay"],
+.dark .hire-order [class*="__delivery-block"] {
+  background: var(--vlc-surface) !important;
+  border-color: var(--vlc-border) !important;
+}
+
+.dark .hire-order [class*="__title"],
+.dark .hire-order [class*="__context-title"],
+.dark .hire-order [class*="__form-title"],
+.dark .hire-order [class*="__work-title"],
+.dark .hire-order [class*="__fund-title"],
+.dark .hire-order [class*="__state-title"],
+.dark .hire-order [class*="__summary-amount"],
+.dark .hire-order [class*="__summary-value"],
+.dark .hire-order [class*="__amount-value"],
+.dark .hire-order [class*="__milestone-body"] strong,
+.dark .hire-order [class*="__meta"] dd,
+.dark .hire-order [class*="__price-chip"] strong,
+.dark .hire-order [class*="__reject-title"],
+.dark .hire-order [class*="__revision-title"],
+.dark .hire-order [class*="__history-label"] {
+  color: var(--vlc-text) !important;
+}
+
+.dark .hire-order [class*="__lead"],
+.dark .hire-order [class*="__sub"],
+.dark .hire-order [class*="__desc"],
+.dark .hire-order [class*="__hint"],
+.dark .hire-order [class*="__note"],
+.dark .hire-order [class*="__brief"],
+.dark .hire-order [class*="__meta"] dt,
+.dark .hire-order [class*="__counter"],
+.dark .hire-order [class*="__form-note"],
+.dark .hire-order [class*="__state-desc"],
+.dark .hire-order [class*="__state-meta"],
+.dark .hire-order [class*="__summary-label"],
+.dark .hire-order [class*="__summary-note"],
+.dark .hire-order [class*="__work-sub"],
+.dark .hire-order [class*="__fund-sub"],
+.dark .hire-order [class*="__milestone-hint"],
+.dark .hire-order [class*="__history-sub"],
+.dark .hire-order [class*="__history-note"],
+.dark .hire-order [class*="__feed-body"],
+.dark .hire-order [class*="__field"] label,
+.dark .hire-order [class*="__reject-lead"],
+.dark .hire-order [class*="__revision-sub"],
+.dark .hire-order [class*="__revision-hint"],
+.dark .hire-order [class*="__frozen-desc"],
+.dark .hire-order [class*="__demo-label"],
+.dark .hire-order [class*="__note-box"] p,
+.dark .hire-order [class*="__amount-label"],
+.dark .hire-order [class*="__card-sub"],
+.dark .hire-order [class*="__checklist"] li,
+.dark .hire-order [class*="__confirm"],
+.dark .hire-order [class*="__milestone-info"] span,
+.dark .hire-order [class*="__safepay"] p,
+.dark .hire-order [class*="__done-desc"],
+.dark .hire-order [class*="__review-comment"],
+.dark .hire-order [class*="__review-date"] {
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .hire-order [class*="__eyebrow"] {
+  color: var(--vlc-link) !important;
+}
+
+.dark .hire-escrow__eyebrow {
+  color: #fbbf24 !important;
+}
+
+.dark .hire-execution__eyebrow {
+  color: #a5b4fc !important;
+}
+
+.dark .hire-delivery__eyebrow {
+  color: #2dd4bf !important;
+}
+
+.dark .hire-completion__eyebrow {
+  color: #c4b5fd !important;
+}
+
+.dark .hire-order [class*="__safepay"] strong {
+  color: #6ee7b7 !important;
+}
+
+.dark .hire-order [class*="__meta--success"] {
+  color: var(--vlc-highlight) !important;
+}
+
+.dark .hire-order [class*="__btn--primary"],
+.dark .hire-order [class*="__btn--success"] {
+  background: var(--vlc-accent) !important;
+  color: var(--vlc-on-accent) !important;
+  border-color: transparent !important;
+}
+
+.dark .hire-order [class*="__btn--outline"],
+.dark .hire-order [class*="__reject-back"] {
+  background: transparent !important;
+  border-color: var(--vlc-border) !important;
+  color: var(--vlc-text-secondary) !important;
+}
+
+.dark .hire-order [class*="__btn--danger"] {
+  background: rgb(239 68 68 / 15%) !important;
+  border-color: rgb(239 68 68 / 35%) !important;
+  color: #f87171 !important;
+}
+
+.dark .hire-order [class*="__input"],
+.dark .hire-order [class*="__textarea"] {
+  background: var(--vlc-input-bg) !important;
+  border-color: var(--vlc-border) !important;
+  color: var(--vlc-text) !important;
+}
+
+.dark .hire-order [class*="__step--current"],
+.dark .hire-order [class*="__day-option--active"] {
+  background: var(--vlc-accent-soft) !important;
+  color: var(--vlc-link) !important;
+  border-color: var(--vlc-accent) !important;
+}
+
+.dark .hire-order [class*="__step--done"] {
+  color: var(--vlc-highlight) !important;
+}
+
+.dark .hire-order [class*="__step--muted"] {
+  color: var(--vlc-text-secondary) !important;
+}
+
+.dark .hire-order [class*="__step--rejected"] {
+  color: #fbbf24 !important;
+}
+
+.dark .hire-order [class*="__state-card--wait"],
+.dark .hire-order [class*="__state-card--sent"] {
+  background: var(--vlc-surface-muted) !important;
+}
+
+.dark .hire-order [class*="__state-card--rejected"],
+.dark .hire-order [class*="__state-card--success"] {
+  border-color: var(--vlc-border) !important;
+}
+
+.dark .hire-order [class*="__error"] {
+  background: var(--vlc-danger-bg) !important;
+  border-color: var(--vlc-danger-border) !important;
+  color: #fca5a5 !important;
+}
+
+.dark .hire-sla-banner--info {
+  background: var(--vlc-accent-soft) !important;
+  border-color: rgb(59 130 246 / 35%) !important;
+  color: var(--vlc-link) !important;
+}
+
+.dark .hire-sla-banner--warn {
+  background: rgb(245 158 11 / 12%) !important;
+  border-color: rgb(245 158 11 / 35%) !important;
+  color: #fbbf24 !important;
+}
+
+.dark .hire-order .resolution-card__link {
+  color: var(--vlc-link) !important;
+}
+
+.dark .hire-quote-card__name:hover {
+  color: var(--vlc-link-hover) !important;
+}
+
+.dark .hire-quote-card__stats dt,
+.dark .hire-quote-card__proposal-title,
+.dark .hire-quote-card__message,
+.dark .hire-quote-card__bio {
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .hire-quote-card__stats dd {
+  color: var(--vlc-text) !important;
+}
+
+.dark .hire-quote-card__btn--ghost {
+  background: var(--vlc-surface-elevated) !important;
+  border-color: var(--vlc-border) !important;
+  color: var(--vlc-text-secondary) !important;
+}
+
+.dark .hire-quote-card__btn--ghost:hover {
+  background: var(--vlc-surface-muted) !important;
+  color: var(--vlc-text) !important;
+}
+
+.dark .hire-quote-card__btn--decline {
+  background: rgb(239 68 68 / 15%) !important;
+  border-color: rgb(239 68 68 / 35%) !important;
+  color: #f87171 !important;
+}
+
+.dark .hire-quote-card__btn--hire {
+  background: var(--vlc-accent) !important;
+  border-color: transparent !important;
+  color: var(--vlc-on-accent) !important;
+}
+
+.dark .hire-quote-card__status--pending {
+  background: rgb(245 158 11 / 18%) !important;
+  color: #fbbf24 !important;
+}
+
+.dark .hire-quote-card__status--accepted {
+  background: rgb(52 211 153 / 15%) !important;
+  color: var(--vlc-highlight) !important;
+}
+
+.dark .hire-quote-card__status--declined {
+  background: rgb(239 68 68 / 18%) !important;
+  color: #f87171 !important;
+}
+
+.dark .post-job-gate__back {
+  color: var(--vlc-link) !important;
+}
+
+.dark .post-job-gate__progress strong {
+  color: var(--vlc-text) !important;
+}
+
+/* Quote detail page reuses favorites card */
+.dark .hire-quote-detail.hire-favorites__card {
+  background: var(--vlc-surface) !important;
+  border-color: var(--vlc-border) !important;
+}
+
+.dark .hire-quotes__jobs-heading {
+  background: var(--vlc-surface-muted) !important;
+  color: var(--vlc-text-muted) !important;
+  border-bottom-color: var(--vlc-border) !important;
+}
+
+/* Hire search card tabs (Dịch vụ / Hồ sơ dự án / Hiệu suất / Giới thiệu) */
+.dark .hire-search__tabs {
+  background: var(--vlc-surface-muted) !important;
+  border-top-color: var(--vlc-border) !important;
+}
+
+.dark .hire-search__tab {
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .hire-search__tab--border {
+  border-right-color: var(--vlc-border) !important;
+}
+
+.dark .hire-search__tab:hover {
+  background: var(--vlc-surface-elevated) !important;
+  color: var(--vlc-text-secondary) !important;
+}
+
+.dark .hire-search__tab--open {
+  background: var(--vlc-surface) !important;
+  color: var(--vlc-text) !important;
+}
+
+.dark .hire-search__detail-panel {
+  background: var(--vlc-surface) !important;
+  border-top-color: var(--vlc-border) !important;
+  color: var(--vlc-text-secondary) !important;
+}
+
+.dark .hire-search__detail-loading-bar {
+  background: linear-gradient(
+    90deg,
+    var(--vlc-surface-muted) 25%,
+    var(--vlc-surface-elevated) 50%,
+    var(--vlc-surface-muted) 75%
+  ) !important;
+  background-size: 200% 100% !important;
+}
+
+.dark .hire-search__detail-empty,
+.dark .hire-search__detail-modal-subtitle {
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .hire-search__detail-modal {
+  background: var(--vlc-surface) !important;
+  border-color: var(--vlc-border) !important;
+}
+
+.dark .hire-search__detail-modal-head {
+  background: var(--vlc-surface) !important;
+  border-bottom-color: var(--vlc-border) !important;
+}
+
+.dark .hire-search__detail-modal-title {
+  color: var(--vlc-text) !important;
+}
+
+.dark .hire-search__detail-modal-close {
+  background: var(--vlc-surface-muted) !important;
+  border-color: var(--vlc-border) !important;
+  color: var(--vlc-text-secondary) !important;
+}
+
+.dark .hire-search__detail-modal-close:hover {
+  background: var(--vlc-surface-elevated) !important;
+}
+
+.dark .hire-search__detail-modal-card {
+  background: var(--vlc-surface-muted) !important;
+  border-color: var(--vlc-border) !important;
+}
+
+.dark .hire-search__detail-modal-card--link:hover {
+  border-color: var(--vlc-accent) !important;
+}
+
+.dark .hire-search__detail-modal-backdrop {
+  background: rgb(0 0 0 / 72%) !important;
+}
+
+.dark .hire-modal-simple-head {
+  background: var(--vlc-surface) !important;
+  border-bottom-color: var(--vlc-border) !important;
+}
+
+.dark .hire-modal-simple-head__title {
+  color: var(--vlc-text) !important;
+}
+
+.dark .hire-modal-simple-head__close {
+  background: var(--vlc-surface-muted) !important;
+  border-color: var(--vlc-border) !important;
+  color: var(--vlc-text-secondary) !important;
+}
+
+.dark .hire-modal-simple-head__close:hover {
+  background: var(--vlc-surface-elevated) !important;
+}
+
+.dark .hire-modal-svc-card,
+.dark .hire-modal-portfolio-card,
+.dark .hire-modal-list__link,
+.dark .hire-modal-stat-grid__item,
+.dark .hire-modal-list__btn {
+  background: var(--vlc-surface-muted) !important;
+  border-color: var(--vlc-border) !important;
+  color: var(--vlc-text-secondary) !important;
+}
+
+.dark .hire-modal-svc-card:hover,
+.dark .hire-modal-list__link:hover,
+.dark .hire-modal-list__btn:hover {
+  border-color: var(--vlc-accent) !important;
+  background: var(--vlc-surface-elevated) !important;
+}
+
+.dark .hire-modal-svc-card__title,
+.dark .hire-modal-list__title,
+.dark .hire-modal-portfolio-detail__title,
+.dark .hire-modal-section-title,
+.dark .hire-modal-stat-grid__value {
+  color: var(--vlc-text) !important;
+}
+
+.dark .hire-modal-svc-card__desc,
+.dark .hire-modal-svc-card__meta,
+.dark .hire-modal-svc-card__days,
+.dark .hire-modal-list__meta,
+.dark .hire-modal-list__desc,
+.dark .hire-modal-portfolio-detail__desc,
+.dark .hire-modal-stat-grid__label,
+.dark .hire-modal-stat-grid__sub,
+.dark .hire-modal-panel__hint,
+.dark .hire-modal-empty {
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .hire-modal-svc-card__price {
+  color: var(--vlc-highlight) !important;
+}
+
+.dark .hire-modal-svc-card__cta {
+  background: var(--vlc-accent) !important;
+  color: var(--vlc-on-accent) !important;
+  border-color: transparent !important;
+}
+
+.dark .hire-modal-svc-card__cta--outline {
+  background: transparent !important;
+  border-color: var(--vlc-accent) !important;
+  color: var(--vlc-link) !important;
+}
+
+.dark .hire-modal-tags__item,
+.dark .hire-modal-svc-card__tag {
+  background: var(--vlc-surface-elevated) !important;
+  border-color: var(--vlc-border) !important;
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .hire-modal-empty__icon {
+  color: var(--vlc-text-faint) !important;
+}
+
+.dark .hire-page__search-group {
+  box-shadow: none !important;
+}
+
+.dark .hire-search__services-modal-backdrop {
+  background: rgb(0 0 0 / 72%) !important;
+}

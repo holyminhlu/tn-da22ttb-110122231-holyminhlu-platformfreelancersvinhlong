@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslation } from "@/hooks/useTranslation";
+
 type AiQuoteSuggestButtonProps = {
   onClick: () => void;
   disabled?: boolean;
@@ -12,9 +14,12 @@ export default function AiQuoteSuggestButton({
   onClick,
   disabled = false,
   loading = false,
-  title = "Gợi ý AI so sánh báo giá",
+  title,
   compact = true,
 }: AiQuoteSuggestButtonProps) {
+  const { t } = useTranslation();
+
+  const resolvedTitle = title ?? t("Gợi ý AI so sánh báo giá");
   const sizeClass = compact ? "hire-ai-btn--compact" : "hire-ai-btn--full";
 
   return (
@@ -23,8 +28,8 @@ export default function AiQuoteSuggestButton({
       className={`hire-ai-btn group ${sizeClass}${loading ? " hire-ai-btn--loading" : ""}`}
       onClick={onClick}
       disabled={disabled || loading}
-      title={title}
-      aria-label={title}
+      title={resolvedTitle}
+      aria-label={resolvedTitle}
     >
       <svg
         className="hire-ai-btn__spark"

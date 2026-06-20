@@ -1,5 +1,7 @@
 "use client";
 
+import { formatDateUi, tUi, formatVndUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { FaEllipsisV, FaExternalLinkAlt } from "react-icons/fa";
@@ -29,11 +31,13 @@ function normalizeStatus(s: string) {
 }
 
 function hasActiveContract(contractStatus: string | null | undefined) {
+  const t = tUi;
   const s = normalizeStatus(contractStatus || "");
   return s === "pending" || s === "active";
 }
 
 function counterpartyInitials(name: string | null) {
+  const t = tUi;
   if (!name?.trim()) return "?";
   const parts = name.trim().split(/\s+/);
   if (parts.length >= 2) {
@@ -42,9 +46,10 @@ function counterpartyInitials(name: string | null) {
   return parts[0].slice(0, 2).toUpperCase();
 }
 
-export default function ManageWorkspaceCard({ item, onChanged }: ManageWorkspaceCardProps) {
+export default function ManageWorkspaceCard({ item, onChanged }: ManageWorkspaceCardProps) {  const { t, formatVnd, formatDate } = useTranslation();
+
   const price =
-    item.agreedPrice != null ? formatVnd(item.agreedPrice) : formatVnd(item.budget);
+    item.agreedPrice != null ? formatVndUi(item.agreedPrice) : formatVndUi(item.budget);
   const statusClass = contractStatusClass(item.contractStatus);
   const jobOpen = normalizeStatus(item.jobStatus) === "open";
   const jobClosed = normalizeStatus(item.jobStatus) === "closed";
@@ -63,6 +68,8 @@ export default function ManageWorkspaceCard({ item, onChanged }: ManageWorkspace
   useEffect(() => {
     if (!menuOpen) return;
     function onDocClick(e: MouseEvent) {
+  const t = tUi;
+  const formatDate = formatDateUi;
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         setMenuOpen(false);
       }
@@ -93,6 +100,8 @@ export default function ManageWorkspaceCard({ item, onChanged }: ManageWorkspace
   );
 
   async function handleCloseRecruiting() {
+  const t = tUi;
+  const formatDate = formatDateUi;
     if (!canClose) return;
     const ok = window.confirm(
       "Gỡ tin khỏi tuyển dụng? Tin sẽ không nhận thêm báo giá mới nhưng vẫn lưu trong lịch sử.",
@@ -102,6 +111,8 @@ export default function ManageWorkspaceCard({ item, onChanged }: ManageWorkspace
   }
 
   async function handleDelete() {
+  const t = tUi;
+  const formatDate = formatDateUi;
     if (!canDelete) return;
     const ok = window.confirm(
       "Xóa công việc này? Hành động ẩn tin khỏi danh sách quản lý (xóa mềm) và không thể hoàn tác từ menu này.",
@@ -174,7 +185,7 @@ export default function ManageWorkspaceCard({ item, onChanged }: ManageWorkspace
           </div>
 
           <p className="manage-workspace-card__activity">
-            Hoạt động gần nhất: <time dateTime={item.activityAt}>{formatDate(item.activityAt)}</time>
+            Hoạt động gần nhất: <time dateTime={item.activityAt}>{formatDateUi(item.activityAt)}</time>
           </p>
         </div>
 

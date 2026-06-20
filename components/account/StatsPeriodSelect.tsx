@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "@/hooks/useTranslation";
 import type { ProfileStatsPeriod } from "@/lib/api/users";
 
 const OPTIONS: { value: ProfileStatsPeriod; label: string }[] = [
@@ -15,6 +16,8 @@ type StatsPeriodSelectProps = {
 };
 
 export default function StatsPeriodSelect({ value, onChange, ariaLabel }: StatsPeriodSelectProps) {
+  const { t } = useTranslation();
+
   return (
     <div className="ps-period" role="group" aria-label={ariaLabel ?? "Chọn khoảng thời gian"}>
       {OPTIONS.map((opt) => (

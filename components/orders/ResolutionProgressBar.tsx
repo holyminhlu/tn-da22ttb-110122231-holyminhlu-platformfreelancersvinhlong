@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "@/hooks/useTranslation";
 import type { RefundProgressStep } from "@/lib/orders/refundDisputeData";
 
 type ResolutionProgressBarProps = {
@@ -15,12 +16,14 @@ export default function ResolutionProgressBar({
   failed = false,
   failedLabel,
 }: ResolutionProgressBarProps) {
+  const { t } = useTranslation();
+
   const allComplete = !failed && activeIndex >= steps.length;
 
   return (
     <ol
       className={`resolution-progress${failed ? " resolution-progress--failed" : ""}${allComplete ? " resolution-progress--complete" : ""}`}
-      aria-label="Tiến trình xử lý"
+      aria-label={t("Tiến trình xử lý")}
     >
       {steps.map((step, idx) => {
         const done = !failed && (allComplete || idx < activeIndex);

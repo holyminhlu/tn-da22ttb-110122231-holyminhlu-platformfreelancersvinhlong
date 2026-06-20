@@ -1,7 +1,9 @@
+import { tUi } from "@/lib/i18n/runtime";
 import Link from "next/link";
 import { getTopLocations, getTopSkills } from "@/lib/api/freelancers";
 
 export default async function HomeBrowseLists() {
+  const t = tUi;
   let skills: { name: string; freelancerCount: number }[] = [];
   let locations: { name: string; freelancerCount: number }[] = [];
 

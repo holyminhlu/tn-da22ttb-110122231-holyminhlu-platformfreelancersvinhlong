@@ -1,5 +1,6 @@
 "use client";
 
+import { tUi } from "@/lib/i18n/runtime";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -23,16 +24,15 @@ import {
 import { getUserInitials } from "@/lib/authSession";
 import {
   applyThemePreference,
-  getLocalePreference,
   getNotificationPrefs,
   getThemePreference,
-  setLocalePreference,
   setNotificationPrefs,
   setThemePreference,
   type LocalePreference,
   type NotificationPrefs,
   type ThemePreference,
 } from "@/lib/userPreferences";
+import { useTranslation } from "@/hooks/useTranslation";
 import WithdrawalPinSettings from "@/components/account/WithdrawalPinSettings";
 import "./account-settings.css";
 
@@ -69,6 +69,7 @@ function ToggleRow({
 }
 
 function parseUserAgent(ua: string) {
+  const t = tUi;
   const browser =
     /Edg\//.test(ua) ? "Microsoft Edge" : /Chrome\//.test(ua) ? "Chrome" : /Firefox\//.test(ua) ? "Firefox" : /Safari\//.test(ua) ? "Safari" : "Trình duyệt";
   const os = /Windows/.test(ua)
@@ -84,6 +85,8 @@ function parseUserAgent(ua: string) {
 }
 
 export default function AccountSettingsContent() {
+  const { t, locale, setLocale } = useTranslation();
+
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -93,7 +96,6 @@ export default function AccountSettingsContent() {
   const [isFreelancer, setIsFreelancer] = useState(false);
   const [completedJobs, setCompletedJobs] = useState(0);
   const [theme, setTheme] = useState<ThemePreference>("light");
-  const [locale, setLocale] = useState<LocalePreference>("vi");
   const [notifPrefs, setNotifPrefs] = useState<NotificationPrefs>(() => getNotificationPrefs());
   const [downloading, setDownloading] = useState(false);
   const [downloadFeedback, setDownloadFeedback] = useState("");
@@ -116,16 +118,15 @@ export default function AccountSettingsContent() {
         data.user.completedJobs ?? (freelancer ? data.freelancerProfile?.completed_jobs : undefined) ?? 0,
       );
     } catch {
-      setError("Không thể tải thông tin tài khoản.");
+      setError(t("Không thể tải thông tin tài khoản."));
     } finally {
       setLoading(false);
     }
-  }, [router]);
+  }, [router, t]);
 
   useEffect(() => {
     void load();
     setTheme(getThemePreference());
-    setLocale(getLocalePreference());
     setNotifPrefs(getNotificationPrefs());
   }, [load]);
 
@@ -134,22 +135,23 @@ export default function AccountSettingsContent() {
     if (typeof navigator === "undefined") return null;
     const { browser, os } = parseUserAgent(navigator.userAgent);
     return {
-      browser,
-      os,
+      browser: browser === "Trình duyệt" ? t("Trình duyệt") : browser,
+      os: os === "Hệ điều hành khác" ? t("Hệ điều hành khác") : os,
       lastActive: new Date().toLocaleString("vi-VN"),
       current: true,
     };
-  }, []);
+  }, [t]);
 
   function handleThemeChange(next: ThemePreference) {
+  const t = tUi;
     setTheme(next);
     setThemePreference(next);
     applyThemePreference(next);
   }
 
   function handleLocaleChange(next: LocalePreference) {
+  const t = tUi;
     setLocale(next);
-    setLocalePreference(next);
   }
 
   function updateNotifPref<K extends keyof NotificationPrefs>(key: K, value: boolean) {
@@ -159,6 +161,7 @@ export default function AccountSettingsContent() {
   }
 
   async function handleDownloadData() {
+  const t = tUi;
     setDownloading(true);
     setDownloadFeedback("");
     try {
@@ -170,9 +173,9 @@ export default function AccountSettingsContent() {
       anchor.download = `vlc-du-lieu-ca-nhan-${Date.now()}.json`;
       anchor.click();
       URL.revokeObjectURL(url);
-      setDownloadFeedback("Đã tải xuống tệp dữ liệu cá nhân.");
+      setDownloadFeedback(t("Đã tải xuống tệp dữ liệu cá nhân."));
     } catch {
-      setDownloadFeedback("Không thể tải dữ liệu. Vui lòng thử lại sau.");
+      setDownloadFeedback(t("Không thể tải dữ liệu. Vui lòng thử lại sau."));
     } finally {
       setDownloading(false);
       window.setTimeout(() => setDownloadFeedback(""), 3500);
@@ -180,19 +183,24 @@ export default function AccountSettingsContent() {
   }
 
   function handleDeleteAccount() {
+  const t = tUi;
     const ok = window.confirm(
-      "Xóa tài khoản là thao tác không thể hoàn tác. Bạn sẽ cần liên hệ bộ phận hỗ trợ để hoàn tất yêu cầu. Tiếp tục?",
+      t(
+        "Xóa tài khoản là thao tác không thể hoàn tác. Bạn sẽ cần liên hệ bộ phận hỗ trợ để hoàn tất yêu cầu. Tiếp tục?",
+      ),
     );
     if (!ok) return;
     window.alert(
-      "Tính năng xóa tài khoản đang được triển khai. Vui lòng gửi email đến bộ phận hỗ trợ kèm địa chỉ email đăng nhập của bạn.",
+      t(
+        "Tính năng xóa tài khoản đang được triển khai. Vui lòng gửi email đến bộ phận hỗ trợ kèm địa chỉ email đăng nhập của bạn.",
+      ),
     );
   }
 
   return (
     <div className="ea-main as-page">
       {loading ? (
-        <p className="ea-loading">Đang tải cài đặt...</p>
+        <p className="ea-loading">{t("Đang tải cài đặt...")}</p>
       ) : error ? (
         <p className="ea-error" role="alert">
           {error}
@@ -204,49 +212,48 @@ export default function AccountSettingsContent() {
           <section className="ea-card as-card">
             <h2 className="as-section-title">
               <FaBell className="mr-2 inline text-[#2563eb]" aria-hidden />
-              Cài đặt thông báo
+              {t("Cài đặt thông báo")}
             </h2>
-            <p className="as-section-desc">Chọn loại thông báo bạn muốn nhận trong ứng dụng và qua email.</p>
+            <p className="as-section-desc">
+              {t("Chọn loại thông báo bạn muốn nhận trong ứng dụng. Thông báo hệ thống (xác minh, bảo mật, rút tiền) luôn được gửi.")}
+            </p>
             <ToggleRow
-              label="Đơn hàng & hợp đồng"
-              hint="Cập nhật trạng thái đơn, thanh toán và hợp đồng."
+              label={t("Đơn hàng & hợp đồng")}
+              hint={t("Cập nhật trạng thái đơn, thanh toán và hợp đồng.")}
               checked={notifPrefs.orders}
               onChange={(v) => updateNotifPref("orders", v)}
             />
             <ToggleRow
-              label="Tin nhắn mới"
-              hint="Thông báo khi có tin nhắn từ client hoặc freelancer."
+              label={t("Tin nhắn mới")}
+              hint={t("Thông báo khi có tin nhắn từ client hoặc freelancer.")}
               checked={notifPrefs.messages}
               onChange={(v) => updateNotifPref("messages", v)}
             />
             <ToggleRow
-              label="Báo giá & mời làm việc"
-              hint="Báo giá mới, lời mời và phản hồi liên quan công việc."
+              label={t("Báo giá & mời làm việc")}
+              hint={t("Báo giá mới, lời mời và phản hồi liên quan công việc.")}
               checked={notifPrefs.quotes}
               onChange={(v) => updateNotifPref("quotes", v)}
-            />
-            <ToggleRow
-              label="Email tóm tắt hàng tuần"
-              hint="Gửi bản tóm tắt hoạt động qua email đăng ký."
-              checked={notifPrefs.emailDigest}
-              onChange={(v) => updateNotifPref("emailDigest", v)}
             />
           </section>
 
           <section className="ea-card as-card">
             <h2 className="as-section-title">
               <FaTrophy className="mr-2 inline text-[#d97706]" aria-hidden />
-              Thông tin danh hiệu
+              {t("Thông tin danh hiệu")}
             </h2>
             {isFreelancer ? (
               <>
                 <p className="as-section-desc">
-                  Hoàn thành thêm đơn hàng để mở khóa các khung danh hiệu cao hơn cho avatar của bạn.
+                  {t(
+                    "Hoàn thành thêm đơn hàng để mở khóa các khung danh hiệu cao hơn cho avatar của bạn.",
+                  )}
                 </p>
-                <div className="as-tier-grid" role="list" aria-label="Các cấp danh hiệu">
+                <div className="as-tier-grid" role="list" aria-label={t("Các cấp danh hiệu")}>
                   {AVATAR_TIER_THRESHOLDS.map((item) => {
                     const unlocked = isAvatarTierUnlocked(completedJobs, item.minOrders);
                     const isCurrent = currentTierId === item.id;
+                    const tierLabel = t(item.label);
                     return (
                       <div
                         key={item.id}
@@ -259,9 +266,9 @@ export default function AccountSettingsContent() {
                             size={TIER_FRAME_SIZE}
                             shape="circle"
                             src={avatarSrc}
-                            alt={item.label}
+                            alt={tierLabel}
                             fallback={getUserInitials(fullName, email)}
-                            title={item.label}
+                            title={tierLabel}
                           />
                           {!unlocked ? (
                             <div className="as-tier-lock-overlay" aria-hidden>
@@ -270,8 +277,8 @@ export default function AccountSettingsContent() {
                           ) : null}
                         </div>
                         <p className="as-tier-label">
-                          {item.label}
-                          {isCurrent ? " · hiện tại" : ""}
+                          {tierLabel}
+                          {isCurrent ? t(" · hiện tại") : ""}
                         </p>
                         <p className="as-tier-progress">{formatTierProgress(completedJobs, item.minOrders)}</p>
                       </div>
@@ -281,8 +288,9 @@ export default function AccountSettingsContent() {
               </>
             ) : (
               <p className="as-section-desc">
-                Danh hiệu và khung avatar theo cấp bậc áp dụng cho tài khoản Freelancer khi hoàn thành đơn hàng trên
-                nền tảng. Tài khoản Client không có danh hiệu hiển thị công khai.
+                {t(
+                  "Danh hiệu và khung avatar theo cấp bậc áp dụng cho tài khoản Freelancer khi hoàn thành đơn hàng trên nền tảng. Tài khoản Client không có danh hiệu hiển thị công khai.",
+                )}
               </p>
             )}
           </section>
@@ -290,34 +298,36 @@ export default function AccountSettingsContent() {
           <section className="ea-card as-card">
             <h2 className="as-section-title">
               <FaGlobe className="mr-2 inline text-[#2563eb]" aria-hidden />
-              Lựa chọn ngôn ngữ hiển thị
+              {t("account.settings.languageTitle")}
             </h2>
-            <p className="as-section-desc">Ngôn ngữ giao diện ưu tiên. Một số nội dung có thể vẫn hiển thị tiếng Việt.</p>
+            <p className="as-section-desc">{t("account.settings.languageDesc")}</p>
             <select
               className="as-select"
               value={locale}
               onChange={(e) => handleLocaleChange(e.target.value as LocalePreference)}
-              aria-label="Ngôn ngữ hiển thị"
+              aria-label={t("account.settings.languageAria")}
             >
-              <option value="vi">Tiếng Việt</option>
-              <option value="en">English</option>
+              <option value="vi">{t("account.settings.localeVi")}</option>
+              <option value="en">{t("account.settings.localeEn")}</option>
             </select>
           </section>
 
           <section className="ea-card as-card">
             <h2 className="as-section-title">
               <FaSun className="mr-2 inline text-[#d97706]" aria-hidden />
-              Tùy chọn giao diện Sáng / Tối
+              {t("Tùy chọn giao diện Sáng / Tối")}
             </h2>
-            <p className="as-section-desc">Chọn chế độ hiển thị phù hợp với môi trường làm việc của bạn.</p>
-            <div className="as-theme-options" role="group" aria-label="Chế độ giao diện">
+            <p className="as-section-desc">
+              {t("Chọn chế độ hiển thị phù hợp với môi trường làm việc của bạn.")}
+            </p>
+            <div className="as-theme-options" role="group" aria-label={t("Chế độ giao diện")}>
               <button
                 type="button"
                 className={`as-theme-btn${theme === "light" ? " as-theme-btn--active" : ""}`}
                 onClick={() => handleThemeChange("light")}
               >
                 <FaSun className="mr-1 inline" aria-hidden />
-                Sáng
+                {t("Sáng")}
               </button>
               <button
                 type="button"
@@ -325,14 +335,14 @@ export default function AccountSettingsContent() {
                 onClick={() => handleThemeChange("dark")}
               >
                 <FaMoon className="mr-1 inline" aria-hidden />
-                Tối
+                {t("Tối")}
               </button>
               <button
                 type="button"
                 className={`as-theme-btn${theme === "system" ? " as-theme-btn--active" : ""}`}
                 onClick={() => handleThemeChange("system")}
               >
-                Theo hệ thống
+                {t("Theo hệ thống")}
               </button>
             </div>
           </section>
@@ -340,10 +350,10 @@ export default function AccountSettingsContent() {
           <section className="ea-card as-card">
             <h2 className="as-section-title">
               <FaDownload className="mr-2 inline text-[#2563eb]" aria-hidden />
-              Tải xuống dữ liệu cá nhân
+              {t("Tải xuống dữ liệu cá nhân")}
             </h2>
             <p className="as-section-desc">
-              Xuất bản sao thông tin hồ sơ và tài khoản của bạn dưới dạng tệp JSON.
+              {t("Xuất bản sao thông tin hồ sơ và tài khoản của bạn dưới dạng tệp JSON.")}
             </p>
             <button
               type="button"
@@ -352,7 +362,7 @@ export default function AccountSettingsContent() {
               disabled={downloading}
             >
               <FaDownload aria-hidden />
-              {downloading ? "Đang chuẩn bị..." : "Tải xuống dữ liệu"}
+              {downloading ? t("Đang chuẩn bị...") : t("Tải xuống dữ liệu")}
             </button>
             {downloadFeedback ? <p className="as-feedback">{downloadFeedback}</p> : null}
           </section>
@@ -360,17 +370,19 @@ export default function AccountSettingsContent() {
           <section className="ea-card as-card">
             <h2 className="as-section-title">
               <FaDesktop className="mr-2 inline text-[#4b5563]" aria-hidden />
-              Nhật ký thiết bị
+              {t("Nhật ký thiết bị")}
             </h2>
-            <p className="as-section-desc">Các thiết bị đã đăng nhập gần đây vào tài khoản của bạn.</p>
+            <p className="as-section-desc">
+              {t("Các thiết bị đã đăng nhập gần đây vào tài khoản của bạn.")}
+            </p>
             {currentDevice ? (
               <table className="as-device-table">
                 <thead>
                   <tr>
-                    <th>Thiết bị</th>
-                    <th>Hệ điều hành</th>
-                    <th>Hoạt động gần nhất</th>
-                    <th>Trạng thái</th>
+                    <th>{t("Thiết bị")}</th>
+                    <th>{t("Hệ điều hành")}</th>
+                    <th>{t("Hoạt động gần nhất")}</th>
+                    <th>{t("Trạng thái")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -378,26 +390,28 @@ export default function AccountSettingsContent() {
                     <td>{currentDevice.browser}</td>
                     <td>{currentDevice.os}</td>
                     <td>{currentDevice.lastActive}</td>
-                    <td>Phiên hiện tại</td>
+                    <td>{t("Phiên hiện tại")}</td>
                   </tr>
                 </tbody>
               </table>
             ) : (
-              <p className="as-device-empty">Chưa có thiết bị nào được ghi nhận.</p>
+              <p className="as-device-empty">{t("Chưa có thiết bị nào được ghi nhận.")}</p>
             )}
           </section>
 
           <section className="ea-card as-card as-danger-zone">
             <h2 className="as-section-title">
               <FaTrashAlt className="mr-2 inline" aria-hidden />
-              Xóa tài khoản
+              {t("Xóa tài khoản")}
             </h2>
             <p className="as-section-desc">
-              Xóa vĩnh viễn tài khoản và dữ liệu liên quan. Hành động này không thể hoàn tác sau khi được xử lý.
+              {t(
+                "Xóa vĩnh viễn tài khoản và dữ liệu liên quan. Hành động này không thể hoàn tác sau khi được xử lý.",
+              )}
             </p>
             <button type="button" className="as-danger-btn" onClick={handleDeleteAccount}>
               <FaTrashAlt aria-hidden />
-              Yêu cầu xóa tài khoản
+              {t("Yêu cầu xóa tài khoản")}
             </button>
           </section>
         </div>

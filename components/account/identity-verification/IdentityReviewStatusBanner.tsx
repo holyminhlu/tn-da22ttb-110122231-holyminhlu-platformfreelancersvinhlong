@@ -1,5 +1,6 @@
 "use client";
 
+import { formatDateUi, tUi } from "@/lib/i18n/runtime";
 import Link from "next/link";
 import { FaCheckCircle, FaClock, FaExclamationTriangle } from "react-icons/fa";
 import type { IdentityVerificationResponse } from "@/lib/api/identityVerification";
@@ -20,13 +21,14 @@ type IdentityReviewStatusBannerProps = {
 };
 
 export default function IdentityReviewStatusBanner({ data }: IdentityReviewStatusBannerProps) {
+  const formatDate = formatDateUi;
   const v = data.verification;
   if (!v?.submitted_for_review_at) return null;
 
   const status = getAdminReviewStatus(data);
   const reviewedAt = v.admin_reviewed_at;
   const note = v.admin_review_note?.trim();
-  const submittedAt = formatDate(v.submitted_for_review_at);
+  const submittedAt = formatDateUi(v.submitted_for_review_at);
 
   if (status === "approved") {
     return (
@@ -36,7 +38,7 @@ export default function IdentityReviewStatusBanner({ data }: IdentityReviewStatu
           <p className="idv-status__title">Tài khoản đã được admin duyệt</p>
           <p className="idv-status__text">
             Xác minh danh tính của bạn đã hoàn tất
-            {reviewedAt ? ` vào ${formatDate(reviewedAt)}` : ""}. Bạn có thể báo giá, lưu việc và
+            {reviewedAt ? ` vào ${formatDateUi(reviewedAt)}` : ""}. Bạn có thể báo giá, lưu việc và
             thao tác với các job trên nền tảng.
           </p>
           <Link href="/findwork" className="idv-status__link">
@@ -54,7 +56,7 @@ export default function IdentityReviewStatusBanner({ data }: IdentityReviewStatu
         <div className="idv-status__body">
           <p className="idv-status__title">Hồ sơ xác minh chưa được duyệt</p>
           <p className="idv-status__text">
-            Admin đã xem xét hồ sơ của bạn{reviewedAt ? ` vào ${formatDate(reviewedAt)}` : ""} và
+            Admin đã xem xét hồ sơ của bạn{reviewedAt ? ` vào ${formatDateUi(reviewedAt)}` : ""} và
             yêu cầu bổ sung hoặc chỉnh sửa thông tin.
           </p>
           {note ? <p className="idv-status__note">Ghi chú từ admin: {note}</p> : null}

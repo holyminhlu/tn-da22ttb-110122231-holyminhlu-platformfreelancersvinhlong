@@ -1,7 +1,8 @@
 "use client";
 
+import { formatDateUi, formatVndUi, tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
-import { formatDate, formatVnd } from "@/lib/format";
 import {
   contractStatusClass,
   contractStatusLabel,
@@ -23,6 +24,7 @@ type JobContractCardProps = {
 };
 
 function badgeClass(item: JobsListItem): string {
+
   if (isCompletedJobContract(item)) return "fw-contracts__badge fw-contracts__badge--completed";
   if (isWorkspaceArchived(item.contractStatus, item.jobStatus)) {
     return "fw-contracts__badge fw-contracts__badge--archived";
@@ -45,16 +47,17 @@ export default function JobContractCard({
   item,
   counterpartyLabel = "Client",
   viewerRole = "freelancer",
-}: JobContractCardProps) {
+}: JobContractCardProps) {  const { t, formatVnd, formatDate } = useTranslation();
+
   const price =
-    item.agreedPrice != null ? formatVnd(item.agreedPrice) : formatVnd(item.budget);
+    item.agreedPrice != null ? formatVndUi(item.agreedPrice) : formatVndUi(item.budget);
   const href = jobContractHref(item, viewerRole);
 
   return (
     <li>
       <Link href={href} className={cardClass(item)}>
         <div className="fw-contracts__card-top">
-          <h2 className="fw-contracts__card-title">{item.title}</h2>
+          <h2 className="fw-contracts__card-title">{t(item.title)}</h2>
           <span className={badgeClass(item)}>{jobContractStageLabel(item)}</span>
         </div>
         <p className="fw-contracts__card-meta">
@@ -76,14 +79,14 @@ export default function JobContractCard({
             <span className="fw-contracts__badge fw-contracts__badge--safepay">Escrow</span>
           ) : null}
           {item.deliveredAt ? (
-            <span>Bàn giao {formatDate(item.deliveredAt)}</span>
+            <span>Bàn giao {formatDateUi(item.deliveredAt)}</span>
           ) : null}
-          {item.jobDueAt ? <span>Hạn việc {formatDate(item.jobDueAt)}</span> : null}
+          {item.jobDueAt ? <span>Hạn việc {formatDateUi(item.jobDueAt)}</span> : null}
           {item.reviewRating != null ? (
             <span>Đánh giá {item.reviewRating}/5</span>
           ) : null}
-          <span>Cập nhật {formatDate(item.activityAt)}</span>
-          <span className="fw-contracts__card-action">Mở hợp đồng →</span>
+          <span>Cập nhật {formatDateUi(item.activityAt)}</span>
+          <span className="fw-contracts__card-action">{t("Mở hợp đồng →")}</span>
         </div>
       </Link>
     </li>

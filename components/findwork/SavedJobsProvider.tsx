@@ -1,5 +1,7 @@
 "use client";
 
+import { tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import {
   createContext,
   useCallback,
@@ -36,6 +38,7 @@ type SavedJobsContextValue = {
 const SavedJobsContext = createContext<SavedJobsContextValue | null>(null);
 
 export function SavedJobsProvider({ children }: { children: ReactNode }) {
+  const t = tUi;
   const { user, ready, isFreelancer } = useStoredUser({ refreshFromApi: false });
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);

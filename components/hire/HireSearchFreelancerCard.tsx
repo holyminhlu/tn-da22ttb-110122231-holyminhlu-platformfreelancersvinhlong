@@ -1,5 +1,7 @@
 "use client";
 
+import { formatDateUi, tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
@@ -36,7 +38,6 @@ import {
   resolveFreelancerMedia,
   satisfactionPercent,
 } from "@/lib/hire/freelancerSearchDisplay";
-import { formatDate } from "@/lib/format";
 import { CLIENT_VERIFY_PAGE } from "@/lib/hire/clientVerification";
 import FreelancerLikeButton from "./FreelancerLikeButton";
 
@@ -59,10 +60,10 @@ type HireSearchFreelancerCardProps = {
 };
 
 const MODAL_META: Record<DetailTab, { title: string; closeLabel: string }> = {
-  services: { title: "Dịch vụ", closeLabel: "Đóng danh sách dịch vụ" },
-  portfolio: { title: "Hồ sơ dự án", closeLabel: "Đóng hồ sơ dự án" },
-  performance: { title: "Hiệu suất", closeLabel: "Đóng hiệu suất" },
-  about: { title: "Giới thiệu", closeLabel: "Đóng giới thiệu" },
+  services: { title: tUi("Dịch vụ"), closeLabel: tUi("Đóng danh sách dịch vụ") },
+  portfolio: { title: tUi("Hồ sơ dự án"), closeLabel: tUi("Đóng hồ sơ dự án") },
+  performance: { title: tUi("Hiệu suất"), closeLabel: tUi("Đóng hiệu suất") },
+  about: { title: tUi("Giới thiệu"), closeLabel: tUi("Đóng giới thiệu") },
 };
 
 type ModalStat = { label: string; value: string; sub?: string };
@@ -70,26 +71,26 @@ type ModalStat = { label: string; value: string; sub?: string };
 function buildPerformanceStats(row: FreelancerSearchRow, satisfaction: number): ModalStat[] {
   const stats: ModalStat[] = [];
   if (satisfaction > 0) {
-    stats.push({ label: "Tỷ lệ hài lòng", value: `${satisfaction}%` });
+    stats.push({ label: tUi("Tỷ lệ hài lòng"), value: `${satisfaction}%` });
   }
   const ratingAvg = row.rating_avg > 0 ? Number(row.rating_avg) : 0;
   if (ratingAvg > 0) {
     stats.push({
-      label: "Đánh giá trung bình",
+      label: tUi("Đánh giá trung bình"),
       value: `${ratingAvg.toFixed(1)} / 5`,
       sub: row.total_reviews > 0 ? `${row.total_reviews} đánh giá` : undefined,
     });
   }
-  stats.push({ label: "Hợp đồng hoàn thành", value: String(row.completed_jobs) });
+  stats.push({ label: tUi("Hợp đồng hoàn thành"), value: String(row.completed_jobs) });
   if (row.job_success_score != null) {
-    stats.push({ label: "Tỷ lệ thành công", value: `${row.job_success_score}%` });
+    stats.push({ label: tUi("Tỷ lệ thành công"), value: `${row.job_success_score}%` });
   }
   if (row.avg_response_minutes) {
-    stats.push({ label: "Phản hồi trung bình", value: `~${row.avg_response_minutes} phút` });
+    stats.push({ label: tUi("Phản hồi trung bình"), value: `~${row.avg_response_minutes} phút` });
   }
   const earnings = formatYearlyEarnings(row.total_earnings);
   stats.push({
-    label: "Thu nhập trên VLC",
+    label: tUi("Thu nhập trên VLC"),
     value: earnings !== "—" ? earnings : "0 ₫ /năm",
   });
   return stats;
@@ -114,12 +115,15 @@ function renderReviewList(
   reviews: FreelancerProfilePayload["reviews"],
   emptyText: string,
 ) {
+
+  const t = tUi;
+  const formatDate = formatDateUi;
   if (reviews.length === 0) {
     return <p className="hire-modal-panel__hint">{emptyText}</p>;
   }
   return (
     <div className="hire-search__reviews-block">
-      <h4 className="hire-search__reviews-heading">Đánh giá gần đây</h4>
+      <h4 className="hire-search__reviews-heading">{tUi("Đánh giá gần đây")}</h4>
       <ul className="hire-search__reviews-list">
         {reviews.slice(0, 5).map((review) => (
           <li key={review.id} className="hire-search__review-card">
@@ -134,8 +138,8 @@ function renderReviewList(
                   />
                 ))}
               </span>
-              <span className="hire-search__review-author">{review.client_name || "Khách hàng"}</span>
-              <span className="hire-search__review-date">{formatDate(review.created_at)}</span>
+              <span className="hire-search__review-author">{review.client_name || tUi("Khách hàng")}</span>
+              <span className="hire-search__review-date">{formatDateUi(review.created_at)}</span>
             </div>
             {review.comment?.trim() ? (
               <p className="hire-search__review-comment">{review.comment.trim()}</p>
@@ -159,6 +163,8 @@ export default function HireSearchFreelancerCard({
   clientIdentityLoading = false,
   publicProfile = false,
 }: HireSearchFreelancerCardProps) {
+  const { t, formatDate } = useTranslation();
+
   const [activeModal, setActiveModal] = useState<DetailTab | null>(null);
   const [selectedPortfolioId, setSelectedPortfolioId] = useState<string | null>(null);
   const [detail, setDetail] = useState<FreelancerProfilePayload | null>(null);
@@ -174,12 +180,12 @@ export default function HireSearchFreelancerCard({
   const serviceTitle = featuredServiceTitle(row);
   const category =
     row.featured_service_category?.trim() ||
-    row.skills[0] ||
-    "Lập trình & phát triển";
+    row.skills[0] || t("Lập trình & phát triển");
 
   const profileBase = publicProfile ? "/freelancers" : "/hire/search";
 
   function profileHref(serviceId?: string | null) {
+  const t = tUi;
     if (serviceId) {
       return `${profileBase}/${row.id}?service=${encodeURIComponent(serviceId)}`;
     }
@@ -187,6 +193,7 @@ export default function HireSearchFreelancerCard({
   }
 
   function quoteHref(serviceId?: string | null) {
+  const t = tUi;
     const target = serviceId
       ? `/hire/quote?serviceId=${encodeURIComponent(serviceId)}&freelancerId=${encodeURIComponent(row.id)}`
       : profileHref(serviceId);
@@ -208,6 +215,7 @@ export default function HireSearchFreelancerCard({
       : "Yêu cầu báo giá";
 
   function favoriteHref() {
+  const t = tUi;
     return `/dang-nhap?next=${encodeURIComponent("/freelancers")}`;
   }
 
@@ -219,13 +227,14 @@ export default function HireSearchFreelancerCard({
       const payload = await getFreelancer(row.id, row.featured_service_id ?? undefined);
       setDetail(payload);
     } catch {
-      setDetailError("Không thể tải chi tiết.");
+      setDetailError(t("Không thể tải chi tiết."));
     } finally {
       setDetailLoading(false);
     }
   }, [detail, row.id, row.featured_service_id]);
 
   async function handleTabClick(tab: DetailTab) {
+  const t = tUi;
     if (activeModal === tab) {
       setActiveModal(null);
       setSelectedPortfolioId(null);
@@ -237,6 +246,7 @@ export default function HireSearchFreelancerCard({
   }
 
   function closeModal() {
+  const t = tUi;
     setActiveModal(null);
     setSelectedPortfolioId(null);
   }
@@ -244,6 +254,7 @@ export default function HireSearchFreelancerCard({
   useEffect(() => {
     if (!activeModal) return;
     function onKeyDown(event: KeyboardEvent) {
+  const t = tUi;
       if (event.key === "Escape") {
         if (selectedPortfolioId) {
           setSelectedPortfolioId(null);
@@ -269,11 +280,12 @@ export default function HireSearchFreelancerCard({
       rotate: true,
     },
     { id: "portfolio", icon: FaImage, label: `Hồ sơ dự án (${row.portfolio_count})` },
-    { id: "performance", icon: FaThumbsUp, label: "Hiệu suất" },
-    { id: "about", icon: FaUser, label: "Giới thiệu" },
+    { id: "performance", icon: FaThumbsUp, label: t("Hiệu suất") },
+    { id: "about", icon: FaUser, label: t("Giới thiệu") },
   ];
 
   function renderModalContent() {
+  const t = tUi;
     if (detailLoading) {
       return (
         <div className="hire-search__detail-loading" aria-busy="true">
@@ -297,7 +309,7 @@ export default function HireSearchFreelancerCard({
         return (
           <div className="hire-modal-empty">
             <FaPaperclip className="hire-modal-empty__icon" aria-hidden />
-            <p>Freelancer chưa đăng thêm dịch vụ nào.</p>
+            <p>{t("Freelancer chưa đăng thêm dịch vụ nào.")}</p>
           </div>
         );
       }
@@ -330,7 +342,7 @@ export default function HireSearchFreelancerCard({
         return (
           <div className="hire-modal-empty">
             <FaImage className="hire-modal-empty__icon" aria-hidden />
-            <p>Chưa có mục portfolio.</p>
+            <p>{t("Chưa có mục portfolio.")}</p>
           </div>
         );
       }
@@ -341,7 +353,7 @@ export default function HireSearchFreelancerCard({
       if (selectedItem) {
         const images = parsePortfolioImageUrls(selectedItem.images);
         const desc =
-          selectedItem.description?.trim() || "Freelancer chưa thêm mô tả cho dự án này.";
+          selectedItem.description?.trim() || t("Freelancer chưa thêm mô tả cho dự án này.");
 
         return (
           <div className="hire-modal-panel hire-modal-portfolio-detail">
@@ -370,7 +382,7 @@ export default function HireSearchFreelancerCard({
                 ))}
               </ul>
             ) : (
-              <p className="hire-modal-panel__hint">Chưa có hình ảnh đính kèm.</p>
+              <p className="hire-modal-panel__hint">{t("Chưa có hình ảnh đính kèm.")}</p>
             )}
             {selectedItem.project_url ? (
               <a
@@ -419,7 +431,7 @@ export default function HireSearchFreelancerCard({
           {perfStats.length > 0 ? (
             renderStatGrid(perfStats)
           ) : (
-            <p className="hire-modal-panel__hint">Chưa có thống kê hiệu suất.</p>
+            <p className="hire-modal-panel__hint">{t("Chưa có thống kê hiệu suất.")}</p>
           )}
           {renderReviewList(reviews, "Chưa có đánh giá từ client.")}
         </div>
@@ -428,26 +440,26 @@ export default function HireSearchFreelancerCard({
 
     if (activeModal === "about") {
       const bio =
-        detail?.freelancer.bio?.trim() || row.bio?.trim() || "Freelancer chưa cập nhật phần giới thiệu.";
+        detail?.freelancer.bio?.trim() || row.bio?.trim() || t("Freelancer chưa cập nhật phần giới thiệu.");
 
       const aboutStats: ModalStat[] = [];
       if (row.title?.trim()) {
-        aboutStats.push({ label: "Chức danh", value: row.title.trim() });
+        aboutStats.push({ label: t("Chức danh"), value: row.title.trim() });
       }
       if (locationDisplay(row) !== "—") {
-        aboutStats.push({ label: "Khu vực", value: locationDisplay(row) });
+        aboutStats.push({ label: t("Khu vực"), value: locationDisplay(row) });
       }
       if (row.experience_years != null) {
-        aboutStats.push({ label: "Kinh nghiệm", value: `${row.experience_years}+ năm` });
+        aboutStats.push({ label: t("Kinh nghiệm"), value: `${row.experience_years}+ năm` });
       }
       if (row.avg_response_minutes) {
-        aboutStats.push({ label: "Phản hồi TB", value: `~${row.avg_response_minutes} phút` });
+        aboutStats.push({ label: t("Phản hồi TB"), value: `~${row.avg_response_minutes} phút` });
       }
       if (row.services_count > 0) {
-        aboutStats.push({ label: "Dịch vụ", value: String(row.services_count) });
+        aboutStats.push({ label: t("Dịch vụ"), value: String(row.services_count) });
       }
       if (row.portfolio_count > 0) {
-        aboutStats.push({ label: "Hồ sơ dự án", value: String(row.portfolio_count) });
+        aboutStats.push({ label: t("Hồ sơ dự án"), value: String(row.portfolio_count) });
       }
 
       return (
@@ -513,7 +525,7 @@ export default function HireSearchFreelancerCard({
                     </span>
                   ))}
                   {row.has_demo_video ? (
-                    <FaPlayCircle className="hire-search__video-icon" aria-label="Có video giới thiệu" />
+                    <FaPlayCircle className="hire-search__video-icon" aria-label={t("Có video giới thiệu")} />
                   ) : null}
                 </h2>
                 <p className="hire-search__location">{locationDisplay(row)}</p>
@@ -525,7 +537,7 @@ export default function HireSearchFreelancerCard({
                       {satisfaction}%
                     </span>
                   ) : (
-                    <span className="hire-search__rating hire-search__rating--muted">Chưa có đánh giá</span>
+                    <span className="hire-search__rating hire-search__rating--muted">{t("Chưa có đánh giá")}</span>
                   )}
                 </div>
               </div>

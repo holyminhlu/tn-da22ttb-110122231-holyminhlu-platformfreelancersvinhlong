@@ -1,5 +1,7 @@
 "use client";
 
+import { tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -35,6 +37,8 @@ const DISPLAY_FILTERS: { value: DisplayFilter; label: string }[] = [
 ];
 
 export default function ClientManagePage() {
+  const { t } = useTranslation();
+
   const [items, setItems] = useState<JobsListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -111,10 +115,12 @@ export default function ClientManagePage() {
   } = usePagedList(filteredItems, PAGE_SIZE);
 
   function applySearch() {
+  const t = tUi;
     setSearchQuery(searchInput.trim());
   }
 
   function handleSearchKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
+  const t = tUi;
     if (event.key === "Enter") {
       event.preventDefault();
       applySearch();

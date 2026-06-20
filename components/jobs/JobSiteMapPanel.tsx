@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "@/hooks/useTranslation";
 import { useEffect, useMemo, useState } from "react";
 import { FaMapMarkerAlt } from "react-icons/fa";
 import type { JobListing } from "@/lib/api/jobs";
@@ -18,11 +19,14 @@ type JobSiteMapPanelProps = {
   className?: string;
 };
 
-export default function JobSiteMapPanel({ job, className }: JobSiteMapPanelProps) {
+export default function JobSiteMapPanel({
+  job, className }: JobSiteMapPanelProps) {
+  const { t } = useTranslation();
+
   const [jobPoint, setJobPoint] = useState(() => jobSitePoint(job));
   const [jobGeoLoading, setJobGeoLoading] = useState(false);
 
-  const siteLabel = job.location_label?.trim() || "Địa điểm làm việc";
+  const siteLabel = job.location_label?.trim() || t("Địa điểm làm việc");
   const isRemote = isRemoteJobLocation(job.location_label);
 
   useEffect(() => {
@@ -71,7 +75,7 @@ export default function JobSiteMapPanel({ job, className }: JobSiteMapPanelProps
       <section className={sectionClass}>
         <h3 className="hire-manage__job-section-title">
           <FaMapMarkerAlt aria-hidden />
-          Hình thức làm việc
+          {t("Hình thức làm việc")}
         </h3>
         <p className="hire-manage__job-remote">{REMOTE_WORK_LOCATION_LABEL}</p>
       </section>
@@ -84,15 +88,15 @@ export default function JobSiteMapPanel({ job, className }: JobSiteMapPanelProps
     <section className={sectionClass}>
       <h3 className="hire-manage__job-section-title">
         <FaMapMarkerAlt aria-hidden />
-        Vị trí trên bản đồ
+        {t("Vị trí trên bản đồ")}
       </h3>
       <p className="hire-manage__job-location-label">{siteLabel}</p>
       {jobGeoLoading ? (
-        <p className="hire-manage__job-map-hint">Đang xác định vị trí trên bản đồ...</p>
+        <p className="hire-manage__job-map-hint">{t("Đang xác định vị trí trên bản đồ...")}</p>
       ) : null}
       {!jobPoint && !jobGeoLoading ? (
         <p className="hire-manage__job-map-hint">
-          Chưa có tọa độ chính xác. Địa chỉ đã khai báo: <strong>{siteLabel}</strong>
+          {t("Chưa có tọa độ chính xác. Địa chỉ đã khai báo:")} <strong>{siteLabel}</strong>
         </p>
       ) : null}
       {jobPoint ? (
@@ -113,7 +117,7 @@ export default function JobSiteMapPanel({ job, className }: JobSiteMapPanelProps
               rel="noopener noreferrer"
               className="hire-manage__job-map-link"
             >
-              Mở vị trí trên OpenStreetMap
+              {t("Mở vị trí trên OpenStreetMap")}
             </a>
           ) : null}
         </>

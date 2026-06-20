@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "@/hooks/useTranslation";
 import FreelancerAvatarFrame from "@/components/freelancer/FreelancerAvatarFrame";
 import UserAvatar from "@/components/ui/UserAvatar";
 import type { ChatConversation } from "@/lib/api/chat";
@@ -19,6 +20,8 @@ export default function ChatPeerAvatar({
   className,
   imgClassName,
 }: ChatPeerAvatarProps) {
+  const { t } = useTranslation();
+
   const avatarSrc = resolveAvatarSrc(conversation.peerAvatarUrl);
   const initial = (conversation.peerName || "?").charAt(0).toUpperCase();
   const peerIsFreelancer = conversation.peerId === conversation.freelancerId;

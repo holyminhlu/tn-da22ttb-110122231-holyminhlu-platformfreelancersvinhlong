@@ -1,5 +1,7 @@
 "use client";
 
+import { tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useEffect, useRef, useState } from "react";
 import { FaLock } from "react-icons/fa";
 import { addBillingMethod } from "@/lib/api/payments";
@@ -28,7 +30,10 @@ type AddPaymentMethodModalProps = {
   onSaved: () => void;
 };
 
-export default function AddPaymentMethodModal({ onClose, onSaved }: AddPaymentMethodModalProps) {
+export default function AddPaymentMethodModal({
+  onClose, onSaved }: AddPaymentMethodModalProps) {
+  const { t } = useTranslation();
+
   const [tab, setTab] = useState<MethodTab>("intl_card");
   const [cardholderName, setCardholderName] = useState("");
   const [bankName, setBankName] = useState<string>(DOMESTIC_BANKS[0]);
@@ -41,6 +46,7 @@ export default function AddPaymentMethodModal({ onClose, onSaved }: AddPaymentMe
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
+  const t = tUi;
       if (event.key === "Escape" && !saving) onClose();
     }
     window.addEventListener("keydown", onKeyDown);
@@ -62,7 +68,8 @@ export default function AddPaymentMethodModal({ onClose, onSaved }: AddPaymentMe
   }
 
   async function handleSubmit(event: React.FormEvent) {
-    event.preventDefault();
+  const t = tUi;
+  event.preventDefault();
     const validationError = validate();
     if (validationError) {
       setError(validationError);
@@ -109,6 +116,7 @@ export default function AddPaymentMethodModal({ onClose, onSaved }: AddPaymentMe
   }
 
   function handleTabChange(next: MethodTab) {
+  const t = tUi;
     setTab(next);
     setError("");
     if (next === "ewallet") setCardholderName("");
@@ -125,12 +133,12 @@ export default function AddPaymentMethodModal({ onClose, onSaved }: AddPaymentMe
       >
         <header className="pay-method-modal__header">
           <h2 id="pay-method-modal-title" className="pay-method-modal__title">
-            Thêm phương thức thanh toán mới
+            {t("Thêm phương thức thanh toán mới")}
           </h2>
           <button
             type="button"
             className="pay-method-modal__close"
-            aria-label="Đóng"
+            aria-label={t("Đóng")}
             disabled={saving}
             onClick={onClose}
           >
@@ -139,7 +147,7 @@ export default function AddPaymentMethodModal({ onClose, onSaved }: AddPaymentMe
         </header>
 
         <div className="pay-method-modal__body">
-          <div className="pay-method-modal__tabs" role="tablist" aria-label="Loại phương thức">
+          <div className="pay-method-modal__tabs" role="tablist" aria-label={t("Loại phương thức")}>
             <button
               type="button"
               role="tab"
@@ -147,7 +155,7 @@ export default function AddPaymentMethodModal({ onClose, onSaved }: AddPaymentMe
               className={`pay-method-modal__tab${tab === "intl_card" ? " pay-method-modal__tab--active" : ""}`}
               onClick={() => handleTabChange("intl_card")}
             >
-              Thẻ Tín dụng / Ghi nợ
+              {t("Thẻ Tín dụng / Ghi nợ")}
             </button>
             <button
               type="button"
@@ -156,7 +164,7 @@ export default function AddPaymentMethodModal({ onClose, onSaved }: AddPaymentMe
               className={`pay-method-modal__tab${tab === "domestic_atm" ? " pay-method-modal__tab--active" : ""}`}
               onClick={() => handleTabChange("domestic_atm")}
             >
-              Thẻ ATM nội địa
+              {t("Thẻ ATM nội địa")}
             </button>
             <button
               type="button"
@@ -165,7 +173,7 @@ export default function AddPaymentMethodModal({ onClose, onSaved }: AddPaymentMe
               className={`pay-method-modal__tab${tab === "ewallet" ? " pay-method-modal__tab--active" : ""}`}
               onClick={() => handleTabChange("ewallet")}
             >
-              Ví điện tử
+              {t("Ví điện tử")}
             </button>
           </div>
 
@@ -182,7 +190,7 @@ export default function AddPaymentMethodModal({ onClose, onSaved }: AddPaymentMe
           {tab === "domestic_atm" ? (
             <>
               <label className="pay-method-modal__field">
-                <span className="pay-method-modal__label">Ngân hàng</span>
+                <span className="pay-method-modal__label">{t("Ngân hàng")}</span>
                 <select
                   className="pay-method-modal__select"
                   value={bankName}
@@ -208,7 +216,7 @@ export default function AddPaymentMethodModal({ onClose, onSaved }: AddPaymentMe
           {tab === "ewallet" ? (
             <>
               <fieldset className="pay-method-modal__field">
-                <legend className="pay-method-modal__label">Chọn ví</legend>
+                <legend className="pay-method-modal__label">{t("Chọn ví")}</legend>
                 <div className="pay-method-modal__wallet-options">
                   <label
                     className={`pay-method-modal__wallet-opt${walletProvider === "momo" ? " pay-method-modal__wallet-opt--active" : ""}`}
@@ -244,7 +252,7 @@ export default function AddPaymentMethodModal({ onClose, onSaved }: AddPaymentMe
               </fieldset>
 
               <label className="pay-method-modal__field">
-                <span className="pay-method-modal__label">Số điện thoại liên kết ví</span>
+                <span className="pay-method-modal__label">{t("Số điện thoại liên kết ví")}</span>
                 <input
                   className="pay-method-modal__input"
                   inputMode="tel"
@@ -262,14 +270,13 @@ export default function AddPaymentMethodModal({ onClose, onSaved }: AddPaymentMe
               checked={isDefault}
               onChange={(e) => setIsDefault(e.target.checked)}
             />
-            <span>Đặt làm phương thức thanh toán mặc định</span>
+            <span>{t("Đặt làm phương thức thanh toán mặc định")}</span>
           </label>
 
           <p className="pay-method-modal__trust">
             <FaLock className="pay-method-modal__trust-icon" aria-hidden />
             <span>
-              Thông tin thẻ của bạn được mã hóa và bảo mật an toàn chuẩn quốc tế (PCI DSS). Chúng
-              tôi chỉ lưu 4 số cuối — không lưu CVV.
+              {t("Thông tin thẻ của bạn được mã hóa và bảo mật an toàn chuẩn quốc tế (PCI DSS). Chúng tôi chỉ lưu 4 số cuối — không lưu CVV.")}
             </span>
           </p>
 
@@ -287,7 +294,7 @@ export default function AddPaymentMethodModal({ onClose, onSaved }: AddPaymentMe
             disabled={saving}
             onClick={onClose}
           >
-            Hủy
+            {t("Hủy")}
           </button>
           <button type="submit" className="payments-btn payments-btn--primary" disabled={saving}>
             {saving ? "Đang lưu..." : tab === "ewallet" ? "Liên kết ví" : "Thêm thẻ ngay"}

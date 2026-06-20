@@ -1,5 +1,7 @@
 "use client";
 
+import { formatDateUi, tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { listServiceOrders, type ServiceOrderListItem } from "@/lib/api/contracts";
@@ -22,19 +24,19 @@ import {
   type OrderListFilter,
 } from "@/lib/orders/serviceOrderDisplay";
 import { orderDeadlineSubtitle } from "@/lib/orders/workflowSlaDisplay";
-import { formatDate } from "@/lib/format";
 import HireShell from "./HireShell";
 import "./hire.css";
 import "../findwork/findwork-orders.css";
 
 const FILTERS: { value: OrderListFilter; label: string }[] = [
-  { value: "all", label: "Tất cả" },
-  { value: "action", label: "Cần xử lý" },
-  { value: "active", label: "Đang thực hiện" },
-  { value: "done", label: "Hoàn tất" },
+  { value: "all", label: tUi("Tất cả") },
+  { value: "action", label: tUi("Cần xử lý") },
+  { value: "active", label: tUi("Đang thực hiện") },
+  { value: "done", label: tUi("Hoàn tất") },
 ];
 
-export default function ClientServiceOrdersPage() {
+export default function ClientServiceOrdersPage() {  const { t, formatDate } = useTranslation();
+
   const [orders, setOrders] = useState<ServiceOrderListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -46,7 +48,7 @@ export default function ClientServiceOrdersPage() {
     try {
       const data = await listServiceOrders();
       if (data.role !== "client") {
-        setError("Trang này dành cho tài khoản client.");
+        setError(t("Trang này dành cho tài khoản client."));
         setOrders([]);
         return;
       }
@@ -87,7 +89,7 @@ export default function ClientServiceOrdersPage() {
       <div className="hire-page hire-orders hire-orders--full-width">
         <header className="hire-page__head">
           <div>
-            <h1 className="hire-page__title">Đơn dịch vụ</h1>
+            <h1 className="hire-page__title">{t("Đơn dịch vụ")}</h1>
             <p className="hire-page__lead">
               Theo dõi yêu cầu báo giá, đề xuất từ freelancer, ký quỹ và nghiệm thu từng giai
               đoạn.
@@ -107,7 +109,7 @@ export default function ClientServiceOrdersPage() {
           </p>
         ) : null}
 
-        <div className="fw-orders__filters" role="tablist" aria-label="Lọc đơn">
+        <div className="fw-orders__filters" role="tablist" aria-label={t("Lọc đơn")}>
           {FILTERS.map((item) => (
             <button
               key={item.value}
@@ -123,7 +125,7 @@ export default function ClientServiceOrdersPage() {
         </div>
 
         {loading ? (
-          <p className="hire-page__state">Đang tải...</p>
+          <p className="hire-page__state">{t("Đang tải...")}</p>
         ) : error ? (
           <p className="hire-page__state hire-page__state--error" role="alert">
             {error}
@@ -173,7 +175,7 @@ export default function ClientServiceOrdersPage() {
                     </p>
                     {proposalPreview ? (
                       <p className="fw-orders__card-preview fw-orders__card-preview--proposal">
-                        <span className="fw-orders__card-preview-label">Đề xuất:</span>{" "}
+                        <span className="fw-orders__card-preview-label">{t("Đề xuất:")}</span>{" "}
                         {proposalPreview}
                       </p>
                     ) : briefPreview ? (
@@ -190,7 +192,7 @@ export default function ClientServiceOrdersPage() {
                         <span className={orderStatusChipClass(deadlineTone)}>{deadlineLine}</span>
                       ) : null}
                       <span className="fw-orders__card-foot-date">
-                        Cập nhật: {formatDate(order.updated_at || order.created_at)}
+                        Cập nhật: {formatDateUi(order.updated_at || order.created_at)}
                       </span>
                     </div>
                   </Link>

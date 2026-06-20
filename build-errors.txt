@@ -1,0 +1,277 @@
+﻿
+> vl-connected@0.1.0 build
+> next build
+
+Γû▓ Next.js 16.2.4 (Turbopack)
+- Environments: .env
+
+node.exe : ΓÜá The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: 
+https://nextjs.org/docs/messages/middleware-to-proxy
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (ΓÜá The "middle...leware-to-proxy:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Creating an optimized production build ...
+
+> Build error occurred
+Error: Turbopack build failed with 9 errors:
+./components/account/identity-verification/CreditCardVerifyPanel.tsx:72:14
+the name `formatVnd` is defined multiple times
+  [90m70 |[0m }: [33mCreditCardVerifyPanelProps[0m) {
+  [90m71 |[0m   [36mconst[0m formatVnd = formatVndUi;
+[31m[1m>[0m [90m72 |[0m   [36mconst[0m { t, formatVnd } = useTranslation();
+  [90m   |[0m              [31m[1m^^^^^^^^^[0m
+  [90m73 |[0m
+  [90m74 |[0m   [36mconst[0m v = data.verification;
+  [90m75 |[0m   [36mconst[0m cardAdded = [33mBoolean[0m(v?.card_added_at);
+
+Ecmascript file had an error
+
+Import traces:
+  Client Component Browser:
+    ./components/account/identity-verification/CreditCardVerifyPanel.tsx [Client Component Browser]
+    ./components/account/IdentityVerificationContent.tsx [Client Component Browser]
+    ./components/account/IdentityVerificationContent.tsx [Server Component]
+    ./app/(dashboard)/(account)/edit-account/xac-minh/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/account/identity-verification/CreditCardVerifyPanel.tsx [Client Component SSR]
+    ./components/account/IdentityVerificationContent.tsx [Client Component SSR]
+    ./components/account/IdentityVerificationContent.tsx [Server Component]
+    ./app/(dashboard)/(account)/edit-account/xac-minh/page.tsx [Server Component]
+
+
+./components/admin/AdminDisputeResolvePanel.tsx:57:14
+the name `formatVnd` is defined multiple times
+  [90m55 |[0m }: [33mAdminDisputeResolvePanelProps[0m) {
+  [90m56 |[0m   [36mconst[0m formatVnd = formatVndUi;
+[31m[1m>[0m [90m57 |[0m   [36mconst[0m { t, formatVnd } = useTranslation();
+  [90m   |[0m              [31m[1m^^^^^^^^^[0m
+  [90m58 |[0m
+  [90m59 |[0m   [36mconst[0m total = [33mMath[0m.max([35m0[0m, [33mNumber[0m(agreedPrice) || [35m0[0m);
+  [90m60 |[0m   [36mconst[0m escrowFunded = [33mString[0m(escrowStatus || [32m""[0m).toLowerCase() === 
+[32m"funded"[0m;
+
+Ecmascript file had an error
+
+Import traces:
+  Client Component Browser:
+    ./components/admin/AdminDisputeResolvePanel.tsx [Client Component Browser]
+    ./components/admin/AdminDisputesPage.tsx [Client Component Browser]
+    ./components/admin/AdminDisputesPage.tsx [Server Component]
+    ./app/admin/tranh-chap/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/admin/AdminDisputeResolvePanel.tsx [Client Component SSR]
+    ./components/admin/AdminDisputesPage.tsx [Client Component SSR]
+    ./components/admin/AdminDisputesPage.tsx [Server Component]
+    ./app/admin/tranh-chap/page.tsx [Server Component]
+
+
+./components/dashboard/ClientDashboard.tsx:199:14
+the name `formatVnd` is defined multiple times
+  [90m197 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mClientDashboard[0m() {
+  [90m198 |[0m   [36mconst[0m formatVnd = formatVndUi;
+[31m[1m>[0m [90m199 |[0m   [36mconst[0m { t, formatVnd, formatDate } = useTranslation();
+  [90m    |[0m              [31m[1m^^^^^^^^^[0m
+  [90m200 |[0m
+  [90m201 |[0m   [36mconst[0m [data, setData] = useState<[33mClientMeResponse[0m | [36mnull[0m>([36mnull[0m);
+  [90m202 |[0m   [36mconst[0m [manageItems, setManageItems] = useState<[33mReturnType[0m<[36mtypeof[0m 
+clientJobToListItem>[]...
+
+Ecmascript file had an error
+
+Import traces:
+  Client Component Browser:
+    ./components/dashboard/ClientDashboard.tsx [Client Component Browser]
+    ./components/dashboard/DashboardRouter.tsx [Client Component Browser]
+    ./components/dashboard/DashboardRouter.tsx [Server Component]
+    ./app/(dashboard)/dashboard/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/dashboard/ClientDashboard.tsx [Client Component SSR]
+    ./components/dashboard/DashboardRouter.tsx [Client Component SSR]
+    ./components/dashboard/DashboardRouter.tsx [Server Component]
+    ./app/(dashboard)/dashboard/page.tsx [Server Component]
+
+
+./components/dashboard/FreelancerDashboard.tsx:386:14
+the name `formatVnd` is defined multiple times
+  [90m384 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mFreelancerDashboard[0m() {
+  [90m385 |[0m   [36mconst[0m formatVnd = formatVndUi;
+[31m[1m>[0m [90m386 |[0m   [36mconst[0m { t, formatVnd, formatDate } = useTranslation();
+  [90m    |[0m              [31m[1m^^^^^^^^^[0m
+  [90m387 |[0m
+  [90m388 |[0m   [36mconst[0m router = useRouter();
+  [90m389 |[0m   [36mconst[0m [data, setData] = useState<[33mFreelancerMeResponse[0m | 
+[36mnull[0m>([36mnull[0m);
+
+Ecmascript file had an error
+
+Import traces:
+  Client Component Browser:
+    ./components/dashboard/FreelancerDashboard.tsx [Client Component Browser]
+    ./components/dashboard/DashboardRouter.tsx [Client Component Browser]
+    ./components/dashboard/DashboardRouter.tsx [Server Component]
+    ./app/(dashboard)/dashboard/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/dashboard/FreelancerDashboard.tsx [Client Component SSR]
+    ./components/dashboard/DashboardRouter.tsx [Client Component SSR]
+    ./components/dashboard/DashboardRouter.tsx [Server Component]
+    ./app/(dashboard)/dashboard/page.tsx [Server Component]
+
+
+./components/findwork/JobProposalFormModal.tsx:58:14
+the name `formatVnd` is defined multiple times
+  [90m56 |[0m }: [33mJobProposalFormModalProps[0m) {
+  [90m57 |[0m   [36mconst[0m formatVnd = formatVndUi;
+[31m[1m>[0m [90m58 |[0m   [36mconst[0m { t, formatVnd } = useTranslation();
+  [90m   |[0m              [31m[1m^^^^^^^^^[0m
+  [90m59 |[0m
+  [90m60 |[0m   [36mconst[0m titleId = useId();
+  [90m61 |[0m   [36mconst[0m [step, setStep] = useState<[33mStep[0m>([32m"form"[0m);
+
+Ecmascript file had an error
+
+Import traces:
+  Client Component Browser:
+    ./components/findwork/JobProposalFormModal.tsx [Client Component Browser]
+    ./components/findwork/JobCard.tsx [Client Component Browser]
+    ./components/findwork/FreelancerSavedJobsPage.tsx [Client Component Browser]
+    ./components/findwork/FreelancerSavedJobsPage.tsx [Server Component]
+    ./app/(dashboard)/findwork/saved/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/findwork/JobProposalFormModal.tsx [Client Component SSR]
+    ./components/findwork/JobCard.tsx [Client Component SSR]
+    ./components/findwork/FreelancerSavedJobsPage.tsx [Client Component SSR]
+    ./components/findwork/FreelancerSavedJobsPage.tsx [Server Component]
+    ./app/(dashboard)/findwork/saved/page.tsx [Server Component]
+
+
+./components/orders/RefundRequestForm.tsx:29:14
+the name `formatVnd` is defined multiple times
+  [90m27 |[0m }: [33mRefundRequestFormProps[0m) {
+  [90m28 |[0m   [36mconst[0m formatVnd = formatVndUi;
+[31m[1m>[0m [90m29 |[0m   [36mconst[0m { t, formatVnd } = useTranslation();
+  [90m   |[0m              [31m[1m^^^^^^^^^[0m
+  [90m30 |[0m
+  [90m31 |[0m   [36mconst[0m [reasonCode, setReasonCode] = useState([32m""[0m);
+  [90m32 |[0m   [36mconst[0m [detail, setDetail] = useState([32m""[0m);
+
+Ecmascript file had an error
+
+Import traces:
+  Client Component Browser:
+    ./components/orders/RefundRequestForm.tsx [Client Component Browser]
+    ./components/orders/ResolutionActionChooser.tsx [Client Component Browser]
+    ./components/orders/ExecutionReviewPanel.tsx [Client Component Browser]
+    ./components/orders/ServiceOrderWorkflow.tsx [Client Component Browser]
+    ./components/hire/ClientOrderWorkflowPage.tsx [Client Component Browser]
+    ./components/hire/ClientOrderWorkflowPage.tsx [Server Component]
+    ./app/(dashboard)/hire/orders/[contractId]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/orders/RefundRequestForm.tsx [Client Component SSR]
+    ./components/orders/ResolutionActionChooser.tsx [Client Component SSR]
+    ./components/orders/ExecutionReviewPanel.tsx [Client Component SSR]
+    ./components/orders/ServiceOrderWorkflow.tsx [Client Component SSR]
+    ./components/hire/ClientOrderWorkflowPage.tsx [Client Component SSR]
+    ./components/hire/ClientOrderWorkflowPage.tsx [Server Component]
+    ./app/(dashboard)/hire/orders/[contractId]/page.tsx [Server Component]
+
+
+./components/orders/RefundSettlementBreakdown.tsx:51:14
+the name `formatVnd` is defined multiple times
+  [90m49 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mRefundSettlementBreakdown[0m(props: 
+[33mRefundSettlementBreakdownProps[0m) {
+  [90m50 |[0m   [36mconst[0m formatVnd = formatVndUi;
+[31m[1m>[0m [90m51 |[0m   [36mconst[0m { t, formatVnd } = useTranslation();
+  [90m   |[0m              [31m[1m^^^^^^^^^[0m
+  [90m52 |[0m
+  [90m53 |[0m   [36mconst[0m { audience = [32m"client"[0m, compact = [36mfalse[0m } = props;
+  [90m54 |[0m
+
+Ecmascript file had an error
+
+Import traces:
+  Client Component Browser:
+    ./components/orders/RefundSettlementBreakdown.tsx [Client Component Browser]
+    ./components/admin/AdminRefundsPage.tsx [Client Component Browser]
+    ./components/admin/AdminRefundsPage.tsx [Server Component]
+    ./app/admin/hoan-tien/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/orders/RefundSettlementBreakdown.tsx [Client Component SSR]
+    ./components/admin/AdminRefundsPage.tsx [Client Component SSR]
+    ./components/admin/AdminRefundsPage.tsx [Server Component]
+    ./app/admin/hoan-tien/page.tsx [Server Component]
+
+
+./components/payments/FreelancerWithdrawModal.tsx:58:14
+the name `formatVnd` is defined multiple times
+  [90m56 |[0m }: [33mFreelancerWithdrawModalProps[0m) {
+  [90m57 |[0m   [36mconst[0m formatVnd = formatVndUi;
+[31m[1m>[0m [90m58 |[0m   [36mconst[0m { t, formatVnd } = useTranslation();
+  [90m   |[0m              [31m[1m^^^^^^^^^[0m
+  [90m59 |[0m
+  [90m60 |[0m   [36mconst[0m [step, setStep] = useState<[33mStep[0m>([32m"amount"[0m);
+  [90m61 |[0m   [36mconst[0m [amountDigits, setAmountDigits] = 
+useState([33mString[0m([33mWITHDRAW_AMOUNT_PRESETS[0m[[35m1[0m]));
+
+Ecmascript file had an error
+
+Import traces:
+  Client Component Browser:
+    ./components/payments/FreelancerWithdrawModal.tsx [Client Component Browser]
+    ./components/payments/FreelancerPaymentsPage.tsx [Client Component Browser]
+    ./components/payments/PaymentsRouter.tsx [Client Component Browser]
+    ./components/payments/PaymentsRouter.tsx [Server Component]
+    ./app/(dashboard)/payments/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/payments/FreelancerWithdrawModal.tsx [Client Component SSR]
+    ./components/payments/FreelancerPaymentsPage.tsx [Client Component SSR]
+    ./components/payments/PaymentsRouter.tsx [Client Component SSR]
+    ./components/payments/PaymentsRouter.tsx [Server Component]
+    ./app/(dashboard)/payments/page.tsx [Server Component]
+
+
+./components/profile/MyProfileContent.tsx:115:14
+the name `formatVnd` is defined multiple times
+  [90m113 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mMyProfileContent[0m() {
+  [90m114 |[0m   [36mconst[0m formatVnd = formatVndUi;
+[31m[1m>[0m [90m115 |[0m   [36mconst[0m { t, formatVnd } = useTranslation();
+  [90m    |[0m              [31m[1m^^^^^^^^^[0m
+  [90m116 |[0m   [36mconst[0m router = useRouter();
+  [90m117 |[0m   [36mconst[0m searchParams = useSearchParams();
+  [90m118 |[0m   [36mconst[0m avatarInputRef = useRef<[33mHTMLInputElement[0m>([36mnull[0m);
+
+Ecmascript file had an error
+
+Import traces:
+  Client Component Browser:
+    ./components/profile/MyProfileContent.tsx [Client Component Browser]
+    ./components/profile/ProfilePageContent.tsx [Client Component Browser]
+    ./components/profile/ProfilePageContent.tsx [Server Component]
+    ./app/(dashboard)/(account)/ho-so/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/profile/MyProfileContent.tsx [Client Component SSR]
+    ./components/profile/ProfilePageContent.tsx [Client Component SSR]
+    ./components/profile/ProfilePageContent.tsx [Server Component]
+    ./app/(dashboard)/(account)/ho-so/page.tsx [Server Component]
+
+
+    at <unknown> (./components/account/identity-verification/CreditCardVerifyPanel.tsx:72:14)
+    at <unknown> (./components/admin/AdminDisputeResolvePanel.tsx:57:14)
+    at <unknown> (./components/dashboard/ClientDashboard.tsx:199:14)
+    at <unknown> (./components/dashboard/FreelancerDashboard.tsx:386:14)
+    at <unknown> (./components/findwork/JobProposalFormModal.tsx:58:14)
+    at <unknown> (./components/orders/RefundRequestForm.tsx:29:14)
+    at <unknown> (./components/orders/RefundSettlementBreakdown.tsx:51:14)
+    at <unknown> (./components/payments/FreelancerWithdrawModal.tsx:58:14)
+    at <unknown> (./components/profile/MyProfileContent.tsx:115:14)

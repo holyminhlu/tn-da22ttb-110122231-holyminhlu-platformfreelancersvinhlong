@@ -23,19 +23,19 @@ export function displayMembershipBadges(badges: string[]): string[] {
 }
 
 export function formatYearlyEarnings(amount: string | number | null | undefined): string {
-  const formatted = formatVnd(amount);
+  const formatted = formatVndUi(amount);
   if (formatted === "—") return "—";
   return `${formatted} /năm`;
 }
 
 export function formatHourlyRate(amount: string | number | null | undefined): string | null {
-  const formatted = formatVnd(amount);
+  const formatted = formatVndUi(amount);
   if (formatted === "—") return null;
   return `${formatted}/giờ`;
 }
 
 export function formatStartingPrice(amount: string | number | null | undefined): string | null {
-  const formatted = formatVnd(amount);
+  const formatted = formatVndUi(amount);
   if (formatted === "—") return null;
   return `Từ ${formatted}`;
 }

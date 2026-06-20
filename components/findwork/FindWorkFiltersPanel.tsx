@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "@/hooks/useTranslation";
 import type { FindWorkQueryState } from "./FindWorkToolbar";
 
 type FindWorkFiltersPanelProps = {
@@ -13,14 +14,16 @@ export default function FindWorkFiltersPanel({
   onQueryChange,
   onClear,
 }: FindWorkFiltersPanelProps) {
+  const { t } = useTranslation();
+
   return (
-    <div className="fw-filters-panel" role="region" aria-label="Bộ lọc nâng cao">
+    <div className="fw-filters-panel" role="region" aria-label={t("Bộ lọc nâng cao")}>
       <div className="fw-filters-panel__grid">
         <label className="fw-filters-panel__field">
-          <span className="fw-filters-panel__label">Địa điểm</span>
+          <span className="fw-filters-panel__label">{t("Địa điểm")}</span>
           <input
             type="text"
-            placeholder="Vĩnh Long, quận/huyện..."
+            placeholder={t("Vĩnh Long, quận/huyện...")}
             value={query.location}
             onChange={(e) => onQueryChange({ location: e.target.value })}
             className="fw-filters-panel__input"
@@ -28,7 +31,7 @@ export default function FindWorkFiltersPanel({
         </label>
 
         <label className="fw-filters-panel__field">
-          <span className="fw-filters-panel__label">Ngân sách tối thiểu (VND)</span>
+          <span className="fw-filters-panel__label">{t("Ngân sách tối thiểu (VND)")}</span>
           <input
             type="number"
             min={0}
@@ -41,7 +44,7 @@ export default function FindWorkFiltersPanel({
         </label>
 
         <label className="fw-filters-panel__field">
-          <span className="fw-filters-panel__label">Ngân sách tối đa (VND)</span>
+          <span className="fw-filters-panel__label">{t("Ngân sách tối đa (VND)")}</span>
           <input
             type="number"
             min={0}
@@ -60,7 +63,7 @@ export default function FindWorkFiltersPanel({
               checked={query.hasDue}
               onChange={(e) => onQueryChange({ hasDue: e.target.checked })}
             />
-            <span>Chỉ việc có hạn nộp đơn</span>
+            <span>{t("Chỉ việc có hạn nộp đơn")}</span>
           </label>
         </div>
       </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "@/hooks/useTranslation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { GeoPoint } from "@/lib/geo/jobLocation";
 import {
@@ -36,6 +37,8 @@ export default function GoogleMapRoutePanel({
   className,
   mapHeight = 220,
 }: GoogleMapRoutePanelProps) {
+  const { t } = useTranslation();
+
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<google.maps.Map | null>(null);
   const rendererRef = useRef<google.maps.DirectionsRenderer | null>(null);

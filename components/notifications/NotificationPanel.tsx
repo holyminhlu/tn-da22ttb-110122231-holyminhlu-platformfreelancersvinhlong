@@ -1,5 +1,7 @@
 "use client";
 
+import { tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FaSearch, FaTimes } from "react-icons/fa";
@@ -76,6 +78,8 @@ export default function NotificationPanel({
   onDelete,
   onDeleteRead,
 }: NotificationPanelProps) {
+  const { t } = useTranslation();
+
   const router = useRouter();
   const { user } = useStoredUser({ refreshFromApi: false });
   const viewerRole = (() => {
@@ -139,6 +143,7 @@ export default function NotificationPanel({
   }, [page, totalPages]);
 
   async function handleItemClick(notification: AppNotification) {
+  const t = tUi;
     if (!notification.readAt) {
       await onMarkRead(notification.id);
     }
@@ -150,7 +155,8 @@ export default function NotificationPanel({
   }
 
   async function handleDelete(notificationId: string) {
-    await onDelete(notificationId);
+  const t = tUi;
+  await onDelete(notificationId);
     if (notifications.length <= 1 && page > 1) {
       setPage((p) => p - 1);
       return;
@@ -162,13 +168,13 @@ export default function NotificationPanel({
     <div
       id={panelId}
       role="dialog"
-      aria-label="Thông báo"
+      aria-label={t("Thông báo")}
       className="notif-panel"
       onClick={(e) => e.stopPropagation()}
     >
       <div className="notif-panel__header">
         <div>
-          <h2 className="notif-panel__title">Thông báo</h2>
+          <h2 className="notif-panel__title">{t("Thông báo")}</h2>
           {unreadCount > 0 ? (
             <p className="notif-panel__subtitle">{unreadCount} chưa đọc</p>
           ) : null}
@@ -176,7 +182,7 @@ export default function NotificationPanel({
         <button
           type="button"
           className="notif-panel__close"
-          aria-label="Đóng"
+          aria-label={t("Đóng")}
           onClick={onClose}
         >
           <FaTimes aria-hidden />
@@ -189,13 +195,13 @@ export default function NotificationPanel({
           <input
             type="search"
             className="notif-panel__search"
-            placeholder="Tìm kiếm thông báo..."
+            placeholder={t("Tìm kiếm thông báo...")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            aria-label="Tìm kiếm thông báo"
+            aria-label={t("Tìm kiếm thông báo")}
           />
         </div>
-        <div className="notif-panel__filters" role="group" aria-label="Lọc theo loại">
+        <div className="notif-panel__filters" role="group" aria-label={t("Lọc theo loại")}>
           {CATEGORY_OPTIONS.map((opt) => (
             <button
               key={opt.id}
@@ -203,11 +209,11 @@ export default function NotificationPanel({
               className={`notif-panel__chip ${category === opt.id ? "notif-panel__chip--active" : ""}`}
               onClick={() => setCategory(opt.id)}
             >
-              {opt.label}
+              {t(opt.label)}
             </button>
           ))}
         </div>
-        <div className="notif-panel__filters" role="group" aria-label="Lọc theo trạng thái đọc">
+        <div className="notif-panel__filters" role="group" aria-label={t("Lọc theo trạng thái đọc")}>
           {READ_OPTIONS.map((opt) => (
             <button
               key={opt.id}
@@ -215,7 +221,7 @@ export default function NotificationPanel({
               className={`notif-panel__chip ${readFilter === opt.id ? "notif-panel__chip--active" : ""}`}
               onClick={() => setReadFilter(opt.id)}
             >
-              {opt.label}
+              {t(opt.label)}
             </button>
           ))}
         </div>
@@ -228,25 +234,25 @@ export default function NotificationPanel({
           disabled={unreadCount === 0}
           onClick={() => void onMarkAllRead()}
         >
-          Đọc tất cả
+          {t("Đọc tất cả")}
         </button>
         <button
           type="button"
           className="notif-panel__action-btn"
           onClick={() => void onDeleteRead()}
         >
-          Xóa đã đọc
+          {t("Xóa đã đọc")}
         </button>
         <span className="notif-panel__count">{total} kết quả</span>
       </div>
 
       <div className="notif-panel__list" aria-live="polite">
         {loading && notifications.length === 0 ? (
-          <p className="notif-panel__empty">Đang tải...</p>
+          <p className="notif-panel__empty">{t("Đang tải...")}</p>
         ) : error ? (
           <p className="notif-panel__empty notif-panel__empty--error">{error}</p>
         ) : notifications.length === 0 ? (
-          <p className="notif-panel__empty">Không có thông báo nào.</p>
+          <p className="notif-panel__empty">{t("Không có thông báo nào.")}</p>
         ) : (
           notifications.map((notification) => {
             const meta = getNotificationCategoryMeta(notification.category);
@@ -268,9 +274,9 @@ export default function NotificationPanel({
                   onClick={() => void handleItemClick(notification)}
                 >
                   <div className="notif-item__head">
-                    <p className="notif-item__title">{notification.title}</p>
+                    <p className="notif-item__title">{t(notification.title)}</p>
                     <span className={`notif-item__tag notif-item__tag--${meta.tone}`}>
-                      {meta.label}
+                      {t(meta.label)}
                     </span>
                   </div>
                   <p className="notif-item__text">{notification.body}</p>
@@ -279,7 +285,7 @@ export default function NotificationPanel({
                 <button
                   type="button"
                   className="notif-item__delete"
-                  aria-label="Xóa thông báo"
+                  aria-label={t("Xóa thông báo")}
                   onClick={() => void handleDelete(notification.id)}
                 >
                   <FaTimes aria-hidden className="notif-item__delete-icon" />

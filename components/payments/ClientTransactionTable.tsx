@@ -1,10 +1,11 @@
 "use client";
 
+import { formatDateUi, tUi, formatVndUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { useState } from "react";
 import { FaChevronDown, FaFileDownload } from "react-icons/fa";
 import { transactionCategoryLabel } from "@/lib/api/payments";
-import { formatDate, formatVnd } from "@/lib/format";
 import {
   downloadInvoiceReceipt,
   type ClientBillingRow,
@@ -33,14 +34,16 @@ function ProjectCell({ title, jobId }: { title: string; jobId: string | null }) 
 }
 
 function AmountCell({ amount }: { amount: number }) {
+  const formatVnd = formatVndUi;
   return (
     <td className={`payments-table__col--amount ${amount < 0 ? "payments-neg" : "payments-pos"}`}>
-      {formatVnd(amount)}
+      {formatVndUi(amount)}
     </td>
   );
 }
 
 function InvoiceCell({ invoiceNumber, tx }: { invoiceNumber: string | null; tx: ClientBillingRow["tx"] }) {
+  const t = tUi;
   if (!invoiceNumber) {
     return <td className="payments-table__col--invoice">—</td>;
   }
@@ -61,20 +64,23 @@ function InvoiceCell({ invoiceNumber, tx }: { invoiceNumber: string | null; tx: 
 }
 
 function GroupRow({ row }: { row: Extract<ClientBillingRow, { type: "group" }> }) {
+  const t = tUi;
+  const formatDate = formatDateUi;
+  const formatVnd = formatVndUi;
   const [open, setOpen] = useState(false);
   const { tx, children, combinedCategory } = row;
 
   return (
     <>
       <tr className="payments-table__row payments-table__row--group">
-        <td className="payments-table__col--date">{formatDate(tx.occurredAt)}</td>
+        <td className="payments-table__col--date">{formatDateUi(tx.occurredAt)}</td>
         <td className="payments-table__project">
           <div className="payments-table__project-line">
             <button
               type="button"
               className={`payments-table__expand${open ? " payments-table__expand--open" : ""}`}
               aria-expanded={open}
-              aria-label={open ? "Thu gọn chi tiết giao dịch" : "Xem chi tiết giao dịch"}
+              aria-label={open ? tUi("Thu gọn chi tiết giao dịch") : tUi("Xem chi tiết giao dịch")}
               onClick={() => setOpen((prev) => !prev)}
             >
               <FaChevronDown aria-hidden />
@@ -94,7 +100,7 @@ function GroupRow({ row }: { row: Extract<ClientBillingRow, { type: "group" }> }
       {open
         ? children.map((child) => (
             <tr key={child.id} className="payments-table__row payments-table__row--child">
-              <td className="payments-table__col--date">{formatDate(child.occurredAt)}</td>
+              <td className="payments-table__col--date">{formatDateUi(child.occurredAt)}</td>
               <td className="payments-table__col--child" colSpan={3}>
                 <span className="payments-table__child-step">
                   ↳ {transactionCategoryLabel(child.category)}
@@ -103,7 +109,7 @@ function GroupRow({ row }: { row: Extract<ClientBillingRow, { type: "group" }> }
               <td
                 className={`payments-table__col--amount payments-table__col--child ${child.amount < 0 ? "payments-neg" : "payments-pos"}`}
               >
-                {formatVnd(child.amount)}
+                {formatVndUi(child.amount)}
               </td>
               <td className="payments-table__col--invoice">—</td>
             </tr>
@@ -113,18 +119,21 @@ function GroupRow({ row }: { row: Extract<ClientBillingRow, { type: "group" }> }
   );
 }
 
-export default function ClientTransactionTable({ rows }: ClientTransactionTableProps) {
+export default function ClientTransactionTable({
+  rows }: ClientTransactionTableProps) {
+  const t = tUi;
+  const formatDate = formatDateUi;
   return (
     <div className="payments-table-wrap">
       <table className="payments-table payments-table--client">
         <thead>
           <tr>
-            <th className="payments-table__col--date">Ngày</th>
-            <th>Dự án / mô tả</th>
+            <th className="payments-table__col--date">{t("Ngày")}</th>
+            <th>{t("Dự án / mô tả")}</th>
             <th>Freelancer</th>
-            <th>Loại</th>
-            <th className="payments-table__col--amount">Số tiền</th>
-            <th className="payments-table__col--invoice">Hóa đơn</th>
+            <th>{t("Loại")}</th>
+            <th className="payments-table__col--amount">{t("Số tiền")}</th>
+            <th className="payments-table__col--invoice">{t("Hóa đơn")}</th>
           </tr>
         </thead>
         <tbody>
@@ -133,7 +142,7 @@ export default function ClientTransactionTable({ rows }: ClientTransactionTableP
               <GroupRow key={row.id} row={row} />
             ) : (
               <tr key={row.tx.id} className="payments-table__row">
-                <td className="payments-table__col--date">{formatDate(row.tx.occurredAt)}</td>
+                <td className="payments-table__col--date">{formatDateUi(row.tx.occurredAt)}</td>
                 <td className="payments-table__project">
                   <ProjectCell title={row.tx.projectTitle} jobId={row.tx.jobId} />
                 </td>

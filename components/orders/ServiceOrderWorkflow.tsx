@@ -1,5 +1,7 @@
 "use client";
 
+import { formatDateUi, tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -11,7 +13,6 @@ import {
   type ContractWorkflowResponse,
 } from "@/lib/api/contracts";
 import { formatPackagePrice } from "@/lib/hire/servicePackages";
-import { formatDate } from "@/lib/format";
 import { useClientIdentityVerification } from "@/hooks/useClientIdentityVerification";
 import EscrowFundPanel from "./EscrowFundPanel";
 import CompletionReviewPanel from "./CompletionReviewPanel";
@@ -33,39 +34,38 @@ type ServiceOrderWorkflowProps = {
 const STAGES = [
   {
     id: "selection",
-    label: "Giai đoạn 1",
-    title: "Tiếp cận & Chốt thỏa thuận",
-    clientHint:
-      "Chờ freelancer gửi đề xuất (proposal). Trao đổi qua chat/call để làm rõ yêu cầu, sau đó chấp nhận đề xuất.",
-    freelancerHint: "Gửi đề xuất kỹ thuật, tiến độ và ngân sách cho Client.",
+    label: tUi("Giai đoạn 1"),
+    title: tUi("Tiếp cận & Chốt thỏa thuận"),
+    clientHint: tUi("Chờ freelancer gửi đề xuất (proposal). Trao đổi qua chat/call để làm rõ yêu cầu, sau đó chấp nhận đề xuất."),
+    freelancerHint: tUi("Gửi đề xuất kỹ thuật, tiến độ và ngân sách cho Client."),
   },
   {
     id: "escrow",
-    label: "Giai đoạn 2",
-    title: "Khởi tạo hợp đồng & Ký quỹ",
-    clientHint: "Nạp tiền Escrow vào sàn. Freelancer chỉ bắt đầu khi trạng thái Funded.",
-    freelancerHint: "Chờ Client nạp ký quỹ. Khi Funded bạn có thể bắt đầu làm việc.",
+    label: tUi("Giai đoạn 2"),
+    title: tUi("Khởi tạo hợp đồng & Ký quỹ"),
+    clientHint: tUi("Nạp tiền Escrow vào sàn. Freelancer chỉ bắt đầu khi trạng thái Funded."),
+    freelancerHint: tUi("Chờ Client nạp ký quỹ. Khi Funded bạn có thể bắt đầu làm việc."),
   },
   {
     id: "execution",
-    label: "Giai đoạn 3",
-    title: "Thực hiện & Kiểm tra",
-    clientHint: "Theo dõi tiến độ, xem demo staging, yêu cầu chỉnh sửa trong giới hạn gói.",
-    freelancerHint: "Cập nhật tiến độ, gửi link demo. Điều chỉnh theo phản hồi Client.",
+    label: tUi("Giai đoạn 3"),
+    title: tUi("Thực hiện & Kiểm tra"),
+    clientHint: tUi("Theo dõi tiến độ, xem demo staging, yêu cầu chỉnh sửa trong giới hạn gói."),
+    freelancerHint: tUi("Cập nhật tiến độ, gửi link demo. Điều chỉnh theo phản hồi Client."),
   },
   {
     id: "delivery",
-    label: "Giai đoạn 4",
-    title: "Bàn giao & Nghiệm thu",
-    clientHint: "Kiểm tra sản phẩm cuối, báo lỗi nếu có, sau đó nghiệm thu.",
-    freelancerHint: "Đóng gói bàn giao (mã nguồn, tài liệu, triển khai) và gửi cho Client.",
+    label: tUi("Giai đoạn 4"),
+    title: tUi("Bàn giao & Nghiệm thu"),
+    clientHint: tUi("Kiểm tra sản phẩm cuối, báo lỗi nếu có, sau đó nghiệm thu."),
+    freelancerHint: tUi("Đóng gói bàn giao (mã nguồn, tài liệu, triển khai) và gửi cho Client."),
   },
   {
     id: "completion",
-    label: "Giai đoạn 5",
-    title: "Kết thúc & Đánh giá",
-    clientHint: "Giải ngân cho Freelancer và để lại đánh giá công khai.",
-    freelancerHint: "Chờ Client giải ngân và đánh giá.",
+    label: tUi("Giai đoạn 5"),
+    title: tUi("Kết thúc & Đánh giá"),
+    clientHint: tUi("Giải ngân cho Freelancer và để lại đánh giá công khai."),
+    freelancerHint: tUi("Chờ Client giải ngân và đánh giá."),
   },
 ] as const;
 
@@ -89,7 +89,9 @@ function workflowDisplayStageIndex(
   return stageIndex(workflowStage);
 }
 
-export default function ServiceOrderWorkflow({ backHref, backLabel }: ServiceOrderWorkflowProps) {
+export default function ServiceOrderWorkflow({
+  backHref, backLabel }: ServiceOrderWorkflowProps) {  const { t, formatDate } = useTranslation();
+
   const params = useParams();
   const contractId = String(params?.contractId ?? "");
   const { verified: identityVerified, loading: identityLoading } = useClientIdentityVerification({
@@ -105,7 +107,7 @@ export default function ServiceOrderWorkflow({ backHref, backLabel }: ServiceOrd
 
   const load = useCallback(async () => {
     if (!contractId) {
-      setError("Mã đơn hàng không hợp lệ.");
+      setError(t("Mã đơn hàng không hợp lệ."));
       setLoading(false);
       return;
     }
@@ -167,7 +169,7 @@ export default function ServiceOrderWorkflow({ backHref, backLabel }: ServiceOrd
   if (loading) {
     return (
       <div className="hire-page hire-order hire-order--full-width">
-        <p className="hire-page__state">Đang tải tiến trình đơn hàng...</p>
+        <p className="hire-page__state">{t("Đang tải tiến trình đơn hàng...")}</p>
       </div>
     );
   }
@@ -179,7 +181,7 @@ export default function ServiceOrderWorkflow({ backHref, backLabel }: ServiceOrd
           <FaArrowLeft aria-hidden /> {backLabel}
         </Link>
         <p className="hire-page__state hire-page__state--error" role="alert">
-          {error || "Không tìm thấy đơn hàng."}
+          {error || t("Không tìm thấy đơn hàng.")}
         </p>
       </div>
     );
@@ -198,6 +200,8 @@ export default function ServiceOrderWorkflow({ backHref, backLabel }: ServiceOrd
   });
 
   function confirmCancelOrder() {
+  const t = tUi;
+  const formatDate = formatDateUi;
     const reason = window.prompt("Lý do hủy đơn (tùy chọn):", "") ?? "";
     void runAction({ action: "cancel_order", reason });
   }
@@ -209,7 +213,7 @@ export default function ServiceOrderWorkflow({ backHref, backLabel }: ServiceOrd
           <FaArrowLeft aria-hidden /> {backLabel}
         </Link>
         <div className="hire-sla-banner hire-sla-banner--info" role="status">
-          <strong>Đơn đang trong tranh chấp</strong>
+          <strong>{t("Đơn đang trong tranh chấp")}</strong>
           <span>
             Workflow tạm dừng. C và F cần nộp bằng chứng tại Trung tâm giải quyết; Admin sẽ phán
             quyết chia tiền từ ký quỹ. Không thể tiếp tục công việc cho đến khi có quyết định.
@@ -217,7 +221,7 @@ export default function ServiceOrderWorkflow({ backHref, backLabel }: ServiceOrd
         </div>
         <div className="hire-order__disputed-summary">
           <p>
-            <strong>{contract.service_title || contract.job_title || "Đơn hàng"}</strong>
+            <strong>{contract.service_title || contract.job_title || t("Đơn hàng")}</strong>
           </p>
           <p>
             Giai đoạn lúc mở tranh chấp: {stageMeta.title} · Ký quỹ: {escrowLabel}
@@ -238,7 +242,7 @@ export default function ServiceOrderWorkflow({ backHref, backLabel }: ServiceOrd
         </Link>
         <div className="hire-sla-banner hire-sla-banner--warn" role="alert">
           <strong>Đơn đã kết thúc: {cancelTypeLabel(contract.cancel_type)}</strong>
-          <span>{contract.cancel_reason || "Không thể tiếp tục workflow."}</span>
+          <span>{contract.cancel_reason || t("Không thể tiếp tục workflow.")}</span>
         </div>
       </div>
     );
@@ -254,11 +258,11 @@ export default function ServiceOrderWorkflow({ backHref, backLabel }: ServiceOrd
           className={`hire-order__status-banner hire-order__status-banner--${contract.escrow_status === "funded" || contract.escrow_status === "released" ? "success" : "info"}`}
         >
           Ký quỹ: <strong>{escrowLabel}</strong>
-          {contract.funded_at ? ` · Nạp lúc ${formatDate(contract.funded_at)}` : ""}
-          {contract.released_at ? ` · Giải ngân ${formatDate(contract.released_at)}` : ""}
+          {contract.funded_at ? ` · Nạp lúc ${formatDateUi(contract.funded_at)}` : ""}
+          {contract.released_at ? ` · Giải ngân ${formatDateUi(contract.released_at)}` : ""}
         </div>
 
-        <nav className="hire-order__stepper" aria-label="Tiến trình đặt dịch vụ">
+        <nav className="hire-order__stepper" aria-label={t("Tiến trình đặt dịch vụ")}>
           {STAGES.map((stage, idx) => (
             <div
               key={stage.id}
@@ -440,14 +444,14 @@ export default function ServiceOrderWorkflow({ backHref, backLabel }: ServiceOrd
 
           {contract.client_brief ? (
             <>
-              <h3 className="hire-quote__section-title">Yêu cầu ban đầu của Client</h3>
+              <h3 className="hire-quote__section-title">{t("Yêu cầu ban đầu của Client")}</h3>
               <div className="hire-order__info-box">{contract.client_brief}</div>
             </>
           ) : null}
 
           {hasProposal && workflowStage !== "selection" ? (
             <>
-              <h3 className="hire-quote__section-title">Đề xuất từ Freelancer</h3>
+              <h3 className="hire-quote__section-title">{t("Đề xuất từ Freelancer")}</h3>
               <div className="hire-order__info-box">{contract.proposal_text}</div>
               {contract.proposal_budget != null ? (
                 <p className="hire-order__panel-desc">
@@ -460,7 +464,7 @@ export default function ServiceOrderWorkflow({ backHref, backLabel }: ServiceOrd
 
           {data.milestones.length > 0 ? (
             <>
-              <h3 className="hire-quote__section-title">Cột mốc (Milestones)</h3>
+              <h3 className="hire-quote__section-title">{t("Cột mốc (Milestones)")}</h3>
               <ul className="hire-order__milestones">
                 {data.milestones.map((m) => (
                   <li key={m.id} className="hire-order__milestone">

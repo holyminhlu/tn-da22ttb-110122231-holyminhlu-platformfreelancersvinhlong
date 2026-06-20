@@ -1,5 +1,7 @@
 "use client";
 
+import { formatDateUi, tUi, formatVndUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { FaRedo, FaSearch } from "react-icons/fa";
@@ -10,7 +12,6 @@ import {
   type AdminRefundRow,
   type AdminRefundStatusFilter,
 } from "@/lib/api/admin";
-import { formatDate, formatVnd } from "@/lib/format";
 import { formatDeadlineCountdown } from "@/lib/orders/workflowSlaDisplay";
 import {
   REFUND_PROGRESS_STEPS,
@@ -39,7 +40,7 @@ function isOverdue(row: AdminRefundRow) {
   return new Date(row.respond_by_at).getTime() < Date.now();
 }
 
-export default function AdminRefundsPage() {
+export default function AdminRefundsPage() {  const { t, formatVnd, formatDate } = useTranslation();
   const searchParams = useSearchParams();
   const initialRequestId = searchParams.get("request");
 
@@ -124,9 +125,12 @@ export default function AdminRefundsPage() {
   }, [selectedId, loadDetail]);
 
   async function handleResolve(resolution: "approve" | "reject") {
+  const t = tUi;
+  const formatDate = formatDateUi;
+  const formatVnd = formatVndUi;
     if (!selectedId) return;
     const label = resolution === "approve" ? "Duyệt hoàn tiền cho client" : "Từ chối yêu cầu";
-    if (!window.confirm(`Xác nhận: ${label}?`)) return;
+    if (!window.confirm(`${t("Xác nhận: ")}${label}?`)) return;
 
     setResolveBusy(true);
     setActionError("");
@@ -176,10 +180,9 @@ export default function AdminRefundsPage() {
   return (
     <div className="admin-page admin-refunds-page">
       <header className="admin-page__head admin-refunds-page__head">
-        <h1 className="admin-page__title">Quản lý hoàn tiền</h1>
+        <h1 className="admin-page__title">{t("Quản lý hoàn tiền")}</h1>
         <p className="admin-page__lead">
-          Xem xét yêu cầu hủy &amp; hoàn tiền, phân loại chính đáng / hủy ngang và duyệt phân bổ
-          Client — Freelancer (hoàn về ví VLC).
+          {t("Xem xét yêu cầu hủy & hoàn tiền, phân loại chính đáng / hủy ngang và duyệt phân bổ Client — Freelancer (hoàn về ví VLC).")}
         </p>
       </header>
 
@@ -188,20 +191,20 @@ export default function AdminRefundsPage() {
           className={`admin-toast admin-toast--${toast.type === "ok" ? "ok" : "err"}`}
           role="status"
         >
-          {toast.message}
+          {t(toast.message)}
         </p>
       ) : null}
 
-      <div className="admin-refunds-toolbar" aria-label="Bộ lọc hoàn tiền">
+      <div className="admin-refunds-toolbar" aria-label={t("Bộ lọc hoàn tiền")}>
         <button
           type="button"
           className="admin-btn admin-btn--ghost admin-refunds-toolbar__refresh"
           onClick={() => void load()}
         >
-          <FaRedo aria-hidden /> Làm mới
+          <FaRedo aria-hidden /> {t("Làm mới")}
         </button>
 
-        <div className="admin-tabs admin-tabs--inline" role="tablist" aria-label="Trạng thái">
+        <div className="admin-tabs admin-tabs--inline" role="tablist" aria-label={t("Trạng thái")}>
           {STATUS_TABS.map((tab) => (
             <button
               key={tab.id}
@@ -211,22 +214,22 @@ export default function AdminRefundsPage() {
               className={`admin-tab${statusTab === tab.id ? " admin-tab--active" : ""}`}
               onClick={() => setStatusTab(tab.id)}
             >
-              {tab.label}
+              {t(tab.label)}
             </button>
           ))}
         </div>
 
         <label className="admin-refunds-toolbar__field admin-refunds-toolbar__field--search">
-          <span className="admin-filters__label">Tìm kiếm</span>
+          <span className="admin-filters__label">{t("Tìm kiếm")}</span>
           <div className="admin-filters__search-wrap">
             <FaSearch className="admin-filters__search-icon" aria-hidden />
             <input
               type="search"
               className="admin-filters__input"
-              placeholder="Đơn, client, freelancer..."
+              placeholder={t("Đơn, client, freelancer...")}
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              aria-label="Tìm theo đơn, client, freelancer"
+              aria-label={t("Tìm theo đơn, client, freelancer")}
             />
           </div>
         </label>
@@ -237,14 +240,14 @@ export default function AdminRefundsPage() {
       </div>
 
       {loading ? (
-        <p className="admin-page__state admin-refunds-page__state">Đang tải danh sách hoàn tiền...</p>
+        <p className="admin-page__state admin-refunds-page__state">{t("Đang tải danh sách hoàn tiền...")}</p>
       ) : !rows.length ? (
         <div className="admin-empty admin-refunds-page__state">
-          <p>Không có yêu cầu hoàn tiền phù hợp bộ lọc.</p>
+          <p>{t("Không có yêu cầu hoàn tiền phù hợp bộ lọc.")}</p>
         </div>
       ) : (
         <div className="admin-refunds-split">
-          <aside className="admin-refunds-list" aria-label="Danh sách hoàn tiền">
+          <aside className="admin-refunds-list" aria-label={t("Danh sách hoàn tiền")}>
             <ul className="resolution-list resolution-list--compact admin-refunds-list__inner">
               {rows.map((row) => (
                 <li key={row.id}>
@@ -255,7 +258,7 @@ export default function AdminRefundsPage() {
                   >
                     <h3 className="resolution-card__title">{orderTitle(row)}</h3>
                     <p className="resolution-card__meta">
-                      {formatDate(row.created_at)} · {formatVnd(row.agreed_price)}
+                      {formatDateUi(row.created_at)} · {formatVndUi(row.agreed_price)}
                     </p>
                     <p className="resolution-card__meta">
                       {row.client_name} ↔ {row.freelancer_name}
@@ -282,7 +285,7 @@ export default function AdminRefundsPage() {
                     Freelancer: <strong>{selected.freelancer_name}</strong> ({selected.freelancer_email})
                   </p>
                   <p className="resolution-card__meta">
-                    Số tiền: {formatVnd(selected.agreed_price)} · Ký quỹ:{" "}
+                    Số tiền: {formatVndUi(selected.agreed_price)} · Ký quỹ:{" "}
                     {selected.escrow_status || "—"} · Giai đoạn: {selected.workflow_stage || "—"}
                   </p>
 
@@ -295,7 +298,7 @@ export default function AdminRefundsPage() {
 
                   <dl className="resolution-card__details admin-refund-case__details">
                     <div>
-                      <dt>Lý do từ client</dt>
+                      <dt>{t("Lý do từ client")}</dt>
                       <dd>
                         {selected.reason_code
                           ? refundReasonLabel(selected.reason_code)
@@ -304,31 +307,31 @@ export default function AdminRefundsPage() {
                       </dd>
                     </div>
                     <div>
-                      <dt>Hoàn về</dt>
-                      <dd>Ví VLC</dd>
+                      <dt>{t("Hoàn về")}</dt>
+                      <dd>{t("Ví VLC")}</dd>
                     </div>
                     {selected.legitimacy ? (
                       <div>
-                        <dt>Phân loại hệ thống</dt>
+                        <dt>{t("Phân loại hệ thống")}</dt>
                         <dd>{legitimacyLabel(selected.legitimacy as "legitimate" | "unjustified" | "needs_review")}</dd>
                       </div>
                     ) : null}
                     <div>
-                      <dt>Giai đoạn khi gửi</dt>
+                      <dt>{t("Giai đoạn khi gửi")}</dt>
                       <dd>
                         {selected.workflow_stage_at_request || selected.workflow_stage || "—"}
                         {selected.had_progress_at_request ? " · đã có tiến độ" : " · chưa có tiến độ"}
                       </dd>
                     </div>
                     <div>
-                      <dt>Gửi lúc</dt>
-                      <dd>{formatDate(selected.created_at)}</dd>
+                      <dt>{t("Gửi lúc")}</dt>
+                      <dd>{formatDateUi(selected.created_at)}</dd>
                     </div>
                     {String(selected.status).toLowerCase() === "pending" ? (
                       <div>
-                        <dt>Hạn phản hồi FL</dt>
+                        <dt>{t("Hạn phản hồi FL")}</dt>
                         <dd>
-                          {formatDate(selected.respond_by_at)} · còn{" "}
+                          {formatDateUi(selected.respond_by_at)} · còn{" "}
                           {formatDeadlineCountdown(selected.respond_by_at) || "—"}
                           {isOverdue(selected) ? " (đã quá hạn — có thể can thiệp)" : ""}
                         </dd>
@@ -336,14 +339,14 @@ export default function AdminRefundsPage() {
                     ) : null}
                     {selected.freelancer_response ? (
                       <div>
-                        <dt>Phản hồi freelancer</dt>
+                        <dt>{t("Phản hồi freelancer")}</dt>
                         <dd>{selected.freelancer_response}</dd>
                       </div>
                     ) : null}
                     {selected.resolved_at ? (
                       <div>
-                        <dt>Xử lý lúc</dt>
-                        <dd>{formatDate(selected.resolved_at)}</dd>
+                        <dt>{t("Xử lý lúc")}</dt>
+                        <dd>{formatDateUi(selected.resolved_at)}</dd>
                       </div>
                     ) : null}
                   </dl>
@@ -365,11 +368,9 @@ export default function AdminRefundsPage() {
 
                 {String(selected.status).toLowerCase() === "pending" ? (
                   <div className="admin-resolve-panel">
-                    <h4 className="admin-resolve-panel__title">Quyết định phân bổ</h4>
+                    <h4 className="admin-resolve-panel__title">{t("Quyết định phân bổ")}</h4>
                     <p className="admin-resolve-panel__hint">
-                      Chọn mức chính đáng trước khi duyệt. Lý do &quot;khác&quot; mặc định chờ admin —
-                      có thể đánh dấu chính đáng (50/50 ở GĐ3) hoặc hủy ngang (phí phạt 10–25% + việc
-                      đã làm).
+                      {t("Chọn mức chính đáng trước khi duyệt. Lý do \"khác\" mặc định chờ admin — có thể đánh dấu chính đáng (50/50 ở GĐ3) hoặc hủy ngang (phí phạt 10–25% + việc đã làm).")}
                     </p>
                     {actionError ? (
                       <p className="admin-toast admin-toast--err" role="alert">
@@ -378,7 +379,7 @@ export default function AdminRefundsPage() {
                     ) : null}
                     <div className="admin-refund-resolve-fields">
                       <label className="admin-field">
-                        <span className="admin-field__label">Phân loại (khi duyệt)</span>
+                        <span className="admin-field__label">{t("Phân loại (khi duyệt)")}</span>
                         <select
                           className="admin-filters__select"
                           value={legitimacyChoice}
@@ -389,15 +390,15 @@ export default function AdminRefundsPage() {
                           }
                           disabled={resolveBusy}
                         >
-                          <option value="">Theo hệ thống / lý do</option>
-                          <option value="legitimate">Chính đáng</option>
-                          <option value="unjustified">Không chính đáng / hủy ngang</option>
+                          <option value="">{t("Theo hệ thống / lý do")}</option>
+                          <option value="legitimate">{t("Chính đáng")}</option>
+                          <option value="unjustified">{t("Không chính đáng / hủy ngang")}</option>
                         </select>
                       </label>
                       {legitimacyChoice === "unjustified" ||
                       selected.legitimacy === "unjustified" ? (
                         <label className="admin-field">
-                          <span className="admin-field__label">Phí phạt (% tổng giá trị)</span>
+                          <span className="admin-field__label">{t("Phí phạt (% tổng giá trị)")}</span>
                           <input
                             type="number"
                             className="admin-filters__input"
@@ -427,13 +428,13 @@ export default function AdminRefundsPage() {
                       />
                     ) : null}
                     <label className="admin-field">
-                      <span className="admin-field__label">Ghi chú (tùy chọn)</span>
+                      <span className="admin-field__label">{t("Ghi chú (tùy chọn)")}</span>
                       <textarea
                         className="admin-textarea"
                         rows={3}
                         value={adminNote}
                         onChange={(e) => setAdminNote(e.target.value)}
-                        placeholder="Lý do quyết định, hướng dẫn cho các bên..."
+                        placeholder={t("Lý do quyết định, hướng dẫn cho các bên...")}
                         disabled={resolveBusy}
                       />
                     </label>
@@ -444,7 +445,7 @@ export default function AdminRefundsPage() {
                         disabled={resolveBusy}
                         onClick={() => void handleResolve("approve")}
                       >
-                        Duyệt phân bổ
+                        {t("Duyệt phân bổ")}
                       </button>
                       <button
                         type="button"
@@ -452,23 +453,23 @@ export default function AdminRefundsPage() {
                         disabled={resolveBusy}
                         onClick={() => void handleResolve("reject")}
                       >
-                        Từ chối yêu cầu
+                        {t("Từ chối yêu cầu")}
                       </button>
                     </div>
                   </div>
                 ) : null}
 
                 {detailLoading ? (
-                  <p className="admin-page__state">Đang tải lịch sử...</p>
+                  <p className="admin-page__state">{t("Đang tải lịch sử...")}</p>
                 ) : detail?.events.length ? (
-                  <section className="admin-refund-events" aria-label="Lịch sử xử lý">
-                    <h4 className="admin-refund-events__title">Lịch sử liên quan</h4>
+                  <section className="admin-refund-events" aria-label={t("Lịch sử xử lý")}>
+                    <h4 className="admin-refund-events__title">{t("Lịch sử liên quan")}</h4>
                     <ul className="admin-refund-events__list">
                       {detail.events.map((event) => (
                         <li key={`${event.event_type}-${event.created_at}`}>
                           <span className="admin-refund-events__type">{event.event_type}</span>
                           <span className="admin-refund-events__time">
-                            {formatDate(event.created_at)}
+                            {formatDateUi(event.created_at)}
                           </span>
                         </li>
                       ))}

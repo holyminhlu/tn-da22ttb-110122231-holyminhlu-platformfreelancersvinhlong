@@ -1,5 +1,6 @@
 "use client";
 
+import { tUi } from "@/lib/i18n/runtime";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import FreelancerAvatarFrame from "@/components/freelancer/FreelancerAvatarFrame";
@@ -8,20 +9,24 @@ import { logout } from "@/lib/api/auth";
 import { clearStoredSession, getUserInitials, resolveAvatarSrc } from "@/lib/authSession";
 import { isFreelancerRole } from "@/hooks/useStoredUser";
 import type { StoredUser } from "@/lib/authSession";
+import { useTranslation } from "@/hooks/useTranslation";
 import { getUserMenuItems, type UserMenuEntry } from "./userMenuItems";
 
 type UserAvatarMenuProps = {
   user: StoredUser;
 };
 
-export default function UserAvatarMenu({ user }: UserAvatarMenuProps) {
+export default function UserAvatarMenu({
+  user }: UserAvatarMenuProps) {
+  const { t } = useTranslation();
+
   const router = useRouter();
   const menuId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
 
-  const menuItems = getUserMenuItems(user.role);
+  const menuItems = getUserMenuItems(user.role, t);
   const avatarSrc = resolveAvatarSrc(user.avatarUrl);
   const label = user.fullName?.trim() || user.email;
 
@@ -31,12 +36,14 @@ export default function UserAvatarMenu({ user }: UserAvatarMenuProps) {
     if (!open) return;
 
     function onPointerDown(event: MouseEvent) {
+  const t = tUi;
       if (!rootRef.current?.contains(event.target as Node)) {
         closeMenu();
       }
     }
 
     function onKeyDown(event: KeyboardEvent) {
+  const t = tUi;
       if (event.key === "Escape") closeMenu();
     }
 
@@ -49,6 +56,7 @@ export default function UserAvatarMenu({ user }: UserAvatarMenuProps) {
   }, [open, closeMenu]);
 
   async function handleLogout() {
+  const t = tUi;
     if (loggingOut) return;
     setLoggingOut(true);
     closeMenu();
@@ -71,6 +79,7 @@ export default function UserAvatarMenu({ user }: UserAvatarMenuProps) {
   }
 
   function onMenuItemClick(item: UserMenuEntry) {
+  const t = tUi;
     if (item.type === "logout") {
       void handleLogout();
       return;
@@ -86,7 +95,7 @@ export default function UserAvatarMenu({ user }: UserAvatarMenuProps) {
         type="button"
         className="home-navbar__avatar-link rounded-full outline-none"
         title={label}
-        aria-label={`Tài khoản: ${label}`}
+        aria-label={t("userMenu.accountAria", { label })}
         aria-expanded={open}
         aria-haspopup="menu"
         aria-controls={menuId}
@@ -114,7 +123,7 @@ export default function UserAvatarMenu({ user }: UserAvatarMenuProps) {
         <div
           id={menuId}
           role="menu"
-          aria-label="Menu tài khoản"
+          aria-label={t("userMenu.menuAria")}
           className="absolute right-0 top-[calc(100%+0.5rem)] z-[60] min-w-[14rem] overflow-hidden rounded-md border border-gray-200 bg-white py-1 shadow-lg"
         >
           {menuItems.map((item, index) => {
@@ -143,7 +152,7 @@ export default function UserAvatarMenu({ user }: UserAvatarMenuProps) {
                 }`}
                 onClick={() => onMenuItemClick(item)}
               >
-                {isLogout && loggingOut ? "Đang đăng xuất..." : item.label}
+                {isLogout && loggingOut ? t("userMenu.loggingOut") : item.label}
               </button>
             );
           })}

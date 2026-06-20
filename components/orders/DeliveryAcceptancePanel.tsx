@@ -1,5 +1,7 @@
 "use client";
 
+import { formatDateUi, formatVndUi, tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useMemo, useState } from "react";
 import {
   FaBoxOpen,
@@ -14,7 +16,6 @@ import {
 } from "react-icons/fa";
 import type { CancelRequest, ContractMilestone, WorkflowContract } from "@/lib/api/contracts";
 import { formatPackagePrice } from "@/lib/hire/servicePackages";
-import { formatDate, formatVnd } from "@/lib/format";
 import { formatTimelineDisplay, parseProposalSections } from "@/lib/orders/proposalDisplay";
 import WorkflowDeadlineBanner from "./WorkflowDeadlineBanner";
 import ClientVerifyNotice from "@/components/hire/ClientVerifyNotice";
@@ -63,7 +64,8 @@ export default function DeliveryAcceptancePanel({
   onAcceptDelivery,
   onRespondCancelRequest,
   onOpenDispute,
-}: DeliveryAcceptancePanelProps) {
+}: DeliveryAcceptancePanelProps) {  const { t, formatVnd, formatDate } = useTranslation();
+
   const [acceptConfirmed, setAcceptConfirmed] = useState(false);
   const [deliverConfirmed, setDeliverConfirmed] = useState(false);
 
@@ -71,7 +73,7 @@ export default function DeliveryAcceptancePanel({
   const progressNote = contract.progress_note?.trim() || "";
   const demoUrl = contract.demo_url?.trim() || "";
   const agreedDisplay =
-    contract.agreed_price != null ? formatVnd(contract.agreed_price) : "Thỏa thuận";
+    contract.agreed_price != null ? formatVndUi(contract.agreed_price) : "Thỏa thuận";
 
   const proposal = useMemo(
     () => parseProposalSections(contract.proposal_text || ""),
@@ -144,8 +146,8 @@ export default function DeliveryAcceptancePanel({
       ) : null}
       {contract.auto_accepted_at ? (
         <div className="hire-sla-banner hire-sla-banner--info" role="status">
-          <strong>Đã tự động nghiệm thu</strong>
-          <span>Lúc {formatDate(contract.auto_accepted_at)}</span>
+          <strong>{t("Đã tự động nghiệm thu")}</strong>
+          <span>Lúc {formatDateUi(contract.auto_accepted_at)}</span>
         </div>
       ) : null}
       <div className="hire-delivery__hero">
@@ -154,12 +156,12 @@ export default function DeliveryAcceptancePanel({
           <h2 className="hire-delivery__title">{stageTitle}</h2>
           <p className="hire-delivery__lead">{stageLead}</p>
         </div>
-        <ul className="hire-delivery__steps" aria-label="Tiến trình bàn giao">
+        <ul className="hire-delivery__steps" aria-label={t("Tiến trình bàn giao")}>
           <li className="hire-delivery__step hire-delivery__step--done">
             <span className="hire-delivery__step-icon" aria-hidden>
               <FaCheckCircle />
             </span>
-            <span>Đã thực hiện xong</span>
+            <span>{t("Đã thực hiện xong")}</span>
           </li>
           <li
             className={`hire-delivery__step${isDelivered ? " hire-delivery__step--done" : " hire-delivery__step--current"}`}
@@ -167,13 +169,13 @@ export default function DeliveryAcceptancePanel({
             <span className="hire-delivery__step-icon" aria-hidden>
               {isDelivered ? <FaCheckCircle /> : "2"}
             </span>
-            <span>Freelancer bàn giao</span>
+            <span>{t("Freelancer bàn giao")}</span>
           </li>
           <li
             className={`hire-delivery__step${isDelivered && isClient ? " hire-delivery__step--current" : ""}${!isDelivered ? " hire-delivery__step--muted" : ""}`}
           >
             <span className="hire-delivery__step-icon" aria-hidden>3</span>
-            <span>Client nghiệm thu</span>
+            <span>{t("Client nghiệm thu")}</span>
           </li>
         </ul>
       </div>
@@ -181,11 +183,11 @@ export default function DeliveryAcceptancePanel({
       <div className="hire-delivery__grid">
         <aside className="hire-delivery__aside">
           <div className="hire-delivery__summary-card">
-            <span className="hire-delivery__summary-label">Giá trị hợp đồng</span>
+            <span className="hire-delivery__summary-label">{t("Giá trị hợp đồng")}</span>
             <strong className="hire-delivery__summary-value">{agreedDisplay}</strong>
             {isDelivered && contract.delivered_at ? (
               <span className="hire-delivery__summary-meta">
-                Bàn giao lúc {formatDate(contract.delivered_at)}
+                Bàn giao lúc {formatDateUi(contract.delivered_at)}
               </span>
             ) : null}
           </div>
@@ -202,7 +204,7 @@ export default function DeliveryAcceptancePanel({
               </div>
               {timelineLabel !== "—" ? (
                 <div>
-                  <dt>Thời gian cam kết</dt>
+                  <dt>{t("Thời gian cam kết")}</dt>
                   <dd>{timelineLabel}</dd>
                 </div>
               ) : null}
@@ -262,14 +264,14 @@ export default function DeliveryAcceptancePanel({
           {!isClient && isDelivered ? (
             <div className="hire-delivery__state-card hire-delivery__state-card--sent">
               <FaUserClock className="hire-delivery__state-icon" aria-hidden />
-              <h3 className="hire-delivery__state-title">Đã gửi bàn giao</h3>
+              <h3 className="hire-delivery__state-title">{t("Đã gửi bàn giao")}</h3>
               <p className="hire-delivery__state-desc">
                 Client đang kiểm tra sản phẩm và tài liệu bàn giao. Bạn sẽ được thông báo khi họ
                 nghiệm thu.
               </p>
               {contract.delivered_at ? (
                 <p className="hire-delivery__state-meta">
-                  Gửi lúc {formatDate(contract.delivered_at)}
+                  Gửi lúc {formatDateUi(contract.delivered_at)}
                 </p>
               ) : null}
             </div>
@@ -278,7 +280,7 @@ export default function DeliveryAcceptancePanel({
           {!isClient && workFrozen && !isDelivered ? (
             <div className="hire-execution__frozen-card">
               <FaPauseCircle className="hire-execution__frozen-icon" aria-hidden />
-              <h3 className="hire-execution__frozen-title">Công việc tạm dừng</h3>
+              <h3 className="hire-execution__frozen-title">{t("Công việc tạm dừng")}</h3>
               <p className="hire-execution__frozen-desc">
                 Client đã gửi yêu cầu hoàn tiền. Bạn không thể xác nhận bàn giao cho đến khi phản
                 hồi ở banner phía trên.
@@ -291,7 +293,7 @@ export default function DeliveryAcceptancePanel({
               <header className="hire-delivery__work-head">
                 <FaBoxOpen className="hire-delivery__work-head-icon" aria-hidden />
                 <div>
-                  <h3 className="hire-delivery__work-title">Xác nhận bàn giao</h3>
+                  <h3 className="hire-delivery__work-title">{t("Xác nhận bàn giao")}</h3>
                   <p className="hire-delivery__work-sub">
                     Gửi thông báo bàn giao chính thức khi đã chuyển đủ file, mã nguồn hoặc triển khai
                     production.
@@ -304,7 +306,7 @@ export default function DeliveryAcceptancePanel({
                   checked={deliverConfirmed}
                   onChange={(e) => setDeliverConfirmed(e.target.checked)}
                 />
-                <span>Tôi xác nhận đã bàn giao đầy đủ theo thỏa thuận.</span>
+                <span>{t("Tôi xác nhận đã bàn giao đầy đủ theo thỏa thuận.")}</span>
               </label>
               <button
                 type="button"
@@ -320,7 +322,7 @@ export default function DeliveryAcceptancePanel({
           {isClient && !isDelivered ? (
             <div className="hire-delivery__state-card hire-delivery__state-card--wait">
               <FaUserClock className="hire-delivery__state-icon" aria-hidden />
-              <h3 className="hire-delivery__state-title">Chờ freelancer bàn giao</h3>
+              <h3 className="hire-delivery__state-title">{t("Chờ freelancer bàn giao")}</h3>
               <p className="hire-delivery__state-desc">
                 Freelancer chưa gửi xác nhận bàn giao. Bạn có thể nhắc họ hoàn tất và gửi tài liệu
                 cuối cùng.
@@ -333,7 +335,7 @@ export default function DeliveryAcceptancePanel({
               <header className="hire-delivery__accept-head">
                 <FaThumbsUp className="hire-delivery__accept-head-icon" aria-hidden />
                 <div>
-                  <h3 className="hire-delivery__work-title">Nghiệm thu bàn giao</h3>
+                  <h3 className="hire-delivery__work-title">{t("Nghiệm thu bàn giao")}</h3>
                   <p className="hire-delivery__work-sub">
                     {workFrozen
                       ? "Không thể nghiệm thu khi đang chờ xử lý yêu cầu hoàn tiền."
@@ -377,7 +379,7 @@ export default function DeliveryAcceptancePanel({
 
               {progressNote ? (
                 <div className="hire-delivery__note-box">
-                  <span className="hire-delivery__note-label">Ghi chú từ freelancer</span>
+                  <span className="hire-delivery__note-label">{t("Ghi chú từ freelancer")}</span>
                   <p>{progressNote}</p>
                 </div>
               ) : null}
@@ -390,7 +392,7 @@ export default function DeliveryAcceptancePanel({
                   onChange={(e) => setAcceptConfirmed(e.target.checked)}
                 />
                 <span>
-                  Tôi xác nhận đã kiểm tra và <strong>nghiệm thu</strong> bàn giao — chấp nhận
+                  Tôi xác nhận đã kiểm tra và <strong>{t("nghiệm thu")}</strong> bàn giao — chấp nhận
                   chuyển sang giai đoạn hoàn tất.
                 </span>
               </label>

@@ -1,5 +1,7 @@
 "use client";
 
+import { tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { FaBell } from "react-icons/fa";
 import { useNotifications } from "@/hooks/useNotifications";
@@ -7,6 +9,8 @@ import NotificationPanel from "./NotificationPanel";
 import "./notifications.css";
 
 export default function NotificationBell() {
+  const { t } = useTranslation();
+
   const rootRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
   const {
@@ -33,12 +37,14 @@ export default function NotificationBell() {
     if (!open) return;
 
     function onPointerDown(event: MouseEvent) {
+  const t = tUi;
       if (!rootRef.current?.contains(event.target as Node)) {
         closePanel();
       }
     }
 
     function onKeyDown(event: KeyboardEvent) {
+  const t = tUi;
       if (event.key === "Escape") closePanel();
     }
 
@@ -57,7 +63,7 @@ export default function NotificationBell() {
       <button
         type="button"
         className="notif-bell__btn"
-        aria-label={`Thông báo${unreadCount > 0 ? `, ${unreadCount} chưa đọc` : ""}`}
+        aria-label={`${t("Thông báo")}${unreadCount > 0 ? `, ${unreadCount} ${t("chưa đọc")}` : ""}`}
         aria-expanded={open}
         aria-haspopup="dialog"
         onClick={() => setOpen((prev) => !prev)}

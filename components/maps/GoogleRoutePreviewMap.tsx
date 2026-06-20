@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "@/hooks/useTranslation";
 import { useEffect, useMemo, useState } from "react";
 import type { GeoPoint } from "@/lib/geo/jobLocation";
 import { googleMapsDirectionsUrl } from "@/lib/geo/googleMaps";
@@ -28,6 +29,8 @@ export default function GoogleRoutePreviewMap({
   className,
   mapHeight = 220,
 }: GoogleRoutePreviewMapProps) {
+  const { t } = useTranslation();
+
   const [googleReady, setGoogleReady] = useState<boolean | null>(null);
   const [imageFailed, setImageFailed] = useState(false);
 

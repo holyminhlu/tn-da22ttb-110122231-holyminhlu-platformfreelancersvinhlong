@@ -1,11 +1,12 @@
 "use client";
 
+import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import ClientShell from "@/components/layout/ClientShell";
 import { getDepositOrderStatus } from "@/lib/api/payments";
-import { formatVnd } from "@/lib/format";
+import { formatVndUi } from "@/lib/i18n/runtime";
 import "@/components/payments/payments.css";
 
 function DepositSuccessContent() {
@@ -97,7 +98,7 @@ function DepositSuccessContent() {
           </p>
           {amount != null ? (
             <p className="payments-result-card__amount">
-              Số tiền: <strong>{formatVnd(amount)}</strong>
+              Số tiền: <strong>{formatVndUi(amount)}</strong>
             </p>
           ) : null}
           {Number.isFinite(orderCode) ? (
@@ -115,6 +116,8 @@ function DepositSuccessContent() {
 }
 
 export default function DepositSuccessPage() {
+  const { t, formatVnd } = useTranslation();
+
   return (
     <Suspense
       fallback={

@@ -1,40 +1,52 @@
+"use client";
+
 import Image from "next/image";
+import { tUi } from "@/lib/i18n/runtime";
 import Link from "next/link";
+import { useTranslation } from "@/hooks/useTranslation";
 import { FaFacebookF, FaLinkedinIn, FaTwitter } from "./icons";
 
 const FOOTER_LINKS = {
   navigate: [
-    { label: "Trang chủ", href: "/" },
-    { label: "Đăng việc", href: "#" },
-    { label: "Tìm Freelancer", href: "/freelancers" },
-    { label: "Tìm việc", href: "/findwork" },
+    { labelKey: "footer.home", href: "/" },
+    { labelKey: "footer.postJob", href: "#" },
+    { labelKey: "nav.findFreelancer", href: "/freelancers" },
+    { labelKey: "nav.findWork", href: "/findwork" },
   ],
   company: [
-    { label: "Giới thiệu về VLC", href: "/about" },
-    { label: "Cách VLC hoạt động", href: "/how-vlc-works" },
-    { label: "Tại sao chọn VLC", href: "/why-vlc" },
+    { labelKey: "aboutNav.aboutVlc", href: "/about" },
+    { labelKey: "aboutNav.howVlcWorks", href: "/how-vlc-works" },
+    { labelKey: "aboutNav.whyVlc", href: "/why-vlc" },
   ],
   resources: [
-    { label: "Trợ giúp & FAQ", href: "/help" },
-    { label: "Blog", href: "/blog" },
-    { label: "Liên hệ", href: "#" },
+    { labelKey: "footer.helpFaq", href: "/help" },
+    { labelKey: "aboutNav.blog", href: "/blog" },
+    { labelKey: "footer.contact", href: "#" },
   ],
   policies: [
-    { label: "Chính sách sở hữu trí tuệ", href: "#" },
-    { label: "Chính sách bảo mật", href: "#" },
-    { label: "Điều khoản dịch vụ", href: "#" },
+    { labelKey: "footer.ipPolicy", href: "#" },
+    { labelKey: "footer.privacyPolicy", href: "#" },
+    { labelKey: "footer.termsOfService", href: "#" },
   ],
 } as const;
 
-function FooterColumn({ title, links }: { title: string; links: readonly { label: string; href: string }[] }) {
+function FooterColumn({
+  title,
+  links,
+  t,
+}: {
+  title: string;
+  links: readonly { labelKey: string; href: string }[];
+  t: (text: string) => string;
+}) {
   return (
     <div>
       <h4 className="mb-6 font-bold">{title}</h4>
       <ul className="space-y-4 text-sm text-gray-400">
         {links.map((link) => (
-          <li key={link.label}>
+          <li key={link.labelKey}>
             <Link href={link.href} className="transition hover:text-white">
-              {link.label}
+              {tUi(link.labelKey)}
             </Link>
           </li>
         ))}
@@ -44,16 +56,18 @@ function FooterColumn({ title, links }: { title: string; links: readonly { label
 }
 
 export default function HomeFooter() {
+  const { t } = useTranslation();
+
   return (
     <footer className="bg-[#1a202c] pb-10 pt-20 text-white">
       <div className="mx-auto max-w-7xl px-6">
         <div className="mb-20 grid grid-cols-2 gap-10 md:grid-cols-3 lg:grid-cols-6">
-          <FooterColumn title="Điều hướng" links={FOOTER_LINKS.navigate} />
-          <FooterColumn title="Thông tin công ty" links={FOOTER_LINKS.company} />
-          <FooterColumn title="Tài nguyên" links={FOOTER_LINKS.resources} />
-          <FooterColumn title="Chính sách" links={FOOTER_LINKS.policies} />
+          <FooterColumn title={t("footer.navigate")} links={FOOTER_LINKS.navigate} t={t} />
+          <FooterColumn title={t("footer.company")} links={FOOTER_LINKS.company} t={t} />
+          <FooterColumn title={t("footer.resources")} links={FOOTER_LINKS.resources} t={t} />
+          <FooterColumn title={t("footer.policies")} links={FOOTER_LINKS.policies} t={t} />
           <div className="lg:col-span-2">
-            <h4 className="mb-6 font-bold">Kết nối với chúng tôi</h4>
+            <h4 className="mb-6 font-bold">{t("footer.connect")}</h4>
             <div className="flex space-x-4">
               <a
                 href="#"
@@ -91,9 +105,9 @@ export default function HomeFooter() {
                 className="h-full w-full object-contain p-1.5"
               />
             </span>
-            <span>Hoàn thành mọi công việc</span>
+            <span>{t("footer.tagline")}</span>
           </div>
-          <div>Bản quyền © {new Date().getFullYear()}, Vĩnh Long Connected</div>
+          <div>{t("footer.copyright", { year: new Date().getFullYear() })}</div>
         </div>
       </div>
     </footer>

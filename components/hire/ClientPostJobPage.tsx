@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -14,6 +15,8 @@ import "./hire.css";
 import "./post-job.css";
 
 export default function ClientPostJobPage() {
+  const { t } = useTranslation();
+
   const router = useRouter();
   const searchParams = useSearchParams();
   const editJobId = searchParams.get("edit")?.trim() || null;
@@ -29,7 +32,7 @@ export default function ClientPostJobPage() {
     try {
       const [me, identity] = await Promise.all([getMe(), getIdentityVerification()]);
       if (!isClientRole(me.user?.role)) {
-        setError("Chỉ tài khoản client mới được đăng tin tuyển dụng.");
+        setError(t("Chỉ tài khoản client mới được đăng tin tuyển dụng."));
         setUser(null);
         return;
       }
@@ -83,7 +86,7 @@ export default function ClientPostJobPage() {
         </header>
 
         {loading ? (
-          <p className="hire-page__state">Đang kiểm tra tài khoản...</p>
+          <p className="hire-page__state">{t("Đang kiểm tra tài khoản...")}</p>
         ) : error ? (
           <p className="hire-page__state hire-page__state--error" role="alert">
             {error}

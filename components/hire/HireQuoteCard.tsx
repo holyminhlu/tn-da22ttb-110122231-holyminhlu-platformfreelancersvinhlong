@@ -1,5 +1,7 @@
 "use client";
 
+import { formatDateUi, formatVndUi, tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { useState } from "react";
 import { FreelancerChatInlineButton } from "@/components/chat/FreelancerChatWidget";
@@ -15,8 +17,6 @@ import {
 import FreelancerAvatarFrame from "@/components/freelancer/FreelancerAvatarFrame";
 import type { JobQuoteRow } from "@/lib/api/jobQuotes";
 import { getUserInitials, resolveAvatarSrc } from "@/lib/authSession";
-import { formatDate, formatVnd } from "@/lib/format";
-
 type HireQuoteCardProps = {
   quote: JobQuoteRow;
   busy?: boolean;
@@ -35,16 +35,18 @@ function quoteStatusLabel(status: string): string {
 }
 
 function formatQuoteAmount(quote: JobQuoteRow): string {
-  const amount = quote.amount != null ? formatVnd(quote.amount) : "Thỏa thuận";
+  const amount = quote.amount != null ? formatVndUi(quote.amount) : "Thỏa thuận";
   if (quote.pricing_type === "hourly") return `${amount}/giờ`;
   return amount;
 }
 
-export default function HireQuoteCard({ quote, busy, onAccept, onDecline, onChat }: HireQuoteCardProps) {
+export default function HireQuoteCard({
+  quote, busy, onAccept, onDecline, onChat }: HireQuoteCardProps) {  const { t, formatVnd, formatDate } = useTranslation();
+
   const [expanded, setExpanded] = useState(false);
   const avatarSrc = resolveAvatarSrc(quote.freelancer_avatar_url);
   const name = quote.freelancer_name?.trim() || "Freelancer";
-  const title = quote.freelancer_title?.trim() || "Thành viên VLC";
+  const title = quote.freelancer_title?.trim() || t("Thành viên VLC");
   const location = quote.freelancer_location?.trim() || "—";
   const ratingPct =
     quote.job_success_score != null && quote.job_success_score > 0
@@ -117,8 +119,8 @@ export default function HireQuoteCard({ quote, busy, onAccept, onDecline, onChat
           <dd>{quote.completed_jobs}</dd>
         </div>
         <div>
-          <dt>Gửi ngày</dt>
-          <dd>{formatDate(quote.created_at)}</dd>
+          <dt>{t("Gửi ngày")}</dt>
+          <dd>{formatDateUi(quote.created_at)}</dd>
         </div>
       </dl>
 
@@ -127,7 +129,7 @@ export default function HireQuoteCard({ quote, busy, onAccept, onDecline, onChat
       ) : null}
 
       <div className="hire-quote-card__proposal">
-        <h3 className="hire-quote-card__proposal-title">Thư đề xuất</h3>
+        <h3 className="hire-quote-card__proposal-title">{t("Thư đề xuất")}</h3>
         {message ? (
           <>
             <p className={`hire-quote-card__message${expanded ? "" : " hire-quote-card__message--clamp"}`}>

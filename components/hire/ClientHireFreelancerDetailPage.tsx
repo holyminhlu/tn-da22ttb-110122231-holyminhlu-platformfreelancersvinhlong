@@ -1,5 +1,7 @@
 "use client";
 
+import { formatDateUi, tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
@@ -36,7 +38,6 @@ import {
 } from "@/lib/hire/freelancerSearchDisplay";
 import { useClientIdentityVerification } from "@/hooks/useClientIdentityVerification";
 import { CLIENT_VERIFY_PAGE } from "@/lib/hire/clientVerification";
-import { formatDate } from "@/lib/format";
 import FreelancerChatWidget from "@/components/chat/FreelancerChatWidget";
 import FreelancerLikeButton from "./FreelancerLikeButton";
 import HireShell from "./HireShell";
@@ -50,6 +51,7 @@ function formatPriceVndStyle(amount: string | number | null | undefined): string
 }
 
 function ServiceDescriptionBlock({ description }: { description: string }) {
+  const t = tUi;
   const [expanded, setExpanded] = useState(false);
   const { preview, needsExpand } = useMemo(
     () => serviceDescriptionPreview(description),
@@ -58,7 +60,7 @@ function ServiceDescriptionBlock({ description }: { description: string }) {
 
   return (
     <div className="hire-fl-detail__featured-desc-block">
-      <p className="hire-fl-detail__featured-desc-label">Mô tả dịch vụ</p>
+      <p className="hire-fl-detail__featured-desc-label">{tUi("Mô tả dịch vụ")}</p>
       <p className="hire-fl-detail__featured-desc">{expanded ? description : preview}</p>
       {needsExpand ? (
         <button
@@ -81,7 +83,8 @@ type ClientHireFreelancerDetailPageProps = {
 
 export default function ClientHireFreelancerDetailPage({
   publicBrowse = false,
-}: ClientHireFreelancerDetailPageProps = {}) {
+}: ClientHireFreelancerDetailPageProps = {}) {  const { t, formatDate } = useTranslation();
+
   const { user, ready, isClient } = useStoredUser({ refreshFromApi: false });
   const isGuest = publicBrowse && ready && !user;
   const canHire = ready && user && isClient;
@@ -103,7 +106,7 @@ export default function ClientHireFreelancerDetailPage({
 
   const load = useCallback(async () => {
     if (!freelancerId) {
-      setError("Mã freelancer không hợp lệ.");
+      setError(t("Mã freelancer không hợp lệ."));
       setLoading(false);
       return;
     }
@@ -154,6 +157,8 @@ export default function ClientHireFreelancerDetailPage({
   const backHref = publicBrowse ? "/freelancers" : "/hire/search";
 
   function serviceQuoteHref(serviceId: string) {
+  const t = tUi;
+  const formatDate = formatDateUi;
     const target = `/hire/quote?serviceId=${encodeURIComponent(serviceId)}&freelancerId=${encodeURIComponent(freelancerId)}`;
     if (isGuest) return `/dang-nhap?next=${encodeURIComponent(target)}`;
     if (canHire && !identityLoading && !identityVerified) return CLIENT_VERIFY_PAGE;
@@ -170,6 +175,8 @@ export default function ClientHireFreelancerDetailPage({
   const PageShell = publicBrowse ? PublicDetailShell : HireShell;
 
   async function handleToggleFavorite(id: string) {
+  const t = tUi;
+  const formatDate = formatDateUi;
     try {
       const result = await toggleFavorite(id);
       setFavoriteCount(result.favoriteCount);
@@ -186,7 +193,7 @@ export default function ClientHireFreelancerDetailPage({
     return (
       <PageShell>
         <div className="hire-page hire-fl-detail hire-fl-detail--full-width">
-          <p className="hire-page__state">Đang tải hồ sơ freelancer...</p>
+          <p className="hire-page__state">{t("Đang tải hồ sơ freelancer...")}</p>
         </div>
       </PageShell>
     );
@@ -200,7 +207,7 @@ export default function ClientHireFreelancerDetailPage({
             <FaArrowLeft aria-hidden /> Quay lại tìm kiếm
           </Link>
           <p className="hire-page__state hire-page__state--error" role="alert">
-            {error || "Không tìm thấy freelancer."}
+            {error || t("Không tìm thấy freelancer.")}
           </p>
         </div>
       </PageShell>
@@ -218,6 +225,8 @@ export default function ClientHireFreelancerDetailPage({
       : `/hire/search/${freelancerId}`;
 
   function handleSelectService(serviceId: string) {
+  const t = tUi;
+  const formatDate = formatDateUi;
     setSelectedServiceId(serviceId);
     document.getElementById("fl-featured-heading")?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
@@ -312,7 +321,7 @@ export default function ClientHireFreelancerDetailPage({
                   {ratingAvg.toFixed(1)} ({fl.total_reviews} đánh giá)
                 </span>
               ) : (
-                <span className="hire-fl-detail__meta-item">Chưa có đánh giá</span>
+                <span className="hire-fl-detail__meta-item">{t("Chưa có đánh giá")}</span>
               )}
               {satisfaction > 0 ? (
                 <span className="hire-fl-detail__meta-item">
@@ -364,36 +373,36 @@ export default function ClientHireFreelancerDetailPage({
           </div>
         </header>
 
-        <div className="hire-fl-detail__stats" aria-label="Thống kê freelancer">
+        <div className="hire-fl-detail__stats" aria-label={t("Thống kê freelancer")}>
           <div className="hire-fl-detail__stat">
             <span className="hire-fl-detail__stat-value">{fl.completed_jobs}</span>
-            <span className="hire-fl-detail__stat-label">Hợp đồng hoàn thành</span>
+            <span className="hire-fl-detail__stat-label">{t("Hợp đồng hoàn thành")}</span>
           </div>
           <div className="hire-fl-detail__stat">
             <span className="hire-fl-detail__stat-value">
               {fl.job_success_score != null ? `${fl.job_success_score}%` : "—"}
             </span>
-            <span className="hire-fl-detail__stat-label">Tỷ lệ thành công</span>
+            <span className="hire-fl-detail__stat-label">{t("Tỷ lệ thành công")}</span>
           </div>
           <div className="hire-fl-detail__stat">
             <span className="hire-fl-detail__stat-value">
               {fl.experience_years != null ? fl.experience_years : "—"}
             </span>
-            <span className="hire-fl-detail__stat-label">Năm kinh nghiệm</span>
+            <span className="hire-fl-detail__stat-label">{t("Năm kinh nghiệm")}</span>
           </div>
           <div className="hire-fl-detail__stat">
             <span className="hire-fl-detail__stat-value">
               {fl.avg_response_minutes ? `~${fl.avg_response_minutes}p` : "—"}
             </span>
-            <span className="hire-fl-detail__stat-label">Phản hồi TB</span>
+            <span className="hire-fl-detail__stat-label">{t("Phản hồi TB")}</span>
           </div>
           <div className="hire-fl-detail__stat">
             <span className="hire-fl-detail__stat-value">{data.services.length}</span>
-            <span className="hire-fl-detail__stat-label">Dịch vụ</span>
+            <span className="hire-fl-detail__stat-label">{t("Dịch vụ")}</span>
           </div>
           <div className="hire-fl-detail__stat">
             <span className="hire-fl-detail__stat-value">{data.portfolio.length}</span>
-            <span className="hire-fl-detail__stat-label">Hồ sơ dự án</span>
+            <span className="hire-fl-detail__stat-label">{t("Hồ sơ dự án")}</span>
           </div>
         </div>
 
@@ -404,10 +413,10 @@ export default function ClientHireFreelancerDetailPage({
                 Giới thiệu
               </h2>
               <p className="hire-fl-detail__bio">
-                {fl.bio?.trim() || "Freelancer chưa cập nhật phần giới thiệu."}
+                {fl.bio?.trim() || t("Freelancer chưa cập nhật phần giới thiệu.")}
               </p>
               {fl.skills?.length > 0 ? (
-                <div className="hire-fl-detail__chips" aria-label="Kỹ năng">
+                <div className="hire-fl-detail__chips" aria-label={t("Kỹ năng")}>
                   {fl.skills.map((skill) => (
                     <span key={skill} className="hire-fl-detail__chip">
                       {skill}
@@ -416,7 +425,7 @@ export default function ClientHireFreelancerDetailPage({
                 </div>
               ) : null}
               {languages.length > 0 ? (
-                <div className="hire-fl-detail__chips" aria-label="Ngôn ngữ">
+                <div className="hire-fl-detail__chips" aria-label={t("Ngôn ngữ")}>
                   {languages.map((lang) => (
                     <span key={lang} className="hire-fl-detail__chip hire-fl-detail__chip--muted">
                       {lang}
@@ -475,7 +484,7 @@ export default function ClientHireFreelancerDetailPage({
                 Tất cả dịch vụ ({data.services.length})
               </h2>
               {data.services.length === 0 ? (
-                <p className="hire-fl-detail__empty">Chưa có dịch vụ nào được đăng.</p>
+                <p className="hire-fl-detail__empty">{t("Chưa có dịch vụ nào được đăng.")}</p>
               ) : (
                 <ul className="hire-fl-detail__services-grid">
                   {data.services.map((svc) => {
@@ -549,7 +558,7 @@ export default function ClientHireFreelancerDetailPage({
                 Hồ sơ dự án ({data.portfolio.length})
               </h2>
               {data.portfolio.length === 0 ? (
-                <p className="hire-fl-detail__empty">Chưa có mục portfolio.</p>
+                <p className="hire-fl-detail__empty">{t("Chưa có mục portfolio.")}</p>
               ) : (
                 <ul className="hire-fl-detail__portfolio-grid">
                   {data.portfolio.map((item) => {
@@ -615,10 +624,10 @@ export default function ClientHireFreelancerDetailPage({
                           ))}
                         </span>
                         <span className="hire-fl-detail__review-author">
-                          {review.client_name || "Khách hàng"}
+                          {review.client_name || t("Khách hàng")}
                         </span>
                         <time className="hire-fl-detail__review-date" dateTime={review.created_at}>
-                          {formatDate(review.created_at)}
+                          {formatDateUi(review.created_at)}
                         </time>
                       </div>
                       {review.comment?.trim() ? (
@@ -635,32 +644,32 @@ export default function ClientHireFreelancerDetailPage({
             </section>
           </div>
 
-          <aside className="hire-fl-detail__sidebar" aria-label="Tóm tắt thuê">
+          <aside className="hire-fl-detail__sidebar" aria-label={t("Tóm tắt thuê")}>
             <div className="hire-fl-detail__sidebar-card">
-              <h2 className="hire-fl-detail__sidebar-title">Tóm tắt trước khi thuê</h2>
+              <h2 className="hire-fl-detail__sidebar-title">{t("Tóm tắt trước khi thuê")}</h2>
               <ul className="hire-fl-detail__sidebar-list">
                 <li>
-                  <span>Đánh giá</span>
+                  <span>{t("Đánh giá")}</span>
                   <strong>
                     {ratingAvg > 0 ? `${ratingAvg.toFixed(1)} / 5` : "Chưa có"}
                   </strong>
                 </li>
                 <li>
-                  <span>Hài lòng</span>
+                  <span>{t("Hài lòng")}</span>
                   <strong>{satisfaction > 0 ? `${satisfaction}%` : "—"}</strong>
                 </li>
                 <li>
-                  <span>Hoàn thành</span>
+                  <span>{t("Hoàn thành")}</span>
                   <strong>{fl.completed_jobs} việc</strong>
                 </li>
                 <li>
-                  <span>Kinh nghiệm</span>
+                  <span>{t("Kinh nghiệm")}</span>
                   <strong>
                     {fl.experience_years != null ? `${fl.experience_years} năm` : "—"}
                   </strong>
                 </li>
                 <li>
-                  <span>Phản hồi</span>
+                  <span>{t("Phản hồi")}</span>
                   <strong>
                     {fl.avg_response_minutes ? `~${fl.avg_response_minutes} phút` : "—"}
                   </strong>

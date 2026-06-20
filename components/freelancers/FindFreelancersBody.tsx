@@ -1,5 +1,7 @@
 "use client";
 
+import { tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
@@ -21,6 +23,8 @@ const PAGE_SIZE = 12;
 const ALL = "Tất cả";
 
 export default function FindFreelancersBody() {
+  const { t } = useTranslation();
+
   const searchParams = useSearchParams();
   const initialSkill = searchParams.get("skill")?.trim() || ALL;
 
@@ -109,6 +113,7 @@ export default function FindFreelancersBody() {
 
   useEffect(() => {
     function onPointerDown(event: MouseEvent) {
+  const t = tUi;
       const target = event.target as Node;
       if (!skillRef.current?.contains(target)) setSkillOpen(false);
       if (!districtRef.current?.contains(target)) setDistrictOpen(false);
@@ -130,11 +135,13 @@ export default function FindFreelancersBody() {
   );
 
   function applySearch() {
+  const t = tUi;
     setSearchQuery(searchInput.trim());
     setOffset(0);
   }
 
   function handleSearchKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
+  const t = tUi;
     if (event.key === "Enter") {
       event.preventDefault();
       applySearch();
@@ -145,6 +152,7 @@ export default function FindFreelancersBody() {
     type: "skill" | "district" | "category",
     value: string,
   ) {
+  const t = tUi;
     if (type === "skill") {
       setSkill(value);
       setSkillOpen(false);
@@ -159,6 +167,7 @@ export default function FindFreelancersBody() {
   }
 
   function handleSelect(id: string, checked: boolean) {
+  const t = tUi;
     setSelectedIds((prev) => {
       const next = new Set(prev);
       if (checked) next.add(id);
@@ -168,6 +177,7 @@ export default function FindFreelancersBody() {
   }
 
   function handleSelectAllOnPage(checked: boolean) {
+  const t = tUi;
     setSelectedIds((prev) => {
       const next = new Set(prev);
       for (const row of rows) {
@@ -179,6 +189,7 @@ export default function FindFreelancersBody() {
   }
 
   async function handleToggleFavorite(id: string) {
+  const t = tUi;
     if (!canFavorite) return;
     try {
       const result = await toggleFavorite(id);

@@ -1,9 +1,9 @@
 "use client";
 
+import { formatDateUi, tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import { FaExternalLinkAlt, FaRedo, FaUserEdit } from "react-icons/fa";
 import type { ProgressHistoryEntry } from "@/lib/api/contracts";
-import { formatDate } from "@/lib/format";
-
 type ProgressHistoryTimelineProps = {
   entries: ProgressHistoryEntry[];
   highlightLatest?: boolean;
@@ -25,14 +25,15 @@ function actorDisplay(entry: ProgressHistoryEntry) {
 export default function ProgressHistoryTimeline({
   entries,
   highlightLatest = false,
-}: ProgressHistoryTimelineProps) {
+}: ProgressHistoryTimelineProps) {  const { t, formatDate } = useTranslation();
+
   if (!entries.length) return null;
 
   let progressCount = 0;
 
   return (
-    <section className="hire-execution__history" aria-label="Lịch sử tiến độ và phản hồi">
-      <h4 className="hire-execution__history-title">Lịch sử tiến độ &amp; phản hồi</h4>
+    <section className="hire-execution__history" aria-label={t("Lịch sử tiến độ và phản hồi")}>
+      <h4 className="hire-execution__history-title">{t("Lịch sử tiến độ &amp; phản hồi")}</h4>
       <ol className="hire-execution__history-list">
         {entries.map((entry, idx) => {
           const isProgress = entry.entry_type === "progress";
@@ -56,7 +57,7 @@ export default function ProgressHistoryTimeline({
                     {entryLabel(entry, progressCount)}
                   </strong>
                   <span className="hire-execution__history-sub">
-                    {actorDisplay(entry)} · {formatDate(entry.created_at)}
+                    {actorDisplay(entry)} · {formatDateUi(entry.created_at)}
                   </span>
                 </div>
               </div>

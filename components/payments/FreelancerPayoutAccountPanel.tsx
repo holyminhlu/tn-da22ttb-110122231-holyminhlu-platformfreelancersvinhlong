@@ -1,5 +1,7 @@
 "use client";
 
+import { formatDateUi, tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useState } from "react";
 import { FaCheckCircle, FaUniversity } from "react-icons/fa";
 import {
@@ -7,7 +9,6 @@ import {
   unlinkFreelancerPayoutAccount,
   type FreelancerPayoutProfile,
 } from "@/lib/api/payments";
-import { formatDate } from "@/lib/format";
 import { maskAccountNumber } from "@/lib/payments/bankDisplay";
 import BankBadgeIcon from "./BankBadgeIcon";
 import LinkPayoutAccountModal from "./LinkPayoutAccountModal";
@@ -22,12 +23,15 @@ export default function FreelancerPayoutAccountPanel({
   profile,
   onUpdated,
   audience = "freelancer",
-}: FreelancerPayoutAccountPanelProps) {
+}: FreelancerPayoutAccountPanelProps) {  const { t, formatDate } = useTranslation();
+
   const [modalOpen, setModalOpen] = useState(false);
   const [unlinkBusy, setUnlinkBusy] = useState(false);
 
   async function handleUnlink() {
-    const ok = window.confirm(
+  const t = tUi;
+  const formatDate = formatDateUi;
+  const ok = window.confirm(
       "Hủy liên kết tài khoản ngân hàng? Bạn sẽ không thể rút tiền cho đến khi liên kết lại.",
     );
     if (!ok) return;
@@ -49,28 +53,27 @@ export default function FreelancerPayoutAccountPanel({
   if (!profile.isConfigured) {
     return (
       <div className="fl-payout fl-payout--empty">
-        <section className="fl-payout-card fl-payout-card--empty" aria-label="Chưa liên kết tài khoản">
+        <section className="fl-payout-card fl-payout-card--empty" aria-label={t("Chưa liên kết tài khoản")}>
           <div className="fl-payout-card__empty-body">
             <span className="fl-payout-card__empty-icon" aria-hidden>
               <FaUniversity />
             </span>
-            <h3 className="fl-payout-card__empty-title">Chưa liên kết tài khoản ngân hàng</h3>
+            <h3 className="fl-payout-card__empty-title">{t("Chưa liên kết tài khoản ngân hàng")}</h3>
             <p className="fl-payout-card__empty-text">
-              Liên kết tài khoản nội địa để nhận tiền rút từ ví VLC. Thông tin được bảo mật và chỉ
-              hiển thị một phần số tài khoản.
+              {t("Liên kết tài khoản nội địa để nhận tiền rút từ ví VLC. Thông tin được bảo mật và chỉ hiển thị một phần số tài khoản.")}
             </p>
             <button
               type="button"
               className="payments-btn payments-btn--primary payments-btn--with-icon"
               onClick={() => setModalOpen(true)}
             >
-              Liên kết tài khoản ngân hàng
+              {t("Liên kết tài khoản ngân hàng")}
             </button>
           </div>
           {profile.contactEmail ? (
             <footer className="fl-payout-card__foot">
               <p className="fl-payout-card__email">
-                Email đối chiếu: <strong>{profile.contactEmail}</strong>
+                {t("Email đối chiếu:")} <strong>{profile.contactEmail}</strong>
               </p>
             </footer>
           ) : null}
@@ -91,13 +94,13 @@ export default function FreelancerPayoutAccountPanel({
 
   return (
     <div className="fl-payout fl-payout--linked">
-      <section className="fl-payout-card" aria-label="Tài khoản nhận tiền đã liên kết">
+      <section className="fl-payout-card" aria-label={t("Tài khoản nhận tiền đã liên kết")}>
         <header className="fl-payout-card__head">
           <div className="fl-payout-card__brand">
             <BankBadgeIcon bankName={profile.bankName} size={40} />
             <div className="fl-payout-card__brand-text">
               <p className="fl-payout-card__bank-name">{profile.bankName}</p>
-              <p className="fl-payout-card__subtitle">Tài khoản nhận tiền chính</p>
+              <p className="fl-payout-card__subtitle">{t("Tài khoản nhận tiền chính")}</p>
             </div>
           </div>
           <span
@@ -110,24 +113,24 @@ export default function FreelancerPayoutAccountPanel({
 
         <dl className="fl-payout-card__grid">
           <div className="fl-payout-card__item">
-            <dt>Chủ tài khoản</dt>
+            <dt>{t("Chủ tài khoản")}</dt>
             <dd>{profile.accountHolderName || profile.contactName || "—"}</dd>
           </div>
           <div className="fl-payout-card__item">
-            <dt>Số tài khoản</dt>
+            <dt>{t("Số tài khoản")}</dt>
             <dd className="fl-payout-card__account">{masked}</dd>
           </div>
           {profile.linkedAt ? (
             <div className="fl-payout-card__item fl-payout-card__item--wide">
-              <dt>Liên kết từ</dt>
-              <dd>{formatDate(profile.linkedAt)}</dd>
+              <dt>{t("Liên kết từ")}</dt>
+              <dd>{formatDateUi(profile.linkedAt)}</dd>
             </div>
           ) : null}
         </dl>
 
         <footer className="fl-payout-card__actions">
           <button type="button" className="payments-link-btn" onClick={() => setModalOpen(true)}>
-            Thay đổi tài khoản
+            {t("Thay đổi tài khoản")}
           </button>
           <button
             type="button"
@@ -142,7 +145,7 @@ export default function FreelancerPayoutAccountPanel({
         {profile.contactEmail ? (
           <footer className="fl-payout-card__foot">
             <p className="fl-payout-card__email">
-              Email liên kết: <strong>{profile.contactEmail}</strong>
+              {t("Email liên kết:")} <strong>{profile.contactEmail}</strong>
             </p>
           </footer>
         ) : null}

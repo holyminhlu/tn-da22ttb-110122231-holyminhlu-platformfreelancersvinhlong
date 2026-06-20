@@ -1,5 +1,7 @@
 "use client";
 
+import { formatDateUi, tUi, formatVndUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { FaLock, FaPlusCircle, FaWallet } from "react-icons/fa";
@@ -31,6 +33,7 @@ import "./dashboardPagination.css";
 const WIDGET_PAGE_SIZE = 5;
 
 function billingCode(userId: string) {
+  const t = tUi;
   const digits = userId.replace(/\D/g, "");
   if (digits.length >= 10) return digits.slice(0, 10);
   return digits.padStart(10, "0").slice(0, 10) || "0000000000";
@@ -63,6 +66,7 @@ function DashboardWidget({
   children: ReactNode;
   alignLeft?: boolean;
 }) {
+  const t = tUi;
   return (
     <section className="client-widget">
       <header className="client-widget__head">
@@ -79,6 +83,9 @@ function DashboardWidget({
 }
 
 function WidgetJobList({ jobs }: { jobs: ClientRecentJob[] }) {
+  const t = tUi;
+  const formatDate = formatDateUi;
+  const formatVnd = formatVndUi;
   const { items, page, totalPages, total, setPage } = usePagedList(jobs, WIDGET_PAGE_SIZE);
 
   return (
@@ -91,9 +98,9 @@ function WidgetJobList({ jobs }: { jobs: ClientRecentJob[] }) {
             </Link>
             <p className="client-widget__list-meta">
               {jobStatusLabel(job.status)}
-              {job.budget != null ? ` · ${formatVnd(job.budget)}` : ""}
+              {job.budget != null ? ` · ${formatVndUi(job.budget)}` : ""}
               {" · "}
-              {formatDate(job.created_at)}
+              {formatDateUi(job.created_at)}
             </p>
           </li>
         ))}
@@ -113,6 +120,8 @@ function WidgetManageList({
 }: {
   items: ReturnType<typeof clientJobToListItem>[];
 }) {
+  const t = tUi;
+  const formatVnd = formatVndUi;
   const { items: pageItems, page, totalPages, total, setPage } = usePagedList(
     items,
     WIDGET_PAGE_SIZE,
@@ -136,7 +145,7 @@ function WidgetManageList({
                 {item.contractStatus
                   ? contractStatusLabel(item.contractStatus)
                   : jobStatusLabel(item.jobStatus)}
-                {item.agreedPrice != null ? ` · ${formatVnd(item.agreedPrice)}` : ""}
+                {item.agreedPrice != null ? ` · ${formatVndUi(item.agreedPrice)}` : ""}
               </p>
             </li>
           );
@@ -153,6 +162,9 @@ function WidgetManageList({
 }
 
 function WidgetPaymentsList({ payments }: { payments: ClientRecentPayment[] }) {
+  const t = tUi;
+  const formatDate = formatDateUi;
+  const formatVnd = formatVndUi;
   const { items, page, totalPages, total, setPage } = usePagedList(payments, WIDGET_PAGE_SIZE);
 
   return (
@@ -162,12 +174,12 @@ function WidgetPaymentsList({ payments }: { payments: ClientRecentPayment[] }) {
           <li key={p.id} className="client-widget__list-item">
             <span className="client-widget__list-title">{p.title}</span>
             <p className="client-widget__list-meta">
-              {formatVnd(p.amount)}
+              {formatVndUi(p.amount)}
               {p.freelancer_name ? ` · ${p.freelancer_name}` : ""}
               {" · "}
               {escrowStatusLabel(p.escrow_status)}
               {" · "}
-              {formatDate(p.paid_at)}
+              {formatDateUi(p.paid_at)}
             </p>
           </li>
         ))}
@@ -182,7 +194,8 @@ function WidgetPaymentsList({ payments }: { payments: ClientRecentPayment[] }) {
   );
 }
 
-export default function ClientDashboard() {
+export default function ClientDashboard() {  const { t, formatVnd, formatDate } = useTranslation();
+
   const [data, setData] = useState<ClientMeResponse | null>(null);
   const [manageItems, setManageItems] = useState<ReturnType<typeof clientJobToListItem>[]>([]);
   const [error, setError] = useState("");
@@ -192,6 +205,7 @@ export default function ClientDashboard() {
     let cancelled = false;
 
     async function load() {
+  const formatVnd = formatVndUi;
       setLoading(true);
       setError("");
       try {
@@ -306,7 +320,7 @@ export default function ClientDashboard() {
                 <FaWallet className="client-dashboard__cash-icon" aria-hidden />
                 <span>
                   <strong>Tài khoản tiền mặt:</strong>{" "}
-                  <span className="client-dashboard__cash-amount">{formatVnd(balance)}</span>
+                  <span className="client-dashboard__cash-amount">{formatVndUi(balance)}</span>
                 </span>
               </div>
               {escrowBalance > 0 ? (
@@ -315,7 +329,7 @@ export default function ClientDashboard() {
                   <span>
                     <strong>Ký quỹ:</strong>{" "}
                     <span className="client-dashboard__cash-amount client-dashboard__cash-amount--secondary">
-                      {formatVnd(escrowBalance)}
+                      {formatVndUi(escrowBalance)}
                     </span>
                   </span>
                 </div>

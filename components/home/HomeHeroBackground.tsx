@@ -1,8 +1,11 @@
 "use client";
 
+import { useTranslation } from "@/hooks/useTranslation";
 import { Boxes } from "@/components/ui/background-boxes";
 
 export default function HomeHeroBackground() {
+  const { t } = useTranslation();
+
   return (
     <>
       <div className="absolute inset-0 overflow-hidden bg-[#0f172a]">

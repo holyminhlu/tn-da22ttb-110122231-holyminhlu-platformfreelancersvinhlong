@@ -1,5 +1,7 @@
 "use client";
 
+import { tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import { FaTimes } from "react-icons/fa";
@@ -9,7 +11,10 @@ type WorkDetailGalleryProps = {
   title: string;
 };
 
-export default function WorkDetailGallery({ images, title }: WorkDetailGalleryProps) {
+export default function WorkDetailGallery({
+  images, title }: WorkDetailGalleryProps) {
+  const { t } = useTranslation();
+
   const [activeIndex, setActiveIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
 
@@ -19,6 +24,7 @@ export default function WorkDetailGallery({ images, title }: WorkDetailGalleryPr
     if (!lightboxOpen) return;
 
     function onKeyDown(e: KeyboardEvent) {
+  const t = tUi;
       if (e.key === "Escape") closeLightbox();
       if (e.key === "ArrowRight" && images.length > 1) {
         setActiveIndex((i) => (i + 1) % images.length);
@@ -51,7 +57,7 @@ export default function WorkDetailGallery({ images, title }: WorkDetailGalleryPr
         <Image src={heroSrc} alt={title} fill sizes="(max-width: 1024px) 100vw, 720px" unoptimized />
       </button>
       {images.length > 1 ? (
-        <div className="wd-gallery__thumbs" role="list" aria-label="Ảnh minh hoạ">
+        <div className="wd-gallery__thumbs" role="list" aria-label={t("Ảnh minh hoạ")}>
           {images.map((src, idx) => (
             <button
               key={src}
@@ -80,7 +86,7 @@ export default function WorkDetailGallery({ images, title }: WorkDetailGalleryPr
             type="button"
             className="fw-lightbox__close"
             onClick={closeLightbox}
-            aria-label="Đóng"
+            aria-label={t("Đóng")}
           >
             <FaTimes aria-hidden />
           </button>
@@ -101,7 +107,7 @@ export default function WorkDetailGallery({ images, title }: WorkDetailGalleryPr
                   type="button"
                   className="fw-lightbox__nav-btn"
                   onClick={() => setActiveIndex((i) => (i - 1 + images.length) % images.length)}
-                  aria-label="Ảnh trước"
+                  aria-label={t("Ảnh trước")}
                 >
                   ‹
                 </button>

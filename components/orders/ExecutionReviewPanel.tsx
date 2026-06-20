@@ -1,5 +1,7 @@
 "use client";
 
+import { formatDateUi, tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useMemo, useState } from "react";
 import {
   FaCheckCircle,
@@ -14,7 +16,6 @@ import {
 } from "react-icons/fa";
 import type { ContractMilestone, WorkflowContract, CancelRequest, ProgressHistoryEntry } from "@/lib/api/contracts";
 import { formatPackagePrice } from "@/lib/hire/servicePackages";
-import { formatDate } from "@/lib/format";
 import { formatTimelineDisplay, parseProposalSections } from "@/lib/orders/proposalDisplay";
 import WorkflowDeadlineBanner from "./WorkflowDeadlineBanner";
 import ProgressHistoryTimeline from "./ProgressHistoryTimeline";
@@ -70,7 +71,8 @@ export default function ExecutionReviewPanel({
   onRequestCancelRefund,
   onRespondCancelRequest,
   onOpenDispute,
-}: ExecutionReviewPanelProps) {
+}: ExecutionReviewPanelProps) {  const { t, formatDate } = useTranslation();
+
   const [progressNote, setProgressNote] = useState("");
   const [demoUrl, setDemoUrl] = useState("");
   const [revisionNote, setRevisionNote] = useState("");
@@ -159,8 +161,8 @@ export default function ExecutionReviewPanel({
       ) : null}
       <div className="hire-execution__hero">
         <div className="hire-execution__hero-text">
-          <span className="hire-execution__eyebrow">Giai đoạn 3</span>
-          <h2 className="hire-execution__title">Thực hiện & Kiểm tra</h2>
+          <span className="hire-execution__eyebrow">{t("Giai đoạn 3")}</span>
+          <h2 className="hire-execution__title">{t("Thực hiện & Kiểm tra")}</h2>
           <p className="hire-execution__lead">
             {workFrozen
               ? isClient
@@ -173,20 +175,20 @@ export default function ExecutionReviewPanel({
                 : "Cập nhật tiến độ thường xuyên, gửi link demo để client kiểm tra trước khi bàn giao."}
           </p>
         </div>
-        <ul className="hire-execution__steps" aria-label="Tiến trình thực hiện">
+        <ul className="hire-execution__steps" aria-label={t("Tiến trình thực hiện")}>
           <li className="hire-execution__step hire-execution__step--done">
             <span className="hire-execution__step-icon" aria-hidden>
               <FaCheckCircle />
             </span>
-            <span>Escrow đã nạp</span>
+            <span>{t("Escrow đã nạp")}</span>
           </li>
           <li className="hire-execution__step hire-execution__step--current">
             <span className="hire-execution__step-icon" aria-hidden>2</span>
-            <span>Thực hiện & kiểm tra</span>
+            <span>{t("Thực hiện & kiểm tra")}</span>
           </li>
           <li className="hire-execution__step hire-execution__step--muted">
             <span className="hire-execution__step-icon" aria-hidden>3</span>
-            <span>Bàn giao</span>
+            <span>{t("Bàn giao")}</span>
           </li>
         </ul>
       </div>
@@ -205,14 +207,14 @@ export default function ExecutionReviewPanel({
               </div>
               {timelineLabel !== "—" ? (
                 <div>
-                  <dt>Thời gian cam kết</dt>
+                  <dt>{t("Thời gian cam kết")}</dt>
                   <dd>{timelineLabel}</dd>
                 </div>
               ) : null}
               {contract.funded_at ? (
                 <div>
-                  <dt>Bắt đầu từ</dt>
-                  <dd>{formatDate(contract.funded_at)}</dd>
+                  <dt>{t("Bắt đầu từ")}</dt>
+                  <dd>{formatDateUi(contract.funded_at)}</dd>
                 </div>
               ) : null}
             </dl>
@@ -295,11 +297,11 @@ export default function ExecutionReviewPanel({
           {!isClient && workFrozen ? (
             <div className="hire-execution__frozen-card">
               <FaPauseCircle className="hire-execution__frozen-icon" aria-hidden />
-              <h3 className="hire-execution__frozen-title">Công việc tạm dừng</h3>
+              <h3 className="hire-execution__frozen-title">{t("Công việc tạm dừng")}</h3>
               <p className="hire-execution__frozen-desc">
                 Client đã gửi yêu cầu hoàn tiền. Bạn không thể cập nhật tiến độ hoặc bàn giao cho
-                đến khi phản hồi <strong>Đồng ý hủy</strong> hoặc{" "}
-                <strong>Từ chối → Tranh chấp</strong> ở banner phía trên. Nếu từ chối, đơn chuyển
+                đến khi phản hồi <strong>{t("Đồng ý hủy")}</strong> hoặc{" "}
+                <strong>{t("Từ chối → Tranh chấp")}</strong> ở banner phía trên. Nếu từ chối, đơn chuyển
                 sang tranh chấp và Admin phán xử — không tiếp tục làm việc.
               </p>
             </div>
@@ -310,7 +312,7 @@ export default function ExecutionReviewPanel({
               <header className="hire-execution__work-head">
                 <FaPaperPlane className="hire-execution__work-head-icon" aria-hidden />
                 <div>
-                  <h3 className="hire-execution__work-title">Cập nhật tiến độ</h3>
+                  <h3 className="hire-execution__work-title">{t("Cập nhật tiến độ")}</h3>
                   <p className="hire-execution__work-sub">
                     {progressHistory.length > 0
                       ? "Gửi bản cập nhật mới — lịch sử các lần trước vẫn được giữ bên trên."
@@ -334,7 +336,7 @@ export default function ExecutionReviewPanel({
                     rows={5}
                     value={progressNote}
                     onChange={(e) => setProgressNote(e.target.value)}
-                    placeholder="Mô tả ngắn gọn công việc đã hoàn thành và bước tiếp theo..."
+                    placeholder={t("Mô tả ngắn gọn công việc đã hoàn thành và bước tiếp theo...")}
                   />
                 </div>
 
@@ -343,7 +345,7 @@ export default function ExecutionReviewPanel({
                     <FaLink aria-hidden />
                     Link demo (staging)
                   </label>
-                  <span className="hire-execution__hint">URL bản xem trước — client mở trực tiếp.</span>
+                  <span className="hire-execution__hint">{t("URL bản xem trước — client mở trực tiếp.")}</span>
                   <input
                     id="exec-demo"
                     type="url"
@@ -374,7 +376,7 @@ export default function ExecutionReviewPanel({
               </footer>
 
               <div className="hire-execution__delivery-block">
-                <h4 className="hire-execution__delivery-title">Sẵn sàng bàn giao?</h4>
+                <h4 className="hire-execution__delivery-title">{t("Sẵn sàng bàn giao?")}</h4>
                 <p className="hire-execution__delivery-desc">
                   Chỉ gửi bàn giao khi client đã duyệt qua demo và không còn chỉnh sửa lớn. Bước tiếp
                   theo là giai đoạn Nghiệm thu.
@@ -385,7 +387,7 @@ export default function ExecutionReviewPanel({
                     checked={deliveryConfirmed}
                     onChange={(e) => setDeliveryConfirmed(e.target.checked)}
                   />
-                  <span>Tôi xác nhận sản phẩm đã sẵn sàng bàn giao cho Client.</span>
+                  <span>{t("Tôi xác nhận sản phẩm đã sẵn sàng bàn giao cho Client.")}</span>
                 </label>
                 <button
                   type="button"
@@ -402,7 +404,7 @@ export default function ExecutionReviewPanel({
           {isClient ? (
             <div className="hire-execution__review-card">
               <header className="hire-execution__review-head">
-                <h3 className="hire-execution__work-title">Tiến độ từ Freelancer</h3>
+                <h3 className="hire-execution__work-title">{t("Tiến độ từ Freelancer")}</h3>
                 <p className="hire-execution__work-sub">
                   Xem các bản cập nhật theo thời gian và phản hồi nếu cần chỉnh sửa trước khi bàn
                   giao.
@@ -411,10 +413,10 @@ export default function ExecutionReviewPanel({
 
               {progressHistory.length === 0 && (hasProgress || hasDemo) ? (
                 <div className="hire-execution__status-feed hire-execution__status-feed--latest">
-                  <p className="hire-execution__latest-label">Bản cập nhật mới nhất</p>
+                  <p className="hire-execution__latest-label">{t("Bản cập nhật mới nhất")}</p>
                   {hasProgress ? (
                     <div className="hire-execution__feed-item">
-                      <span className="hire-execution__feed-label">Ghi chú tiến độ</span>
+                      <span className="hire-execution__feed-label">{t("Ghi chú tiến độ")}</span>
                       <p className="hire-execution__feed-body">{displayProgressNote}</p>
                     </div>
                   ) : null}
@@ -435,7 +437,7 @@ export default function ExecutionReviewPanel({
                 </div>
               ) : progressHistory.length === 0 ? (
                 <div className="hire-execution__empty-feed">
-                  <p>Freelancer chưa cập nhật tiến độ hoặc chưa gửi link demo.</p>
+                  <p>{t("Freelancer chưa cập nhật tiến độ hoặc chưa gửi link demo.")}</p>
                 </div>
               ) : null}
 
@@ -443,7 +445,7 @@ export default function ExecutionReviewPanel({
                 <header className="hire-execution__revision-head">
                   <FaRedo aria-hidden />
                   <div>
-                    <h4 className="hire-execution__revision-title">Yêu cầu chỉnh sửa</h4>
+                    <h4 className="hire-execution__revision-title">{t("Yêu cầu chỉnh sửa")}</h4>
                     <p className="hire-execution__revision-sub">
                       {workFrozen
                         ? "Không thể gửi chỉnh sửa khi đang chờ xử lý yêu cầu hoàn tiền."
@@ -460,7 +462,7 @@ export default function ExecutionReviewPanel({
                   rows={4}
                   value={revisionNote}
                   onChange={(e) => setRevisionNote(e.target.value)}
-                  placeholder="Ví dụ: Nút Đăng ký chưa đúng màu brand, form liên hệ thiếu validation..."
+                  placeholder={t("Ví dụ: Nút Đăng ký chưa đúng màu brand, form liên hệ thiếu validation...")}
                   disabled={revisionBlocked}
                 />
                 <button

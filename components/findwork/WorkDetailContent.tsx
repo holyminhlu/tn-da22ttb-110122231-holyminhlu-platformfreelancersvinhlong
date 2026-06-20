@@ -1,5 +1,7 @@
 "use client";
 
+import { formatDateUi, tUi, formatVndUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
@@ -20,7 +22,6 @@ import {
 } from "react-icons/fa";
 import { getJob, type JobListing } from "@/lib/api/jobs";
 import UserAvatar from "@/components/ui/UserAvatar";
-import { formatDate, formatVnd } from "@/lib/format";
 import { useStoredUser } from "@/hooks/useStoredUser";
 import {
   clientDisplayName,
@@ -46,8 +47,9 @@ import WorkDetailGallery from "./WorkDetailGallery";
 import JobProposalFormModal from "./JobProposalFormModal";
 
 function WorkDetailSkeleton() {
+  const t = tUi;
   return (
-    <div className="wd-skeleton" aria-busy="true" aria-label="Đang tải">
+    <div className="wd-skeleton" aria-busy="true" aria-label={tUi("Đang tải")}>
       <div className="wd-skeleton__back" />
       <div className="wd-skeleton__hero" />
       <div className="wd-skeleton__grid">
@@ -80,7 +82,8 @@ function StatCard({
   );
 }
 
-export default function WorkDetailContent() {
+export default function WorkDetailContent() {  const { t, formatVnd, formatDate } = useTranslation();
+
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -99,7 +102,7 @@ export default function WorkDetailContent() {
 
   const loadJob = useCallback(async () => {
     if (!jobId) {
-      setError("Mã công việc không hợp lệ.");
+      setError(t("Mã công việc không hợp lệ."));
       setLoading(false);
       return;
     }
@@ -144,14 +147,14 @@ export default function WorkDetailContent() {
           Quay lại danh sách
         </Link>
         <div className="wd-error" role="alert">
-          {error || "Không tìm thấy công việc."}
+          {error || t("Không tìm thấy công việc.")}
         </div>
       </div>
     );
   }
 
   const budgetLine = formatJobBudgetLine(job);
-  const budgetPrimary = job.budget != null ? formatVnd(job.budget) : "Thỏa thuận";
+  const budgetPrimary = job.budget != null ? formatVndUi(job.budget) : "Thỏa thuận";
   const tags = parseJobTags(job.tags);
   const images = parseJobImages(job.images);
   const clientName = clientDisplayName(job.client_name);
@@ -169,6 +172,9 @@ export default function WorkDetailContent() {
   const isOwnJob = Boolean(user?.id && job.client_id && String(user.id) === String(job.client_id));
 
   function openQuoteFlow() {
+  const t = tUi;
+  const formatDate = formatDateUi;
+  const formatVnd = formatVndUi;
     if (isClient) {
       setClientNoticeOpen(true);
       return;
@@ -184,8 +190,8 @@ export default function WorkDetailContent() {
       </Link>
 
       <header className="wd-hero-card">
-        <nav className="wd-breadcrumb" aria-label="Điều hướng">
-          <Link href="/findwork">Tìm việc làm</Link>
+        <nav className="wd-breadcrumb" aria-label={t("Điều hướng")}>
+          <Link href="/findwork">{t("Tìm việc làm")}</Link>
           <span className="wd-breadcrumb__sep" aria-hidden>
             /
           </span>
@@ -237,17 +243,17 @@ export default function WorkDetailContent() {
         </div>
 
         <div className="wd-hero-stats">
-          <StatCard icon={<FaMoneyBillWave />} label="Ngân sách" value={budgetPrimary} highlight />
+          <StatCard icon={<FaMoneyBillWave />} label={t("Ngân sách")} value={budgetPrimary} highlight />
           <StatCard
             icon={<FaMapMarkerAlt />}
-            label="Vị trí"
+            label={t("Vị trí")}
             value={job.location_label?.trim() || clientLoc}
           />
-          <StatCard icon={<FaBriefcase />} label="Loại ngân sách" value={budgetLine} />
+          <StatCard icon={<FaBriefcase />} label={t("Loại ngân sách")} value={budgetLine} />
           <StatCard
             icon={<FaCalendarAlt />}
-            label="Hạn gửi"
-            value={job.due_at ? formatDate(job.due_at) : "Không giới hạn"}
+            label={t("Hạn gửi")}
+            value={job.due_at ? formatDateUi(job.due_at) : "Không giới hạn"}
           />
         </div>
       </header>
@@ -261,9 +267,9 @@ export default function WorkDetailContent() {
           ) : null}
 
           <section className="wd-card">
-            <h2 className="wd-card__title">Mô tả công việc</h2>
+            <h2 className="wd-card__title">{t("Mô tả công việc")}</h2>
             <div className="wd-prose">
-              {job.description?.trim() || "Chưa có mô tả chi tiết."}
+              {job.description?.trim() || t("Chưa có mô tả chi tiết.")}
             </div>
           </section>
 
@@ -273,7 +279,7 @@ export default function WorkDetailContent() {
 
           {categoryLabel || tags.length > 0 ? (
             <section className="wd-card">
-              <h2 className="wd-card__title">Danh mục & kỹ năng</h2>
+              <h2 className="wd-card__title">{t("Danh mục & kỹ năng")}</h2>
               <div className="wd-tags">
                 {categoryLabel ? (
                   <span className="wd-tag wd-tag--category">
@@ -300,17 +306,17 @@ export default function WorkDetailContent() {
             </h2>
             {quotePhase === "none" || quotePhase === "declined" ? (
               <p className="wd-help-text">
-                Nhấn <strong>Gửi yêu cầu báo giá</strong> để client nhận hồ sơ của bạn. Chỉ gửi được khi việc
-                đang <em>Đang tuyển</em> và bạn chưa có báo giá đang xử lý.
+                Nhấn <strong>{t("Gửi yêu cầu báo giá")}</strong> để client nhận hồ sơ của bạn. Chỉ gửi được khi việc
+                đang <em>{t("Đang tuyển")}</em> và bạn chưa có báo giá đang xử lý.
               </p>
             ) : (
               <p className="wd-help-text">{quotePhaseDescription}</p>
             )}
             {!isOpen && quotePhase === "none" ? (
-              <p className="wd-help-warn">Công việc này hiện không còn nhận báo giá mới.</p>
+              <p className="wd-help-warn">{t("Công việc này hiện không còn nhận báo giá mới.")}</p>
             ) : null}
             {blocksNewJobQuote(job) && quotePhase !== "accepted" ? (
-              <p className="wd-help-warn">Bạn không thể gửi báo giá mới cho công việc này ở trạng thái hiện tại.</p>
+              <p className="wd-help-warn">{t("Bạn không thể gửi báo giá mới cho công việc này ở trạng thái hiện tại.")}</p>
             ) : null}
           </section>
         </div>
@@ -318,7 +324,7 @@ export default function WorkDetailContent() {
         <aside className="wd-aside">
           <div className="wd-aside__sticky">
             <section className="wd-card wd-client-card">
-              <h2 className="wd-card__title wd-card__title--sm">Khách hàng</h2>
+              <h2 className="wd-card__title wd-card__title--sm">{t("Khách hàng")}</h2>
               <div className="wd-client">
                 <UserAvatar
                   src={job.client_avatar_url}
@@ -335,8 +341,8 @@ export default function WorkDetailContent() {
                     {job.client_email_verified ? (
                       <FaCheckCircle
                         className="wd-client__verified"
-                        title="Email đã xác minh"
-                        aria-label="Email đã xác minh"
+                        title={t("Email đã xác minh")}
+                        aria-label={t("Email đã xác minh")}
                       />
                     ) : null}
                   </p>
@@ -346,18 +352,18 @@ export default function WorkDetailContent() {
               <dl className="wd-client-stats">
                 {job.client_total_spent != null && job.client_total_spent > 0 ? (
                   <div className="wd-client-stats__row">
-                    <dt>Đã chi tiêu</dt>
-                    <dd>{formatVnd(job.client_total_spent)}</dd>
+                    <dt>{t("Đã chi tiêu")}</dt>
+                    <dd>{formatVndUi(job.client_total_spent)}</dd>
                   </div>
                 ) : null}
                 {job.client_satisfaction_score != null ? (
                   <div className="wd-client-stats__row">
-                    <dt>Điểm hài lòng</dt>
+                    <dt>{t("Điểm hài lòng")}</dt>
                     <dd>{Number(job.client_satisfaction_score).toFixed(1)}/5</dd>
                   </div>
                 ) : null}
                 <div className="wd-client-stats__row">
-                  <dt>Mã việc</dt>
+                  <dt>{t("Mã việc")}</dt>
                   <dd className="wd-client-stats__code">{job.id.slice(0, 8).toUpperCase()}</dd>
                 </div>
               </dl>
@@ -392,7 +398,7 @@ export default function WorkDetailContent() {
                   <div className="wd-cta-offer" role="status">
                     <FaEnvelopeOpenText className="wd-cta-offer__icon" aria-hidden />
                     <div>
-                      <p className="wd-cta-offer__title">Bạn nhận đề xuất từ khách hàng</p>
+                      <p className="wd-cta-offer__title">{t("Bạn nhận đề xuất từ khách hàng")}</p>
                       <p className="wd-cta-offer__text">{quotePhaseDescription}</p>
                     </div>
                   </div>
@@ -426,7 +432,7 @@ export default function WorkDetailContent() {
                   <div className="wd-cta-pending" role="status">
                     <FaCheckCircle aria-hidden />
                     <div>
-                      <p className="wd-cta-pending__title">Đã gửi báo giá</p>
+                      <p className="wd-cta-pending__title">{t("Đã gửi báo giá")}</p>
                       <p className="wd-cta-pending__text">{quotePhaseDescription}</p>
                     </div>
                   </div>
@@ -489,11 +495,11 @@ export default function WorkDetailContent() {
               </button>
               <p className="wd-cta__hint">
                 {isGuest ? (
-                  <Link href="/dang-ky">Chưa có tài khoản? Đăng ký freelancer</Link>
+                  <Link href="/dang-ky">{t("Chưa có tài khoản? Đăng ký freelancer")}</Link>
                 ) : blocksNewJobQuote(job) ? (
-                  <a href="#submit-help">Tại sao tôi không thể gửi báo giá mới?</a>
+                  <a href="#submit-help">{t("Tại sao tôi không thể gửi báo giá mới?")}</a>
                 ) : (
-                  <a href="#submit-help">Hướng dẫn gửi báo giá</a>
+                  <a href="#submit-help">{t("Hướng dẫn gửi báo giá")}</a>
                 )}
               </p>
             </section>

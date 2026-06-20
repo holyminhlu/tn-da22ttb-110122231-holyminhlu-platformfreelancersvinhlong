@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -54,6 +55,8 @@ function StatsTable({
 }
 
 export default function ProfileStatsContent() {
+  const { t } = useTranslation();
+
   const router = useRouter();
   const [period, setPeriod] = useState<ProfileStatsPeriod>("30d");
   const [stats, setStats] = useState<ProfileStatsResponse | null>(null);

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useStoredUser } from "@/hooks/useStoredUser";
@@ -23,6 +24,8 @@ const FILTERS: { value: JobContractFilter; label: string }[] = [
 ];
 
 export default function ClientJobContractsPage() {
+  const { t } = useTranslation();
+
   const { user, ready, isClient } = useStoredUser({ refreshFromApi: false });
   const isGuest = ready && !user;
 
@@ -44,7 +47,7 @@ export default function ClientJobContractsPage() {
     try {
       const data = await getMyWork();
       if (data.role !== "client") {
-        setError("Trang này dành cho tài khoản client.");
+        setError(t("Trang này dành cho tài khoản client."));
         setItems([]);
         return;
       }
@@ -78,46 +81,45 @@ export default function ClientJobContractsPage() {
       <div className="fw-contracts">
         <header className="fw-contracts__head">
           <div>
-            <h1 className="fw-contracts__title">Hợp đồng việc</h1>
+            <h1 className="fw-contracts__title">{t("Hợp đồng việc")}</h1>
             <p className="fw-contracts__lead">
-              Các hợp đồng đã chốt với freelancer từ báo giá job — mở chi tiết để theo dõi tiến
-              độ và nghiệm thu.
+              {t("Các hợp đồng đã chốt với freelancer từ báo giá job — mở chi tiết để theo dõi tiến độ và nghiệm thu.")}
             </p>
           </div>
           <Link href="/hire/joblist" className="fw-contracts__cta">
-            Danh sách việc
+            {t("Danh sách việc")}
           </Link>
         </header>
 
         {isGuest ? (
           <div className="fw-contracts__guest">
-            <p>Đăng nhập client để xem hợp đồng việc.</p>
+            <p>{t("Đăng nhập client để xem hợp đồng việc.")}</p>
             <Link href="/dang-nhap" className="fw-contracts__cta">
-              Đăng nhập
+              {t("Đăng nhập")}
             </Link>
           </div>
         ) : ready && user && !isClient ? (
           <p className="fw-contracts__error" role="alert">
-            Client đăng nhập để xem hợp đồng. Freelancer xem tại cùng trang với tài khoản FL.
+            {t("Client đăng nhập để xem hợp đồng. Freelancer xem tại cùng trang với tài khoản FL.")}
           </p>
         ) : (
           <>
-            <div className="fw-contracts__stats" aria-label="Tóm tắt hợp đồng">
+            <div className="fw-contracts__stats" aria-label={t("Tóm tắt hợp đồng")}>
               <div className="fw-contracts__stat">
                 <span className="fw-contracts__stat-value">{counts.all}</span>
-                <span className="fw-contracts__stat-label">Có hợp đồng</span>
+                <span className="fw-contracts__stat-label">{t("Có hợp đồng")}</span>
               </div>
               <div className="fw-contracts__stat">
                 <span className="fw-contracts__stat-value">{counts.active}</span>
-                <span className="fw-contracts__stat-label">Đang thực hiện</span>
+                <span className="fw-contracts__stat-label">{t("Đang thực hiện")}</span>
               </div>
               <div className="fw-contracts__stat">
                 <span className="fw-contracts__stat-value">{counts.completed}</span>
-                <span className="fw-contracts__stat-label">Hoàn thành</span>
+                <span className="fw-contracts__stat-label">{t("Hoàn thành")}</span>
               </div>
               <div className="fw-contracts__stat">
                 <span className="fw-contracts__stat-value">{counts.archived}</span>
-                <span className="fw-contracts__stat-label">Đã đóng</span>
+                <span className="fw-contracts__stat-label">{t("Đã đóng")}</span>
               </div>
             </div>
 
@@ -125,12 +127,12 @@ export default function ClientJobContractsPage() {
               <input
                 type="search"
                 className="fw-contracts__search"
-                placeholder="Tìm việc, freelancer..."
+                placeholder={t("Tìm việc, freelancer...")}
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
-                aria-label="Tìm hợp đồng"
+                aria-label={t("Tìm hợp đồng")}
               />
-              <div className="fw-contracts__filters" role="tablist" aria-label="Lọc hợp đồng">
+              <div className="fw-contracts__filters" role="tablist" aria-label={t("Lọc hợp đồng")}>
                 {FILTERS.map((item) => (
                   <button
                     key={item.value}
@@ -140,7 +142,7 @@ export default function ClientJobContractsPage() {
                     className={`fw-contracts__filter${filter === item.value ? " fw-contracts__filter--active" : ""}`}
                     onClick={() => setFilter(item.value)}
                   >
-                    {item.label}
+                    {t(item.label)}
                     <span className="fw-contracts__filter-count">{counts[item.value]}</span>
                   </button>
                 ))}
@@ -148,7 +150,7 @@ export default function ClientJobContractsPage() {
             </div>
 
             {loading ? (
-              <p className="text-sm text-gray-500">Đang tải...</p>
+              <p className="text-sm text-gray-500">{t("Đang tải...")}</p>
             ) : error ? (
               <p className="fw-contracts__error" role="alert">
                 {error}
@@ -160,7 +162,7 @@ export default function ClientJobContractsPage() {
                   : "Không có hợp đồng trong bộ lọc này."}
                 <br />
                 <Link href="/hire/quotes" style={{ marginTop: "0.75rem", display: "inline-block" }}>
-                  Xem báo giá
+                  {t("Xem báo giá")}
                 </Link>
               </div>
             ) : (

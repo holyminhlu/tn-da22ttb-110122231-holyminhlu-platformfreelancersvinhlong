@@ -1,5 +1,7 @@
 "use client";
 
+import { tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useRef, useState } from "react";
 import { FaCloudUploadAlt, FaFilePdf, FaImage, FaTimes, FaVideo } from "react-icons/fa";
 import { uploadDisputeEvidence, type OpenDisputePayload } from "@/lib/api/resolution";
@@ -23,6 +25,7 @@ type DisputeOpenFormProps = {
 };
 
 function evidenceIcon(name: string) {
+  const t = tUi;
   const lower = name.toLowerCase();
   if (lower.endsWith(".pdf")) return <FaFilePdf aria-hidden />;
   if (/\.(mp4|webm|mov)$/.test(lower)) return <FaVideo aria-hidden />;
@@ -61,7 +64,10 @@ function validateEvidenceFiles(files: File[], currentCount: number) {
   return { valid, errors };
 }
 
-export default function DisputeOpenForm({ busy, onSubmit }: DisputeOpenFormProps) {
+export default function DisputeOpenForm({
+  busy, onSubmit }: DisputeOpenFormProps) {
+  const { t } = useTranslation();
+
   const fileRef = useRef<HTMLInputElement>(null);
   const [issueCategory, setIssueCategory] = useState("");
   const [desiredResolution, setDesiredResolution] = useState("");
@@ -72,6 +78,7 @@ export default function DisputeOpenForm({ busy, onSubmit }: DisputeOpenFormProps
   const [uploadError, setUploadError] = useState("");
 
   async function handleFiles(files: FileList | null) {
+  const t = tUi;
     if (!files?.length) return;
     const { valid, errors } = validateEvidenceFiles(Array.from(files), evidenceItems.length);
     if (errors.length) setUploadError(errors.join(" "));
@@ -102,11 +109,13 @@ export default function DisputeOpenForm({ busy, onSubmit }: DisputeOpenFormProps
   }
 
   function removeEvidence(url: string) {
+  const t = tUi;
     setEvidenceItems((prev) => prev.filter((item) => item.url !== url));
     setUploadError("");
   }
 
   function handleSubmit() {
+  const t = tUi;
     const evidenceUrls = evidenceItems.map((item) => item.url);
     if (!issueCategory || !desiredResolution || !detail.trim() || !evidenceUrls.length) return;
     onSubmit({
@@ -123,7 +132,7 @@ export default function DisputeOpenForm({ busy, onSubmit }: DisputeOpenFormProps
   return (
     <div className="resolution-form resolution-form--dispute">
       <header className="resolution-form__head">
-        <h4 className="resolution-form__title">Mở tranh chấp</h4>
+        <h4 className="resolution-form__title">{t("Mở tranh chấp")}</h4>
         <p className="resolution-form__sub">
           Dùng khi giao dịch đã hoặc đang diễn ra nhưng có sự cố và hai bên không tự thỏa thuận
           được. Admin sẽ tham gia xử lý tại Trung tâm giải quyết tranh chấp.
@@ -139,7 +148,7 @@ export default function DisputeOpenForm({ busy, onSubmit }: DisputeOpenFormProps
           value={issueCategory}
           onChange={(e) => setIssueCategory(e.target.value)}
         >
-          <option value="">— Chọn loại vấn đề —</option>
+          <option value="">{t("— Chọn loại vấn đề —")}</option>
           {DISPUTE_ISSUE_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>
               {opt.label}
@@ -157,7 +166,7 @@ export default function DisputeOpenForm({ busy, onSubmit }: DisputeOpenFormProps
           value={desiredResolution}
           onChange={(e) => setDesiredResolution(e.target.value)}
         >
-          <option value="">— Chọn yêu cầu —</option>
+          <option value="">{t("— Chọn yêu cầu —")}</option>
           {DISPUTE_RESOLUTION_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>
               {opt.label}
@@ -168,12 +177,12 @@ export default function DisputeOpenForm({ busy, onSubmit }: DisputeOpenFormProps
 
       {desiredResolution === "other" ? (
         <label className="resolution-form__field">
-          <span>Mô tả yêu cầu cụ thể</span>
+          <span>{t("Mô tả yêu cầu cụ thể")}</span>
           <input
             className="resolution-form__input"
             value={resolutionNote}
             onChange={(e) => setResolutionNote(e.target.value)}
-            placeholder="VD: Hoàn 30% và giữ phần còn lại..."
+            placeholder={t("VD: Hoàn 30% và giữ phần còn lại...")}
           />
         </label>
       ) : null}
@@ -187,7 +196,7 @@ export default function DisputeOpenForm({ busy, onSubmit }: DisputeOpenFormProps
           rows={4}
           value={detail}
           onChange={(e) => setDetail(e.target.value)}
-          placeholder="Trình bày sự việc, thời điểm, ảnh hưởng..."
+          placeholder={t("Trình bày sự việc, thời điểm, ảnh hưởng...")}
         />
       </label>
 

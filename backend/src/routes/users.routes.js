@@ -5,6 +5,7 @@ const identityVerification = require("../controllers/identityVerification.contro
 const favoriteFreelancers = require("../controllers/favoriteFreelancers.controller");
 
 const security = require("../controllers/security.controller");
+const notificationPreferences = require("../controllers/notificationPreferences.controller");
 
 const router = express.Router();
 
@@ -37,6 +38,8 @@ router.post("/me/avatar", users.updateAvatar);
 router.patch("/me/profile", users.updateProfile);
 router.patch("/me/email", users.changeEmail);
 router.patch("/me/password", users.changePassword);
+router.get("/me/notification-preferences", notificationPreferences.getNotificationPreferences);
+router.patch("/me/notification-preferences", notificationPreferences.updateNotificationPreferences);
 router.get("/me/security", security.getSecurityOverview);
 router.get("/me/security/sessions", security.listSessions);
 router.delete("/me/security/sessions/:sessionId", security.revokeSession);

@@ -1,6 +1,7 @@
+import { formatDateUi, formatVndUi, tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { FaChevronRight } from "react-icons/fa";
-import { formatDate, formatVnd } from "@/lib/format";
 import {
   contractStatusClass,
   contractStatusLabel,
@@ -12,10 +13,12 @@ type JobAssignmentCardProps = {
   role?: "freelancer" | "client" | null;
 };
 
-export default function JobAssignmentCard({ item, role }: JobAssignmentCardProps) {
+export default function JobAssignmentCard({
+  item, role }: JobAssignmentCardProps) {  const { t, formatVnd, formatDate } = useTranslation();
+
   const price =
-    item.agreedPrice != null ? formatVnd(item.agreedPrice) : formatVnd(item.budget);
-  const counterpartyLabel = role === "client" ? "Freelancer" : "Khách hàng";
+    item.agreedPrice != null ? formatVndUi(item.agreedPrice) : formatVndUi(item.budget);
+  const counterpartyLabel = role === "client" ? "Freelancer" : t("Khách hàng");
 
   const href =
     role === "freelancer" && item.id && item.id !== item.jobId
@@ -27,7 +30,7 @@ export default function JobAssignmentCard({ item, role }: JobAssignmentCardProps
       <Link href={href} className="jobs-card__link">
         <div className="jobs-card__head">
           <div className="jobs-card__body">
-            <h2 className="jobs-card__title">{item.title}</h2>
+            <h2 className="jobs-card__title">{t(item.title)}</h2>
             {item.counterparty ? (
               <p className="jobs-card__meta">
                 {counterpartyLabel}: {item.counterparty}
@@ -40,11 +43,11 @@ export default function JobAssignmentCard({ item, role }: JobAssignmentCardProps
               <span className="jobs-card__price">{price}</span>
             </div>
             <p className="jobs-card__meta jobs-card__meta--foot">
-              Hoạt động gần nhất: {formatDate(item.activityAt)}
+              {t("Hoạt động gần nhất:")} {formatDateUi(item.activityAt)}
               {item.jobId ? (
                 <>
                   {" "}
-                  · Mã{" "}
+                  · {t("Mã")}{" "}
                   <span className="jobs-card__code">{item.jobId.slice(0, 8)}…</span>
                 </>
               ) : null}

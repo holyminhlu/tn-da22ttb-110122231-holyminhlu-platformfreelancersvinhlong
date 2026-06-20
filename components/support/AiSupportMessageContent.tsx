@@ -1,3 +1,5 @@
+import { tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import { Fragment, type ReactNode } from "react";
 import {
   FaCheckCircle,
@@ -205,6 +207,7 @@ function NotedLine({ variant, text }: { variant: "tip" | "info" | "success"; tex
 }
 
 function WarningCallout({ text }: { text: string }) {
+  const t = tUi;
   return (
     <div className="vlc-ai-support__callout vlc-ai-support__callout--warning" role="note">
       <span className="vlc-ai-support__callout-icon" aria-hidden>
@@ -224,6 +227,8 @@ type AiSupportMessageContentProps = {
 export default function AiSupportMessageContent({
   content,
 }: AiSupportMessageContentProps) {
+  const { t } = useTranslation();
+
   const blocks = parseBlocks(content);
 
   if (blocks.length === 0) {

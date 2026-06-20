@@ -1,5 +1,7 @@
 "use client";
 
+import { tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { FaRobot, FaTimes } from "react-icons/fa";
 import { usePathname } from "next/navigation";
@@ -24,6 +26,7 @@ function createWelcomeMessage(): SupportAiChatMessage {
 }
 
 export default function VlcAiSupportWidget() {
+  const { t } = useTranslation();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<SupportAiChatMessage[]>([createWelcomeMessage()]);
@@ -39,6 +42,7 @@ export default function VlcAiSupportWidget() {
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
+  const t = tUi;
       if (event.key === "Escape" && open) setOpen(false);
     }
     document.addEventListener("keydown", onKeyDown);
@@ -46,6 +50,7 @@ export default function VlcAiSupportWidget() {
   }, [open]);
 
   async function sendMessage(text: string) {
+  const t = tUi;
     const trimmed = text.trim();
     if (!trimmed || sending) return;
 
@@ -73,11 +78,13 @@ export default function VlcAiSupportWidget() {
   }
 
   async function handleSubmit(event: FormEvent) {
+  const t = tUi;
     event.preventDefault();
     await sendMessage(draft);
   }
 
   function handleReset() {
+  const t = tUi;
     setMessages([createWelcomeMessage()]);
     setError("");
     setDraft("");
@@ -93,20 +100,20 @@ export default function VlcAiSupportWidget() {
       aria-live="polite"
     >
       {open ? (
-        <div className="vlc-ai-support__panel" role="dialog" aria-modal="true" aria-label="Chat tư vấn AI">
+        <div className="vlc-ai-support__panel" role="dialog" aria-modal="true" aria-label={t("Chat tư vấn AI")}>
           <header className="vlc-ai-support__head">
             <div className="vlc-ai-support__head-main">
               <FaRobot className="vlc-ai-support__head-icon" aria-hidden />
               <div>
-                <p className="vlc-ai-support__eyebrow">Trợ lý AI · VLC</p>
-                <h2 className="vlc-ai-support__title">Tư vấn trực tuyến</h2>
+                <p className="vlc-ai-support__eyebrow">{t("Trợ lý AI · VLC")}</p>
+                <h2 className="vlc-ai-support__title">{t("Tư vấn trực tuyến")}</h2>
               </div>
             </div>
             <button
               type="button"
               className="vlc-ai-support__close"
               onClick={() => setOpen(false)}
-              aria-label="Đóng chat AI"
+              aria-label={t("Đóng chat AI")}
             >
               <FaTimes aria-hidden />
             </button>
@@ -170,19 +177,19 @@ export default function VlcAiSupportWidget() {
             <input
               type="text"
               className="vlc-ai-support__input"
-              placeholder="Nhập câu hỏi..."
+              placeholder={t("Nhập câu hỏi...")}
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
               disabled={sending}
               maxLength={2000}
             />
             <button type="submit" className="vlc-ai-support__send" disabled={sending || !draft.trim()}>
-              Gửi
+              {t("Gửi")}
             </button>
           </form>
 
           <button type="button" className="vlc-ai-support__reset" onClick={handleReset}>
-            Bắt đầu lại
+            {t("Bắt đầu lại")}
           </button>
         </div>
       ) : null}

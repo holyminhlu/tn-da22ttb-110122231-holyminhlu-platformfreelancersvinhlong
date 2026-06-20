@@ -1,6 +1,54 @@
 ﻿:root {
   --background: #ffffff;
   --foreground: #18181b;
+
+  /* Palette sáng — giữ giao diện gốc */
+  --vlc-page-bg: #f3f4f6;
+  --vlc-surface: #ffffff;
+  --vlc-surface-muted: #f9fafb;
+  --vlc-surface-subtle: #f4f6f9;
+  --vlc-surface-elevated: #ffffff;
+  --vlc-text: #1f2937;
+  --vlc-text-secondary: #374151;
+  --vlc-text-muted: #6b7280;
+  --vlc-text-faint: #9ca3af;
+  --vlc-border: #e5e7eb;
+  --vlc-border-subtle: #f3f4f6;
+  --vlc-link: #2563eb;
+  --vlc-link-hover: #1d4ed8;
+  --vlc-accent: #0066cc;
+  --vlc-accent-soft: #eff6ff;
+  --vlc-highlight: #059669;
+  --vlc-input-bg: #ffffff;
+  --vlc-shadow: rgb(0 0 0 / 0.06);
+  --vlc-danger-bg: #fffbfb;
+  --vlc-danger-border: #fecaca;
+  --vlc-on-accent: #ffffff;
+}
+
+.dark {
+  --vlc-page-bg: #000000;
+  --vlc-surface: #0a0a0a;
+  --vlc-surface-muted: #111111;
+  --vlc-surface-subtle: #141414;
+  --vlc-surface-elevated: #1a1a1a;
+  --vlc-text: #ffffff;
+  --vlc-text-secondary: #e5e5e5;
+  --vlc-text-muted: #a3a3a3;
+  --vlc-text-faint: #737373;
+  --vlc-border: rgb(255 255 255 / 14%);
+  --vlc-border-subtle: rgb(255 255 255 / 8%);
+  --vlc-link: #60a5fa;
+  --vlc-link-hover: #93c5fd;
+  --vlc-accent: #3b82f6;
+  --vlc-accent-soft: rgb(59 130 246 / 16%);
+  --vlc-highlight: #34d399;
+  --vlc-input-bg: #111111;
+  --vlc-shadow: rgb(0 0 0 / 0.55);
+  --vlc-danger-bg: rgb(127 29 29 / 22%);
+  --vlc-danger-border: rgb(248 113 113 / 40%);
+  --vlc-on-accent: #ffffff;
+  color-scheme: dark;
 }
 
 @theme inline {

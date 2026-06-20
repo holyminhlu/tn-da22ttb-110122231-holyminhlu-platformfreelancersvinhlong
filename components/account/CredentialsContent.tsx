@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "@/hooks/useTranslation";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import GoogleLogo from "@/components/icons/GoogleLogo";
@@ -104,6 +105,8 @@ function PasswordToggleInput({
 }
 
 export default function CredentialsContent() {
+  const { t } = useTranslation();
+
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [auth, setAuth] = useState<Pick<CredentialsMeta, "isGoogleAccount" | "hasLocalPassword" | "isGoogleOnly">>({

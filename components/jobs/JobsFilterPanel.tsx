@@ -1,5 +1,7 @@
 "use client";
 
+import { tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useEffect, useRef, useState } from "react";
 import { FaBars, FaCaretDown } from "react-icons/fa";
 import {
@@ -22,6 +24,8 @@ export default function JobsFilterPanel({
   onFilterApply,
   onSortChange,
 }: JobsFilterPanelProps) {
+  const { t } = useTranslation();
+
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<JobsFilter>(filter);
   const [sortOpen, setSortOpen] = useState(false);
@@ -38,7 +42,8 @@ export default function JobsFilterPanel({
 
   useEffect(() => {
     function onDocClick(e: MouseEvent) {
-      if (filterRef.current && !filterRef.current.contains(e.target as Node)) {
+  const t = tUi;
+  if (filterRef.current && !filterRef.current.contains(e.target as Node)) {
         setOpen(false);
       }
       if (sortRef.current && !sortRef.current.contains(e.target as Node)) {
@@ -67,7 +72,7 @@ export default function JobsFilterPanel({
           </button>
 
           {open ? (
-            <div className="jobs-filter__panel" role="dialog" aria-label="Lọc công việc">
+            <div className="jobs-filter__panel" role="dialog" aria-label={t("Lọc công việc")}>
               <div className="jobs-filter__options">
                 {JOBS_FILTER_OPTIONS.map((opt) => (
                   <label
@@ -81,7 +86,7 @@ export default function JobsFilterPanel({
                       checked={draft === opt.value}
                       onChange={() => setDraft(opt.value)}
                     />
-                    <span>{opt.label}</span>
+                    <span>{t(opt.label)}</span>
                   </label>
                 ))}
               </div>
@@ -94,7 +99,7 @@ export default function JobsFilterPanel({
                     setOpen(false);
                   }}
                 >
-                  Áp dụng
+                  {t("Áp dụng")}
                 </button>
               </div>
             </div>
@@ -116,7 +121,7 @@ export default function JobsFilterPanel({
             <FaBars className="jobs-sort__icon" aria-hidden />
           </button>
           {sortOpen ? (
-            <div className="jobs-sort__panel" role="listbox" aria-label="Sắp xếp">
+            <div className="jobs-sort__panel" role="listbox" aria-label={t("Sắp xếp")}>
               {JOBS_SORT_OPTIONS.map((opt) => (
                 <button
                   key={opt.value}
@@ -129,7 +134,7 @@ export default function JobsFilterPanel({
                     setSortOpen(false);
                   }}
                 >
-                  {opt.label}
+                  {t(opt.label)}
                 </button>
               ))}
             </div>

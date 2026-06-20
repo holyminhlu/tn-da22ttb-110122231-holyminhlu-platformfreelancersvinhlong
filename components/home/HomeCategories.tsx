@@ -1,3 +1,4 @@
+import { tUi } from "@/lib/i18n/runtime";
 import Link from "next/link";
 import { getTopSkills } from "@/lib/api/freelancers";
 import { CategoryIcon } from "./icons";
@@ -15,6 +16,7 @@ function CategoryCard({
   count: number;
   href: string;
 }) {
+  const t = tUi;
   const countLabel = count.toLocaleString("vi-VN");
 
   return (
@@ -30,6 +32,7 @@ function CategoryCard({
 }
 
 export default async function HomeCategories() {
+  const t = tUi;
   let skills: { name: string; freelancerCount: number }[] = [];
 
   try {

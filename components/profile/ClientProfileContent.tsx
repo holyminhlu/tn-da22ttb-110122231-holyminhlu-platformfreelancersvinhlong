@@ -1,5 +1,7 @@
 "use client";
 
+import { formatDateUi, tUi, formatVndUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -31,11 +33,11 @@ import {
   type MeUser,
 } from "@/lib/api/users";
 import { getUserInitials, persistStoredUser, resolveAvatarSrc, toStoredUser } from "@/lib/authSession";
-import { formatDate, formatVnd } from "@/lib/format";
 import EditAboutDialog from "./EditAboutDialog";
 import "./client-profile.css";
 
 function billingCode(userId: string) {
+  const t = tUi;
   const digits = userId.replace(/\D/g, "");
   if (digits.length >= 10) return digits.slice(0, 10);
   return digits.padStart(10, "0").slice(0, 10) || "0000000000";
@@ -60,7 +62,7 @@ const COMPLETION_ITEMS: { key: keyof MeUser | "phone"; label: string; href?: str
   { key: "website", label: "Website", href: "/edit-account" },
 ];
 
-export default function ClientProfileContent() {
+export default function ClientProfileContent() {  const { t, formatVnd, formatDate } = useTranslation();
   const router = useRouter();
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
@@ -78,7 +80,7 @@ export default function ClientProfileContent() {
     try {
       const res = await getMe();
       if (!isClientMeResponse(res)) {
-        setError("Trang này dành cho tài khoản Client.");
+        setError(t("Trang này dành cho tài khoản Client."));
         return;
       }
       setData(res);
@@ -104,6 +106,9 @@ export default function ClientProfileContent() {
   }, [load, router]);
 
   async function handleAvatarChange(event: React.ChangeEvent<HTMLInputElement>) {
+  const t = tUi;
+  const formatDate = formatDateUi;
+  const formatVnd = formatVndUi;
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file || !data?.user) return;
@@ -141,7 +146,7 @@ export default function ClientProfileContent() {
   }
 
   if (loading) {
-    return <p className="ea-loading px-4 py-12">Đang tải hồ sơ...</p>;
+    return <p className="ea-loading px-4 py-12">{t("Đang tải hồ sơ...")}</p>;
   }
 
   if (error || !data) {
@@ -177,12 +182,12 @@ export default function ClientProfileContent() {
       <header className="cp-header">
         <div className="cp-header__inner">
           <div className="cp-header__left">
-            <Link href="/dashboard" className="cp-back" aria-label="Quay lại dashboard">
+            <Link href="/dashboard" className="cp-back" aria-label={t("Quay lại dashboard")}>
               <FaArrowLeft aria-hidden />
             </Link>
             <div>
-              <h1 className="cp-header__title">Hồ sơ Client</h1>
-              <p className="cp-header__sub">Quản lý thông tin hiển thị với freelancer khi bạn thuê việc</p>
+              <h1 className="cp-header__title">{t("Hồ sơ Client")}</h1>
+              <p className="cp-header__sub">{t("Quản lý thông tin hiển thị với freelancer khi bạn thuê việc")}</p>
             </div>
           </div>
           <div className="cp-header__badge">
@@ -209,18 +214,18 @@ export default function ClientProfileContent() {
                     <button
                       type="button"
                       className="cp-avatar-overlay__btn"
-                      aria-label="Đổi ảnh đại diện"
+                      aria-label={t("Đổi ảnh đại diện")}
                       disabled={avatarUploading}
                       onClick={() => avatarInputRef.current?.click()}
                     >
                       <FaCamera aria-hidden />
-                      <span>Đổi</span>
+                      <span>{t("Đổi")}</span>
                     </button>
                     {avatarSrc ? (
                       <button
                         type="button"
                         className="cp-avatar-overlay__btn"
-                        aria-label="Xem ảnh đại diện"
+                        aria-label={t("Xem ảnh đại diện")}
                         disabled={avatarUploading}
                         onClick={() => setAvatarPreviewOpen(true)}
                       >
@@ -242,11 +247,11 @@ export default function ClientProfileContent() {
                 <div className="cp-profile-card__info">
                   <div className="cp-name">
                     {user.fullName || user.email}
-                    <Link href="/edit-account" className="cp-name-edit" aria-label="Sửa thông tin liên hệ">
+                    <Link href="/edit-account" className="cp-name-edit" aria-label={t("Sửa thông tin liên hệ")}>
                       <FaPencilAlt aria-hidden />
                     </Link>
                   </div>
-                  {user.tagline ? <p className="cp-tagline">{user.tagline}</p> : null}
+                  {user.tagline ? <p className="cp-tagline">{t(user.tagline)}</p> : null}
                   <p className="cp-location">
                     <FaMapMarkerAlt aria-hidden />
                     {locationLine || "Chưa cập nhật địa điểm"}
@@ -254,10 +259,10 @@ export default function ClientProfileContent() {
                   <div className="cp-verified-row">
                     {user.isEmailVerified ? (
                       <span className="cp-verified-pill cp-verified-pill--ok">
-                        <FaCheckCircle aria-hidden /> Email đã xác minh
+                        <FaCheckCircle aria-hidden /> {t("Email đã xác minh")}
                       </span>
                     ) : (
-                      <span className="cp-verified-pill">Email chưa xác minh</span>
+                      <span className="cp-verified-pill">{t("Email chưa xác minh")}</span>
                     )}
                     {user.phone ? (
                       <span className="cp-verified-pill cp-verified-pill--ok">
@@ -270,11 +275,11 @@ export default function ClientProfileContent() {
               <div className="cp-card-actions">
                 <Link href="/edit-account" className="cp-card-actions__btn">
                   <FaUserEdit aria-hidden />
-                  Sửa liên hệ
+                  {t("Sửa liên hệ")}
                 </Link>
                 <Link href="/edit-account/xac-minh" className="cp-card-actions__btn cp-card-actions__btn--outline">
                   <FaShieldAlt aria-hidden />
-                  Xác minh danh tính
+                  {t("Xác minh danh tính")}
                 </Link>
               </div>
             </div>
@@ -290,32 +295,32 @@ export default function ClientProfileContent() {
             <div className="cp-stat-card">
               <FaBriefcase className="cp-stat-card__icon" aria-hidden />
               <span className="cp-stat-card__value">{totalJobs}</span>
-              <span className="cp-stat-card__label">Việc đã đăng</span>
+              <span className="cp-stat-card__label">{t("Việc đã đăng")}</span>
             </div>
             <div className="cp-stat-card cp-stat-card--accent">
               <FaSearch className="cp-stat-card__icon" aria-hidden />
               <span className="cp-stat-card__value">{openJobs}</span>
-              <span className="cp-stat-card__label">Đang tuyển</span>
+              <span className="cp-stat-card__label">{t("Đang tuyển")}</span>
             </div>
             <div className="cp-stat-card">
               <FaFileContract className="cp-stat-card__icon" aria-hidden />
               <span className="cp-stat-card__value">{totalContracts}</span>
-              <span className="cp-stat-card__label">Hợp đồng</span>
+              <span className="cp-stat-card__label">{t("Hợp đồng")}</span>
             </div>
             <div className="cp-stat-card">
               <FaStar className="cp-stat-card__icon" aria-hidden />
               <span className="cp-stat-card__value">{reviews.length}</span>
-              <span className="cp-stat-card__label">Đánh giá đã gửi</span>
+              <span className="cp-stat-card__label">{t("Đánh giá đã gửi")}</span>
             </div>
           </div>
 
           <div className="cp-grid cp-grid--two">
             <section className="cp-panel">
-              <h2 className="cp-panel__title">Hoàn thiện hồ sơ</h2>
+              <h2 className="cp-panel__title">{t("Hoàn thiện hồ sơ")}</h2>
               <div className="cp-completion">
                 <div className="cp-completion__head">
                   <span className="cp-completion__score">{completionScore}%</span>
-                  <span className="cp-completion__hint">Càng đầy đủ, freelancer càng tin tưởng khi nhận việc</span>
+                  <span className="cp-completion__hint">{t("Càng đầy đủ, freelancer càng tin tưởng khi nhận việc")}</span>
                 </div>
                 <div className="cp-completion__bar" aria-hidden>
                   <span className="cp-completion__fill" style={{ width: `${completionScore}%` }} />
@@ -329,7 +334,7 @@ export default function ClientProfileContent() {
                           className={done ? "cp-completion__check cp-completion__check--done" : "cp-completion__check"}
                           aria-hidden
                         />
-                        {item.label}
+                        {t(item.label)}
                       </>
                     );
                     return (
@@ -349,23 +354,23 @@ export default function ClientProfileContent() {
             </section>
 
             <section className="cp-panel cp-panel--wallet">
-              <h2 className="cp-panel__title">Tài khoản thanh toán</h2>
+              <h2 className="cp-panel__title">{t("Tài khoản thanh toán")}</h2>
               <p className="cp-wallet__code">Mã thanh toán: {billingCode(user.id)}</p>
               <div className="cp-wallet__rows">
                 <div className="cp-wallet__row">
                   <FaWallet className="cp-wallet__icon" aria-hidden />
                   <div>
-                    <span className="cp-wallet__label">Số dư khả dụng</span>
-                    <strong className="cp-wallet__amount">{formatVnd(balance)}</strong>
+                    <span className="cp-wallet__label">{t("Số dư khả dụng")}</span>
+                    <strong className="cp-wallet__amount">{formatVndUi(balance)}</strong>
                   </div>
                 </div>
                 {escrowBalance > 0 ? (
                   <div className="cp-wallet__row">
                     <FaLock className="cp-wallet__icon cp-wallet__icon--escrow" aria-hidden />
                     <div>
-                      <span className="cp-wallet__label">Đang ký quỹ</span>
+                      <span className="cp-wallet__label">{t("Đang ký quỹ")}</span>
                       <strong className="cp-wallet__amount cp-wallet__amount--secondary">
-                        {formatVnd(escrowBalance)}
+                        {formatVndUi(escrowBalance)}
                       </strong>
                     </div>
                   </div>
@@ -373,17 +378,17 @@ export default function ClientProfileContent() {
               </div>
               <Link href="/payments" className="cp-wallet__deposit">
                 <FaPlusCircle aria-hidden />
-                Nạp tiền / Quản lý thanh toán
+                {t("Nạp tiền / Quản lý thanh toán")}
               </Link>
             </section>
           </div>
 
           <section className="cp-panel">
             <div className="cp-panel__head">
-              <h2 className="cp-panel__title">Giới thiệu</h2>
+              <h2 className="cp-panel__title">{t("Giới thiệu")}</h2>
               <button type="button" className="cp-panel__edit" onClick={() => setAboutOpen(true)}>
                 <FaPencilAlt aria-hidden />
-                Chỉnh sửa
+                {t("Chỉnh sửa")}
               </button>
             </div>
             {user.bio?.trim() || user.tagline?.trim() ? (
@@ -397,9 +402,9 @@ export default function ClientProfileContent() {
               </div>
             ) : (
               <div className="cp-empty">
-                <p>Thêm vài dòng giới thiệu để freelancer hiểu rõ hơn về bạn và dự án.</p>
+                <p>{t("Thêm vài dòng giới thiệu để freelancer hiểu rõ hơn về bạn và dự án.")}</p>
                 <button type="button" className="cp-empty__btn" onClick={() => setAboutOpen(true)}>
-                  Viết giới thiệu
+                  {t("Viết giới thiệu")}
                 </button>
               </div>
             )}
@@ -409,7 +414,7 @@ export default function ClientProfileContent() {
             <div className="cp-panel__head">
               <h2 className="cp-panel__title">Việc gần đây ({totalJobs})</h2>
               <Link href="/hire/joblist" className="cp-panel__link">
-                Xem tất cả
+                {t("Xem tất cả")}
               </Link>
             </div>
             {recentJobs.length > 0 ? (
@@ -417,57 +422,57 @@ export default function ClientProfileContent() {
                 {recentJobs.map((job) => (
                   <li key={job.id} className="cp-job-list__item">
                     <Link href="/hire/joblist" className="cp-job-list__title">
-                      {job.title}
+                      {t(job.title)}
                     </Link>
                     <p className="cp-job-list__meta">
                       {jobStatusLabel(job.status)}
-                      {job.budget != null ? ` · ${formatVnd(job.budget)}` : ""}
+                      {job.budget != null ? ` · ${formatVndUi(job.budget)}` : ""}
                       {" · "}
-                      {formatDate(job.created_at)}
+                      {formatDateUi(job.created_at)}
                     </p>
                   </li>
                 ))}
               </ul>
             ) : (
               <div className="cp-empty">
-                <p>Bạn chưa đăng công việc nào.</p>
+                <p>{t("Bạn chưa đăng công việc nào.")}</p>
                 <Link href="/hire/post" className="cp-empty__btn cp-empty__btn--link">
-                  Đăng việc đầu tiên
+                  {t("Đăng việc đầu tiên")}
                 </Link>
               </div>
             )}
           </section>
 
           <section className="cp-panel">
-            <h2 className="cp-panel__title">Thao tác nhanh</h2>
+            <h2 className="cp-panel__title">{t("Thao tác nhanh")}</h2>
             <div className="cp-quick-actions">
               <Link href="/hire/post" className="cp-quick-action">
                 <FaBriefcase aria-hidden />
-                <span>Đăng việc mới</span>
+                <span>{t("Đăng việc mới")}</span>
               </Link>
               <Link href="/freelancers" className="cp-quick-action">
                 <FaSearch aria-hidden />
-                <span>Tìm freelancer</span>
+                <span>{t("Tìm freelancer")}</span>
               </Link>
               <Link href="/manage" className="cp-quick-action">
                 <FaFileContract aria-hidden />
-                <span>Quản lý hợp đồng</span>
+                <span>{t("Quản lý hợp đồng")}</span>
               </Link>
               <Link href="/ho-so/phan-hoi" className="cp-quick-action">
                 <FaStar aria-hidden />
-                <span>Phản hồi & đánh giá</span>
+                <span>{t("Phản hồi & đánh giá")}</span>
               </Link>
             </div>
           </section>
 
           {timeline.length > 0 ? (
             <section className="cp-panel">
-              <h2 className="cp-panel__title">Hoạt động gần đây</h2>
+              <h2 className="cp-panel__title">{t("Hoạt động gần đây")}</h2>
               <ul className="cp-timeline">
                 {timeline.map((event, index) => (
                   <li key={`${event.event_time}-${index}`} className="cp-timeline__item">
                     <time className="cp-timeline__time" dateTime={event.event_time}>
-                      {formatDate(event.event_time)}
+                      {formatDateUi(event.event_time)}
                     </time>
                     <span className="cp-timeline__title">{event.event_title}</span>
                   </li>
@@ -492,10 +497,10 @@ export default function ClientProfileContent() {
 
       {avatarPreviewOpen && avatarSrc ? (
         <div className="cp-preview-backdrop" role="presentation">
-          <div className="cp-preview" role="dialog" aria-label="Xem ảnh đại diện">
+          <div className="cp-preview" role="dialog" aria-label={t("Xem ảnh đại diện")}>
             <Image src={avatarSrc} alt="" width={320} height={320} className="cp-preview__img" unoptimized />
             <button type="button" className="cp-preview__close" onClick={() => setAvatarPreviewOpen(false)}>
-              Đóng
+              {t("Đóng")}
             </button>
           </div>
         </div>

@@ -1,5 +1,7 @@
 "use client";
 
+import { tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { FaGoogle, FaKey, FaLock, FaShieldAlt } from "react-icons/fa";
@@ -12,6 +14,8 @@ import PinInput from "@/components/payments/PinInput";
 import "./withdrawal-pin-settings.css";
 
 export default function WithdrawalPinSettings() {
+  const { t } = useTranslation();
+
   const [status, setStatus] = useState<FreelancerWithdrawalPinStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -46,6 +50,7 @@ export default function WithdrawalPinSettings() {
   }, [load]);
 
   async function handleSubmit(event: FormEvent) {
+  const t = tUi;
     event.preventDefault();
     setError("");
     setMessage("");

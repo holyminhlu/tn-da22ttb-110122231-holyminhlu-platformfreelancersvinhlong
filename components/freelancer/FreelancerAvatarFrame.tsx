@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "@/hooks/useTranslation";
 import Image from "next/image";
 import { useEffect, useRef, type ReactNode } from "react";
 import { AVATAR_FRAME_DRAWERS } from "@/lib/freelancer/avatarFrameDraw";
@@ -34,6 +35,8 @@ export default function FreelancerAvatarFrame({
   shape = "circle",
   title,
 }: FreelancerAvatarFrameProps) {
+  const { t } = useTranslation();
+
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const visibleRef = useRef(true);

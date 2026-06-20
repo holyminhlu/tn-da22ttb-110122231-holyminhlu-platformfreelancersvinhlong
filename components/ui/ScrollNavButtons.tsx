@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "@/hooks/useTranslation";
 import { useCallback, useEffect, useState } from "react";
 import "./scroll-nav-buttons.css";
 
@@ -12,6 +13,8 @@ function canScrollPage() {
 }
 
 export default function ScrollNavButtons() {
+  const { t } = useTranslation();
+
   const [scrollable, setScrollable] = useState(false);
   const [showUp, setShowUp] = useState(false);
   const [showDown, setShowDown] = useState(false);

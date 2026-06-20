@@ -1,5 +1,7 @@
 "use client";
 
+import { formatDateUi, tUi, formatVndUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useCallback, useEffect, useState } from "react";
 import { FaCheckCircle, FaQrcode, FaRedo, FaSearch, FaTimesCircle } from "react-icons/fa";
 import {
@@ -9,7 +11,6 @@ import {
   type AdminWithdrawalRow,
   type AdminWithdrawalStatusFilter,
 } from "@/lib/api/admin";
-import { formatDate, formatVnd } from "@/lib/format";
 import { BankNameWithLogo } from "@/components/payments/BankBadgeIcon";
 import {
   WITHDRAWAL_REJECT_REASONS,
@@ -36,7 +37,8 @@ export default function AdminWithdrawalsPage({
   audience = "freelancer",
 }: {
   audience?: "freelancer" | "client";
-}) {
+}) {  const { t, formatVnd, formatDate } = useTranslation();
+
   const [statusTab, setStatusTab] = useState<AdminWithdrawalStatusFilter>("pending");
   const [searchInput, setSearchInput] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
@@ -117,7 +119,10 @@ export default function AdminWithdrawalsPage({
     String(selected?.status || "").toUpperCase() === "PROCESSING";
 
   async function handleResolve(resolution: "approve" | "reject") {
-    if (!selected) return;
+  const t = tUi;
+  const formatDate = formatDateUi;
+  const formatVnd = formatVndUi;
+  if (!selected) return;
 
     if (resolution === "reject") {
       if (!rejectReason) {
@@ -135,7 +140,7 @@ export default function AdminWithdrawalsPage({
       ) {
         return;
       }
-    } else if (!window.confirm("Xác nhận duyệt yêu cầu rút tiền sau khi đã chuyển khoản?")) {
+    } else if (!window.confirm(t("Xác nhận duyệt yêu cầu rút tiền sau khi đã chuyển khoản?"))) {
       return;
     }
 
@@ -173,19 +178,19 @@ export default function AdminWithdrawalsPage({
           Yêu cầu rút tiền từ {audience === "client" ? "Client" : "Freelancer"}
         </h1>
         <p className="admin-page__lead">
-          Theo dõi các lệnh rút tiền đang chờ, thực hiện chuyển khoản thủ công và duyệt khi hoàn tất.
+          {t("Theo dõi các lệnh rút tiền đang chờ, thực hiện chuyển khoản thủ công và duyệt khi hoàn tất.")}
         </p>
       </header>
 
       {toast ? (
         <p className={`admin-toast admin-toast--${toast.type === "ok" ? "ok" : "err"}`} role="status">
-          {toast.message}
+          {t(toast.message)}
         </p>
       ) : null}
 
-      <div className="admin-refunds-toolbar admin-withdrawals-toolbar" aria-label="Bộ lọc rút tiền">
+      <div className="admin-refunds-toolbar admin-withdrawals-toolbar" aria-label={t("Bộ lọc rút tiền")}>
         <button type="button" className="admin-btn admin-btn--ghost admin-refunds-toolbar__refresh" onClick={() => void load()}>
-          <FaRedo aria-hidden /> Làm mới
+          <FaRedo aria-hidden /> {t("Làm mới")}
         </button>
         <div className="admin-tabs admin-tabs--inline">
           {STATUS_TABS.map((tab) => (
@@ -195,18 +200,18 @@ export default function AdminWithdrawalsPage({
               className={`admin-tab${statusTab === tab.id ? " admin-tab--active" : ""}`}
               onClick={() => setStatusTab(tab.id)}
             >
-              {tab.label}
+              {t(tab.label)}
             </button>
           ))}
         </div>
         <label className="admin-refunds-toolbar__field admin-refunds-toolbar__field--search">
-          <span className="admin-filters__label">Tìm kiếm</span>
+          <span className="admin-filters__label">{t("Tìm kiếm")}</span>
           <div className="admin-filters__search-wrap">
             <FaSearch className="admin-filters__search-icon" aria-hidden />
             <input
               type="search"
               className="admin-filters__input"
-              placeholder="Mã, freelancer, email, ngân hàng..."
+              placeholder={t("Mã, freelancer, email, ngân hàng...")}
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
             />
@@ -216,10 +221,10 @@ export default function AdminWithdrawalsPage({
       </div>
 
       {loading ? (
-        <p className="admin-page__state">Đang tải danh sách yêu cầu rút tiền...</p>
+        <p className="admin-page__state">{t("Đang tải danh sách yêu cầu rút tiền...")}</p>
       ) : (
         <div className="admin-refunds-split admin-withdrawals-split">
-          <aside className="admin-refunds-list admin-withdrawals-list" aria-label="Danh sách yêu cầu rút tiền">
+          <aside className="admin-refunds-list admin-withdrawals-list" aria-label={t("Danh sách yêu cầu rút tiền")}>
             <ul className="resolution-list resolution-list--compact admin-refunds-list__inner admin-withdrawals-list__inner">
               {rows.map((row) => (
                 <li key={row.id}>
@@ -238,7 +243,7 @@ export default function AdminWithdrawalsPage({
                         {statusLabel(row.status)}
                       </span>
                     </div>
-                    <strong className="admin-withdrawals-card__amount">{formatVnd(row.amount)}</strong>
+                    <strong className="admin-withdrawals-card__amount">{formatVndUi(row.amount)}</strong>
                     <p className="admin-withdrawals-card__meta" title={row.reference_id}>
                       <span className="admin-withdrawals-card__ref">{row.reference_id}</span>
                       <span className="admin-withdrawals-card__meta-sep" aria-hidden>
@@ -261,9 +266,9 @@ export default function AdminWithdrawalsPage({
           <div className="admin-refunds-detail admin-withdrawals-detail">
             {selected ? (
               <div className="admin-withdrawal-workspace">
-                <section className="admin-withdrawal-summary-card" aria-label="Chi tiết yêu cầu rút tiền">
+                <section className="admin-withdrawal-summary-card" aria-label={t("Chi tiết yêu cầu rút tiền")}>
                   <header className="admin-withdrawal-summary-card__head">
-                    <h3 className="admin-withdrawal-summary-card__title">Chi tiết yêu cầu rút tiền</h3>
+                    <h3 className="admin-withdrawal-summary-card__title">{t("Chi tiết yêu cầu rút tiền")}</h3>
                     <p className="admin-withdrawal-summary-card__freelancer">
                       <strong>{selected.requester_name || "—"}</strong>
                       {selected.requester_email ? ` · ${selected.requester_email}` : ""}
@@ -271,17 +276,17 @@ export default function AdminWithdrawalsPage({
                   </header>
                   <dl className="admin-withdrawal-summary-card__grid">
                     <div className="admin-withdrawal-summary-card__item">
-                      <dt>Mã yêu cầu</dt>
+                      <dt>{t("Mã yêu cầu")}</dt>
                       <dd className="admin-withdrawal-summary-card__ref" title={selected.reference_id}>
                         {selected.reference_id}
                       </dd>
                     </div>
                     <div className="admin-withdrawal-summary-card__item">
-                      <dt>Số tiền</dt>
-                      <dd className="admin-withdrawal-summary-card__amount">{formatVnd(selected.amount)}</dd>
+                      <dt>{t("Số tiền")}</dt>
+                      <dd className="admin-withdrawal-summary-card__amount">{formatVndUi(selected.amount)}</dd>
                     </div>
                     <div className="admin-withdrawal-summary-card__item">
-                      <dt>Trạng thái</dt>
+                      <dt>{t("Trạng thái")}</dt>
                       <dd>
                         <span
                           className={`admin-withdrawals-card__status admin-withdrawals-card__status--${String(selected.status).toUpperCase()}`}
@@ -291,102 +296,101 @@ export default function AdminWithdrawalsPage({
                       </dd>
                     </div>
                     <div className="admin-withdrawal-summary-card__item">
-                      <dt>Tạo lúc</dt>
-                      <dd>{formatDate(selected.created_at)}</dd>
+                      <dt>{t("Tạo lúc")}</dt>
+                      <dd>{formatDateUi(selected.created_at)}</dd>
                     </div>
                     {selected.paid_at ? (
                       <div className="admin-withdrawal-summary-card__item admin-withdrawal-summary-card__item--wide">
-                        <dt>Hoàn tất lúc</dt>
-                        <dd>{formatDate(selected.paid_at)}</dd>
+                        <dt>{t("Hoàn tất lúc")}</dt>
+                        <dd>{formatDateUi(selected.paid_at)}</dd>
                       </div>
                     ) : null}
                   </dl>
                 </section>
 
-                <section className="admin-withdrawal-transfer-card" aria-label="Chuyển khoản cho freelancer">
+                <section className="admin-withdrawal-transfer-card" aria-label={t("Chuyển khoản cho freelancer")}>
                   <header className="admin-withdrawal-transfer-card__head">
-                    <h4 className="admin-withdrawal-transfer-card__title">Thực hiện chuyển khoản</h4>
-                    <strong className="admin-withdrawal-transfer-card__amount">{formatVnd(selected.amount)}</strong>
+                    <h4 className="admin-withdrawal-transfer-card__title">{t("Thực hiện chuyển khoản")}</h4>
+                    <strong className="admin-withdrawal-transfer-card__amount">{formatVndUi(selected.amount)}</strong>
                   </header>
                   <div className="admin-withdrawal-transfer-card__grid">
                     <dl className="admin-withdrawal-transfer-card__bank">
                       <div>
-                        <dt>Ngân hàng</dt>
+                        <dt>{t("Ngân hàng")}</dt>
                         <dd>
                           <BankNameWithLogo bankName={selected.bank_name} size={24} showName />
                         </dd>
                       </div>
                       <div>
-                        <dt>Chủ tài khoản</dt>
+                        <dt>{t("Chủ tài khoản")}</dt>
                         <dd>{selected.account_holder_name}</dd>
                       </div>
                       <div>
-                        <dt>Số tài khoản</dt>
+                        <dt>{t("Số tài khoản")}</dt>
                         <dd>{selected.to_account_number}</dd>
                       </div>
                       <div>
-                        <dt>Nội dung chuyển khoản</dt>
+                        <dt>{t("Nội dung chuyển khoản")}</dt>
                         <dd>WD {selected.reference_id}</dd>
                       </div>
                     </dl>
                     {selected.qr_url ? (
                       <div className="admin-withdrawal-transfer-card__qr">
                         <p className="admin-withdrawal-transfer-card__qr-label">
-                          <FaQrcode aria-hidden /> QR để admin quét và chuyển tiền
+                          <FaQrcode aria-hidden /> {t("QR để admin quét và chuyển tiền")}
                         </p>
-                        <img src={selected.qr_url} alt="QR chuyển khoản" />
+                        <img src={selected.qr_url} alt={t("QR chuyển khoản")} />
                       </div>
                     ) : null}
                   </div>
                 </section>
 
-                <section className="admin-withdrawal-bank-card" aria-label="Thông tin nhận tiền">
+                <section className="admin-withdrawal-bank-card" aria-label={t("Thông tin nhận tiền")}>
                   <header className="admin-withdrawal-bank-card__head">
-                    <h4 className="admin-withdrawal-bank-card__title">Thông tin nhận tiền</h4>
+                    <h4 className="admin-withdrawal-bank-card__title">{t("Thông tin nhận tiền")}</h4>
                   </header>
                   <dl className="admin-withdrawal-bank-card__grid">
                     <div className="admin-withdrawal-bank-card__item">
-                      <dt>Ngân hàng nhận</dt>
+                      <dt>{t("Ngân hàng nhận")}</dt>
                       <dd>
                         <BankNameWithLogo bankName={selected.bank_name} size={24} showName />
                       </dd>
                     </div>
                     <div className="admin-withdrawal-bank-card__item">
-                      <dt>Chủ tài khoản</dt>
+                      <dt>{t("Chủ tài khoản")}</dt>
                       <dd>{selected.account_holder_name}</dd>
                     </div>
                     <div className="admin-withdrawal-bank-card__item admin-withdrawal-bank-card__item--wide">
-                      <dt>Số tài khoản</dt>
+                      <dt>{t("Số tài khoản")}</dt>
                       <dd className="admin-withdrawal-bank-card__account">{selected.to_account_number}</dd>
                     </div>
                   </dl>
                 </section>
 
                 {isPending ? (
-                  <section className="admin-withdrawal-resolve-card" aria-label="Quyết định của Admin">
+                  <section className="admin-withdrawal-resolve-card" aria-label={t("Quyết định của Admin")}>
                     <header className="admin-withdrawal-resolve-card__head">
-                      <h4 className="admin-withdrawal-resolve-card__title">Quyết định của Admin</h4>
+                      <h4 className="admin-withdrawal-resolve-card__title">{t("Quyết định của Admin")}</h4>
                     </header>
                     <div className="admin-withdrawal-resolve-card__body">
                       <p className="admin-withdrawal-resolve-card__hint">
-                        Luồng giống nạp tiền: admin là người thao tác chuyển khoản thực tế rồi xác nhận trên hệ
-                        thống.
+                        {t("Luồng giống nạp tiền: admin là người thao tác chuyển khoản thực tế rồi xác nhận trên hệ thống.")}
                       </p>
                       <label className="admin-withdrawal-resolve-card__field">
                         <span className="admin-withdrawal-resolve-card__label">
-                          Ghi chú khi duyệt (tùy chọn)
+                          {t("Ghi chú khi duyệt (tùy chọn)")}
                         </span>
                         <textarea
                           className="admin-withdrawal-resolve-card__textarea"
                           rows={2}
                           value={approveNote}
                           onChange={(e) => setApproveNote(e.target.value)}
-                          placeholder="Mã giao dịch ngân hàng, ghi chú nội bộ..."
+                          placeholder={t("Mã giao dịch ngân hàng, ghi chú nội bộ...")}
                           disabled={resolveBusy}
                         />
                       </label>
                       <label className="admin-withdrawal-resolve-card__field">
-                        <span className="admin-withdrawal-resolve-card__label">Lý do từ chối</span>
+                        <span className="admin-withdrawal-resolve-card__label">{t("Lý do từ chối")}</span>
                         <select
                           className="admin-withdrawal-resolve-card__select"
                           value={rejectReason}
@@ -395,10 +399,10 @@ export default function AdminWithdrawalsPage({
                           }
                           disabled={resolveBusy}
                         >
-                          <option value="">— Chọn khi từ chối —</option>
+                          <option value="">{t("— Chọn khi từ chối —")}</option>
                           {WITHDRAWAL_REJECT_REASONS.map((reason) => (
                             <option key={reason.code} value={reason.code}>
-                              {reason.label}
+                              {t(reason.label)}
                             </option>
                           ))}
                         </select>
@@ -431,7 +435,7 @@ export default function AdminWithdrawalsPage({
                           disabled={resolveBusy}
                           onClick={() => void handleResolve("approve")}
                         >
-                          <FaCheckCircle aria-hidden /> Duyệt sau khi đã chuyển khoản
+                          <FaCheckCircle aria-hidden /> {t("Duyệt sau khi đã chuyển khoản")}
                         </button>
                         <button
                           type="button"
@@ -439,14 +443,14 @@ export default function AdminWithdrawalsPage({
                           disabled={resolveBusy || !rejectReason}
                           onClick={() => void handleResolve("reject")}
                         >
-                          <FaTimesCircle aria-hidden /> Từ chối và hoàn lại ví
+                          <FaTimesCircle aria-hidden /> {t("Từ chối và hoàn lại ví")}
                         </button>
                       </div>
                     </div>
                   </section>
                 ) : null}
 
-                {detailLoading ? <p className="admin-page__state">Đang tải chi tiết...</p> : null}
+                {detailLoading ? <p className="admin-page__state">{t("Đang tải chi tiết...")}</p> : null}
                 {detail?.request?.id === selected?.id &&
                 (String(selected?.status || "").toUpperCase() === "FAILED" ||
                   String(selected?.status || "").toUpperCase() === "CANCELLED") &&

@@ -1,25 +1,12 @@
 import { isAdminRole, isClientRole, isFreelancerRole } from "@/hooks/useStoredUser";
+import {
+  ADMIN_HOME,
+  ROUTES,
+  USER_ONLY_PREFIXES,
+  isUserOnlyPath,
+} from "@/lib/routes/paths";
 
-export const ADMIN_HOME = "/admin/duyet-tai-khoan";
-
-const USER_ONLY_PREFIXES = [
-  "/dashboard",
-  "/findwork",
-  "/hire",
-  "/payments",
-  "/manage",
-  "/dich-vu",
-  "/edit-account",
-  "/ho-so",
-  "/jobs",
-  "/work/detail",
-] as const;
-
-export function isUserOnlyPath(pathname: string): boolean {
-  return USER_ONLY_PREFIXES.some(
-    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
-  );
-}
+export { ADMIN_HOME, USER_ONLY_PREFIXES, isUserOnlyPath };
 
 export function resolvePostLoginPath(
   role: string | null | undefined,
@@ -34,8 +21,8 @@ export function resolvePostLoginPath(
   }
 
   if (isFreelancerRole(role) || isClientRole(role)) {
-    return "/dashboard";
+    return ROUTES.dashboard;
   }
 
-  return "/";
+  return ROUTES.home;
 }

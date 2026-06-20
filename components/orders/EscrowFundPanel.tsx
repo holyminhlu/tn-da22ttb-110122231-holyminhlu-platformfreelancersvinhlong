@@ -1,5 +1,7 @@
 "use client";
 
+import { formatDateUi, formatVndUi, tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import {
@@ -14,7 +16,6 @@ import {
 } from "react-icons/fa";
 import type { ContractMilestone, WorkflowContract } from "@/lib/api/contracts";
 import { formatPackagePrice } from "@/lib/hire/servicePackages";
-import { formatDate, formatVnd } from "@/lib/format";
 import { formatTimelineDisplay, parseProposalSections } from "@/lib/orders/proposalDisplay";
 import WorkflowDeadlineBanner from "./WorkflowDeadlineBanner";
 import ClientVerifyNotice from "@/components/hire/ClientVerifyNotice";
@@ -52,14 +53,15 @@ export default function EscrowFundPanel({
   counterpartyName,
   onFundEscrow,
   onCancelOrder,
-}: EscrowFundPanelProps) {
+}: EscrowFundPanelProps) {  const { t, formatVnd, formatDate } = useTranslation();
+
   const [confirmed, setConfirmed] = useState(false);
 
   const escrowStatus = String(contract.escrow_status || "none").toLowerCase();
   const isFunded = escrowStatus === "funded" || escrowStatus === "released";
 
   const agreedAmount = Number(contract.agreed_price) || 0;
-  const agreedDisplay = agreedAmount > 0 ? formatVnd(agreedAmount) : "Thỏa thuận";
+  const agreedDisplay = agreedAmount > 0 ? formatVndUi(agreedAmount) : "Thỏa thuận";
 
   const milestoneTotal = useMemo(
     () => milestones.reduce((sum, m) => sum + (Number(m.amount) || 0), 0),
@@ -78,25 +80,25 @@ export default function EscrowFundPanel({
       {paymentBlocked ? <ClientVerifyNotice message={CLIENT_VERIFY_PAYMENT_LEAD} /> : null}
       <WorkflowDeadlineBanner
         deadlineAt={contract.stage_deadline_at || contract.escrow_deadline_at}
-        label="Hạn nạp ký quỹ Escrow"
+        label={t("Hạn nạp ký quỹ Escrow")}
         variant="warn"
       />
       <div className="hire-escrow__hero">
         <div className="hire-escrow__hero-text">
-          <span className="hire-escrow__eyebrow">Giai đoạn 2</span>
-          <h2 className="hire-escrow__title">Khởi tạo hợp đồng & Ký quỹ</h2>
+          <span className="hire-escrow__eyebrow">{t("Giai đoạn 2")}</span>
+          <h2 className="hire-escrow__title">{t("Khởi tạo hợp đồng & Ký quỹ")}</h2>
           <p className="hire-escrow__lead">
             {isClient
               ? "Nạp tiền vào ký quỹ (Escrow) để khóa ngân sách — freelancer chỉ bắt đầu khi trạng thái Funded."
               : "Client sẽ nạp ký quỹ theo giá đã thỏa thuận. Bạn chỉ bắt đầu làm việc sau khi Escrow được xác nhận."}
           </p>
         </div>
-        <ul className="hire-escrow__steps" aria-label="Tiến trình ký quỹ">
+        <ul className="hire-escrow__steps" aria-label={t("Tiến trình ký quỹ")}>
           <li className="hire-escrow__step hire-escrow__step--done">
             <span className="hire-escrow__step-icon" aria-hidden>
               <FaCheckCircle />
             </span>
-            <span>Đã chốt thỏa thuận</span>
+            <span>{t("Đã chốt thỏa thuận")}</span>
           </li>
           <li
             className={`hire-escrow__step${isFunded ? " hire-escrow__step--done" : " hire-escrow__step--current"}`}
@@ -104,11 +106,11 @@ export default function EscrowFundPanel({
             <span className="hire-escrow__step-icon" aria-hidden>
               {isFunded ? <FaCheckCircle /> : "2"}
             </span>
-            <span>Nạp ký quỹ Escrow</span>
+            <span>{t("Nạp ký quỹ Escrow")}</span>
           </li>
           <li className={`hire-escrow__step${isFunded ? " hire-escrow__step--current" : " hire-escrow__step--muted"}`}>
             <span className="hire-escrow__step-icon" aria-hidden>3</span>
-            <span>Bắt đầu thực hiện</span>
+            <span>{t("Bắt đầu thực hiện")}</span>
           </li>
         </ul>
       </div>
@@ -116,7 +118,7 @@ export default function EscrowFundPanel({
       <div className="hire-escrow__grid">
         <aside className="hire-escrow__aside">
           <div className="hire-escrow__summary-card hire-escrow__summary-card--amount">
-            <span className="hire-escrow__summary-label">Số tiền ký quỹ</span>
+            <span className="hire-escrow__summary-label">{t("Số tiền ký quỹ")}</span>
             <strong className="hire-escrow__summary-amount">{agreedDisplay}</strong>
             {milestoneTotal > 0 && milestoneTotal !== agreedAmount ? (
               <span className="hire-escrow__summary-note">
@@ -137,14 +139,14 @@ export default function EscrowFundPanel({
               </div>
               {timelineLabel !== "—" ? (
                 <div>
-                  <dt>Thời gian dự kiến</dt>
+                  <dt>{t("Thời gian dự kiến")}</dt>
                   <dd>{timelineLabel}</dd>
                 </div>
               ) : null}
               {contract.funded_at ? (
                 <div>
-                  <dt>Đã nạp lúc</dt>
-                  <dd>{formatDate(contract.funded_at)}</dd>
+                  <dt>{t("Đã nạp lúc")}</dt>
+                  <dd>{formatDateUi(contract.funded_at)}</dd>
                 </div>
               ) : null}
             </dl>
@@ -178,7 +180,7 @@ export default function EscrowFundPanel({
               <header className="hire-escrow__fund-head">
                 <FaWallet className="hire-escrow__fund-head-icon" aria-hidden />
                 <div>
-                  <h3 className="hire-escrow__fund-title">Nạp ký quỹ cho hợp đồng</h3>
+                  <h3 className="hire-escrow__fund-title">{t("Nạp ký quỹ cho hợp đồng")}</h3>
                   <p className="hire-escrow__fund-sub">
                     Số tiền sẽ trừ từ số dư tài khoản VND của bạn và chuyển sang trạng thái ký quỹ.
                   </p>
@@ -186,13 +188,13 @@ export default function EscrowFundPanel({
               </header>
 
               <div className="hire-escrow__amount-box">
-                <span className="hire-escrow__amount-label">Bạn sẽ nạp</span>
+                <span className="hire-escrow__amount-label">{t("Bạn sẽ nạp")}</span>
                 <span className="hire-escrow__amount-value">{agreedDisplay}</span>
               </div>
 
               {milestones.length > 0 ? (
                 <div className="hire-escrow__milestones-block">
-                  <h4 className="hire-escrow__milestones-title">Phân bổ theo cột mốc</h4>
+                  <h4 className="hire-escrow__milestones-title">{t("Phân bổ theo cột mốc")}</h4>
                   <ul className="hire-escrow__milestones-list">
                     {milestones.map((m, idx) => (
                       <li key={m.id}>
@@ -270,13 +272,13 @@ export default function EscrowFundPanel({
           {isClient && isFunded ? (
             <div className="hire-escrow__state-card hire-escrow__state-card--success">
               <FaCheckCircle className="hire-escrow__state-icon" aria-hidden />
-              <h3 className="hire-escrow__state-title">Đã nạp ký quỹ thành công</h3>
+              <h3 className="hire-escrow__state-title">{t("Đã nạp ký quỹ thành công")}</h3>
               <p className="hire-escrow__state-desc">
                 Freelancer có thể bắt đầu thực hiện. Bạn theo dõi tiến độ ở giai đoạn Thực hiện &
                 Kiểm tra.
               </p>
               {contract.funded_at ? (
-                <p className="hire-escrow__state-meta">Nạp lúc {formatDate(contract.funded_at)}</p>
+                <p className="hire-escrow__state-meta">Nạp lúc {formatDateUi(contract.funded_at)}</p>
               ) : null}
             </div>
           ) : null}
@@ -284,18 +286,18 @@ export default function EscrowFundPanel({
           {!isClient && !isFunded ? (
             <div className="hire-escrow__state-card hire-escrow__state-card--wait">
               <FaUserClock className="hire-escrow__state-icon" aria-hidden />
-              <h3 className="hire-escrow__state-title">Chờ Client nạp ký quỹ</h3>
+              <h3 className="hire-escrow__state-title">{t("Chờ Client nạp ký quỹ")}</h3>
               <p className="hire-escrow__state-desc">
                 Client cần nạp <strong>{agreedDisplay}</strong> vào Escrow. Sau khi Funded, hệ thống
                 chuyển sang giai đoạn thực hiện — bạn có thể cập nhật tiến độ và gửi demo.
               </p>
               <div className="hire-escrow__wait-amount">
-                <span>Số tiền ký quỹ dự kiến</span>
+                <span>{t("Số tiền ký quỹ dự kiến")}</span>
                 <strong>{agreedDisplay}</strong>
               </div>
               <ul className="hire-escrow__wait-tips">
-                <li>Chuẩn bị sẵn kế hoạch làm việc theo thời gian đã thỏa thuận</li>
-                <li>Trao đổi thêm với Client nếu cần làm rõ trước khi bắt đầu</li>
+                <li>{t("Chuẩn bị sẵn kế hoạch làm việc theo thời gian đã thỏa thuận")}</li>
+                <li>{t("Trao đổi thêm với Client nếu cần làm rõ trước khi bắt đầu")}</li>
               </ul>
             </div>
           ) : null}
@@ -303,7 +305,7 @@ export default function EscrowFundPanel({
           {!isClient && isFunded ? (
             <div className="hire-escrow__state-card hire-escrow__state-card--success">
               <FaCheckCircle className="hire-escrow__state-icon" aria-hidden />
-              <h3 className="hire-escrow__state-title">Escrow đã được nạp</h3>
+              <h3 className="hire-escrow__state-title">{t("Escrow đã được nạp")}</h3>
               <p className="hire-escrow__state-desc">
                 Client đã nạp ký quỹ. Bạn có thể bắt đầu làm việc — chuyển sang tab tiến trình
                 Thực hiện để cập nhật tiến độ.

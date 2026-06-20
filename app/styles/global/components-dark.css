@@ -1,0 +1,1120 @@
+/* Shared dark theme — AI chat, notifications, payments, manage, help, modals */
+
+/* —— VLC AI support —— */
+.dark .vlc-ai-support__panel {
+  background: var(--vlc-surface) !important;
+  border-color: var(--vlc-border) !important;
+  box-shadow: 0 12px 40px var(--vlc-shadow) !important;
+}
+
+.dark .vlc-ai-support__head {
+  background: var(--vlc-surface-muted) !important;
+  border-bottom-color: var(--vlc-border) !important;
+}
+
+.dark .vlc-ai-support__title,
+.dark .vlc-ai-support__strong {
+  color: var(--vlc-text) !important;
+}
+
+.dark .vlc-ai-support__eyebrow,
+.dark .vlc-ai-support__paragraph,
+.dark .vlc-ai-support__noted-text,
+.dark .vlc-ai-support__callout-text {
+  color: var(--vlc-text-secondary) !important;
+}
+
+.dark .vlc-ai-support__close {
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .vlc-ai-support__close:hover {
+  background: var(--vlc-surface-elevated) !important;
+  color: var(--vlc-text) !important;
+}
+
+.dark .vlc-ai-support__messages {
+  background: var(--vlc-page-bg) !important;
+}
+
+.dark .vlc-ai-support__msg--assistant .vlc-ai-support__bubble {
+  background: var(--vlc-surface-elevated) !important;
+  border-color: var(--vlc-border) !important;
+  color: var(--vlc-text-secondary) !important;
+}
+
+.dark .vlc-ai-support__msg--user .vlc-ai-support__bubble {
+  background: var(--vlc-accent-soft) !important;
+  color: var(--vlc-text) !important;
+}
+
+.dark .vlc-ai-support__link {
+  color: var(--vlc-link) !important;
+}
+
+.dark .vlc-ai-support__noted,
+.dark .vlc-ai-support__callout {
+  background: var(--vlc-surface-muted) !important;
+  border-color: var(--vlc-border) !important;
+}
+
+.dark .vlc-ai-support__bubble--typing {
+  background: var(--vlc-surface-elevated) !important;
+}
+
+.dark .vlc-ai-support__error {
+  color: #fca5a5 !important;
+}
+
+.dark .vlc-ai-support__quick-btn {
+  background: var(--vlc-surface-elevated) !important;
+  border-color: var(--vlc-border) !important;
+  color: var(--vlc-text-secondary) !important;
+}
+
+.dark .vlc-ai-support__quick-btn:hover:not(:disabled) {
+  border-color: var(--vlc-accent) !important;
+  color: var(--vlc-link) !important;
+}
+
+.dark .vlc-ai-support__composer {
+  background: var(--vlc-surface) !important;
+  border-top-color: var(--vlc-border) !important;
+}
+
+.dark .vlc-ai-support__input {
+  background: var(--vlc-input-bg) !important;
+  border-color: var(--vlc-border) !important;
+  color: var(--vlc-text) !important;
+}
+
+.dark .vlc-ai-support__send {
+  background: var(--vlc-accent) !important;
+  color: var(--vlc-on-accent) !important;
+}
+
+.dark .vlc-ai-support__reset {
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .vlc-ai-support__reset:hover {
+  color: var(--vlc-text) !important;
+}
+
+/* —— AI quote compare modal —— */
+.dark .hire-ai-compare {
+  background: var(--vlc-surface) !important;
+}
+
+.dark .hire-ai-compare__head {
+  background: var(--vlc-surface-muted) !important;
+  border-bottom-color: var(--vlc-border) !important;
+}
+
+.dark .hire-ai-compare__title,
+.dark .hire-ai-compare__cell-value,
+.dark .hire-ai-compare__competitor-head h4,
+.dark .hire-ai-compare__recommendation-head h3,
+.dark .hire-ai-compare__section-title,
+.dark .hire-ai-compare__panel-title {
+  color: var(--vlc-text) !important;
+}
+
+.dark .hire-ai-compare__subtitle,
+.dark .hire-ai-compare__summary,
+.dark .hire-ai-compare__competitor p,
+.dark .hire-ai-compare__recommendation-reason,
+.dark .hire-ai-compare__criteria-label,
+.dark .hire-ai-compare__score-label,
+.dark .hire-ai-compare__focus-price-label,
+.dark .hire-ai-compare__loading-text,
+.dark .hire-ai-compare__loading-hint {
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .hire-ai-compare__close {
+  background: var(--vlc-surface-elevated) !important;
+  color: var(--vlc-text-secondary) !important;
+}
+
+.dark .hire-ai-compare__body {
+  background: var(--vlc-page-bg) !important;
+}
+
+.dark .hire-ai-compare__summary-card {
+  background: var(--vlc-surface-muted) !important;
+  border-color: rgb(245 158 11 / 35%) !important;
+}
+
+.dark .hire-ai-compare__panel,
+.dark .hire-ai-compare__competitor,
+.dark .hire-ai-compare__criteria-row,
+.dark .hire-ai-compare__score {
+  background: var(--vlc-surface) !important;
+  border-color: var(--vlc-border) !important;
+}
+
+.dark .hire-ai-compare__criteria-row--head {
+  background: var(--vlc-surface-muted) !important;
+}
+
+.dark .hire-ai-compare__f-name--focus {
+  background: var(--vlc-accent-soft) !important;
+  color: var(--vlc-link) !important;
+  border-color: rgb(59 130 246 / 35%) !important;
+}
+
+.dark .hire-ai-compare__f-name--best {
+  background: rgb(245 158 11 / 15%) !important;
+  color: #fbbf24 !important;
+  border-color: rgb(245 158 11 / 35%) !important;
+}
+
+.dark .hire-ai-compare__competitor--suggested {
+  border-color: var(--vlc-accent) !important;
+  box-shadow: 0 0 0 1px var(--vlc-accent) !important;
+}
+
+.dark .hire-ai-compare__recommendation {
+  background: var(--vlc-surface-muted) !important;
+  border-color: var(--vlc-border) !important;
+}
+
+.dark .hire-ai-compare__recommendation--match {
+  border-color: rgb(52 211 153 / 35%) !important;
+  background: rgb(52 211 153 / 10%) !important;
+}
+
+.dark .hire-ai-compare__tips li {
+  background: var(--vlc-surface-elevated) !important;
+  color: var(--vlc-text-secondary) !important;
+}
+
+.dark .hire-ai-compare__retry,
+.dark .hire-ai-compare__cta {
+  background: var(--vlc-accent) !important;
+  color: var(--vlc-on-accent) !important;
+}
+
+.dark .hire-ai-compare__cta--ghost {
+  background: transparent !important;
+  border-color: var(--vlc-border) !important;
+  color: var(--vlc-text-secondary) !important;
+}
+
+.dark .hire-ai-compare__competitor-link {
+  color: var(--vlc-link) !important;
+}
+
+.dark .hire-ai-compare__cache-note {
+  color: var(--vlc-highlight) !important;
+}
+
+/* —— Notifications bell & panel —— */
+.dark .notif-bell__btn {
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .notif-bell__btn:hover {
+  color: var(--vlc-link) !important;
+  background-color: var(--vlc-surface-muted) !important;
+}
+
+.dark .notif-panel {
+  background: var(--vlc-surface) !important;
+  border-color: var(--vlc-border) !important;
+  box-shadow: 0 10px 30px var(--vlc-shadow) !important;
+}
+
+.dark .notif-panel__header,
+.dark .notif-panel__toolbar,
+.dark .notif-panel__actions {
+  border-color: var(--vlc-border-subtle) !important;
+}
+
+.dark .notif-panel__title {
+  color: var(--vlc-text) !important;
+}
+
+.dark .notif-panel__subtitle,
+.dark .notif-panel__count {
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .notif-panel__close:hover {
+  background: var(--vlc-surface-muted) !important;
+  color: var(--vlc-text) !important;
+}
+
+.dark .notif-panel__search {
+  background: var(--vlc-input-bg) !important;
+  border-color: var(--vlc-border) !important;
+  color: var(--vlc-text) !important;
+}
+
+.dark .notif-panel__chip {
+  background: var(--vlc-surface-elevated) !important;
+  border-color: var(--vlc-border) !important;
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .notif-panel__chip--active {
+  background: var(--vlc-accent-soft) !important;
+  border-color: var(--vlc-accent) !important;
+  color: var(--vlc-link) !important;
+}
+
+.dark .notif-panel__action-btn {
+  color: var(--vlc-link) !important;
+}
+
+.dark .notif-item:hover {
+  background: var(--vlc-surface-muted) !important;
+}
+
+.dark .notif-item--unread {
+  background: var(--vlc-accent-soft) !important;
+}
+
+.dark .notif-item__time {
+  color: var(--vlc-text-faint) !important;
+}
+
+.dark .notif-panel__empty {
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .notif-panel__pagination,
+.dark .notif-panel__footer {
+  border-top-color: var(--vlc-border-subtle) !important;
+  background: var(--vlc-surface-muted) !important;
+}
+
+.dark .notif-panel__footer-link {
+  color: var(--vlc-link) !important;
+}
+
+/* —— Payments —— */
+.dark .payments-panel,
+.dark .payments-deposit-card,
+.dark .payments-method-item,
+.dark .payments-filter-month,
+.dark .payments-table-wrap,
+.dark .payments-auto {
+  background: var(--vlc-surface) !important;
+  border-color: var(--vlc-border) !important;
+}
+
+.dark .payments-balance-card {
+  background: var(--vlc-surface) !important;
+  border-color: var(--vlc-border) !important;
+}
+
+.dark .payments-balance-card--available,
+.dark .payments-balance-card--pending,
+.dark .payments-balance-card--earned,
+.dark .payments-balance-card--escrow {
+  background: var(--vlc-surface-muted) !important;
+}
+
+.dark .payments-balance-card--available {
+  border-color: rgb(59 130 246 / 40%) !important;
+}
+
+.dark .payments-balance-card--pending {
+  border-color: rgb(245 158 11 / 40%) !important;
+}
+
+.dark .payments-balance-card--earned {
+  border-color: rgb(52 211 153 / 40%) !important;
+}
+
+.dark .payments-balance-card--escrow {
+  border-color: rgb(139 92 246 / 40%) !important;
+}
+
+.dark .payments-balance-card__amount,
+.dark .payments-deposit-card__title,
+.dark .payments-method-item__title,
+.dark .payments-section-title {
+  color: var(--vlc-text) !important;
+}
+
+.dark .payments-balance-card__label,
+.dark .payments-balance-card__hint,
+.dark .payments-muted,
+.dark .payments-deposit-card__hint,
+.dark .payments-method-item__detail,
+.dark .payments-filter-month__label,
+.dark .payments-auto__title {
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .payments-balance-card__tooltip {
+  background: var(--vlc-surface-elevated) !important;
+  color: var(--vlc-text-secondary) !important;
+  border-color: var(--vlc-border) !important;
+}
+
+.dark .payments-chip {
+  background: var(--vlc-surface-elevated) !important;
+  border-color: var(--vlc-border) !important;
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .payments-chip--active {
+  background: var(--vlc-accent-soft) !important;
+  border-color: var(--vlc-accent) !important;
+  color: var(--vlc-link) !important;
+}
+
+.dark .payments-btn--primary {
+  background: var(--vlc-accent) !important;
+  color: var(--vlc-on-accent) !important;
+}
+
+.dark .payments-btn--secondary {
+  background: var(--vlc-surface-elevated) !important;
+  border-color: var(--vlc-border) !important;
+  color: var(--vlc-text-secondary) !important;
+}
+
+.dark .payments-btn--secondary:hover:not(:disabled) {
+  background: var(--vlc-surface-muted) !important;
+  color: var(--vlc-text) !important;
+}
+
+.dark .payments-money-input__field,
+.dark .payments-deposit__input {
+  background: var(--vlc-input-bg) !important;
+  border-color: var(--vlc-border) !important;
+  color: var(--vlc-text) !important;
+}
+
+.dark .payments-money-input__suffix {
+  background: var(--vlc-surface-muted) !important;
+  border-color: var(--vlc-border) !important;
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .payments-table th {
+  background: var(--vlc-surface-muted) !important;
+  color: var(--vlc-text-secondary) !important;
+}
+
+.dark .payments-table td {
+  color: var(--vlc-text-muted) !important;
+  border-color: var(--vlc-border-subtle) !important;
+}
+
+.dark .payments-table__row--child {
+  background: var(--vlc-surface-muted) !important;
+}
+
+.dark .payments-table__category--combined {
+  color: var(--vlc-link) !important;
+}
+
+.dark .payments-invoice-link {
+  color: var(--vlc-link) !important;
+}
+
+.dark .payments-deposit__method-required {
+  background: rgb(245 158 11 / 12%) !important;
+  border-color: rgb(245 158 11 / 35%) !important;
+  color: #fbbf24 !important;
+}
+
+.dark .payments-method-item--primary {
+  border-color: var(--vlc-accent) !important;
+  background: var(--vlc-accent-soft) !important;
+}
+
+.dark .client-verify-notice {
+  background: rgb(245 158 11 / 12%) !important;
+  border-color: rgb(245 158 11 / 35%) !important;
+}
+
+.dark .client-verify-notice__text {
+  color: var(--vlc-text-secondary) !important;
+}
+
+.dark .client-verify-notice__cta {
+  color: var(--vlc-link) !important;
+}
+
+/* —— Payment method modals —— */
+.dark .pay-method-modal {
+  background: var(--vlc-surface) !important;
+  border-color: var(--vlc-border) !important;
+}
+
+.dark .pay-method-modal__header,
+.dark .pay-method-modal__footer {
+  border-color: var(--vlc-border-subtle) !important;
+}
+
+.dark .pay-method-modal__title {
+  color: var(--vlc-text) !important;
+}
+
+.dark .pay-method-modal__close {
+  background: var(--vlc-surface-muted) !important;
+  color: var(--vlc-text-secondary) !important;
+}
+
+.dark .pay-method-modal__tab {
+  background: var(--vlc-surface-muted) !important;
+  border-color: var(--vlc-border) !important;
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .pay-method-modal__tab--active {
+  background: var(--vlc-accent-soft) !important;
+  border-color: var(--vlc-accent) !important;
+  color: var(--vlc-link) !important;
+}
+
+.dark .pay-method-modal__label,
+.dark .pay-method-modal__trust {
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .pay-method-modal__input,
+.dark .pay-method-modal__select {
+  background: var(--vlc-input-bg) !important;
+  border-color: var(--vlc-border) !important;
+  color: var(--vlc-text) !important;
+}
+
+.dark .pay-method-modal__wallet-opt,
+.dark .pay-method-modal__bank-opt {
+  background: var(--vlc-surface-muted) !important;
+  border-color: var(--vlc-border) !important;
+  color: var(--vlc-text-secondary) !important;
+}
+
+.dark .pay-method-modal__wallet-opt--active,
+.dark .pay-method-modal__bank-opt--active,
+.dark .pay-method-modal__wallet-opt:has(input:checked),
+.dark .pay-method-modal__bank-opt:has(input:checked) {
+  background: var(--vlc-accent-soft) !important;
+  border-color: var(--vlc-accent) !important;
+}
+
+.dark .pay-method-modal__payout-preview {
+  background: var(--vlc-surface-muted) !important;
+  border-color: var(--vlc-border) !important;
+}
+
+.dark .pay-method-modal__notice {
+  background: var(--vlc-accent-soft) !important;
+  color: var(--vlc-text-secondary) !important;
+}
+
+.dark .pay-method-modal__error {
+  color: #fca5a5 !important;
+}
+
+.dark .fl-withdraw-modal__bank-card,
+.dark .fl-withdraw-modal__summary {
+  background: var(--vlc-surface-muted) !important;
+  border-color: var(--vlc-border) !important;
+}
+
+.dark .fl-withdraw-modal__status-title {
+  color: var(--vlc-text) !important;
+}
+
+/* —— Manage / workspace / refunds / disputes —— */
+.dark .manage-page__filter,
+.dark .manage-page__sort {
+  background: var(--vlc-surface) !important;
+  border-color: var(--vlc-border) !important;
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .manage-page__filter--active,
+.dark .manage-page__sort--active {
+  background: var(--vlc-accent-soft) !important;
+  border-color: var(--vlc-accent) !important;
+  color: var(--vlc-link) !important;
+}
+
+.dark .manage-page__main-tab {
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .manage-page__main-tab--active {
+  color: var(--vlc-text) !important;
+}
+
+.dark .manage-page__main-tab--active::after {
+  background: var(--vlc-accent) !important;
+}
+
+.dark .manage-workspace-card {
+  background: var(--vlc-surface) !important;
+  border-color: var(--vlc-border) !important;
+}
+
+.dark .manage-workspace-card:hover {
+  border-color: var(--vlc-accent) !important;
+}
+
+.dark .manage-workspace-card__avatar {
+  background: var(--vlc-accent-soft) !important;
+  color: var(--vlc-link) !important;
+}
+
+.dark .manage-workspace-card__title-link,
+.dark .manage-workspace-card__price {
+  color: var(--vlc-text) !important;
+}
+
+.dark .manage-workspace-card__counterparty,
+.dark .manage-workspace-card__activity,
+.dark .manage-workspace-card__code {
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .manage-workspace-card__open {
+  background: var(--vlc-accent) !important;
+  color: var(--vlc-on-accent) !important;
+}
+
+.dark .manage-workspace-card__menu-btn {
+  background: var(--vlc-surface-elevated) !important;
+  border-color: var(--vlc-border) !important;
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .manage-workspace-card__menu {
+  background: var(--vlc-surface-elevated) !important;
+  border-color: var(--vlc-border) !important;
+  box-shadow: 0 8px 24px var(--vlc-shadow) !important;
+}
+
+.dark .manage-workspace-card__menu-item {
+  color: var(--vlc-text-secondary) !important;
+}
+
+.dark .manage-workspace-card__menu-item:hover:not(:disabled) {
+  background: var(--vlc-surface-muted) !important;
+  color: var(--vlc-text) !important;
+}
+
+.dark .resolution-card,
+.dark .resolution-disputes-sidebar,
+.dark .resolution-disputes-detail,
+.dark .resolution-thread,
+.dark .refund-policy-card {
+  background: var(--vlc-surface) !important;
+  border-color: var(--vlc-border) !important;
+}
+
+.dark .resolution-card__title,
+.dark .resolution-card__title a,
+.dark .resolution-form__title,
+.dark .refund-policy-card__title {
+  color: var(--vlc-text) !important;
+}
+
+.dark .resolution-card__meta,
+.dark .resolution-form__sub,
+.dark .refund-policy-card__list,
+.dark .resolution-progress__label {
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .resolution-card--active,
+.dark .resolution-disputes-layout .resolution-card--active {
+  border-color: var(--vlc-accent) !important;
+  box-shadow: 0 0 0 2px rgb(59 130 246 / 20%) !important;
+}
+
+.dark .resolution-progress__marker {
+  background: var(--vlc-surface-elevated) !important;
+  border-color: var(--vlc-border) !important;
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .resolution-progress__step--current .resolution-progress__marker {
+  background: var(--vlc-accent-soft) !important;
+  border-color: var(--vlc-accent) !important;
+  color: var(--vlc-link) !important;
+}
+
+.dark .resolution-progress__step--current .resolution-progress__label {
+  color: var(--vlc-text) !important;
+}
+
+.dark .resolution-form__refund-box,
+.dark .resolution-form__refund-box--wallet {
+  background: var(--vlc-surface-muted) !important;
+  border-color: var(--vlc-border) !important;
+}
+
+.dark .resolution-form__refund-amount {
+  color: var(--vlc-highlight) !important;
+}
+
+.dark .resolution-form__select,
+.dark .resolution-form__input,
+.dark .resolution-form__textarea {
+  background: var(--vlc-input-bg) !important;
+  border-color: var(--vlc-border) !important;
+  color: var(--vlc-text) !important;
+}
+
+.dark .resolution-form__btn--dispute,
+.dark .resolution-actions__btn--dispute {
+  background: rgb(245 158 11 / 15%) !important;
+  border-color: rgb(245 158 11 / 35%) !important;
+  color: #fbbf24 !important;
+}
+
+.dark .resolution-actions__btn--refund {
+  background: var(--vlc-accent-soft) !important;
+  border-color: var(--vlc-accent) !important;
+  color: var(--vlc-link) !important;
+}
+
+.dark .resolution-form__btn:not(.resolution-form__btn--dispute),
+.dark .resolution-actions__btn--primary {
+  background: var(--vlc-accent) !important;
+  color: var(--vlc-on-accent) !important;
+}
+
+.dark .resolution-form__btn--outline,
+.dark .resolution-actions__btn--outline {
+  background: transparent !important;
+  border-color: var(--vlc-border) !important;
+  color: var(--vlc-text-secondary) !important;
+}
+
+.dark .dispute-highlight {
+  background: var(--vlc-surface-muted) !important;
+  border-color: var(--vlc-border) !important;
+}
+
+.dark .dispute-highlight__value {
+  color: var(--vlc-text) !important;
+}
+
+.dark .dispute-highlight__label {
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .dispute-highlight--action:hover {
+  border-color: var(--vlc-accent) !important;
+  background: var(--vlc-accent-soft) !important;
+}
+
+.dark .dispute-steps__dot {
+  background: var(--vlc-surface-elevated) !important;
+  border-color: var(--vlc-border) !important;
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .dispute-steps__item--current .dispute-steps__dot {
+  background: var(--vlc-accent) !important;
+  border-color: var(--vlc-accent) !important;
+  color: var(--vlc-on-accent) !important;
+}
+
+.dark .dispute-steps__item--done .dispute-steps__dot {
+  background: rgb(52 211 153 / 20%) !important;
+  border-color: rgb(52 211 153 / 35%) !important;
+  color: var(--vlc-highlight) !important;
+}
+
+.dark .dispute-steps__item--current .dispute-steps__label {
+  color: var(--vlc-link) !important;
+}
+
+.dark .manage-page__empty {
+  background: var(--vlc-surface) !important;
+  border-color: var(--vlc-border) !important;
+}
+
+.dark .manage-page__empty-title {
+  color: var(--vlc-text) !important;
+}
+
+.dark .manage-page__empty-text {
+  color: var(--vlc-text-muted) !important;
+}
+
+/* —— Help —— */
+.dark .help-page {
+  background-color: var(--vlc-page-bg) !important;
+}
+
+.dark .help-page .help-cards__inner,
+.dark .help-center .help-center-panel__tabs,
+.dark .help-center .help-center-panel__body {
+  background: var(--vlc-surface) !important;
+  border-color: var(--vlc-border) !important;
+}
+
+.dark .help-page .help-account-card:hover {
+  background: var(--vlc-surface-muted) !important;
+}
+
+.dark .help-page .help-account-card--bordered {
+  border-bottom-color: var(--vlc-border) !important;
+}
+
+.dark .help-page .help-account-card__title,
+.dark .help-center .help-center-panel__heading,
+.dark .help-center .help-category-item__title {
+  color: var(--vlc-text) !important;
+}
+
+.dark .help-page .help-account-card__desc,
+.dark .help-center .help-category-item__desc,
+.dark .help-center .help-center-tab {
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .help-center .help-center-tab--active,
+.dark .help-center .help-center-panel__home-link,
+.dark .help-center .help-category-item__title {
+  color: var(--vlc-link) !important;
+}
+
+.dark .help-center .help-category-grid,
+.dark .help-center .help-category-item {
+  border-color: var(--vlc-border-subtle) !important;
+}
+
+.dark .help-page .help-quick {
+  background: var(--vlc-surface) !important;
+  border-color: var(--vlc-border) !important;
+}
+
+.dark .help-page .help-quick__title {
+  color: var(--vlc-text) !important;
+}
+
+.dark .help-page .help-quick__btn,
+.dark .help-center .help-center-cta__btn {
+  background: var(--vlc-accent) !important;
+  color: var(--vlc-on-accent) !important;
+}
+
+.dark .help-center .help-center-hero__input {
+  background: var(--vlc-input-bg) !important;
+  border-color: var(--vlc-border) !important;
+  color: var(--vlc-text) !important;
+}
+
+.dark .help-center .help-center-empty,
+.dark .help-center .help-center-cta__text,
+.dark .help-center .help-center-back {
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .help-page .help-account-card__label {
+  color: var(--vlc-text) !important;
+}
+
+/* —— Resolution dispute thread —— */
+.dark .resolution-thread__head {
+  background: var(--vlc-surface-muted) !important;
+  border-bottom-color: var(--vlc-border) !important;
+}
+
+.dark .resolution-thread__title {
+  color: var(--vlc-text) !important;
+}
+
+.dark .resolution-thread__legend-item {
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .resolution-thread__messages {
+  background: var(--vlc-page-bg) !important;
+}
+
+.dark .resolution-thread__bubble--client,
+.dark .resolution-thread__row--other .resolution-thread__bubble {
+  background: var(--vlc-surface-elevated) !important;
+  color: var(--vlc-text-secondary) !important;
+}
+
+.dark .resolution-thread__bubble--freelancer {
+  background: rgb(52 211 153 / 12%) !important;
+  color: var(--vlc-text-secondary) !important;
+}
+
+.dark .resolution-thread__row--mine .resolution-thread__bubble {
+  background: var(--vlc-accent-soft) !important;
+  color: var(--vlc-text) !important;
+}
+
+.dark .resolution-thread__bubble--admin,
+.dark .resolution-thread__bubble--system {
+  background: rgb(239 68 68 / 12%) !important;
+  color: var(--vlc-text-secondary) !important;
+}
+
+.dark .resolution-thread__composer {
+  background: var(--vlc-surface) !important;
+  border-top-color: var(--vlc-border) !important;
+}
+
+.dark .resolution-thread__composer textarea,
+.dark .resolution-thread__composer input {
+  background: var(--vlc-input-bg) !important;
+  border-color: var(--vlc-border) !important;
+  color: var(--vlc-text) !important;
+}
+
+.dark .resolution-thread__empty,
+.dark .resolution-thread__closed {
+  color: var(--vlc-text-muted) !important;
+}
+
+/* —— Freelancer payments extras —— */
+.dark .fl-payments__pending-card,
+.dark .fl-payments__withdraw-item,
+.dark .fl-payout-card {
+  background: var(--vlc-surface) !important;
+  border-color: var(--vlc-border) !important;
+}
+
+.dark .fl-payments__pending-title,
+.dark .fl-payments__withdraw-item-amount,
+.dark .fl-payout-card__brand-text {
+  color: var(--vlc-text) !important;
+}
+
+.dark .fl-payments__pending-meta,
+.dark .fl-payments__withdraw-item-meta,
+.dark .fl-payments__note,
+.dark .fl-payments__fee-note,
+.dark .fl-payments__footer-note {
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .fl-payments__tx-tab {
+  background: var(--vlc-surface-elevated) !important;
+  border-color: var(--vlc-border) !important;
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .fl-payments__tx-tab--active {
+  background: var(--vlc-accent-soft) !important;
+  border-color: var(--vlc-accent) !important;
+  color: var(--vlc-link) !important;
+}
+
+.dark .fl-payments__search {
+  background: var(--vlc-input-bg) !important;
+  border-color: var(--vlc-border) !important;
+  color: var(--vlc-text) !important;
+}
+
+.dark .fl-payments__guest {
+  background: var(--vlc-surface-muted) !important;
+  border-color: var(--vlc-border) !important;
+}
+
+.dark .fl-payout-card--empty {
+  background: var(--vlc-surface-muted) !important;
+}
+
+/* —— Form modals (proposal, security, etc.) —— */
+.dark .job-proposal-modal__dialog {
+  background: var(--vlc-surface) !important;
+  border-color: var(--vlc-border) !important;
+}
+
+.dark .job-proposal-modal__header,
+.dark .job-proposal-modal__footer {
+  border-color: var(--vlc-border-subtle) !important;
+}
+
+.dark .job-proposal-modal__title,
+.dark .edit-account-page .sec-modal__title,
+.dark .edit-account-page .cred-modal__header h3 {
+  color: var(--vlc-text) !important;
+}
+
+.dark .job-proposal-modal__subtitle,
+.dark .job-proposal-modal__eyebrow,
+.dark .edit-account-page .sec-modal__text,
+.dark .edit-account-page .cred-modal__header-sub {
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .job-proposal-modal__job-ref {
+  background: var(--vlc-surface-muted) !important;
+  border-color: var(--vlc-border) !important;
+  color: var(--vlc-text-secondary) !important;
+}
+
+.dark .job-proposal-modal__steps li {
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .job-proposal-modal__steps li.is-active {
+  color: var(--vlc-link) !important;
+}
+
+.dark .job-proposal-modal__steps li.is-done {
+  color: var(--vlc-highlight) !important;
+}
+
+.dark .job-proposal-modal__confirm-note {
+  background: var(--vlc-accent-soft) !important;
+  border-color: rgb(59 130 246 / 35%) !important;
+  color: var(--vlc-text-secondary) !important;
+}
+
+.dark .job-proposal-modal__close,
+.dark .edit-account-page .cred-modal__close {
+  background: var(--vlc-surface-muted) !important;
+  color: var(--vlc-text-secondary) !important;
+}
+
+.dark .edit-account-page .sec-modal,
+.dark .edit-account-page .cred-modal {
+  background: var(--vlc-surface) !important;
+  border-color: var(--vlc-border) !important;
+}
+
+.dark .edit-account-page .sec-modal__confirm-input,
+.dark .edit-account-page .cred-modal__body input,
+.dark .edit-account-page .cred-modal__body textarea {
+  background: var(--vlc-input-bg) !important;
+  border-color: var(--vlc-border) !important;
+  color: var(--vlc-text) !important;
+}
+
+/* —— Chat widget (freelancer) —— */
+.dark .vlc-chat-panel {
+  background: var(--vlc-surface) !important;
+  border-color: var(--vlc-border) !important;
+  box-shadow: 0 12px 40px var(--vlc-shadow) !important;
+}
+
+.dark .vlc-chat-panel__head {
+  background: var(--vlc-surface-muted) !important;
+  border-color: var(--vlc-border) !important;
+}
+
+.dark .vlc-chat-panel__title {
+  color: var(--vlc-text) !important;
+}
+
+.dark .vlc-chat-panel__subtitle {
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .vlc-chat-panel__close {
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .vlc-chat-panel__close:hover {
+  background: var(--vlc-surface-elevated) !important;
+  color: var(--vlc-text) !important;
+}
+
+.dark .vlc-chat-panel__messages {
+  background: var(--vlc-surface) !important;
+}
+
+.dark .vlc-chat-panel__empty,
+.dark .vlc-chat-panel__loading {
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .vlc-chat-panel__error {
+  background: var(--vlc-danger-bg) !important;
+  color: #fca5a5 !important;
+}
+
+.dark .vlc-chat-bubble--theirs {
+  background: var(--vlc-surface-muted) !important;
+  color: var(--vlc-text) !important;
+}
+
+.dark .vlc-chat-bubble-time {
+  color: var(--vlc-text-faint) !important;
+}
+
+.dark .vlc-chat-bubble-status {
+  color: var(--vlc-text-secondary) !important;
+}
+
+.dark .vlc-chat-panel__composer {
+  border-color: var(--vlc-border) !important;
+}
+
+.dark .vlc-chat-panel__input {
+  background: var(--vlc-input-bg) !important;
+  color: var(--vlc-text) !important;
+}
+
+.dark .vlc-chat-panel__input:focus {
+  background: var(--vlc-input-bg) !important;
+}
+
+.dark .vlc-chat-panel__send {
+  color: var(--vlc-link) !important;
+}
+
+.dark .vlc-chat-context-attach {
+  background: var(--vlc-surface-muted) !important;
+  border-color: var(--vlc-border) !important;
+}
+
+.dark .vlc-chat-context-attach__label {
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .vlc-chat-context-attach__title {
+  color: var(--vlc-text) !important;
+}
+
+.dark .vlc-chat-panel__verify-text {
+  color: var(--vlc-text-muted) !important;
+}
+
+.dark .vlc-chat-panel--verify {
+  background: var(--vlc-surface) !important;
+}
+
+.dark .vlc-chat-inline-btn {
+  background: var(--vlc-accent-soft) !important;
+  border-color: rgb(59 130 246 / 35%) !important;
+  color: var(--vlc-link) !important;
+}
+
+/* —— Account sidebar (edit-account) —— */
+.dark .edit-account-page .ea-shell__sidebar,
+.dark .edit-account-page .ea-sidebar {
+  background: var(--vlc-surface) !important;
+  border-color: var(--vlc-border) !important;
+}
+
+.dark .edit-account-page .ea-sidebar-group {
+  color: var(--vlc-text-faint) !important;
+}
+
+.dark .edit-account-page .ea-sidebar-item {
+  color: var(--vlc-text-secondary) !important;
+}
+
+.dark .edit-account-page .ea-sidebar-item:hover:not(:disabled) {
+  background: var(--vlc-surface-muted) !important;
+  color: var(--vlc-text) !important;
+}
+
+.dark .edit-account-page .ea-sidebar-item--active {
+  background: var(--vlc-accent-soft) !important;
+  color: var(--vlc-link) !important;
+}

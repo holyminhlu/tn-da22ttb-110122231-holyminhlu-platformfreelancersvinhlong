@@ -2,6 +2,8 @@
 
 
 
+import { tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useMemo, useState } from "react";
 
 import {
@@ -28,6 +30,7 @@ type ContactVerifyPanelProps = {
 
 function splitName(fullName: string | null | undefined) {
 
+  const t = tUi;
   const parts = String(fullName || "").trim().split(/\s+/).filter(Boolean);
 
   if (parts.length === 0) return { first: "", last: "" };
@@ -63,6 +66,8 @@ function initialAddress(v: IdentityVerificationResponse["verification"]): Addres
 
 
 export default function ContactVerifyPanel({ data, onSaved }: ContactVerifyPanelProps) {
+  const { t } = useTranslation();
+
 
   const v = data.verification;
 
@@ -106,6 +111,7 @@ export default function ContactVerifyPanel({ data, onSaved }: ContactVerifyPanel
 
   async function handleSave() {
 
+  const t = tUi;
     if (!firstName.trim() || !lastName.trim()) {
 
       setMessage("Vui lòng nhập tên và họ.");

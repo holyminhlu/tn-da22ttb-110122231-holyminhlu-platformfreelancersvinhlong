@@ -1,5 +1,7 @@
 "use client";
 
+import { formatDateUi, formatVndUi, tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useStoredUser } from "@/hooks/useStoredUser";
@@ -18,16 +20,15 @@ import {
   type LeadFilter,
 } from "@/lib/findwork/leadsDisplay";
 import { formatPackagePrice } from "@/lib/hire/servicePackages";
-import { formatDate, formatVnd } from "@/lib/format";
 import { relativePosted } from "@/lib/jobsDisplay";
 import FreelancerWorkShell from "./FreelancerWorkShell";
 import "./findwork-leads.css";
 
 const FILTERS: { value: LeadFilter; label: string }[] = [
-  { value: "all", label: "Tất cả" },
-  { value: "new", label: "Việc mới" },
-  { value: "interested", label: "Client quan tâm" },
-  { value: "service", label: "Đơn chờ đề xuất" },
+  { value: "all", label: tUi("Tất cả") },
+  { value: "new", label: tUi("Việc mới") },
+  { value: "interested", label: tUi("Client quan tâm") },
+  { value: "service", label: tUi("Đơn chờ đề xuất") },
 ];
 
 const JOB_FETCH_LIMIT = 80;
@@ -39,7 +40,8 @@ function leadBadgeClass(kind: ReturnType<typeof jobLeadKind>): string {
   return "fw-leads__badge";
 }
 
-export default function FreelancerLeadsPage() {
+export default function FreelancerLeadsPage() {  const { t, formatVnd, formatDate } = useTranslation();
+
   const { user, ready, isFreelancer } = useStoredUser({ refreshFromApi: false });
   const isGuest = ready && !user;
 
@@ -67,7 +69,7 @@ export default function FreelancerLeadsPage() {
       ]);
 
       if (ordersData.role !== "freelancer") {
-        setError("Trang này dành cho tài khoản freelancer.");
+        setError(t("Trang này dành cho tài khoản freelancer."));
         setJobs([]);
         setOrders([]);
         return;
@@ -120,7 +122,7 @@ export default function FreelancerLeadsPage() {
       <div className="fw-leads">
         <header className="fw-leads__head">
           <div>
-            <h1 className="fw-leads__title">Khách hàng tiềm năng</h1>
+            <h1 className="fw-leads__title">{t("Khách hàng tiềm năng")}</h1>
             <p className="fw-leads__lead">
               Theo dõi client đang tuyển việc, phản hồi báo giá của bạn và đơn dịch vụ cần gửi đề
               xuất — tập trung cơ hội cần hành động sớm.
@@ -133,7 +135,7 @@ export default function FreelancerLeadsPage() {
 
         {isGuest ? (
           <div className="fw-leads__guest">
-            <p>Đăng nhập với tài khoản freelancer để xem khách hàng tiềm năng và gửi báo giá.</p>
+            <p>{t("Đăng nhập với tài khoản freelancer để xem khách hàng tiềm năng và gửi báo giá.")}</p>
             <Link href="/dang-nhap" className="fw-leads__cta">
               Đăng nhập
             </Link>
@@ -144,22 +146,22 @@ export default function FreelancerLeadsPage() {
           </p>
         ) : (
           <>
-            <div className="fw-leads__stats" aria-label="Tóm tắt cơ hội">
+            <div className="fw-leads__stats" aria-label={t("Tóm tắt cơ hội")}>
               <div className="fw-leads__stat">
                 <span className="fw-leads__stat-value">{counts.all}</span>
-                <span className="fw-leads__stat-label">Tổng cơ hội</span>
+                <span className="fw-leads__stat-label">{t("Tổng cơ hội")}</span>
               </div>
               <div className="fw-leads__stat">
                 <span className="fw-leads__stat-value">{counts.new}</span>
-                <span className="fw-leads__stat-label">Việc chưa báo giá</span>
+                <span className="fw-leads__stat-label">{t("Việc chưa báo giá")}</span>
               </div>
               <div className="fw-leads__stat">
                 <span className="fw-leads__stat-value">{counts.interested}</span>
-                <span className="fw-leads__stat-label">Đang theo dõi</span>
+                <span className="fw-leads__stat-label">{t("Đang theo dõi")}</span>
               </div>
               <div className="fw-leads__stat">
                 <span className="fw-leads__stat-value">{counts.service}</span>
-                <span className="fw-leads__stat-label">Đơn chờ đề xuất</span>
+                <span className="fw-leads__stat-label">{t("Đơn chờ đề xuất")}</span>
               </div>
             </div>
 
@@ -167,12 +169,12 @@ export default function FreelancerLeadsPage() {
               <input
                 type="search"
                 className="fw-leads__search"
-                placeholder="Tìm theo tên client, việc, dịch vụ..."
+                placeholder={t("Tìm theo tên client, việc, dịch vụ...")}
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
-                aria-label="Tìm khách hàng tiềm năng"
+                aria-label={t("Tìm khách hàng tiềm năng")}
               />
-              <div className="fw-leads__filters" role="tablist" aria-label="Lọc cơ hội">
+              <div className="fw-leads__filters" role="tablist" aria-label={t("Lọc cơ hội")}>
                 {FILTERS.map((item) => (
                   <button
                     key={item.value}
@@ -190,7 +192,7 @@ export default function FreelancerLeadsPage() {
             </div>
 
             {loading ? (
-              <p className="text-sm text-gray-500">Đang tải...</p>
+              <p className="text-sm text-gray-500">{t("Đang tải...")}</p>
             ) : error ? (
               <p className="text-sm text-red-700" role="alert">
                 {error}
@@ -212,7 +214,7 @@ export default function FreelancerLeadsPage() {
                       {filteredJobs.map((job) => {
                         const kind = jobLeadKind(job);
                         const budgetText =
-                          job.budget != null ? formatVnd(job.budget) : "Thỏa thuận";
+                          job.budget != null ? formatVndUi(job.budget) : "Thỏa thuận";
 
                         return (
                           <li key={job.id}>
@@ -228,7 +230,7 @@ export default function FreelancerLeadsPage() {
                               />
                               <div className="fw-leads__card-main">
                                 <p className="fw-leads__card-client">
-                                  {job.client_name?.trim() || "Khách hàng"}
+                                  {job.client_name?.trim() || t("Khách hàng")}
                                   {job.client_email_verified ? " · Đã xác minh email" : ""}
                                 </p>
                                 <p className="fw-leads__card-job">{job.title}</p>
@@ -279,10 +281,10 @@ export default function FreelancerLeadsPage() {
                             />
                             <div className="fw-leads__card-main">
                               <p className="fw-leads__card-client">
-                                {order.counterparty_name?.trim() || "Khách hàng"}
+                                {order.counterparty_name?.trim() || t("Khách hàng")}
                               </p>
                               <p className="fw-leads__card-job">
-                                {order.service_title || order.job_title || "Đơn dịch vụ"}
+                                {order.service_title || order.job_title || t("Đơn dịch vụ")}
                               </p>
                               <p className="fw-leads__card-meta">
                                 {order.client_brief
@@ -295,14 +297,14 @@ export default function FreelancerLeadsPage() {
                                   </>
                                 ) : null}
                                 <br />
-                                Tạo {formatDate(order.created_at)}
+                                Tạo {formatDateUi(order.created_at)}
                               </p>
                             </div>
                             <div className="fw-leads__card-aside">
                               <span className="fw-leads__badge fw-leads__badge--service">
                                 Chờ đề xuất
                               </span>
-                              <span className="fw-leads__action">Soạn đề xuất →</span>
+                              <span className="fw-leads__action">{t("Soạn đề xuất →")}</span>
                             </div>
                           </Link>
                         </li>

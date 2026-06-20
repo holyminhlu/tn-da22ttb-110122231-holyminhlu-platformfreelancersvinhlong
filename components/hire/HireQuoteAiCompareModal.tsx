@@ -1,5 +1,7 @@
 "use client";
 
+import { tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { FaCheckCircle, FaExclamationTriangle, FaTimes, FaTrophy } from "react-icons/fa";
@@ -64,6 +66,8 @@ export default function HireQuoteAiCompareModal({
   onClose,
   onViewQuote,
 }: HireQuoteAiCompareModalProps) {
+  const { t } = useTranslation();
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [result, setResult] = useState<AiQuoteCompareResult | null>(null);
@@ -121,6 +125,7 @@ export default function HireQuoteAiCompareModal({
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
+  const t = tUi;
       if (event.key === "Escape") onClose();
     }
     document.addEventListener("keydown", onKeyDown);
@@ -157,7 +162,7 @@ export default function HireQuoteAiCompareModal({
               </p>
             ) : null}
           </div>
-          <button type="button" className="hire-ai-compare__close" onClick={onClose} aria-label="Đóng">
+          <button type="button" className="hire-ai-compare__close" onClick={onClose} aria-label={t("Đóng")}>
             <FaTimes aria-hidden />
           </button>
         </header>
@@ -190,10 +195,10 @@ export default function HireQuoteAiCompareModal({
                     <span className="hire-ai-compare__score-value">
                       {Math.round(analysis.focusedFreelancer.overallScore)}
                     </span>
-                    <span className="hire-ai-compare__score-label">Điểm tổng hợp</span>
+                    <span className="hire-ai-compare__score-label">{t("Điểm tổng hợp")}</span>
                   </div>
                   <div className="hire-ai-compare__focus-price">
-                    <span className="hire-ai-compare__focus-price-label">Báo giá</span>
+                    <span className="hire-ai-compare__focus-price-label">{t("Báo giá")}</span>
                     <strong>{formatQuoteAmount(quote)}</strong>
                   </div>
                 </div>
@@ -201,7 +206,7 @@ export default function HireQuoteAiCompareModal({
 
               <div className="hire-ai-compare__grid">
                 <section className="hire-ai-compare__panel">
-                  <h3 className="hire-ai-compare__panel-title">Điểm mạnh</h3>
+                  <h3 className="hire-ai-compare__panel-title">{t("Điểm mạnh")}</h3>
                   <ul className="hire-ai-compare__list hire-ai-compare__list--positive">
                     {analysis.focusedFreelancer.strengths.map((item) => (
                       <li key={item}>{item}</li>
@@ -209,7 +214,7 @@ export default function HireQuoteAiCompareModal({
                   </ul>
                 </section>
                 <section className="hire-ai-compare__panel">
-                  <h3 className="hire-ai-compare__panel-title">Cần lưu ý</h3>
+                  <h3 className="hire-ai-compare__panel-title">{t("Cần lưu ý")}</h3>
                   <ul className="hire-ai-compare__list hire-ai-compare__list--negative">
                     {analysis.focusedFreelancer.weaknesses.map((item) => (
                       <li key={item}>{item}</li>
@@ -219,17 +224,17 @@ export default function HireQuoteAiCompareModal({
               </div>
 
               <section className="hire-ai-compare__criteria">
-                <h3 className="hire-ai-compare__section-title">Bảng so sánh tiêu chí</h3>
+                <h3 className="hire-ai-compare__section-title">{t("Bảng so sánh tiêu chí")}</h3>
                 <div className="hire-ai-compare__criteria-table" role="table">
                   <div className="hire-ai-compare__criteria-row hire-ai-compare__criteria-row--head" role="row">
-                    <span role="columnheader">Tiêu chí</span>
+                    <span role="columnheader">{t("Tiêu chí")}</span>
                     <span role="columnheader" className="hire-ai-compare__col-freelancer">
                       <span className="hire-ai-compare__f-name hire-ai-compare__f-name--focus">{focusedName}</span>
                     </span>
                     <span role="columnheader" className="hire-ai-compare__col-freelancer">
                       Tốt nhất
                     </span>
-                    <span role="columnheader">Đánh giá</span>
+                    <span role="columnheader">{t("Đánh giá")}</span>
                   </div>
                   {analysis.criteria.map((row) => (
                     <div key={row.label} className="hire-ai-compare__criteria-row" role="row">
@@ -264,7 +269,7 @@ export default function HireQuoteAiCompareModal({
 
               {analysis.competitors.length > 0 ? (
                 <section className="hire-ai-compare__competitors">
-                  <h3 className="hire-ai-compare__section-title">Các ứng viên khác</h3>
+                  <h3 className="hire-ai-compare__section-title">{t("Các ứng viên khác")}</h3>
                   <div className="hire-ai-compare__competitor-grid">
                     {analysis.competitors.map((competitor) => (
                       <article
@@ -285,7 +290,7 @@ export default function HireQuoteAiCompareModal({
                             Xem báo giá
                           </Link>
                         ) : (
-                          <span className="hire-ai-compare__competitor-tag">Đang xem</span>
+                          <span className="hire-ai-compare__competitor-tag">{t("Đang xem")}</span>
                         )}
                       </article>
                     ))}
@@ -301,7 +306,7 @@ export default function HireQuoteAiCompareModal({
                 <div className="hire-ai-compare__recommendation-head">
                   <FaTrophy aria-hidden />
                   <div>
-                    <p className="hire-ai-compare__recommendation-label">Gợi ý lựa chọn</p>
+                    <p className="hire-ai-compare__recommendation-label">{t("Gợi ý lựa chọn")}</p>
                     <h3>{analysis.recommendation.suggestedFreelancerName}</h3>
                   </div>
                   <span className="hire-ai-compare__confidence">

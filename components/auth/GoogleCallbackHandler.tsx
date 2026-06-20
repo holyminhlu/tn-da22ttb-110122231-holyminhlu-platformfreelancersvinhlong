@@ -1,7 +1,9 @@
 "use client";
 
+import { tUi } from "@/lib/i18n/runtime";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useTranslation } from "@/hooks/useTranslation";
 import type { AuthUser } from "@/lib/api/auth";
 import { completeGoogleOAuth } from "@/lib/api/auth";
 import { persistAuthTokens, persistStoredUser, toStoredUser } from "@/lib/authSession";
@@ -39,24 +41,35 @@ function finishLogin(
   refreshToken: string,
   nextRaw: string | null,
   setMessage: (msg: string) => void,
+  setShowBackLink: (show: boolean) => void,
+  t: (text: string) => string,
 ) {
   persistAuthTokens({ accessToken, refreshToken });
   persistStoredUser(toStoredUser(user));
 
-  setMessage("Đăng nhập thành công. Đang chuyển hướng…");
+  setShowBackLink(false);
+  setMessage(tUi("auth.loginSuccess"));
   router.replace(resolvePostLoginPath(user.role, safeNextPath(nextRaw)));
   router.refresh();
 }
 
 export default function GoogleCallbackHandler() {
+  const { t } = useTranslation();
+
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [message, setMessage] = useState("Đang hoàn tất đăng nhập Google…");
+  const [message, setMessage] = useState("");
+  const [showBackLink, setShowBackLink] = useState(false);
+
+  useEffect(() => {
+    setMessage(t("auth.googleCompleting"));
+  }, [t]);
 
   useEffect(() => {
     let cancelled = false;
 
     async function run() {
+  const t = tUi;
       const hashParams = readHashParams();
       const error =
         searchParams.get("error") ||
@@ -64,6 +77,7 @@ export default function GoogleCallbackHandler() {
         searchParams.get("message");
 
       if (error) {
+        setShowBackLink(true);
         setMessage(decodeURIComponent(error));
         return;
       }
@@ -80,13 +94,16 @@ export default function GoogleCallbackHandler() {
             session.refreshToken,
             session.next,
             setMessage,
+            setShowBackLink,
+            t,
           );
         } catch (err) {
           if (cancelled) return;
           const msg =
             err && typeof err === "object" && "message" in err
               ? String((err as { message: string }).message)
-              : "Không thể hoàn tất đăng nhập Google.";
+              : t("auth.googleFailed");
+          setShowBackLink(true);
           setMessage(msg);
         }
         return;
@@ -101,33 +118,31 @@ export default function GoogleCallbackHandler() {
       const user = parseUserPayload(userRaw);
 
       if (!accessToken || !refreshToken || !user) {
-        setMessage("Thiếu thông tin phiên đăng nhập từ Google. Vui lòng thử lại.");
+        setShowBackLink(true);
+        setMessage(t("auth.googleMissingSession"));
         return;
       }
 
-      finishLogin(router, user, accessToken, refreshToken, nextRaw, setMessage);
+      finishLogin(router, user, accessToken, refreshToken, nextRaw, setMessage, setShowBackLink, t);
     }
 
     void run();
     return () => {
       cancelled = true;
     };
-  }, [router, searchParams]);
+  }, [router, searchParams, t]);
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-[#f4f7f9] px-4 text-center">
       <p className="text-sm text-gray-700" role="status">
         {message}
       </p>
-      {message.includes("thử lại") ||
-      message.includes("Thiếu") ||
-      message.includes("hết hạn") ||
-      message.includes("tạm khóa") ? (
+      {showBackLink ? (
         <a
           href="/dang-nhap"
           className="text-sm font-semibold text-[#0066cc] hover:underline"
         >
-          Quay lại đăng nhập
+          {t("auth.backToLogin")}
         </a>
       ) : null}
     </div>

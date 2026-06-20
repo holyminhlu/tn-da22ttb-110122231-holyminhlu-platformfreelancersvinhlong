@@ -1,5 +1,7 @@
 "use client";
 
+import { tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { FaComments, FaEllipsisH, FaSearch } from "react-icons/fa";
@@ -55,10 +57,14 @@ function conversationPreview(conv: ChatConversation, currentUserId?: string) {
 }
 
 function hasJobContext(conv: ChatConversation) {
+  const t = tUi;
   return Boolean(conv.contextTitle || conv.jobTitle || conv.jobQuoteId || conv.serviceId);
 }
 
-export default function MessagesInbox({ viewerRole, copy }: MessagesInboxProps) {
+export default function MessagesInbox({
+  viewerRole, copy }: MessagesInboxProps) {
+  const { t } = useTranslation();
+
   const searchParams = useSearchParams();
   const deepLinkConversationId = searchParams.get("c");
   const { user, ready, isFreelancer, isClient } = useStoredUser({ refreshFromApi: false });
@@ -144,9 +150,10 @@ export default function MessagesInbox({ viewerRole, copy }: MessagesInboxProps) 
 
     const socket = getChatSocket();
     if (!socket) return;
+    const userId = user.id;
 
     function onMessage(payload: ChatMessage) {
-      const fromPeer = String(payload.senderId) !== String(user.id);
+      const fromPeer = String(payload.senderId) !== String(userId);
       const isOpen = payload.conversationId === selectedIdRef.current;
 
       setConversations((prev) => {
@@ -199,6 +206,7 @@ export default function MessagesInbox({ viewerRole, copy }: MessagesInboxProps) 
   const selected = conversations.find((c) => c.id === selectedId) ?? null;
 
   function selectConversation(id: string) {
+  const t = tUi;
     setSelectedId(id);
     setMobileShowThread(true);
     setConversations((prev) =>
@@ -207,12 +215,14 @@ export default function MessagesInbox({ viewerRole, copy }: MessagesInboxProps) 
   }
 
   function handleConversationRead(conversationId: string) {
+  const t = tUi;
     setConversations((prev) =>
       prev.map((c) => (c.id === conversationId ? { ...c, hasUnread: false } : c)),
     );
   }
 
   function handleConversationDeleted(conversationId: string) {
+  const t = tUi;
     setConversations((prev) => {
       const remaining = prev.filter((c) => c.id !== conversationId);
       setSelectedId((current) => {
@@ -225,6 +235,7 @@ export default function MessagesInbox({ viewerRole, copy }: MessagesInboxProps) 
   }
 
   function handleConversationUpdated(updated: ChatConversation) {
+  const t = tUi;
     setConversations((prev) => prev.map((c) => (c.id === updated.id ? { ...c, ...updated } : c)));
   }
 
@@ -260,7 +271,7 @@ export default function MessagesInbox({ viewerRole, copy }: MessagesInboxProps) 
         <>
           <aside
             className={`fw-inbox-sidebar${mobileShowThread ? " fw-inbox-sidebar--hidden-mobile" : ""}`}
-            aria-label="Danh sách hội thoại"
+            aria-label={t("Danh sách hội thoại")}
           >
             <div className="fw-inbox-sidebar__search-row">
               <div className="fw-inbox-sidebar__search">
@@ -268,10 +279,10 @@ export default function MessagesInbox({ viewerRole, copy }: MessagesInboxProps) 
                 <input
                   type="search"
                   className="fw-inbox-sidebar__search-input"
-                  placeholder="Tìm kiếm cuộc hội thoại"
+                  placeholder={t("Tìm kiếm cuộc hội thoại")}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  aria-label="Tìm kiếm cuộc hội thoại"
+                  aria-label={t("Tìm kiếm cuộc hội thoại")}
                 />
               </div>
               <div className="fw-inbox-sidebar__menu-wrap">
@@ -279,7 +290,7 @@ export default function MessagesInbox({ viewerRole, copy }: MessagesInboxProps) 
                   ref={sidebarMenuRef}
                   type="button"
                   className="fw-inbox-sidebar__action"
-                  aria-label="Tùy chọn danh sách"
+                  aria-label={t("Tùy chọn danh sách")}
                   aria-expanded={sidebarMenuOpen}
                   onClick={() => setSidebarMenuOpen((prev) => !prev)}
                 >
@@ -295,7 +306,7 @@ export default function MessagesInbox({ viewerRole, copy }: MessagesInboxProps) 
               </div>
             </div>
 
-            <div className="fw-inbox-sidebar__tabs" role="tablist" aria-label="Lọc hội thoại">
+            <div className="fw-inbox-sidebar__tabs" role="tablist" aria-label={t("Lọc hội thoại")}>
               <button
                 type="button"
                 role="tab"
@@ -303,7 +314,7 @@ export default function MessagesInbox({ viewerRole, copy }: MessagesInboxProps) 
                 className={`fw-inbox-sidebar__tab${activeTab === "all" ? " fw-inbox-sidebar__tab--active" : ""}`}
                 onClick={() => setActiveTab("all")}
               >
-                Tất cả
+                {t("Tất cả")}
               </button>
               <button
                 type="button"
@@ -312,13 +323,13 @@ export default function MessagesInbox({ viewerRole, copy }: MessagesInboxProps) 
                 className={`fw-inbox-sidebar__tab${activeTab === "jobs" ? " fw-inbox-sidebar__tab--active" : ""}`}
                 onClick={() => setActiveTab("jobs")}
               >
-                Có việc
+                {t("Có việc")}
               </button>
             </div>
 
             <div className="fw-inbox-sidebar__list">
               {loading ? (
-                <p className="fw-inbox-sidebar__status">Đang tải...</p>
+                <p className="fw-inbox-sidebar__status">{t("Đang tải...")}</p>
               ) : filteredConversations.length === 0 ? (
                 <div className="fw-inbox-sidebar__empty">
                   <FaComments aria-hidden />
@@ -353,7 +364,7 @@ export default function MessagesInbox({ viewerRole, copy }: MessagesInboxProps) 
                             {showUnread ? (
                               <span
                                 className="fw-inbox-sidebar__unread-dot"
-                                aria-label="Có tin nhắn chưa đọc"
+                                aria-label={t("Có tin nhắn chưa đọc")}
                               />
                             ) : null}
                           </div>
@@ -362,7 +373,7 @@ export default function MessagesInbox({ viewerRole, copy }: MessagesInboxProps) 
                               <span className="fw-inbox-sidebar__item-name">
                                 {conv.peerName}
                                 {conv.blockedByMe ? (
-                                  <span className="fw-inbox-sidebar__blocked-tag">Đã chặn</span>
+                                  <span className="fw-inbox-sidebar__blocked-tag">{t("Đã chặn")}</span>
                                 ) : null}
                               </span>
                               <span className="fw-inbox-sidebar__item-time">
@@ -389,7 +400,7 @@ export default function MessagesInbox({ viewerRole, copy }: MessagesInboxProps) 
 
           <section
             className={`fw-inbox-main${mobileShowThread ? " fw-inbox-main--visible-mobile" : ""}`}
-            aria-label="Nội dung chat"
+            aria-label={t("Nội dung chat")}
           >
             {selected ? (
               <InboxChatPanel
@@ -405,7 +416,7 @@ export default function MessagesInbox({ viewerRole, copy }: MessagesInboxProps) 
             ) : (
               <div className="fw-inbox-main__empty">
                 <FaComments aria-hidden />
-                <p>Chọn một hội thoại để xem tin nhắn.</p>
+                <p>{t("Chọn một hội thoại để xem tin nhắn.")}</p>
               </div>
             )}
           </section>

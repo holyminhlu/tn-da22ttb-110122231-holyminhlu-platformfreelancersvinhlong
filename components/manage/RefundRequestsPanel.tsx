@@ -1,5 +1,7 @@
 "use client";
 
+import { formatDateUi, formatVndUi, tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { patchContractWorkflow } from "@/lib/api/contracts";
@@ -82,7 +84,8 @@ function RefundPolicyCard({ audience }: { audience: ResolutionAudience }) {
   );
 }
 
-export default function RefundRequestsPanel({ audience = "client" }: RefundRequestsPanelProps) {
+export default function RefundRequestsPanel({ audience = "client" }: RefundRequestsPanelProps) {  const { t, formatVnd, formatDate } = useTranslation();
+
   const [rows, setRows] = useState<RefundRequestRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -117,6 +120,8 @@ export default function RefundRequestsPanel({ audience = "client" }: RefundReque
   );
 
   async function handleRespond(contractId: string, agree: boolean) {
+  const formatDate = formatDateUi;
+  const formatVnd = formatVndUi;
     setBusyId(contractId);
     setActionError("");
     try {
@@ -189,8 +194,8 @@ export default function RefundRequestsPanel({ audience = "client" }: RefundReque
                       <Link href={href}>{orderTitle(row)}</Link>
                     </h3>
                     <p className="resolution-card__meta">
-                      {formatDate(row.created_at)} · {row.counterparty_name || "—"} ·{" "}
-                      {formatVnd(row.agreed_price)}
+                      {formatDateUi(row.created_at)} · {row.counterparty_name || "—"} ·{" "}
+                      {formatVndUi(row.agreed_price)}
                     </p>
                     {row.legitimacy ? (
                       <p className="resolution-card__meta resolution-card__meta--legitimacy">
@@ -226,7 +231,7 @@ export default function RefundRequestsPanel({ audience = "client" }: RefundReque
                     <div>
                       <dt>{audience === "freelancer" ? "Hạn phản hồi của bạn" : "Hạn phản hồi FL"}</dt>
                       <dd>
-                        {formatDate(row.respond_by_at)}
+                        {formatDateUi(row.respond_by_at)}
                         {audience === "freelancer" ? (
                           <> · còn {formatDeadlineCountdown(row.respond_by_at) || "—"}</>
                         ) : null}

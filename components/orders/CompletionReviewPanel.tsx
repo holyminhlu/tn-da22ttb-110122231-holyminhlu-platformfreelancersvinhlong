@@ -1,5 +1,7 @@
 "use client";
 
+import { formatDateUi, formatVndUi, tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useMemo, useState } from "react";
 import {
   FaCheckCircle,
@@ -11,7 +13,6 @@ import {
   FaUserClock,
 } from "react-icons/fa";
 import type { ContractMilestone, WorkflowContract } from "@/lib/api/contracts";
-import { formatDate, formatVnd } from "@/lib/format";
 import ClientVerifyNotice from "@/components/hire/ClientVerifyNotice";
 import { CLIENT_VERIFY_PAYMENT_LEAD } from "@/lib/hire/clientVerification";
 
@@ -48,7 +49,8 @@ export default function CompletionReviewPanel({
   review,
   onReleasePayment,
   onSubmitReview,
-}: CompletionReviewPanelProps) {
+}: CompletionReviewPanelProps) {  const { t, formatVnd, formatDate } = useTranslation();
+
   const [rating, setRating] = useState(5);
   const [reviewComment, setReviewComment] = useState("");
   const [releaseConfirmed, setReleaseConfirmed] = useState(false);
@@ -59,7 +61,7 @@ export default function CompletionReviewPanel({
   const hasReview = Boolean(review);
 
   const agreedAmount = Number(contract.agreed_price) || 0;
-  const agreedDisplay = agreedAmount > 0 ? formatVnd(agreedAmount) : "Thỏa thuận";
+  const agreedDisplay = agreedAmount > 0 ? formatVndUi(agreedAmount) : "Thỏa thuận";
 
   const milestonesPaid = useMemo(
     () => milestones.filter((m) => ["paid", "approved"].includes(String(m.status).toLowerCase())).length,
@@ -75,20 +77,20 @@ export default function CompletionReviewPanel({
       ) : null}
       <div className="hire-completion__hero">
         <div className="hire-completion__hero-text">
-          <span className="hire-completion__eyebrow">Giai đoạn 5</span>
-          <h2 className="hire-completion__title">Kết thúc & Đánh giá</h2>
+          <span className="hire-completion__eyebrow">{t("Giai đoạn 5")}</span>
+          <h2 className="hire-completion__title">{t("Kết thúc & Đánh giá")}</h2>
           <p className="hire-completion__lead">
             {isClient
               ? "Giải ngân Escrow cho freelancer và để lại đánh giá công khai để hoàn tất hợp đồng."
               : "Chờ client giải ngân và (nếu có) đánh giá. Cảm ơn bạn đã hoàn thành dự án!"}
           </p>
         </div>
-        <ul className="hire-completion__steps" aria-label="Tiến trình kết thúc">
+        <ul className="hire-completion__steps" aria-label={t("Tiến trình kết thúc")}>
           <li className="hire-completion__step hire-completion__step--done">
             <span className="hire-completion__step-icon" aria-hidden>
               <FaCheckCircle />
             </span>
-            <span>Đã nghiệm thu</span>
+            <span>{t("Đã nghiệm thu")}</span>
           </li>
           <li
             className={`hire-completion__step${isReleased ? " hire-completion__step--done" : " hire-completion__step--current"}`}
@@ -96,7 +98,7 @@ export default function CompletionReviewPanel({
             <span className="hire-completion__step-icon" aria-hidden>
               {isReleased ? <FaCheckCircle /> : "2"}
             </span>
-            <span>Giải ngân</span>
+            <span>{t("Giải ngân")}</span>
           </li>
           <li
             className={`hire-completion__step${hasReview ? " hire-completion__step--done" : isReleased && isClient ? " hire-completion__step--current" : " hire-completion__step--muted"}`}
@@ -104,14 +106,14 @@ export default function CompletionReviewPanel({
             <span className="hire-completion__step-icon" aria-hidden>
               {hasReview ? <FaCheckCircle /> : "3"}
             </span>
-            <span>Đánh giá</span>
+            <span>{t("Đánh giá")}</span>
           </li>
         </ul>
       </div>
 
       {contract.auto_accepted_at ? (
         <div className="hire-sla-banner hire-sla-banner--info" role="status">
-          Đã tự động nghiệm thu lúc {formatDate(contract.auto_accepted_at)} — tiền Escrow có thể đã
+          Đã tự động nghiệm thu lúc {formatDateUi(contract.auto_accepted_at)} — tiền Escrow có thể đã
           giải ngân theo SLA.
         </div>
       ) : null}
@@ -120,11 +122,11 @@ export default function CompletionReviewPanel({
         <aside className="hire-completion__aside">
           <div className="hire-completion__summary-card">
             <FaTrophy className="hire-completion__trophy" aria-hidden />
-            <span className="hire-completion__summary-label">Hợp đồng hoàn tất</span>
+            <span className="hire-completion__summary-label">{t("Hợp đồng hoàn tất")}</span>
             <strong className="hire-completion__summary-value">{agreedDisplay}</strong>
             {contract.accepted_at ? (
               <span className="hire-completion__summary-meta">
-                Nghiệm thu {formatDate(contract.accepted_at)}
+                Nghiệm thu {formatDateUi(contract.accepted_at)}
               </span>
             ) : null}
           </div>
@@ -140,15 +142,15 @@ export default function CompletionReviewPanel({
                 <dd>{counterpartyName || "—"}</dd>
               </div>
               <div>
-                <dt>Trạng thái Escrow</dt>
+                <dt>{t("Trạng thái Escrow")}</dt>
                 <dd className={isReleased ? "hire-completion__meta--success" : ""}>
                   {isReleased ? "Đã giải ngân" : "Chờ giải ngân"}
                 </dd>
               </div>
               {contract.released_at ? (
                 <div>
-                  <dt>Giải ngân lúc</dt>
-                  <dd>{formatDate(contract.released_at)}</dd>
+                  <dt>{t("Giải ngân lúc")}</dt>
+                  <dd>{formatDateUi(contract.released_at)}</dd>
                 </div>
               ) : null}
             </dl>
@@ -156,7 +158,7 @@ export default function CompletionReviewPanel({
 
           {milestones.length > 0 ? (
             <div className="hire-completion__context-card">
-              <h3 className="hire-completion__context-title">Cột mốc</h3>
+              <h3 className="hire-completion__context-title">{t("Cột mốc")}</h3>
               <p className="hire-completion__milestone-stat">
                 {milestonesPaid}/{milestones.length} đã thanh toán
               </p>
@@ -170,7 +172,7 @@ export default function CompletionReviewPanel({
               <header className="hire-completion__card-head">
                 <FaHandHoldingUsd className="hire-completion__card-icon" aria-hidden />
                 <div>
-                  <h3 className="hire-completion__card-title">Giải ngân cho Freelancer</h3>
+                  <h3 className="hire-completion__card-title">{t("Giải ngân cho Freelancer")}</h3>
                   <p className="hire-completion__card-sub">
                     Chuyển số tiền ký quỹ từ Escrow sang ví freelancer. Hành động này không thể hoàn
                     tác.
@@ -179,7 +181,7 @@ export default function CompletionReviewPanel({
               </header>
 
               <div className="hire-completion__amount-box">
-                <span className="hire-completion__amount-label">Số tiền giải ngân</span>
+                <span className="hire-completion__amount-label">{t("Số tiền giải ngân")}</span>
                 <span className="hire-completion__amount-value">{agreedDisplay}</span>
               </div>
 
@@ -222,7 +224,7 @@ export default function CompletionReviewPanel({
               <header className="hire-completion__card-head">
                 <FaStar className="hire-completion__card-icon hire-completion__card-icon--star" aria-hidden />
                 <div>
-                  <h3 className="hire-completion__card-title">Đánh giá Freelancer</h3>
+                  <h3 className="hire-completion__card-title">{t("Đánh giá Freelancer")}</h3>
                   <p className="hire-completion__card-sub">
                     Đánh giá công khai giúp cộng đồng chọn freelancer phù hợp hơn (tùy chọn nhận
                     xét).
@@ -230,7 +232,7 @@ export default function CompletionReviewPanel({
                 </div>
               </header>
 
-              <div className="hire-completion__stars" role="group" aria-label="Chọn số sao">
+              <div className="hire-completion__stars" role="group" aria-label={t("Chọn số sao")}>
                 {[1, 2, 3, 4, 5].map((n) => (
                   <button
                     key={n}
@@ -249,14 +251,14 @@ export default function CompletionReviewPanel({
               </div>
 
               <div className="hire-completion__field">
-                <label htmlFor="completion-review-comment">Nhận xét (tùy chọn)</label>
+                <label htmlFor="completion-review-comment">{t("Nhận xét (tùy chọn)")}</label>
                 <textarea
                   id="completion-review-comment"
                   className="hire-completion__textarea"
                   rows={4}
                   value={reviewComment}
                   onChange={(e) => setReviewComment(e.target.value)}
-                  placeholder="Chia sẻ trải nghiệm làm việc với freelancer này..."
+                  placeholder={t("Chia sẻ trải nghiệm làm việc với freelancer này...")}
                 />
               </div>
 
@@ -279,7 +281,7 @@ export default function CompletionReviewPanel({
           {isClient && isReleased && hasReview && review ? (
             <div className="hire-completion__done-card">
               <FaCheckCircle className="hire-completion__done-icon" aria-hidden />
-              <h3 className="hire-completion__done-title">Đã hoàn tất toàn bộ</h3>
+              <h3 className="hire-completion__done-title">{t("Đã hoàn tất toàn bộ")}</h3>
               <p className="hire-completion__done-desc">
                 Đã giải ngân và gửi đánh giá. Cảm ơn bạn đã sử dụng nền tảng.
               </p>
@@ -295,7 +297,7 @@ export default function CompletionReviewPanel({
                 </div>
                 {review.comment ? <p className="hire-completion__review-comment">{review.comment}</p> : null}
                 <span className="hire-completion__review-date">
-                  Đánh giá lúc {formatDate(review.created_at)}
+                  Đánh giá lúc {formatDateUi(review.created_at)}
                 </span>
               </div>
             </div>
@@ -304,7 +306,7 @@ export default function CompletionReviewPanel({
           {!isClient && !isReleased ? (
             <div className="hire-completion__state-card hire-completion__state-card--wait">
               <FaUserClock className="hire-completion__state-icon" aria-hidden />
-              <h3 className="hire-completion__state-title">Chờ Client giải ngân</h3>
+              <h3 className="hire-completion__state-title">{t("Chờ Client giải ngân")}</h3>
               <p className="hire-completion__state-desc">
                 Client sẽ chuyển <strong>{agreedDisplay}</strong> từ Escrow sang ví của bạn. Sau đó
                 họ có thể để lại đánh giá công khai.
@@ -315,14 +317,14 @@ export default function CompletionReviewPanel({
           {!isClient && isReleased && !hasReview ? (
             <div className="hire-completion__state-card hire-completion__state-card--success">
               <FaMoneyCheckAlt className="hire-completion__state-icon" aria-hidden />
-              <h3 className="hire-completion__state-title">Đã nhận giải ngân</h3>
+              <h3 className="hire-completion__state-title">{t("Đã nhận giải ngân")}</h3>
               <p className="hire-completion__state-desc">
                 Client đã giải ngân thành công. Cảm ơn bạn đã hoàn thành dự án — đánh giá từ client
                 có thể xuất hiện trên hồ sơ của bạn.
               </p>
               {contract.released_at ? (
                 <p className="hire-completion__state-meta">
-                  Giải ngân lúc {formatDate(contract.released_at)}
+                  Giải ngân lúc {formatDateUi(contract.released_at)}
                 </p>
               ) : null}
             </div>
@@ -331,7 +333,7 @@ export default function CompletionReviewPanel({
           {!isClient && isReleased && hasReview && review ? (
             <div className="hire-completion__state-card hire-completion__state-card--success">
               <FaStar className="hire-completion__state-icon hire-completion__state-icon--star" aria-hidden />
-              <h3 className="hire-completion__state-title">Client đã đánh giá bạn</h3>
+              <h3 className="hire-completion__state-title">{t("Client đã đánh giá bạn")}</h3>
               <div className="hire-completion__review-display">
                 <div className="hire-completion__review-stars" aria-label={`${review.rating} trên 5 sao`}>
                   {[1, 2, 3, 4, 5].map((n) => (

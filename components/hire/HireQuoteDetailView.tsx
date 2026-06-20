@@ -1,5 +1,7 @@
 "use client";
 
+import { formatDateUi, tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import FreelancerAvatarFrame from "@/components/freelancer/FreelancerAvatarFrame";
 import Link from "next/link";
 import { FreelancerChatInlineButton } from "@/components/chat/FreelancerChatWidget";
@@ -15,7 +17,6 @@ import {
 } from "react-icons/fa";
 import type { JobQuoteRow } from "@/lib/api/jobQuotes";
 import { getUserInitials, resolveAvatarSrc } from "@/lib/authSession";
-import { formatDate } from "@/lib/format";
 import {
   formatQuoteAmount,
   quoteClientActions,
@@ -44,11 +45,12 @@ export default function HireQuoteDetailView({
   onChat,
   clientIdentityVerified = true,
   clientIdentityLoading = false,
-}: HireQuoteDetailViewProps) {
+}: HireQuoteDetailViewProps) {  const { t, formatDate } = useTranslation();
+
   const needsVerify = !clientIdentityLoading && !clientIdentityVerified;
   const avatarSrc = resolveAvatarSrc(quote.freelancer_avatar_url);
   const name = quote.freelancer_name?.trim() || "Freelancer";
-  const title = quote.freelancer_title?.trim() || "Thành viên VLC";
+  const title = quote.freelancer_title?.trim() || t("Thành viên VLC");
   const location = quote.freelancer_location?.trim() || "—";
   const ratingPct = quoteRatingPercent(quote);
   const message = quote.message?.trim() || "";
@@ -95,7 +97,7 @@ export default function HireQuoteDetailView({
 
           <dl className="hire-favorites__meta">
             <div>
-              <dt className="hire-favorites__sr-only">Vị trí</dt>
+              <dt className="hire-favorites__sr-only">{t("Vị trí")}</dt>
               <dd>
                 <FaMapMarkerAlt className="hire-favorites__meta-icon" aria-hidden />
                 {location}
@@ -103,7 +105,7 @@ export default function HireQuoteDetailView({
             </div>
             {ratingPct > 0 ? (
               <div>
-                <dt className="hire-favorites__sr-only">Hài lòng</dt>
+                <dt className="hire-favorites__sr-only">{t("Hài lòng")}</dt>
                 <dd>
                   <FaThumbsUp className="hire-favorites__meta-icon" aria-hidden />
                   {ratingPct}%
@@ -112,7 +114,7 @@ export default function HireQuoteDetailView({
             ) : null}
             {quote.rating_avg != null && quote.rating_avg > 0 ? (
               <div>
-                <dt className="hire-favorites__sr-only">Đánh giá</dt>
+                <dt className="hire-favorites__sr-only">{t("Đánh giá")}</dt>
                 <dd>
                   <FaStar className="hire-favorites__meta-icon hire-favorites__meta-icon--star" aria-hidden />
                   {Number(quote.rating_avg).toFixed(1)}/5
@@ -121,22 +123,22 @@ export default function HireQuoteDetailView({
               </div>
             ) : null}
             <div>
-              <dt className="hire-favorites__sr-only">Việc hoàn thành</dt>
+              <dt className="hire-favorites__sr-only">{t("Việc hoàn thành")}</dt>
               <dd>
                 <FaBriefcase className="hire-favorites__meta-icon" aria-hidden />
                 {quote.completed_jobs} việc
               </dd>
             </div>
             <div>
-              <dt className="hire-favorites__sr-only">Ngày gửi</dt>
-              <dd>{formatDate(quote.created_at)}</dd>
+              <dt className="hire-favorites__sr-only">{t("Ngày gửi")}</dt>
+              <dd>{formatDateUi(quote.created_at)}</dd>
             </div>
           </dl>
 
           {quote.job_title ? (
             <dl className="hire-favorites__meta">
               <div className="hire-favorites__meta-wide">
-                <dt>Công việc</dt>
+                <dt>{t("Công việc")}</dt>
                 <dd>{quote.job_title}</dd>
               </div>
             </dl>
@@ -145,7 +147,7 @@ export default function HireQuoteDetailView({
           {quote.freelancer_bio?.trim() ? (
             <dl className="hire-favorites__meta">
               <div className="hire-favorites__meta-wide">
-                <dt>Giới thiệu</dt>
+                <dt>{t("Giới thiệu")}</dt>
                 <dd>{quote.freelancer_bio.trim()}</dd>
               </div>
             </dl>
@@ -153,8 +155,8 @@ export default function HireQuoteDetailView({
 
           <dl className="hire-favorites__meta">
             <div className="hire-favorites__meta-wide">
-              <dt>Thư đề xuất</dt>
-              <dd>{message || "Freelancer chưa gửi kèm thư đề xuất chi tiết."}</dd>
+              <dt>{t("Thư đề xuất")}</dt>
+              <dd>{message || t("Freelancer chưa gửi kèm thư đề xuất chi tiết.")}</dd>
             </div>
           </dl>
         </div>
@@ -166,7 +168,7 @@ export default function HireQuoteDetailView({
           Xem hồ sơ
         </Link>
         {needsVerify ? (
-          <FreelancerChatInlineButton href={CLIENT_VERIFY_PAGE} label="Xác minh để nhắn tin" />
+          <FreelancerChatInlineButton href={CLIENT_VERIFY_PAGE} label={t("Xác minh để nhắn tin")} />
         ) : onChat ? (
           <FreelancerChatInlineButton onClick={onChat} />
         ) : null}

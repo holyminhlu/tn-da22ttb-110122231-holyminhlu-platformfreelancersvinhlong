@@ -1,3 +1,4 @@
+import { useTranslation } from "@/hooks/useTranslation";
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { FaChevronRight, FaLaptop, FaUser } from "react-icons/fa";
@@ -31,43 +32,45 @@ function AccountTypeCard({
 }
 
 export default function HelpLanding() {
+  const { t } = useTranslation();
+
   return (
     <>
       <section className="help-hero" aria-labelledby="help-hero-title">
         <h1 id="help-hero-title" className="help-hero__title">
-          Chúng tôi có thể giúp gì cho bạn?
+          {t("Chúng tôi có thể giúp gì cho bạn?")}
         </h1>
-        <p className="help-hero__subtitle">Chọn loại tài khoản</p>
+        <p className="help-hero__subtitle">{t("Chọn loại tài khoản")}</p>
       </section>
 
-      <section className="help-cards" aria-label="Loại tài khoản">
+      <section className="help-cards" aria-label={t("Loại tài khoản")}>
         <div className="help-cards__inner">
           <AccountTypeCard
             href="/help/employer"
-            label="Tôi là Nhà tuyển dụng"
+            label={t("Tôi là Nhà tuyển dụng")}
             icon={<FaUser />}
             bordered
           />
           <AccountTypeCard
             href="/help/freelancer"
-            label="Tôi là Freelancer"
+            label={t("Tôi là Freelancer")}
             icon={<FaLaptop />}
           />
         </div>
       </section>
 
-      <section className="help-quick" aria-label="Liên kết nhanh">
+      <section className="help-quick" aria-label={t("Liên kết nhanh")}>
         <div className="help-quick__block">
-          <h2 className="help-quick__title">Tìm chuyên gia có kỹ năng cụ thể?</h2>
+          <h2 className="help-quick__title">{t("Tìm chuyên gia có kỹ năng cụ thể?")}</h2>
           <Link href="/freelancers" className="help-quick__btn">
-            Tìm Freelancer ngay
+            {t("Tìm Freelancer ngay")}
           </Link>
         </div>
         <div className="help-quick__divider" aria-hidden />
         <div className="help-quick__block">
-          <h2 className="help-quick__title">Tìm việc phù hợp với kỹ năng của bạn?</h2>
+          <h2 className="help-quick__title">{t("Tìm việc phù hợp với kỹ năng của bạn?")}</h2>
           <Link href="/findwork" className="help-quick__btn">
-            Tìm việc ngay
+            {t("Tìm việc ngay")}
           </Link>
         </div>
       </section>

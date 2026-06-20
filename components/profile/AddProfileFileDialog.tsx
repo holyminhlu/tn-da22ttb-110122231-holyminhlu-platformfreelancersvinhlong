@@ -1,5 +1,7 @@
 "use client";
 
+import { tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useRef, useState } from "react";
 import { createProfileFile, uploadProfileFile } from "@/lib/api/users";
 
@@ -8,7 +10,10 @@ type AddProfileFileDialogProps = {
   onSaved: () => void;
 };
 
-export default function AddProfileFileDialog({ onClose, onSaved }: AddProfileFileDialogProps) {
+export default function AddProfileFileDialog({
+  onClose, onSaved }: AddProfileFileDialogProps) {
+  const { t } = useTranslation();
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -23,6 +28,7 @@ export default function AddProfileFileDialog({ onClose, onSaved }: AddProfileFil
   const [error, setError] = useState("");
 
   async function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+  const t = tUi;
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file) return;
@@ -51,14 +57,15 @@ export default function AddProfileFileDialog({ onClose, onSaved }: AddProfileFil
   }
 
   async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  const t = tUi;
+  e.preventDefault();
     const trimmedTitle = title.trim();
     if (!trimmedTitle) {
-      setError("Tiêu đề tệp là bắt buộc.");
+      setError(t("Tiêu đề tệp là bắt buộc."));
       return;
     }
     if (!uploaded) {
-      setError("Vui lòng tải lên tệp.");
+      setError(t("Vui lòng tải lên tệp."));
       return;
     }
 
@@ -97,16 +104,16 @@ export default function AddProfileFileDialog({ onClose, onSaved }: AddProfileFil
         <div className="mp-dialog__head">
           <div>
             <h3 id="add-file-title" className="mp-dialog__title">
-              Thêm tệp tin
+              {t("Thêm tệp tin")}
             </h3>
             <p className="mp-dialog__lead">
-              Tải tệp để chia sẻ với khách hàng ngay trên hồ sơ của bạn.
+              {t("Tải tệp để chia sẻ với khách hàng ngay trên hồ sơ của bạn.")}
             </p>
           </div>
         </div>
 
         <div className="mp-dialog__field">
-          <span className="mp-dialog__label">Tệp đính kèm *</span>
+          <span className="mp-dialog__label">{t("Tệp đính kèm *")}</span>
           <input
             ref={fileInputRef}
             type="file"
@@ -127,15 +134,15 @@ export default function AddProfileFileDialog({ onClose, onSaved }: AddProfileFil
               {uploaded.fileSize > 0 ? ` · ${(uploaded.fileSize / 1024).toFixed(0)} KB` : ""}
             </p>
           ) : (
-            <p className="mp-dialog__hint">PDF, Word, Excel, ZIP hoặc ảnh (tối đa 15MB).</p>
+            <p className="mp-dialog__hint">{t("PDF, Word, Excel, ZIP hoặc ảnh (tối đa 15MB).")}</p>
           )}
         </div>
 
         <label className="mp-dialog__field">
-          <span className="mp-dialog__label">Tiêu đề hiển thị *</span>
+          <span className="mp-dialog__label">{t("Tiêu đề hiển thị *")}</span>
           <input
             className="mp-dialog__input"
-            placeholder="VD: Hợp đồng mẫu, Bảng giá chi tiết..."
+            placeholder={t("VD: Hợp đồng mẫu, Bảng giá chi tiết...")}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             required
@@ -143,10 +150,10 @@ export default function AddProfileFileDialog({ onClose, onSaved }: AddProfileFil
         </label>
 
         <label className="mp-dialog__field">
-          <span className="mp-dialog__label">Mô tả (tùy chọn)</span>
+          <span className="mp-dialog__label">{t("Mô tả (tùy chọn)")}</span>
           <textarea
             className="mp-dialog__input mp-dialog__textarea"
-            placeholder="Ghi chú ngắn về nội dung tệp..."
+            placeholder={t("Ghi chú ngắn về nội dung tệp...")}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={3}
@@ -166,7 +173,7 @@ export default function AddProfileFileDialog({ onClose, onSaved }: AddProfileFil
             disabled={saving || uploading}
             onClick={onClose}
           >
-            Hủy
+            {t("Hủy")}
           </button>
           <button type="submit" className="mp-dialog__btn mp-dialog__btn--primary" disabled={saving || uploading}>
             {saving ? "Đang lưu..." : "Thêm tệp"}

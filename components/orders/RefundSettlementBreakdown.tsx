@@ -1,6 +1,7 @@
 "use client";
 
-import { formatVnd } from "@/lib/format";
+import { formatVndUi, tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import {
   computeRefundSettlement,
   legitimacyLabel,
@@ -45,7 +46,8 @@ function toSettlementFromStored(props: RefundSettlementBreakdownProps): RefundSe
   };
 }
 
-export default function RefundSettlementBreakdown(props: RefundSettlementBreakdownProps) {
+export default function RefundSettlementBreakdown(props: RefundSettlementBreakdownProps) {  const { t, formatVnd } = useTranslation();
+
   const { audience = "client", compact = false } = props;
 
   const settlement =
@@ -80,36 +82,36 @@ export default function RefundSettlementBreakdown(props: RefundSettlementBreakdo
 
       <dl className="refund-settlement__grid">
         <div>
-          <dt>Tổng ký quỹ</dt>
-          <dd>{formatVnd(settlement.total)}</dd>
+          <dt>{t("Tổng ký quỹ")}</dt>
+          <dd>{formatVndUi(settlement.total)}</dd>
         </div>
         <div className="refund-settlement__row--client">
           <dt>{audience === "freelancer" ? "Client nhận lại" : "Bạn nhận lại (ước tính)"}</dt>
-          <dd>{formatVnd(settlement.clientAmount)}</dd>
+          <dd>{formatVndUi(settlement.clientAmount)}</dd>
         </div>
         {settlement.freelancerAmount > 0 ? (
           <div className="refund-settlement__row--fl">
             <dt>{audience === "client" ? "Freelancer nhận" : "Bạn nhận (ước tính)"}</dt>
-            <dd>{formatVnd(settlement.freelancerAmount)}</dd>
+            <dd>{formatVndUi(settlement.freelancerAmount)}</dd>
           </div>
         ) : null}
         {settlement.splitType === "penalty_refund" && settlement.penaltyPercent > 0 ? (
           <div>
-            <dt>Phí phạt</dt>
+            <dt>{t("Phí phạt")}</dt>
             <dd>{Math.round(settlement.penaltyPercent * 100)}% tổng giá trị</dd>
           </div>
         ) : null}
         {settlement.platformFeeAmount > 0 ? (
           <div className="refund-settlement__row--fee">
-            <dt>Hoa hồng nền tảng (tham chiếu)</dt>
-            <dd>~{formatVnd(settlement.platformFeeAmount)}</dd>
+            <dt>{t("Hoa hồng nền tảng (tham chiếu)")}</dt>
+            <dd>~{formatVndUi(settlement.platformFeeAmount)}</dd>
           </div>
         ) : null}
       </dl>
 
       <p className="refund-settlement__note">{settlement.platformFeeNote}</p>
       <p className="refund-settlement__wallet-note">
-        Phương thức nhận lại mặc định: <strong>ví VLC</strong>.
+        Phương thức nhận lại mặc định: <strong>{t("ví VLC")}</strong>.
       </p>
     </div>
   );

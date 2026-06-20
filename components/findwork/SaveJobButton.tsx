@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
@@ -20,6 +21,8 @@ export default function SaveJobButton({
   className = "",
   onToggled,
 }: SaveJobButtonProps) {
+  const { t } = useTranslation();
+
   const pathname = usePathname();
   const { user, ready, isFreelancer } = useStoredUser({ refreshFromApi: false });
   const { canSave, isSaved, toggleSave, busyId, lastError, clearError } = useSavedJobs();
@@ -64,8 +67,8 @@ export default function SaveJobButton({
       <Link
         href={`/dang-nhap${loginNext}`}
         className={`rounded border p-2 text-gray-400 hover:text-blue-600${className ? ` ${className}` : ""}`}
-        aria-label="Đăng nhập để lưu việc"
-        title="Đăng nhập để lưu việc"
+        aria-label={t("Đăng nhập để lưu việc")}
+        title={t("Đăng nhập để lưu việc")}
       >
         <FaStar aria-hidden />
       </Link>

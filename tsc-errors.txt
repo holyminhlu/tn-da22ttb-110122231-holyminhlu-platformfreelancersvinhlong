@@ -1,0 +1,193 @@
+﻿components/chat/FreelancerChatWidget.tsx(34,12): error TS2304: Cannot find name 'formatDate'.
+components/chat/FreelancerChatWidget.tsx(65,22): error TS2367: This comparison appears to be unintentional because the types '"text" | "file" | "image" | undefined' and '"context"' have no overlap.
+components/chat/InboxChatPanel.tsx(49,12): error TS2304: Cannot find name 'formatDate'.
+components/chat/InboxChatPanel.tsx(155,24): error TS2367: This comparison appears to be unintentional because the types '"text" | "file" | "image" | undefined' and '"context"' have no overlap.
+components/chat/MessagesInbox.tsx(156,56): error TS18047: 'user' is possibly 'null'.
+components/dashboard/FreelancerDashboard.tsx(627,36): error TS2322: Type 'FreelancerProfile | null | undefined' is not assignable to type 'FreelancerProfile | null'.
+  Type 'undefined' is not assignable to type 'FreelancerProfile | null'.
+components/dashboard/FreelancerDashboard.tsx(630,15): error TS2322: Type 'FreelancerProfile | null | undefined' is not assignable to type 'FreelancerProfile | null'.
+  Type 'undefined' is not assignable to type 'FreelancerProfile | null'.
+components/findwork/FindWorkToolbar.tsx(334,14): error TS2304: Cannot find name 't'.
+components/findwork/FindWorkToolbar.tsx(341,14): error TS2304: Cannot find name 't'.
+components/findwork/FindWorkToolbar.tsx(362,14): error TS2304: Cannot find name 't'.
+components/findwork/FreelancerJobQuotesPage.tsx(26,26): error TS2304: Cannot find name 't'.
+components/findwork/FreelancerJobQuotesPage.tsx(27,29): error TS2304: Cannot find name 't'.
+components/findwork/FreelancerJobQuotesPage.tsx(28,30): error TS2304: Cannot find name 't'.
+components/findwork/FreelancerJobQuotesPage.tsx(29,30): error TS2304: Cannot find name 't'.
+components/findwork/FreelancerJobQuotesPage.tsx(30,31): error TS2304: Cannot find name 't'.
+components/findwork/FreelancerJobQuotesPage.tsx(31,31): error TS2304: Cannot find name 't'.
+components/findwork/FreelancerJobQuotesPage.tsx(35,29): error TS2304: Cannot find name 't'.
+components/findwork/FreelancerJobQuotesPage.tsx(36,30): error TS2304: Cannot find name 't'.
+components/findwork/FreelancerJobQuotesPage.tsx(37,33): error TS2304: Cannot find name 't'.
+components/findwork/FreelancerJobQuotesPage.tsx(38,32): error TS2304: Cannot find name 't'.
+components/findwork/FreelancerLeadsPage.tsx(28,26): error TS2304: Cannot find name 't'.
+components/findwork/FreelancerLeadsPage.tsx(29,26): error TS2304: Cannot find name 't'.
+components/findwork/FreelancerLeadsPage.tsx(30,33): error TS2304: Cannot find name 't'.
+components/findwork/FreelancerLeadsPage.tsx(31,30): error TS2304: Cannot find name 't'.
+components/findwork/FreelancerServiceOrdersPage.tsx(32,26): error TS2304: Cannot find name 't'.
+components/findwork/FreelancerServiceOrdersPage.tsx(33,29): error TS2304: Cannot find name 't'.
+components/findwork/FreelancerServiceOrdersPage.tsx(34,29): error TS2304: Cannot find name 't'.
+components/findwork/FreelancerServiceOrdersPage.tsx(35,27): error TS2304: Cannot find name 't'.
+components/findwork/JobProposalFormModal.tsx(42,16): error TS2304: Cannot find name 'formatVnd'.
+components/freelancers/FindFreelancersBody.tsx(34,73): error TS2322: Type 'boolean | null' is not assignable to type 'boolean | undefined'.
+  Type 'null' is not assignable to type 'boolean | undefined'.
+components/help/HelpCenter.tsx(30,20): error TS2304: Cannot find name 't'.
+components/hire/ClientHireFavoritesPage.tsx(27,26): error TS2304: Cannot find name 't'.
+components/hire/ClientHireFavoritesPage.tsx(28,29): error TS2304: Cannot find name 't'.
+components/hire/ClientHireFavoritesPage.tsx(29,32): error TS2304: Cannot find name 't'.
+components/hire/ClientHireFreelancerDetailPage.tsx(105,73): error TS2322: Type 'boolean | null' is not assignable to type 'boolean | undefined'.
+  Type 'null' is not assignable to type 'boolean | undefined'.
+components/hire/ClientHireJoblistPage.tsx(18,31): error TS2304: Cannot find name 't'.
+components/hire/ClientHireJoblistPage.tsx(19,27): error TS2304: Cannot find name 't'.
+components/hire/ClientHireJoblistPage.tsx(20,34): error TS2304: Cannot find name 't'.
+components/hire/ClientHireJoblistPage.tsx(21,29): error TS2304: Cannot find name 't'.
+components/hire/ClientHireJoblistPage.tsx(22,32): error TS2304: Cannot find name 't'.
+components/hire/ClientHireJobManagePage.tsx(36,32): error TS2304: Cannot find name 't'.
+components/hire/ClientHireJobManagePage.tsx(37,31): error TS2304: Cannot find name 't'.
+components/hire/ClientHireJobManagePage.tsx(38,26): error TS2304: Cannot find name 't'.
+components/hire/ClientHireQuotesPage.tsx(33,26): error TS2304: Cannot find name 't'.
+components/hire/ClientHireQuotesPage.tsx(34,30): error TS2304: Cannot find name 't'.
+components/hire/ClientHireQuotesPage.tsx(35,30): error TS2304: Cannot find name 't'.
+components/hire/ClientHireQuotesPage.tsx(36,31): error TS2304: Cannot find name 't'.
+components/hire/ClientHireQuotesPage.tsx(37,31): error TS2304: Cannot find name 't'.
+components/hire/ClientHireQuotesPage.tsx(41,31): error TS2304: Cannot find name 't'.
+components/hire/ClientHireQuotesPage.tsx(42,29): error TS2304: Cannot find name 't'.
+components/hire/ClientHireQuotesPage.tsx(43,32): error TS2304: Cannot find name 't'.
+components/hire/ClientHireQuotesPage.tsx(44,34): error TS2304: Cannot find name 't'.
+components/hire/ClientPostJobWizard.tsx(18,19): error TS2304: Cannot find name 't'.
+components/hire/ClientPostJobWizard.tsx(19,19): error TS2304: Cannot find name 't'.
+components/hire/ClientPostJobWizard.tsx(20,19): error TS2304: Cannot find name 't'.
+components/hire/ClientPostJobWizard.tsx(21,19): error TS2304: Cannot find name 't'.
+components/hire/ClientPostJobWizard.tsx(22,19): error TS2304: Cannot find name 't'.
+components/hire/ClientPostJobWizard.tsx(125,21): error TS2304: Cannot find name 'isoToLocalDateInputValue'.
+components/hire/ClientPostJobWizard.tsx(126,24): error TS2304: Cannot find name 'isDateInputBeforeToday'.
+components/hire/ClientPostJobWizard.tsx(208,13): error TS2304: Cannot find name 'isDateInputBeforeToday'.
+components/hire/ClientPostJobWizard.tsx(475,22): error TS2304: Cannot find name 'localDateInputValue'.
+components/hire/ClientPostJobWizard.tsx(478,32): error TS2304: Cannot find name 'isDateInputBeforeToday'.
+components/hire/ClientServiceOrdersPage.tsx(32,26): error TS2304: Cannot find name 't'.
+components/hire/ClientServiceOrdersPage.tsx(33,29): error TS2304: Cannot find name 't'.
+components/hire/ClientServiceOrdersPage.tsx(34,29): error TS2304: Cannot find name 't'.
+components/hire/ClientServiceOrdersPage.tsx(35,27): error TS2304: Cannot find name 't'.
+components/hire/HireFavoriteCard.tsx(47,48): error TS2345: Argument of type 'string | null' is not assignable to parameter of type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+components/hire/HireQuoteCard.tsx(38,41): error TS2304: Cannot find name 'formatVnd'.
+components/hire/HireSearchFreelancerCard.tsx(63,22): error TS2304: Cannot find name 't'.
+components/hire/HireSearchFreelancerCard.tsx(63,48): error TS2304: Cannot find name 't'.
+components/hire/HireSearchFreelancerCard.tsx(64,23): error TS2304: Cannot find name 't'.
+components/hire/HireSearchFreelancerCard.tsx(64,53): error TS2304: Cannot find name 't'.
+components/hire/HireSearchFreelancerCard.tsx(65,25): error TS2304: Cannot find name 't'.
+components/hire/HireSearchFreelancerCard.tsx(65,53): error TS2304: Cannot find name 't'.
+components/hire/HireSearchFreelancerCard.tsx(66,19): error TS2304: Cannot find name 't'.
+components/hire/HireSearchFreelancerCard.tsx(66,48): error TS2304: Cannot find name 't'.
+components/hire/HireSearchFreelancerCard.tsx(74,25): error TS2304: Cannot find name 't'.
+components/hire/HireSearchFreelancerCard.tsx(79,14): error TS2304: Cannot find name 't'.
+components/hire/HireSearchFreelancerCard.tsx(84,23): error TS2304: Cannot find name 't'.
+components/hire/HireSearchFreelancerCard.tsx(86,25): error TS2304: Cannot find name 't'.
+components/hire/HireSearchFreelancerCard.tsx(89,25): error TS2304: Cannot find name 't'.
+components/hire/HireSearchFreelancerCard.tsx(93,12): error TS2304: Cannot find name 't'.
+components/how-vlc-works/HowVlcWorksContent.tsx(50,19): error TS2304: Cannot find name 't'.
+components/how-vlc-works/HowVlcWorksContent.tsx(66,58): error TS2304: Cannot find name 't'.
+components/how-vlc-works/HowVlcWorksContent.tsx(68,55): error TS2304: Cannot find name 't'.
+components/how-vlc-works/HowVlcWorksContent.tsx(189,27): error TS2322: Type 'readonly [{ readonly step: 1; readonly title: "─É─âng k├╜ & x├íc minh danh t├¡nh"; readonly description: "Tß║ío t├ái khoß║ún Client tß║íi trang ─æ─âng k├╜. Tr╞░ß╗¢c khi ─æ─âng tin tuyß╗ân dß╗Ñng, ho├án th├ánh x├íc minh danh t├¡nh (th├┤ng tin nhß║¡n dß║íng v├á thß║╗) tß║íi trang x├íc minh ΓÇö hß╗ç thß╗æng sß║╜ mß╗ƒ kh├│a t├¡nh n─âng ─æ─âng viß╗çc."; readonly route: "/dang...' is not assignable to type 'readonly ({ readonly step: 1; readonly title: "─É─âng k├╜ & x├íc minh danh t├¡nh"; readonly description: "Tß║ío t├ái khoß║ún Client tß║íi trang ─æ─âng k├╜. Tr╞░ß╗¢c khi ─æ─âng tin tuyß╗ân dß╗Ñng, ho├án th├ánh x├íc minh danh t├¡nh (th├┤ng tin nhß║¡n dß║íng v├á thß║╗) tß║íi trang x├íc minh ΓÇö hß╗ç thß╗æng sß║╜ mß╗ƒ kh├│a t├¡nh n─âng ─æ─âng viß╗çc."; readonly route: "/dang...'.
+  Type 'readonly [{ readonly step: 1; readonly title: "─É─âng k├╜ & x├óy dß╗▒ng hß╗ô s╞í dß╗ïch vß╗Ñ"; readonly description: "Tß║ío t├ái khoß║ún Freelancer, ho├án thiß╗çn hß╗ô s╞í c├┤ng khai v├á ─æ─âng g├│i dß╗ïch vß╗Ñ (ti├¬u ─æß╗ü, m├┤ tß║ú, g├│i gi├í) tß║íi Dß╗ïch vß╗Ñ ΓåÆ Quß║ún l├╜ ΓÇö gi├║p client t├¼m thß║Ñy v├á ─æß║╖t h├áng trß╗▒c tiß║┐p."; readonly route: "/dang-ky"; readonly routeL...' is not assignable to type 'readonly ({ readonly step: 1; readonly title: "─É─âng k├╜ & x├íc minh danh t├¡nh"; readonly description: "Tß║ío t├ái khoß║ún Client tß║íi trang ─æ─âng k├╜. Tr╞░ß╗¢c khi ─æ─âng tin tuyß╗ân dß╗Ñng, ho├án th├ánh x├íc minh danh t├¡nh (th├┤ng tin nhß║¡n dß║íng v├á thß║╗) tß║íi trang x├íc minh ΓÇö hß╗ç thß╗æng sß║╜ mß╗ƒ kh├│a t├¡nh n─âng ─æ─âng viß╗çc."; readonly route: "/dang...'.
+    Type '{ readonly step: 1; readonly title: "─É─âng k├╜ & x├óy dß╗▒ng hß╗ô s╞í dß╗ïch vß╗Ñ"; readonly description: "Tß║ío t├ái khoß║ún Freelancer, ho├án thiß╗çn hß╗ô s╞í c├┤ng khai v├á ─æ─âng g├│i dß╗ïch vß╗Ñ (ti├¬u ─æß╗ü, m├┤ tß║ú, g├│i gi├í) tß║íi Dß╗ïch vß╗Ñ ΓåÆ Quß║ún l├╜ ΓÇö gi├║p client t├¼m thß║Ñy v├á ─æß║╖t h├áng trß╗▒c tiß║┐p."; readonly route: "/dang-ky"; readonly routeLabel: "─É─ân...' is not assignable to type '{ readonly step: 1; readonly title: "─É─âng k├╜ & x├íc minh danh t├¡nh"; readonly description: "Tß║ío t├ái khoß║ún Client tß║íi trang ─æ─âng k├╜. Tr╞░ß╗¢c khi ─æ─âng tin tuyß╗ân dß╗Ñng, ho├án th├ánh x├íc minh danh t├¡nh (th├┤ng tin nhß║¡n dß║íng v├á thß║╗) tß║íi trang x├íc minh ΓÇö hß╗ç thß╗æng sß║╜ mß╗ƒ kh├│a t├¡nh n─âng ─æ─âng viß╗çc."; readonly route: "/dang-ky"; read...'.
+      Type '{ readonly step: 1; readonly title: "─É─âng k├╜ & x├óy dß╗▒ng hß╗ô s╞í dß╗ïch vß╗Ñ"; readonly description: "Tß║ío t├ái khoß║ún Freelancer, ho├án thiß╗çn hß╗ô s╞í c├┤ng khai v├á ─æ─âng g├│i dß╗ïch vß╗Ñ (ti├¬u ─æß╗ü, m├┤ tß║ú, g├│i gi├í) tß║íi Dß╗ïch vß╗Ñ ΓåÆ Quß║ún l├╜ ΓÇö gi├║p client t├¼m thß║Ñy v├á ─æß║╖t h├áng trß╗▒c tiß║┐p."; readonly route: "/dang-ky"; readonly routeLabel: "─É─ân...' is not assignable to type '{ readonly step: 1; readonly title: "─É─âng k├╜ & x├íc minh danh t├¡nh"; readonly description: "Tß║ío t├ái khoß║ún Client tß║íi trang ─æ─âng k├╜. Tr╞░ß╗¢c khi ─æ─âng tin tuyß╗ân dß╗Ñng, ho├án th├ánh x├íc minh danh t├¡nh (th├┤ng tin nhß║¡n dß║íng v├á thß║╗) tß║íi trang x├íc minh ΓÇö hß╗ç thß╗æng sß║╜ mß╗ƒ kh├│a t├¡nh n─âng ─æ─âng viß╗çc."; readonly route: "/dang-ky"; read...'.
+        Type '{ readonly step: 1; readonly title: "─É─âng k├╜ & x├óy dß╗▒ng hß╗ô s╞í dß╗ïch vß╗Ñ"; readonly description: "Tß║ío t├ái khoß║ún Freelancer, ho├án thiß╗çn hß╗ô s╞í c├┤ng khai v├á ─æ─âng g├│i dß╗ïch vß╗Ñ (ti├¬u ─æß╗ü, m├┤ tß║ú, g├│i gi├í) tß║íi Dß╗ïch vß╗Ñ ΓåÆ Quß║ún l├╜ ΓÇö gi├║p client t├¼m thß║Ñy v├á ─æß║╖t h├áng trß╗▒c tiß║┐p."; readonly route: "/dang-ky"; readonly routeLabel: "─É─ân...' is not assignable to type '{ readonly step: 1; readonly title: "─É─âng k├╜ & x├íc minh danh t├¡nh"; readonly description: "Tß║ío t├ái khoß║ún Client tß║íi trang ─æ─âng k├╜. Tr╞░ß╗¢c khi ─æ─âng tin tuyß╗ân dß╗Ñng, ho├án th├ánh x├íc minh danh t├¡nh (th├┤ng tin nhß║¡n dß║íng v├á thß║╗) tß║íi trang x├íc minh ΓÇö hß╗ç thß╗æng sß║╜ mß╗ƒ kh├│a t├¡nh n─âng ─æ─âng viß╗çc."; readonly route: "/dang-ky"; read...'.
+          Types of property 'title' are incompatible.
+            Type '"─É─âng k├╜ & x├óy dß╗▒ng hß╗ô s╞í dß╗ïch vß╗Ñ"' is not assignable to type '"─É─âng k├╜ & x├íc minh danh t├¡nh"'.
+components/orders/ServiceOrderWorkflow.tsx(37,12): error TS2304: Cannot find name 't'.
+components/orders/ServiceOrderWorkflow.tsx(38,12): error TS2304: Cannot find name 't'.
+components/orders/ServiceOrderWorkflow.tsx(39,17): error TS2304: Cannot find name 't'.
+components/orders/ServiceOrderWorkflow.tsx(40,21): error TS2304: Cannot find name 't'.
+components/orders/ServiceOrderWorkflow.tsx(44,12): error TS2304: Cannot find name 't'.
+components/orders/ServiceOrderWorkflow.tsx(45,12): error TS2304: Cannot find name 't'.
+components/orders/ServiceOrderWorkflow.tsx(46,17): error TS2304: Cannot find name 't'.
+components/orders/ServiceOrderWorkflow.tsx(47,21): error TS2304: Cannot find name 't'.
+components/orders/ServiceOrderWorkflow.tsx(51,12): error TS2304: Cannot find name 't'.
+components/orders/ServiceOrderWorkflow.tsx(52,12): error TS2304: Cannot find name 't'.
+components/orders/ServiceOrderWorkflow.tsx(53,17): error TS2304: Cannot find name 't'.
+components/orders/ServiceOrderWorkflow.tsx(54,21): error TS2304: Cannot find name 't'.
+components/orders/ServiceOrderWorkflow.tsx(58,12): error TS2304: Cannot find name 't'.
+components/orders/ServiceOrderWorkflow.tsx(59,12): error TS2304: Cannot find name 't'.
+components/orders/ServiceOrderWorkflow.tsx(60,17): error TS2304: Cannot find name 't'.
+components/orders/ServiceOrderWorkflow.tsx(61,21): error TS2304: Cannot find name 't'.
+components/orders/ServiceOrderWorkflow.tsx(65,12): error TS2304: Cannot find name 't'.
+components/orders/ServiceOrderWorkflow.tsx(66,12): error TS2304: Cannot find name 't'.
+components/orders/ServiceOrderWorkflow.tsx(67,17): error TS2304: Cannot find name 't'.
+components/orders/ServiceOrderWorkflow.tsx(68,21): error TS2304: Cannot find name 't'.
+components/payments/FreelancerPaymentsPage.tsx(92,7): error TS2304: Cannot find name 'formatDate'.
+components/payments/FreelancerPayoutAccountPanel.tsx(86,11): error TS2322: Type '(payload: SavePayoutAccountPayload) => Promise<{ message: string; payoutProfile: FreelancerPayoutProfile; }>' is not assignable to type '(payload: { bankName: string; accountNumber: string; accountHolderName: string; }) => Promise<void>'.
+  Type 'Promise<{ message: string; payoutProfile: FreelancerPayoutProfile; }>' is not assignable to type 'Promise<void>'.
+    Type '{ message: string; payoutProfile: FreelancerPayoutProfile; }' is not assignable to type 'void'.
+components/payments/FreelancerPayoutAccountPanel.tsx(165,9): error TS2322: Type '(payload: SavePayoutAccountPayload) => Promise<{ message: string; payoutProfile: FreelancerPayoutProfile; }>' is not assignable to type '(payload: { bankName: string; accountNumber: string; accountHolderName: string; }) => Promise<void>'.
+  Type 'Promise<{ message: string; payoutProfile: FreelancerPayoutProfile; }>' is not assignable to type 'Promise<void>'.
+    Type '{ message: string; payoutProfile: FreelancerPayoutProfile; }' is not assignable to type 'void'.
+components/profile/ClientProfileContent.tsx(210,40): error TS2345: Argument of type 'string | null | undefined' is not assignable to parameter of type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+components/profile/MyProfileContent.tsx(282,47): error TS2345: Argument of type 'string | null | undefined' is not assignable to parameter of type 'string | undefined'.
+  Type 'null' is not assignable to type 'string | undefined'.
+components/ui/carousel.tsx(24,20): error TS2554: Expected 1 arguments, but got 0.
+components/why-vlc/WhyVlcContent.tsx(149,46): error TS2322: Type '{ readonly icon: "projects"; readonly title: "Nguß╗ôn viß╗çc l├ám chß║Ñt l╞░ß╗úng"; readonly description: "─Éa dß║íng dß╗▒ ├ín tß╗½ thiß║┐t kß║┐, lß║¡p tr├¼nh, marketing ─æß║┐n dß╗ïch vß╗Ñ ─æß╗ïa ph╞░╞íng ΓÇö tß╗½ hß╗Ö kinh doanh, doanh nghiß╗çp nhß╗Å ─æß║┐n kh├ích h├áng uy t├¡n tr├¬n nß╗ün tß║úng."; } | { ...; } | { ...; }' is not assignable to type '{ readonly icon: "talent"; readonly title: "Tiß║┐p cß║¡n nh├ón t├ái dß╗à d├áng"; readonly description: "Mß║íng l╞░ß╗¢i freelancer ─æ╞░ß╗úc kiß╗âm duyß╗çt hß╗ô s╞í, x├íc minh danh t├¡nh v├á ─æ├ính gi├í c├┤ng khai ΓÇö gi├║p bß║ín chß╗ìn ─æ├║ng ng╞░ß╗¥i c├│ n─âng lß╗▒c thß╗▒c chß║Ñt tß║íi V─⌐nh Long v├á khu vß╗▒c l├ón cß║¡n."; } | { ...; } | { ...; }'.
+  Type '{ readonly icon: "projects"; readonly title: "Nguß╗ôn viß╗çc l├ám chß║Ñt l╞░ß╗úng"; readonly description: "─Éa dß║íng dß╗▒ ├ín tß╗½ thiß║┐t kß║┐, lß║¡p tr├¼nh, marketing ─æß║┐n dß╗ïch vß╗Ñ ─æß╗ïa ph╞░╞íng ΓÇö tß╗½ hß╗Ö kinh doanh, doanh nghiß╗çp nhß╗Å ─æß║┐n kh├ích h├áng uy t├¡n tr├¬n nß╗ün tß║úng."; }' is not assignable to type '{ readonly icon: "talent"; readonly title: "Tiß║┐p cß║¡n nh├ón t├ái dß╗à d├áng"; readonly description: "Mß║íng l╞░ß╗¢i freelancer ─æ╞░ß╗úc kiß╗âm duyß╗çt hß╗ô s╞í, x├íc minh danh t├¡nh v├á ─æ├ính gi├í c├┤ng khai ΓÇö gi├║p bß║ín chß╗ìn ─æ├║ng ng╞░ß╗¥i c├│ n─âng lß╗▒c thß╗▒c chß║Ñt tß║íi V─⌐nh Long v├á khu vß╗▒c l├ón cß║¡n."; } | { ...; } | { ...; }'.
+    Type '{ readonly icon: "projects"; readonly title: "Nguß╗ôn viß╗çc l├ám chß║Ñt l╞░ß╗úng"; readonly description: "─Éa dß║íng dß╗▒ ├ín tß╗½ thiß║┐t kß║┐, lß║¡p tr├¼nh, marketing ─æß║┐n dß╗ïch vß╗Ñ ─æß╗ïa ph╞░╞íng ΓÇö tß╗½ hß╗Ö kinh doanh, doanh nghiß╗çp nhß╗Å ─æß║┐n kh├ích h├áng uy t├¡n tr├¬n nß╗ün tß║úng."; }' is not assignable to type '{ readonly icon: "manage"; readonly title: "Quß║ún l├╜ linh hoß║ít"; readonly description: "Theo d├╡i tiß║┐n ─æß╗Ö qua Work Agreements r├╡ r├áng, ph├▓ng l├ám viß╗çc trß╗▒c tuyß║┐n v├á quy tr├¼nh 5 giai ─æoß║ín ΓÇö tß╗½ chß╗æt thß╗Åa thuß║¡n ─æß║┐n nghiß╗çm thu b├án giao."; }'.
+      Types of property 'icon' are incompatible.
+        Type '"projects"' is not assignable to type '"manage"'.
+components/why-vlc/WhyVlcContent.tsx(255,18): error TS2349: This expression is not callable.
+  No constituent of type '{ readonly quote: "Ch├║ng t├┤i cß║ºn thiß║┐t kß║┐ logo v├á fanpage trong 3 ng├áy ΓÇö ─æ─âng tin tr├¬n VLC, nhß║¡n 5 b├ío gi├í v├á chß╗æt freelancer ─æß╗ïa ph╞░╞íng ngay trong chiß╗üu. Tiß║┐t kiß╗çm cß║ú thß╗¥i gian lß║½n chi ph├¡ so vß╗¢i thu├¬ agency."; readonly name: "Chß╗ï Nguyß╗àn Thß╗ï Mai"; readonly role: "Chß╗º hß╗Ö kinh doanh thß╗¥i trang, V─⌐nh Long"; readonly t...' is callable.
+lib/api/admin.ts(110,35): error TS2322: Type '{}' is not assignable to type 'BodyInit | null | undefined'.
+lib/api/admin.ts(118,43): error TS2353: Object literal may only specify known properties, and 'note' does not exist in type 'URLSearchParams | ReadableStream<any> | Blob | ArrayBuffer | ArrayBufferView<ArrayBuffer> | FormData'.
+lib/api/admin.ts(201,13): error TS2353: Object literal may only specify known properties, and 'body' does not exist in type 'URLSearchParams | ReadableStream<any> | Blob | ArrayBuffer | ArrayBufferView<ArrayBuffer> | FormData'.
+lib/api/admin.ts(217,35): error TS2322: Type '{ resolution: AdminResolveDisputeAction; adminNote?: string | undefined; clientAmount?: number | undefined; freelancerAmount?: number | undefined; }' is not assignable to type 'BodyInit | null | undefined'.
+lib/api/admin.ts(308,35): error TS2322: Type '{ resolution: AdminResolveRefundAction; adminNote?: string | undefined; legitimacy?: "legitimate" | "unjustified" | undefined; penaltyPercent?: number | undefined; }' is not assignable to type 'BodyInit | null | undefined'.
+lib/api/admin.ts(376,35): error TS2322: Type '{ resolution: "approve" | "reject"; adminNote?: string | undefined; rejectReason?: string | undefined; }' is not assignable to type 'BodyInit | null | undefined'.
+lib/api/auth.ts(43,5): error TS2322: Type 'LoginPayload' is not assignable to type 'BodyInit | null | undefined'.
+lib/api/auth.ts(51,5): error TS2322: Type 'RegisterPayload' is not assignable to type 'BodyInit | null | undefined'.
+lib/api/auth.ts(60,13): error TS2353: Object literal may only specify known properties, and 'refreshToken' does not exist in type 'URLSearchParams | ReadableStream<any> | Blob | ArrayBuffer | ArrayBufferView<ArrayBuffer> | FormData'.
+lib/api/auth.ts(68,13): error TS2353: Object literal may only specify known properties, and 'refreshToken' does not exist in type 'URLSearchParams | ReadableStream<any> | Blob | ArrayBuffer | ArrayBufferView<ArrayBuffer> | FormData'.
+lib/api/favoriteFreelancers.ts(23,15): error TS2353: Object literal may only specify known properties, and 'freelancerIds' does not exist in type 'URLSearchParams | ReadableStream<any> | Blob | ArrayBuffer | ArrayBufferView<ArrayBuffer> | FormData'.
+lib/api/identityVerification.ts(120,36): error TS2322: Type 'PatchIdentityPayload' is not assignable to type 'BodyInit | null | undefined'.
+lib/api/identityVerification.ts(133,5): error TS2322: Type 'AddCreditCardPayload' is not assignable to type 'BodyInit | null | undefined'.
+lib/api/identityVerification.ts(145,13): error TS2353: Object literal may only specify known properties, and 'chargeAmount' does not exist in type 'URLSearchParams | ReadableStream<any> | Blob | ArrayBuffer | ArrayBufferView<ArrayBuffer> | FormData'.
+lib/api/identityVerification.ts(159,5): error TS2322: Type '{}' is not assignable to type 'BodyInit | null | undefined'.
+lib/api/identityVerification.ts(180,35): error TS2322: Type '{}' is not assignable to type 'BodyInit | null | undefined'.
+lib/api/jobQuotes.ts(73,44): error TS2353: Object literal may only specify known properties, and 'action' does not exist in type 'URLSearchParams | ReadableStream<any> | Blob | ArrayBuffer | ArrayBufferView<ArrayBuffer> | FormData'.
+lib/api/jobQuotes.ts(82,13): error TS2353: Object literal may only specify known properties, and 'action' does not exist in type 'URLSearchParams | ReadableStream<any> | Blob | ArrayBuffer | ArrayBufferView<ArrayBuffer> | FormData'.
+lib/api/jobs.ts(148,7): error TS2322: Type 'SubmitJobQuotePayload' is not assignable to type 'BodyInit | null | undefined'.
+lib/api/jobs.ts(193,5): error TS2322: Type 'CreateJobPayload' is not assignable to type 'BodyInit | null | undefined'.
+lib/api/jobs.ts(206,5): error TS2322: Type 'UpdateJobPayload' is not assignable to type 'BodyInit | null | undefined'.
+lib/api/notificationPreferences.ts(34,7): error TS2322: Type 'NotificationPrefs' is not assignable to type 'BodyInit | null | undefined'.
+lib/api/payments.ts(175,5): error TS2322: Type 'BillingProfile' is not assignable to type 'BodyInit | null | undefined'.
+lib/api/payments.ts(198,7): error TS2322: Type 'AddBillingMethodPayload' is not assignable to type 'BodyInit | null | undefined'.
+lib/api/payments.ts(235,13): error TS2353: Object literal may only specify known properties, and 'amount' does not exist in type 'URLSearchParams | ReadableStream<any> | Blob | ArrayBuffer | ArrayBufferView<ArrayBuffer> | FormData'.
+lib/api/payments.ts(273,15): error TS2353: Object literal may only specify known properties, and 'amount' does not exist in type 'URLSearchParams | ReadableStream<any> | Blob | ArrayBuffer | ArrayBufferView<ArrayBuffer> | FormData'.
+lib/api/payments.ts(323,13): error TS2353: Object literal may only specify known properties, and 'amount' does not exist in type 'URLSearchParams | ReadableStream<any> | Blob | ArrayBuffer | ArrayBufferView<ArrayBuffer> | FormData'.
+lib/api/payments.ts(336,13): error TS2353: Object literal may only specify known properties, and 'pin' does not exist in type 'URLSearchParams | ReadableStream<any> | Blob | ArrayBuffer | ArrayBufferView<ArrayBuffer> | FormData'.
+lib/api/payments.ts(364,5): error TS2322: Type 'SaveWithdrawalPinPayload' is not assignable to type 'BodyInit | null | undefined'.
+lib/api/payments.ts(388,13): error TS2353: Object literal may only specify known properties, and 'amount' does not exist in type 'URLSearchParams | ReadableStream<any> | Blob | ArrayBuffer | ArrayBufferView<ArrayBuffer> | FormData'.
+lib/api/payments.ts(405,7): error TS2322: Type 'SavePayoutAccountPayload' is not assignable to type 'BodyInit | null | undefined'.
+lib/api/resolution.ts(110,13): error TS2353: Object literal may only specify known properties, and 'body' does not exist in type 'URLSearchParams | ReadableStream<any> | Blob | ArrayBuffer | ArrayBufferView<ArrayBuffer> | FormData'.
+lib/api/security.ts(78,28): error TS2322: Type '{ currentRefreshToken: string; } | undefined' is not assignable to type 'BodyInit | null | undefined'.
+  Object literal may only specify known properties, and 'currentRefreshToken' does not exist in type 'URLSearchParams | ReadableStream<any> | Blob | ArrayBuffer | ArrayBufferView<ArrayBuffer> | FormData'.
+lib/api/security.ts(91,13): error TS2353: Object literal may only specify known properties, and 'currentRefreshToken' does not exist in type 'URLSearchParams | ReadableStream<any> | Blob | ArrayBuffer | ArrayBufferView<ArrayBuffer> | FormData'.
+lib/api/security.ts(116,5): error TS2322: Type '{ recoveryEmail?: string | undefined; recoveryPhone?: string | undefined; loginAlertsEnabled?: boolean | undefined; }' is not assignable to type 'BodyInit | null | undefined'.
+lib/api/security.ts(127,7): error TS2322: Type '{ currentPassword?: string | undefined; confirm: string; }' is not assignable to type 'BodyInit | null | undefined'.
+lib/api/security.ts(139,7): error TS2322: Type '{ currentPassword?: string | undefined; confirm: string; }' is not assignable to type 'BodyInit | null | undefined'.
+lib/api/services.ts(111,35): error TS2322: Type 'CreateServicePayload' is not assignable to type 'BodyInit | null | undefined'.
+lib/api/services.ts(119,36): error TS2322: Type 'CreateServicePayload' is not assignable to type 'BodyInit | null | undefined'.
+lib/api/services.ts(127,44): error TS2353: Object literal may only specify known properties, and 'status' does not exist in type 'URLSearchParams | ReadableStream<any> | Blob | ArrayBuffer | ArrayBufferView<ArrayBuffer> | FormData'.
+lib/api/services.ts(177,13): error TS2353: Object literal may only specify known properties, and 'reply' does not exist in type 'URLSearchParams | ReadableStream<any> | Blob | ArrayBuffer | ArrayBufferView<ArrayBuffer> | FormData'.
+lib/api/supportAiChat.ts(17,13): error TS2353: Object literal may only specify known properties, and 'message' does not exist in type 'URLSearchParams | ReadableStream<any> | Blob | ArrayBuffer | ArrayBufferView<ArrayBuffer> | FormData'.
+lib/api/users.ts(259,44): error TS2353: Object literal may only specify known properties, and 'newEmail' does not exist in type 'URLSearchParams | ReadableStream<any> | Blob | ArrayBuffer | ArrayBufferView<ArrayBuffer> | FormData'.
+lib/api/users.ts(273,13): error TS2353: Object literal may only specify known properties, and 'currentPassword' does not exist in type 'URLSearchParams | ReadableStream<any> | Blob | ArrayBuffer | ArrayBufferView<ArrayBuffer> | FormData'.
+lib/api/users.ts(288,13): error TS2353: Object literal may only specify known properties, and 'newPassword' does not exist in type 'URLSearchParams | ReadableStream<any> | Blob | ArrayBuffer | ArrayBufferView<ArrayBuffer> | FormData'.
+lib/api/users.ts(297,5): error TS2322: Type 'UpdateProfilePayload' is not assignable to type 'BodyInit | null | undefined'.
+lib/api/users.ts(306,13): error TS2353: Object literal may only specify known properties, and 'avatarUrl' does not exist in type 'URLSearchParams | ReadableStream<any> | Blob | ArrayBuffer | ArrayBufferView<ArrayBuffer> | FormData'.
+lib/api/users.ts(328,13): error TS2353: Object literal may only specify known properties, and 'skills' does not exist in type 'URLSearchParams | ReadableStream<any> | Blob | ArrayBuffer | ArrayBufferView<ArrayBuffer> | FormData'.
+lib/api/users.ts(339,7): error TS2322: Type 'CreatePortfolioPayload' is not assignable to type 'BodyInit | null | undefined'.
+lib/api/users.ts(384,35): error TS2322: Type 'CreateExclusiveResourcePayload' is not assignable to type 'BodyInit | null | undefined'.
+lib/api/users.ts(392,35): error TS2322: Type 'CreateProfileFilePayload' is not assignable to type 'BodyInit | null | undefined'.
+lib/orders/serviceOrderDisplay.ts(68,40): error TS2339: Property 'accepted_at' does not exist on type 'ServiceOrderListItem'.
+lib/orders/serviceOrderDisplay.ts(95,63): error TS2339: Property 'accepted_at' does not exist on type 'ServiceOrderListItem'.
+lib/orders/serviceOrderDisplay.ts(132,55): error TS2339: Property 'accepted_at' does not exist on type 'ServiceOrderListItem'.
+lib/orders/serviceOrderDisplay.ts(244,42): error TS2339: Property 'accepted_at' does not exist on type 'ServiceOrderListItem'.
+lib/services/servicesDisplay.ts(45,12): error TS2339: Property 'accepted_at' does not exist on type 'ServiceOrderListItem'.

@@ -1,5 +1,7 @@
 "use client";
 
+import { tUi, formatVndUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { FaCreditCard, FaLock, FaShieldAlt, FaSpinner } from "react-icons/fa";
@@ -30,6 +32,7 @@ function formatCardNumber(value: string) {
 }
 
 function splitName(fullName: string | null | undefined) {
+  const t = tUi;
   const parts = String(fullName || "").trim().split(/\s+/).filter(Boolean);
   if (parts.length === 0) return "";
   if (parts.length === 1) return parts[0];
@@ -64,7 +67,8 @@ export default function CreditCardVerifyPanel({
   onSaved,
   pendingOrderCode,
   onPaymentPollComplete,
-}: CreditCardVerifyPanelProps) {
+}: CreditCardVerifyPanelProps) {  const { t, formatVnd } = useTranslation();
+
   const v = data.verification;
   const cardAdded = Boolean(v?.card_added_at);
   const cardVerified = Boolean(v?.card_verified_at);
@@ -109,12 +113,16 @@ export default function CreditCardVerifyPanel({
   }, [data]);
 
   function startWizard(step: WizardStep) {
+  const t = tUi;
+  const formatVnd = formatVndUi;
     setMessage("");
     setWizardStep(step);
     setView("wizard");
   }
 
   async function handleAddCard() {
+  const t = tUi;
+  const formatVnd = formatVndUi;
     const digits = cardNumber.replace(/\D/g, "");
     if (!digits || !expiry.trim() || !cvv.trim() || !cardholderName.trim()) {
       setMessage("Vui lòng điền đầy đủ thông tin thẻ.");
@@ -157,6 +165,8 @@ export default function CreditCardVerifyPanel({
   }
 
   async function handlePayWithPayos() {
+  const t = tUi;
+  const formatVnd = formatVndUi;
     setSaving(true);
     setMessage("");
     try {
@@ -192,7 +202,7 @@ export default function CreditCardVerifyPanel({
           const status = await getCardVerifyPaymentStatus(pendingOrderCode);
           if (status.status === "SUCCESS") {
             setMessage(
-              `Thanh toán thành công. ${formatVnd(status.amount)} đã được cộng vào số dư ví. Bước xác minh thẻ đã hoàn tất.`,
+              `Thanh toán thành công. ${formatVndUi(status.amount)} đã được cộng vào số dư ví. Bước xác minh thẻ đã hoàn tất.`,
             );
             onSaved();
             onPaymentPollComplete?.();
@@ -230,7 +240,7 @@ export default function CreditCardVerifyPanel({
         <div className="idv-cc-charge-notice" role="note">
           <p className="idv-cc-charge-notice__title">Phí xác minh thẻ</p>
           <p className="idv-cc-charge-notice__text">
-            Bạn sẽ thanh toán <strong>{formatVnd(VERIFY_AMOUNT)}</strong> để xác minh thẻ. Số tiền này được{" "}
+            Bạn sẽ thanh toán <strong>{formatVndUi(VERIFY_AMOUNT)}</strong> để xác minh thẻ. Số tiền này được{" "}
             <strong>cộng vào số dư ví</strong> của bạn — không phải phí ẩn.
           </p>
         </div>
@@ -256,7 +266,7 @@ export default function CreditCardVerifyPanel({
             <FaLock className="idv-cc-action-card__icon" aria-hidden />
             <h3 className="idv-cc-action-card__title">Xác minh số tiền</h3>
             <p className="idv-cc-action-card__desc">
-              Thanh toán {formatVnd(VERIFY_AMOUNT)} để hoàn tất xác minh thẻ.
+              Thanh toán {formatVndUi(VERIFY_AMOUNT)} để hoàn tất xác minh thẻ.
             </p>
           </button>
         </div>
@@ -481,7 +491,7 @@ export default function CreditCardVerifyPanel({
           <div className="idv-cc-charge-notice" role="note">
             <p className="idv-cc-charge-notice__title">Lưu ý thanh toán xác minh</p>
             <p className="idv-cc-charge-notice__text">
-              Sau khi thêm thẻ, bạn sẽ thanh toán <strong>{formatVnd(VERIFY_AMOUNT)}</strong> ở bước
+              Sau khi thêm thẻ, bạn sẽ thanh toán <strong>{formatVndUi(VERIFY_AMOUNT)}</strong> ở bước
               tiếp theo. Số tiền được <strong>cộng vào số dư ví</strong> và hoàn tất xác minh thẻ.{" "}
               <Link href="/help">Tìm hiểu thêm</Link>
             </p>
@@ -522,7 +532,7 @@ export default function CreditCardVerifyPanel({
 
           <div className="idv-cc-charge-notice idv-cc-charge-notice--prominent" role="note">
             <p className="idv-cc-charge-notice__title">Số tiền cần thanh toán</p>
-            <p className="idv-cc-charge-notice__amount">{formatVnd(VERIFY_AMOUNT)}</p>
+            <p className="idv-cc-charge-notice__amount">{formatVndUi(VERIFY_AMOUNT)}</p>
             <p className="idv-cc-charge-notice__text">
               Thanh toán để xác minh thẻ. Số tiền sẽ được <strong>cộng vào số dư ví</strong>{" "}
               ngay sau khi thanh toán thành công.
@@ -566,7 +576,7 @@ export default function CreditCardVerifyPanel({
                 ? "Đã xác minh"
                 : saving
                   ? "Đang mở trang thanh toán…"
-                  : `Thanh toán ${formatVnd(VERIFY_AMOUNT)}`}
+                  : `Thanh toán ${formatVndUi(VERIFY_AMOUNT)}`}
             </button>
           </div>
         </div>

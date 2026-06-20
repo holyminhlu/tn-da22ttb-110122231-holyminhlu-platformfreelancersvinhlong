@@ -1,5 +1,8 @@
 "use client";
 
+import { tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
+
 type PinInputProps = {
   id: string;
   value: string;
@@ -17,11 +20,15 @@ export default function PinInput({
   autoFocus = false,
   "aria-label": ariaLabel = "Mã PIN 6 số",
 }: PinInputProps) {
+  const { t } = useTranslation();
+
+  const resolvedAriaLabel = ariaLabel === "Mã PIN 6 số" ? t("Mã PIN 6 số") : ariaLabel;
   const digits = value.replace(/\D/g, "").slice(0, 6).split("");
   while (digits.length < 6) digits.push("");
 
   function handleChange(index: number, char: string) {
-    const next = char.replace(/\D/g, "").slice(-1);
+  const t = tUi;
+  const next = char.replace(/\D/g, "").slice(-1);
     const arr = value.replace(/\D/g, "").slice(0, 6).split("");
     while (arr.length < 6) arr.push("");
     arr[index] = next;
@@ -29,6 +36,7 @@ export default function PinInput({
   }
 
   function handleKeyDown(index: number, key: string) {
+  const t = tUi;
     if (key === "Backspace" && !digits[index] && index > 0) {
       const el = document.getElementById(`${id}-${index - 1}`);
       el?.focus();
@@ -36,12 +44,13 @@ export default function PinInput({
   }
 
   function handlePaste(text: string) {
+  const t = tUi;
     const pasted = text.replace(/\D/g, "").slice(0, 6);
     if (pasted) onChange(pasted);
   }
 
   return (
-    <div className="pin-input" role="group" aria-label={ariaLabel}>
+    <div className="pin-input" role="group" aria-label={resolvedAriaLabel}>
       {digits.map((digit, index) => (
         <input
           key={index}
@@ -55,7 +64,7 @@ export default function PinInput({
           disabled={disabled}
           autoFocus={autoFocus && index === 0}
           autoComplete={index === 0 ? "one-time-code" : "off"}
-          aria-label={`${ariaLabel}, chữ số ${index + 1}`}
+          aria-label={`${resolvedAriaLabel}, ${t("chữ số")} ${index + 1}`}
           onChange={(e) => {
             handleChange(index, e.target.value);
             if (e.target.value.replace(/\D/g, "") && index < 5) {

@@ -1,5 +1,7 @@
 "use client";
 
+import { formatDateUi, tUi, formatVndUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import ClientShell from "@/components/layout/ClientShell";
@@ -20,7 +22,6 @@ import {
   type BillingTransaction,
 } from "@/lib/api/payments";
 import type { ApiError } from "@/lib/api/client";
-import { formatDate, formatVnd } from "@/lib/format";
 import { useClientIdentityVerification } from "@/hooks/useClientIdentityVerification";
 import ClientVerifyNotice from "@/components/hire/ClientVerifyNotice";
 import { CLIENT_VERIFY_PAYMENT_LEAD } from "@/lib/hire/clientVerification";
@@ -84,16 +85,17 @@ function withdrawalStatusClass(status?: string) {
 }
 
 function monthKey(iso: string) {
+  const t = tUi;
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "";
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 }
 
-function exportCsv(rows: BillingTransaction[]) {
+function exportCsv(rows: BillingTransaction[], formatDate: (value: string | null | undefined) => string) {
   const header = ["Ngày", "Dự án", "Freelancer", "Loại", "Số tiền", "Mã hóa đơn"];
   const lines = rows.map((r) =>
     [
-      formatDate(r.occurredAt),
+      formatDateUi(r.occurredAt),
       r.projectTitle,
       r.freelancerName,
       transactionCategoryLabel(r.category),
@@ -114,7 +116,8 @@ function exportCsv(rows: BillingTransaction[]) {
   URL.revokeObjectURL(url);
 }
 
-export default function ClientPaymentsPage() {
+export default function ClientPaymentsPage() {  const { t, formatVnd, formatDate } = useTranslation();
+
   const { verified: identityVerified, loading: identityLoading } = useClientIdentityVerification({
     refreshOnVisible: false,
   });
@@ -195,6 +198,9 @@ export default function ClientPaymentsPage() {
   const canSwitchDefault = (data?.billingMethods.length ?? 0) > 1;
 
   function applyDefaultMethod(methodId: string) {
+  const t = tUi;
+  const formatDate = formatDateUi;
+  const formatVnd = formatVndUi;
     setData((prev) => {
       if (!prev) return prev;
       const billingMethods = prev.billingMethods.map((method) => ({
@@ -207,6 +213,9 @@ export default function ClientPaymentsPage() {
   }
 
   async function handleSetDefaultMethod(methodId: string) {
+  const t = tUi;
+  const formatDate = formatDateUi;
+  const formatVnd = formatVndUi;
     if (methodId === "identity-card") return;
     setDefaultMethodBusyId(methodId);
     try {
@@ -226,6 +235,9 @@ export default function ClientPaymentsPage() {
   }
 
   async function handleDeleteMethod(methodId: string) {
+  const t = tUi;
+  const formatDate = formatDateUi;
+  const formatVnd = formatVndUi;
     if (methodId === "identity-card") return;
     setDeleteMethodBusyId(methodId);
     try {
@@ -244,6 +256,9 @@ export default function ClientPaymentsPage() {
   }
 
   async function handleDeposit() {
+  const t = tUi;
+  const formatDate = formatDateUi;
+  const formatVnd = formatVndUi;
     const amount = Number(depositAmount);
     if (!Number.isFinite(amount) || amount < 10000) {
       setToast({ message: "Số tiền nạp tối thiểu 10.000 VND.", variant: "error" });
@@ -284,8 +299,11 @@ export default function ClientPaymentsPage() {
     : null;
 
   function openWithdrawFlow() {
+  const t = tUi;
+  const formatDate = formatDateUi;
+  const formatVnd = formatVndUi;
     if (!data?.payoutProfile?.isConfigured) {
-      setToast({ message: "Bạn chưa liên kết tài khoản ngân hàng nhận tiền.", variant: "error" });
+      setToast({ message: t("Bạn chưa liên kết tài khoản ngân hàng nhận tiền."), variant: "error" });
       return;
     }
     if (!data.withdrawalPin?.isConfigured) {
@@ -293,11 +311,11 @@ export default function ClientPaymentsPage() {
       return;
     }
     if (withdrawNumeric < MIN_WITHDRAW_VND) {
-      setToast({ message: `Số tiền rút tối thiểu ${formatVnd(MIN_WITHDRAW_VND)}.`, variant: "error" });
+      setToast({ message: `Số tiền rút tối thiểu ${formatVndUi(MIN_WITHDRAW_VND)}.`, variant: "error" });
       return;
     }
     if (withdrawNumeric > data.account.balance) {
-      setToast({ message: `Số dư khả dụng không đủ (${formatVnd(data.account.balance)}).`, variant: "error" });
+      setToast({ message: `Số dư khả dụng không đủ (${formatVndUi(data.account.balance)}).`, variant: "error" });
       return;
     }
     setWithdrawOpen(true);
@@ -309,6 +327,9 @@ export default function ClientPaymentsPage() {
     pendingBalance?: number;
     totalEarned?: number;
   }) {
+  const t = tUi;
+  const formatDate = formatDateUi;
+  const formatVnd = formatVndUi;
     setData((prev) => {
       if (!prev) return prev;
       return {
@@ -324,6 +345,9 @@ export default function ClientPaymentsPage() {
   }
 
   function updateProfileField(field: BillingProfileField, value: string) {
+  const t = tUi;
+  const formatDate = formatDateUi;
+  const formatVnd = formatVndUi;
     setProfileForm((prev) => ({ ...prev, [field]: value }));
     setProfileErrors((prev) => {
       if (!prev[field]) return prev;
@@ -334,6 +358,9 @@ export default function ClientPaymentsPage() {
   }
 
   async function handleSaveProfile(e: React.FormEvent) {
+  const t = tUi;
+  const formatDate = formatDateUi;
+  const formatVnd = formatVndUi;
     e.preventDefault();
     const errors = validateBillingProfile(profileForm);
     if (Object.keys(errors).length > 0) {
@@ -362,9 +389,9 @@ export default function ClientPaymentsPage() {
       <div className="payments-page payments-page--full-width">
         <header className="hire-page__head payments-page__head">
           <div>
-            <h1 className="hire-page__title">Thanh toán</h1>
+            <h1 className="hire-page__title">{t("Thanh toán")}</h1>
             <p className="hire-page__lead">
-              Quản lý số dư ví, ký quỹ Escrow, phương thức thanh toán và lịch sử giao dịch từ hệ thống.
+              {t("Quản lý số dư ví, ký quỹ Escrow, phương thức thanh toán và lịch sử giao dịch từ hệ thống.")}
             </p>
           </div>
           {data && !loading && !error ? (
@@ -372,9 +399,9 @@ export default function ClientPaymentsPage() {
               type="button"
               className="payments-btn payments-btn--secondary payments-page__head-action"
               disabled={filteredTransactions.length === 0}
-              onClick={() => exportCsv(filteredTransactions)}
+              onClick={() => exportCsv(filteredTransactions, formatDate)}
             >
-              Xuất sao kê (CSV)
+              {t("Xuất sao kê (CSV)")}
             </button>
           ) : null}
         </header>
@@ -397,38 +424,38 @@ export default function ClientPaymentsPage() {
 
             <section className="payments-panel">
               <PaymentsSectionTitle icon={<FaChartPie />}>
-                Số dư &amp; ký quỹ
+                {t("Số dư &amp; ký quỹ")}
               </PaymentsSectionTitle>
               <div className="payments-balance-layout">
                 <div className="payments-balance-grid">
                   <PaymentsBalanceCard
                     variant="available"
                     featured
-                    label="Số dư khả dụng"
-                    amount={formatVnd(data.account.balance)}
-                    hint="Dùng để nạp ký quỹ cho hợp đồng"
+                    label={t("Số dư khả dụng")}
+                    amount={formatVndUi(data.account.balance)}
+                    hint={t("Dùng để nạp ký quỹ cho hợp đồng")}
                   />
                   <PaymentsBalanceCard
                     variant="escrow"
-                    label="Tiền đang ký quỹ"
-                    amount={formatVnd(data.account.escrowBalance)}
-                    hint="Hợp đồng đã nạp Escrow, chưa giải ngân"
-                    tooltip="Đây là số tiền hệ thống đang tạm giữ an toàn cho dự án của bạn. Tiền chỉ được chuyển cho freelancer sau khi bạn nghiệm thu công việc thành công."
+                    label={t("Tiền đang ký quỹ")}
+                    amount={formatVndUi(data.account.escrowBalance)}
+                    hint={t("Hợp đồng đã nạp Escrow, chưa giải ngân")}
+                    tooltip={t("Đây là số tiền hệ thống đang tạm giữ an toàn cho dự án của bạn. Tiền chỉ được chuyển cho freelancer sau khi bạn nghiệm thu công việc thành công.")}
                   />
                 </div>
 
                 <div className={`payments-deposit-card${paymentBlocked ? " payments-deposit-card--blocked" : ""}`}>
                   <div className="payments-deposit-card__head">
-                    <h3 className="payments-deposit-card__title">Nạp tiền vào ví</h3>
+                    <h3 className="payments-deposit-card__title">{t("Nạp tiền vào ví")}</h3>
                     {paymentBlocked ? (
                       <p className="payments-muted payments-deposit-card__blocked-hint">
-                        Cần xác minh danh tính trước khi nạp tiền.
+                        {t("Cần xác minh danh tính trước khi nạp tiền.")}
                       </p>
                     ) : null}
                   </div>
                   <div className="payments-deposit__controls">
                     <label className="payments-deposit__label sr-only" htmlFor="deposit-amount">
-                      Số tiền nạp
+                      {t("Số tiền nạp")}
                     </label>
                     <PaymentsMoneyInput
                       id="deposit-amount"
@@ -436,7 +463,7 @@ export default function ClientPaymentsPage() {
                       value={depositAmount}
                       onChange={setDepositAmount}
                       disabled={depositBusy || paymentBlocked}
-                      aria-label="Số tiền nạp vào ví"
+                      aria-label={t("Số tiền nạp vào ví")}
                     />
                     <div className="payments-deposit__presets">
                       {DEPOSIT_PRESETS.map((preset) => (
@@ -452,7 +479,7 @@ export default function ClientPaymentsPage() {
                           disabled={paymentBlocked}
                           onClick={() => setDepositAmount(String(preset))}
                         >
-                          {formatVnd(preset)}
+                          {formatVndUi(preset)}
                         </button>
                       ))}
                     </div>
@@ -466,7 +493,7 @@ export default function ClientPaymentsPage() {
                       {depositBusy ? (
                         <>
                           <FaSpinner className="payments-btn__spinner" aria-hidden />
-                          Đang xử lý...
+                          {t("Đang xử lý...")}
                         </>
                       ) : (
                         "Nạp tiền"
@@ -475,7 +502,7 @@ export default function ClientPaymentsPage() {
                     {depositNeedsMethod ? (
                       <div className="payments-deposit__method-required" role="alert">
                         <p>
-                          Bạn cần thêm phương thức thanh toán trước khi nạp tiền vào ví.
+                          {t("Bạn cần thêm phương thức thanh toán trước khi nạp tiền vào ví.")}
                         </p>
                         <button
                           type="button"
@@ -483,7 +510,7 @@ export default function ClientPaymentsPage() {
                           disabled={paymentBlocked}
                           onClick={() => setMethodModalOpen(true)}
                         >
-                          Thêm phương thức thanh toán
+                          {t("Thêm phương thức thanh toán")}
                         </button>
                       </div>
                     ) : null}
@@ -494,13 +521,13 @@ export default function ClientPaymentsPage() {
 
             <section className="payments-panel fl-payments__withdraw-panel">
               <div className="payments-panel__head">
-                <h2 className="payments-panel__title">Rút tiền về tài khoản ngân hàng</h2>
+                <h2 className="payments-panel__title">{t("Rút tiền về tài khoản ngân hàng")}</h2>
               </div>
               <div className="payments-deposit-card fl-payments__withdraw-card">
                 <div className="payments-deposit-card__head">
-                  <h3 className="payments-deposit-card__title">Yêu cầu rút tiền</h3>
+                  <h3 className="payments-deposit-card__title">{t("Yêu cầu rút tiền")}</h3>
                   <p className="payments-deposit-card__hint">
-                    Dành cho số dư ví khả dụng, tối thiểu {formatVnd(MIN_WITHDRAW_VND)}.
+                    Dành cho số dư ví khả dụng, tối thiểu {formatVndUi(MIN_WITHDRAW_VND)}.
                   </p>
                 </div>
                 <div className="payments-deposit__controls">
@@ -510,7 +537,7 @@ export default function ClientPaymentsPage() {
                     value={withdrawAmount}
                     onChange={setWithdrawAmount}
                     disabled={data.account.balance < MIN_WITHDRAW_VND || paymentBlocked}
-                    aria-label="Số tiền rút về ngân hàng"
+                    aria-label={t("Số tiền rút về ngân hàng")}
                   />
                   <div className="payments-deposit__presets">
                     {WITHDRAW_AMOUNT_PRESETS.map((preset) => (
@@ -526,7 +553,7 @@ export default function ClientPaymentsPage() {
                         disabled={preset > data.account.balance || paymentBlocked}
                         onClick={() => setWithdrawAmount(String(preset))}
                       >
-                        {formatVnd(preset)}
+                        {formatVndUi(preset)}
                       </button>
                     ))}
                   </div>
@@ -536,7 +563,7 @@ export default function ClientPaymentsPage() {
                     disabled={data.account.balance < MIN_WITHDRAW_VND || paymentBlocked}
                     onClick={openWithdrawFlow}
                   >
-                    Rút tiền
+                    {t("Rút tiền")}
                   </button>
                 </div>
               </div>
@@ -545,7 +572,7 @@ export default function ClientPaymentsPage() {
             {data.payoutProfile ? (
               <section className="payments-panel" id="payout-account">
                 <div className="payments-panel__head">
-                  <h2 className="payments-panel__title">Tài khoản nhận tiền</h2>
+                  <h2 className="payments-panel__title">{t("Tài khoản nhận tiền")}</h2>
                 </div>
                 <FreelancerPayoutAccountPanel
                   profile={data.payoutProfile}
@@ -557,17 +584,17 @@ export default function ClientPaymentsPage() {
 
             {(data.activeWithdrawals?.length ?? 0) > 0 ? (
               <section className="payments-panel" id="client-withdrawals">
-                <h2 className="payments-panel__title">Yêu cầu rút tiền đang xử lý</h2>
+                <h2 className="payments-panel__title">{t("Yêu cầu rút tiền đang xử lý")}</h2>
                 <ul className="fl-payments__withdraw-list">
                   {data.activeWithdrawals?.map((item) => (
                     <li key={item.id} className="fl-payments__withdraw-item">
                       <div className="fl-payments__withdraw-item-main">
-                        <p className="fl-payments__withdraw-item-amount">{formatVnd(item.amount)}</p>
+                        <p className="fl-payments__withdraw-item-amount">{formatVndUi(item.amount)}</p>
                         <p className="fl-payments__withdraw-item-meta">
                           <BankNameWithLogo
                             bankName={item.bankName}
                             size={20}
-                            suffix={`${item.accountLast4 ? ` · ****${item.accountLast4}` : ""} · ${formatDate(item.createdAt)}`}
+                            suffix={`${item.accountLast4 ? ` · ****${item.accountLast4}` : ""} · ${formatDateUi(item.createdAt)}`}
                           />
                         </p>
                         <p className="fl-payments__withdraw-item-ref">{item.referenceId}</p>
@@ -583,7 +610,7 @@ export default function ClientPaymentsPage() {
 
             <section className="payments-panel">
               <div className="payments-panel__head">
-                <h2 className="payments-panel__title">Phương thức thanh toán</h2>
+                <h2 className="payments-panel__title">{t("Phương thức thanh toán")}</h2>
                 <button
                   type="button"
                   className="payments-btn payments-btn--primary payments-btn--with-icon"
@@ -591,15 +618,15 @@ export default function ClientPaymentsPage() {
                   onClick={() => setMethodModalOpen(true)}
                 >
                   <FaPlus aria-hidden />
-                  Thêm phương thức
+                  {t("Thêm phương thức")}
                 </button>
               </div>
 
               {data.billingMethods.length === 0 ? (
                 <p className="payments-muted">
-                  Chưa có phương thức thanh toán. Nhấn <strong>Thêm phương thức</strong> để thêm thẻ
+                  {t("Chưa có phương thức thanh toán. Nhấn")} <strong>{t("Thêm phương thức")}</strong> để thêm thẻ
                   hoặc ví, hoặc thêm thẻ khi{" "}
-                  <Link href="/xac-minh-danh-tinh">xác minh danh tính</Link>.
+                  <Link href="/xac-minh-danh-tinh">{t("xác minh danh tính")}</Link>.
                 </p>
               ) : (
                 <>
@@ -624,7 +651,7 @@ export default function ClientPaymentsPage() {
                               className="payments-method-item__brand-icon"
                             />
                             <div>
-                              <p className="payments-method-item__title">{method.label}</p>
+                              <p className="payments-method-item__title">{t(method.label)}</p>
                               <p className="payments-method-item__detail">
                                 {billingMethodTypeLabel(method.type)} • {method.detail}
                               </p>
@@ -632,7 +659,7 @@ export default function ClientPaymentsPage() {
                           </div>
                           <div className="payments-method-item__aside">
                             {method.isPrimary ? (
-                              <span className="payments-badge">Mặc định</span>
+                              <span className="payments-badge">{t("Mặc định")}</span>
                             ) : canSwitchDefault && canManage ? (
                               <button
                                 type="button"
@@ -645,7 +672,7 @@ export default function ClientPaymentsPage() {
                             ) : null}
                             {canManage ? (
                               <PaymentMethodMenu
-                                methodLabel={method.label}
+                                methodLabel={t(method.label)}
                                 disabled={isDeleting || defaultMethodBusyId === method.id}
                                 onEdit={() => {
                                   setToast({
@@ -667,10 +694,10 @@ export default function ClientPaymentsPage() {
 
               {defaultMethod?.autoTopupThreshold != null && defaultMethod.autoTopupAmount != null ? (
                 <div className="payments-auto">
-                  <h3 className="payments-auto__title">Tự động nạp tiền</h3>
+                  <h3 className="payments-auto__title">{t("Tự động nạp tiền")}</h3>
                   <p className="payments-muted">
                     {autoBillingOn
-                      ? `Khi số dư dưới ${formatVnd(defaultMethod.autoTopupThreshold)}, hệ thống tự nạp ${formatVnd(defaultMethod.autoTopupAmount)} từ phương thức mặc định.`
+                      ? `Khi số dư dưới ${formatVndUi(defaultMethod.autoTopupThreshold)}, hệ thống tự nạp ${formatVndUi(defaultMethod.autoTopupAmount)} từ phương thức mặc định.`
                       : "Tự động nạp tiền đang tắt."}
                   </p>
                 </div>
@@ -679,31 +706,31 @@ export default function ClientPaymentsPage() {
 
             <section className="payments-panel">
               <PaymentsSectionTitle icon={<FaHistory />}>
-                Lịch sử giao dịch &amp; hóa đơn
+                {t("Lịch sử giao dịch &amp; hóa đơn")}
               </PaymentsSectionTitle>
 
               <div className="payments-filters">
                 <select
-                  aria-label="Lọc theo dự án"
+                  aria-label={t("Lọc theo dự án")}
                   value={filterJobId}
                   onChange={(e) => setFilterJobId(e.target.value)}
                 >
-                  <option value="">Tất cả dự án</option>
+                  <option value="">{t("Tất cả dự án")}</option>
                   {data.filterOptions.jobs.map((j) => (
                     <option key={j.id} value={j.id}>
-                      {j.title}
+                      {t(j.title)}
                     </option>
                   ))}
                 </select>
                 <select
-                  aria-label="Lọc theo freelancer"
+                  aria-label={t("Lọc theo freelancer")}
                   value={filterFreelancerId}
                   onChange={(e) => setFilterFreelancerId(e.target.value)}
                 >
-                  <option value="">Tất cả freelancer</option>
+                  <option value="">{t("Tất cả freelancer")}</option>
                   {data.filterOptions.freelancers.map((f) => (
                     <option key={f.id} value={f.id}>
-                      {f.name}
+                      {t(f.name)}
                     </option>
                   ))}
                 </select>
@@ -719,7 +746,7 @@ export default function ClientPaymentsPage() {
                   <input
                     type="month"
                     className="payments-filter-month__input"
-                    aria-label="Lọc theo tháng"
+                    aria-label={t("Lọc theo tháng")}
                     value={filterMonth}
                     onChange={(e) => setFilterMonth(e.target.value)}
                   />
@@ -727,7 +754,7 @@ export default function ClientPaymentsPage() {
                     <button
                       type="button"
                       className="payments-filter-month__clear"
-                      aria-label="Xóa lọc tháng"
+                      aria-label={t("Xóa lọc tháng")}
                       onClick={() => setFilterMonth("")}
                     >
                       ×
@@ -737,7 +764,7 @@ export default function ClientPaymentsPage() {
               </div>
 
               {groupedTransactions.length === 0 ? (
-                <p className="payments-muted">Chưa có giao dịch nào phù hợp bộ lọc.</p>
+                <p className="payments-muted">{t("Chưa có giao dịch nào phù hợp bộ lọc.")}</p>
               ) : (
                 <>
                   <ClientTransactionTable rows={txPage.items} />
@@ -755,8 +782,8 @@ export default function ClientPaymentsPage() {
             </section>
 
             <section className="payments-panel">
-              <h2 className="payments-panel__title">Thông tin xuất hóa đơn</h2>
-              <p className="payments-muted">Thông tin này dùng khi xuất hóa đơn / sao kê.</p>
+              <h2 className="payments-panel__title">{t("Thông tin xuất hóa đơn")}</h2>
+              <p className="payments-muted">{t("Thông tin này dùng khi xuất hóa đơn / sao kê.")}</p>
               <form
                 className="payments-form-grid"
                 onSubmit={(e) => void handleSaveProfile(e)}
@@ -766,7 +793,7 @@ export default function ClientPaymentsPage() {
                 <div className="payments-form-field">
                   <label htmlFor="billing-company-name">
                     <span>
-                      Tên công ty
+                      {t("Tên công ty")}
                       <span className="payments-form-field__required" aria-hidden>
                         {" "}
                         *
@@ -776,7 +803,7 @@ export default function ClientPaymentsPage() {
                       id="billing-company-name"
                       type="text"
                       autoComplete="organization"
-                      placeholder="VD: Công ty TNHH ABC"
+                      placeholder={t("VD: Công ty TNHH ABC")}
                       value={profileForm.companyName}
                       aria-invalid={Boolean(profileErrors.companyName)}
                       aria-describedby={
@@ -795,7 +822,7 @@ export default function ClientPaymentsPage() {
                 <div className="payments-form-field">
                   <label htmlFor="billing-tax-id">
                     <span>
-                      Mã số thuế
+                      {t("Mã số thuế")}
                       <span className="payments-form-field__required" aria-hidden>
                         {" "}
                         *
@@ -805,7 +832,7 @@ export default function ClientPaymentsPage() {
                       id="billing-tax-id"
                       type="text"
                       inputMode="numeric"
-                      placeholder="Nhập 10–13 chữ số"
+                      placeholder={t("Nhập 10–13 chữ số")}
                       value={profileForm.taxId}
                       aria-invalid={Boolean(profileErrors.taxId)}
                       aria-describedby={profileErrors.taxId ? "billing-tax-id-error" : undefined}
@@ -824,7 +851,7 @@ export default function ClientPaymentsPage() {
                 <div className="payments-form-field payments-form-grid__full">
                   <label htmlFor="billing-company-address">
                     <span>
-                      Địa chỉ công ty
+                      {t("Địa chỉ công ty")}
                       <span className="payments-form-field__required" aria-hidden>
                         {" "}
                         *
@@ -834,7 +861,7 @@ export default function ClientPaymentsPage() {
                       id="billing-company-address"
                       type="text"
                       autoComplete="street-address"
-                      placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành phố"
+                      placeholder={t("Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành phố")}
                       value={profileForm.companyAddress}
                       aria-invalid={Boolean(profileErrors.companyAddress)}
                       aria-describedby={
@@ -858,7 +885,7 @@ export default function ClientPaymentsPage() {
                 </div>
                 <div className="payments-form-field">
                   <label htmlFor="billing-email">
-                    <span>Email nhận hóa đơn</span>
+                    <span>{t("Email nhận hóa đơn")}</span>
                     <input
                       id="billing-email"
                       type="email"
@@ -879,12 +906,12 @@ export default function ClientPaymentsPage() {
                 </div>
                 <div className="payments-form-field">
                   <label htmlFor="billing-contact-name">
-                    <span>Người liên hệ kế toán</span>
+                    <span>{t("Người liên hệ kế toán")}</span>
                     <input
                       id="billing-contact-name"
                       type="text"
                       autoComplete="name"
-                      placeholder="Họ và tên người nhận hóa đơn"
+                      placeholder={t("Họ và tên người nhận hóa đơn")}
                       value={profileForm.contactName}
                       onChange={(e) => updateProfileField("contactName", e.target.value)}
                     />
@@ -901,7 +928,7 @@ export default function ClientPaymentsPage() {
                     {savingProfile ? (
                       <>
                         <FaSpinner className="payments-btn__spinner" aria-hidden />
-                        Đang lưu...
+                        {t("Đang lưu...")}
                       </>
                     ) : (
                       "Lưu thông tin"
@@ -937,7 +964,7 @@ export default function ClientPaymentsPage() {
 
         {toast ? (
           <PaymentsToast
-            message={toast.message}
+            message={t(toast.message)}
             variant={toast.variant}
             onClose={() => setToast(null)}
           />

@@ -1,5 +1,6 @@
- "use client";
+"use client";
 
+import { useTranslation } from "@/hooks/useTranslation";
 import { useEffect, useMemo, useState } from "react";
 import { getPublicHomeStats, type HomeStatsPayload } from "@/lib/api/publicStats";
 import { StatIcon } from "./icons";
@@ -32,6 +33,8 @@ function formatPayoutVnd(value: number): string {
 }
 
 export default function HomeStats() {
+  const { t } = useTranslation();
+
   const [stats, setStats] = useState<HomeStatsPayload>(FALLBACK_STATS);
 
   useEffect(() => {

@@ -1,3 +1,4 @@
+import { useTranslation } from "@/hooks/useTranslation";
 import { JOBS_FILTER_OPTIONS, type JobsFilter } from "./constants";
 
 type JobsResultBarProps = {
@@ -17,21 +18,23 @@ export default function JobsResultBar({
   onRefresh,
   refreshing,
 }: JobsResultBarProps) {
+  const { t } = useTranslation();
+
   const filterLabel =
-    JOBS_FILTER_OPTIONS.find((o) => o.value === filter)?.label ?? "Tất cả các công việc";
+    JOBS_FILTER_OPTIONS.find((o) => o.value === filter)?.label ?? t("Tất cả các công việc");
 
   return (
     <div className="jobs-result-bar">
       <p className="jobs-result-bar__text">
-        Hiển thị <strong>{showing}</strong>
+        {t("Hiển thị")} <strong>{showing}</strong>
         {showing !== total ? (
           <>
             {" "}
             / <strong>{total}</strong>
           </>
         ) : null}{" "}
-        công việc
-        {role === "client" ? " đã đăng" : ""}
+        {t("công việc")}
+        {role === "client" ? t(" đã đăng") : ""}
         <span className="jobs-result-bar__filter"> · {filterLabel}</span>
       </p>
       {onRefresh ? (
@@ -41,7 +44,7 @@ export default function JobsResultBar({
           onClick={onRefresh}
           disabled={refreshing}
         >
-          {refreshing ? "Đang tải..." : "Làm mới"}
+          {refreshing ? t("Đang tải...") : t("Làm mới")}
         </button>
       ) : null}
     </div>

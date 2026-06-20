@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "@/hooks/useTranslation";
 import { useEffect } from "react";
 
 type PaymentsToastProps = {
@@ -15,6 +16,8 @@ export default function PaymentsToast({
   onClose,
   durationMs = 3000,
 }: PaymentsToastProps) {
+  const { t } = useTranslation();
+
   useEffect(() => {
     const timer = window.setTimeout(onClose, durationMs);
     return () => window.clearTimeout(timer);
@@ -29,7 +32,7 @@ export default function PaymentsToast({
         <button
           type="button"
           className="payments-toast__close"
-          aria-label="Đóng thông báo"
+          aria-label={t("Đóng thông báo")}
           onClick={onClose}
         >
           ×

@@ -1,5 +1,7 @@
 "use client";
 
+import { tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -18,7 +20,10 @@ const NAV = [
   { href: "/admin/tranh-chap", label: "Quản lý tranh chấp", icon: FaGavel },
 ] as const;
 
-export default function AdminShell({ children }: { children: React.ReactNode }) {
+export default function AdminShell({
+  children }: { children: React.ReactNode }) {
+  const { t } = useTranslation();
+
   const pathname = usePathname();
   const router = useRouter();
   const { user, ready, isAdmin } = useStoredUser();
@@ -35,6 +40,8 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
   }, [ready, user, isAdmin, router]);
 
   async function handleLogout() {
+
+  const t = tUi;
     const refreshToken =
       typeof window !== "undefined" ? window.localStorage.getItem("vlc_refresh_token") : null;
     try {
@@ -50,7 +57,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
   if (!ready || !user || !isAdmin) {
     return (
       <div className="admin-loading">
-        <p>Đang tải bảng quản trị…</p>
+        <p>{t("Đang tải bảng quản trị…")}</p>
       </div>
     );
   }
@@ -64,9 +71,9 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
           <Link href={ADMIN_HOME} className="admin-sidebar__logo">
             VLC Admin
           </Link>
-          <p className="admin-sidebar__subtitle">Quản trị hệ thống</p>
+          <p className="admin-sidebar__subtitle">{t("Quản trị hệ thống")}</p>
         </div>
-        <nav className="admin-sidebar__nav" aria-label="Menu quản trị">
+        <nav className="admin-sidebar__nav" aria-label={t("Menu quản trị")}>
           {NAV.map((item) => {
             const Icon = item.icon;
             const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -77,7 +84,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
                 className={`admin-sidebar__link${active ? " admin-sidebar__link--active" : ""}`}
               >
                 <Icon aria-hidden />
-                {item.label}
+                {t(item.label)}
               </Link>
             );
           })}
@@ -88,7 +95,7 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
             <span className="admin-sidebar__email">{user.email}</span>
           </div>
           <button type="button" className="admin-sidebar__logout" onClick={() => void handleLogout()}>
-            <FaSignOutAlt aria-hidden /> Đăng xuất
+            <FaSignOutAlt aria-hidden /> {t("Đăng xuất")}
           </button>
         </div>
       </aside>

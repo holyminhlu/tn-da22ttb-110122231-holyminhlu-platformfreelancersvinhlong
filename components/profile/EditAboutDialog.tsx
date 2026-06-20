@@ -1,5 +1,7 @@
 "use client";
 
+import { tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useState } from "react";
 import { updateProfile } from "@/lib/api/users";
 
@@ -22,13 +24,16 @@ export default function EditAboutDialog({
   onClose,
   onSaved,
 }: EditAboutDialogProps) {
+  const { t } = useTranslation();
+
   const [tagline, setTagline] = useState(initialTagline);
   const [bio, setBio] = useState(initialBio);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
   async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  const t = tUi;
+  e.preventDefault();
     setSaving(true);
     setError("");
     try {
@@ -62,7 +67,7 @@ export default function EditAboutDialog({
         <div className="mp-dialog__head">
           <div>
             <h3 id="edit-about-title" className="mp-dialog__title">
-              Giới thiệu bản thân
+              {t("Giới thiệu bản thân")}
             </h3>
             <p className="mp-dialog__lead">
               {audience === "client"
@@ -73,22 +78,22 @@ export default function EditAboutDialog({
         </div>
 
         <label className="mp-dialog__field">
-          <span className="mp-dialog__label">Dòng định vị (tagline)</span>
+          <span className="mp-dialog__label">{t("Dòng định vị (tagline)")}</span>
           <input
             className="mp-dialog__input"
-            placeholder="VD: Chuyên gia Full-Stack | React & Node.js"
+            placeholder={t("VD: Chuyên gia Full-Stack | React & Node.js")}
             value={tagline}
             onChange={(e) => setTagline(e.target.value)}
             maxLength={220}
           />
-          <span className="mp-dialog__hint">Hiển thị ngay dưới tên trên hồ sơ công khai.</span>
+          <span className="mp-dialog__hint">{t("Hiển thị ngay dưới tên trên hồ sơ công khai.")}</span>
         </label>
 
         <label className="mp-dialog__field">
-          <span className="mp-dialog__label">Giới thiệu chi tiết</span>
+          <span className="mp-dialog__label">{t("Giới thiệu chi tiết")}</span>
           <textarea
             className="mp-dialog__input mp-dialog__textarea"
-            placeholder="Kể về kinh nghiệm, lĩnh vực mạnh, dự án tiêu biểu và cách bạn làm việc với khách hàng..."
+            placeholder={t("Kể về kinh nghiệm, lĩnh vực mạnh, dự án tiêu biểu và cách bạn làm việc với khách hàng...")}
             value={bio}
             onChange={(e) => setBio(e.target.value)}
             rows={6}
@@ -109,7 +114,7 @@ export default function EditAboutDialog({
             disabled={saving}
             onClick={onClose}
           >
-            Hủy
+            {t("Hủy")}
           </button>
           <button type="submit" className="mp-dialog__btn mp-dialog__btn--primary" disabled={saving}>
             {saving ? "Đang lưu..." : "Lưu giới thiệu"}

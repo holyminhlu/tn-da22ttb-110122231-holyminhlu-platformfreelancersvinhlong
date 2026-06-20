@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useStoredUser } from "@/hooks/useStoredUser";
 import { ABOUT_NAV } from "./navMenus";
 import NavDropdown from "./NavDropdown";
@@ -11,20 +12,22 @@ function isNavActive(pathname: string, href: string) {
 }
 
 const FREELANCER_NAV = [
-  { href: "/dashboard", label: "Tổng quan" },
-  { href: "/findwork", label: "Tìm việc" },
-  { href: "/dich-vu", label: "Dịch vụ" },
-  { href: "/payments", label: "Thanh toán" },
+  { href: "/dashboard", labelKey: "nav.overview" },
+  { href: "/findwork", labelKey: "nav.findWork" },
+  { href: "/dich-vu", labelKey: "nav.services" },
+  { href: "/payments", labelKey: "nav.payments" },
 ] as const;
 
 const CLIENT_NAV = [
-  { href: "/dashboard", label: "Tổng quan" },
-  { href: "/hire/quotes", label: "Thuê việc" },
-  { href: "/manage", label: "Quản lý" },
-  { href: "/payments", label: "Thanh toán" },
+  { href: "/dashboard", labelKey: "nav.overview" },
+  { href: "/hire/quotes", labelKey: "nav.hire" },
+  { href: "/manage", labelKey: "nav.manage" },
+  { href: "/payments", labelKey: "nav.payments" },
 ] as const;
 
 export default function HomeNavbarNav() {
+  const { t } = useTranslation();
+
   const pathname = usePathname();
   const { user, ready, isFreelancer, isClient, isAdmin } = useStoredUser({ refreshFromApi: false });
 
@@ -42,7 +45,7 @@ export default function HomeNavbarNav() {
           className={`home-navbar__nav-link${active ? " home-navbar__nav-link--active" : ""}`}
           aria-current={active ? "page" : undefined}
         >
-          Quản trị
+          {t("nav.admin")}
         </Link>
       </div>
     );
@@ -60,7 +63,7 @@ export default function HomeNavbarNav() {
               className={`home-navbar__nav-link${active ? " home-navbar__nav-link--active" : ""}`}
               aria-current={active ? "page" : undefined}
             >
-              {item.label}
+              {t(item.labelKey)}
             </Link>
           );
         })}
@@ -80,7 +83,7 @@ export default function HomeNavbarNav() {
               className={`home-navbar__nav-link${active ? " home-navbar__nav-link--active" : ""}`}
               aria-current={active ? "page" : undefined}
             >
-              {item.label}
+              {t(item.labelKey)}
             </Link>
           );
         })}
@@ -88,15 +91,20 @@ export default function HomeNavbarNav() {
     );
   }
 
+  const aboutItems = ABOUT_NAV.map((item) => ({
+    href: item.href,
+    label: t(item.labelKey),
+  }));
+
   return (
     <div className="hidden space-x-6 font-medium text-gray-700 md:flex">
       <Link href="/freelancers" className="hover:text-blue-600">
-        Tìm Freelancer
+        {t("nav.findFreelancer")}
       </Link>
       <Link href="/findwork" className="hover:text-blue-600">
-        Tìm việc
+        {t("nav.findWork")}
       </Link>
-      <NavDropdown label="Giới thiệu" items={ABOUT_NAV} />
+      <NavDropdown label={t("nav.about")} items={aboutItems} />
     </div>
   );
 }

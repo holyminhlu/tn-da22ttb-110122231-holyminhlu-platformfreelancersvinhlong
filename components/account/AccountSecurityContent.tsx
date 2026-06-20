@@ -1,5 +1,6 @@
 "use client";
 
+import { tUi } from "@/lib/i18n/runtime";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -35,6 +36,7 @@ import {
   type SecuritySession,
 } from "@/lib/api/security";
 import { clearStoredSession } from "@/lib/authSession";
+import { useTranslation } from "@/hooks/useTranslation";
 import "./account-security.css";
 
 type DangerAction = "deactivate" | "delete" | null;
@@ -60,6 +62,8 @@ function SessionIcon({ deviceType }: { deviceType: string }) {
 }
 
 export default function AccountSecurityContent() {
+  const { t, formatDateTime } = useTranslation();
+
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [overview, setOverview] = useState<SecurityOverview | null>(null);
@@ -97,13 +101,13 @@ export default function AccountSecurityContent() {
       const message =
         err && typeof err === "object" && "message" in err
           ? String((err as { message: string }).message)
-          : "Không thể tải cài đặt bảo mật.";
+          : t("Không thể tải cài đặt bảo mật.");
       setErrorMessage(message);
       setOverview(null);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     const token =
@@ -116,6 +120,7 @@ export default function AccountSecurityContent() {
   }, [loadAll, router]);
 
   async function handleSaveRecovery() {
+  const t = tUi;
     setSavingRecovery(true);
     setSuccessMessage("");
     setErrorMessage("");
@@ -134,12 +139,12 @@ export default function AccountSecurityContent() {
             }
           : prev,
       );
-      setSuccessMessage(data.message ?? "Đã cập nhật thông tin khôi phục.");
+      setSuccessMessage(data.message ?? t("Đã cập nhật thông tin khôi phục."));
     } catch (err) {
       const message =
         err && typeof err === "object" && "message" in err
           ? String((err as { message: string }).message)
-          : "Không thể lưu thay đổi.";
+          : t("Không thể lưu thay đổi.");
       setErrorMessage(message);
     } finally {
       setSavingRecovery(false);
@@ -147,6 +152,7 @@ export default function AccountSecurityContent() {
   }
 
   async function handleRevokeSession(sessionId: string) {
+  const t = tUi;
     setSessionBusy(sessionId);
     setErrorMessage("");
     try {
@@ -161,7 +167,7 @@ export default function AccountSecurityContent() {
       const message =
         err && typeof err === "object" && "message" in err
           ? String((err as { message: string }).message)
-          : "Không thể đăng xuất thiết bị.";
+          : t("Không thể đăng xuất thiết bị.");
       setErrorMessage(message);
     } finally {
       setSessionBusy(null);
@@ -169,6 +175,7 @@ export default function AccountSecurityContent() {
   }
 
   async function handleRevokeOthers() {
+  const t = tUi;
     setSessionBusy("others");
     setErrorMessage("");
     try {
@@ -183,7 +190,7 @@ export default function AccountSecurityContent() {
       const message =
         err && typeof err === "object" && "message" in err
           ? String((err as { message: string }).message)
-          : "Không thể đăng xuất các thiết bị khác.";
+          : t("Không thể đăng xuất các thiết bị khác.");
       setErrorMessage(message);
     } finally {
       setSessionBusy(null);
@@ -191,6 +198,7 @@ export default function AccountSecurityContent() {
   }
 
   function openDanger(action: DangerAction) {
+  const t = tUi;
     setDangerAction(action);
     setDangerPassword("");
     setDangerConfirm("");
@@ -198,22 +206,24 @@ export default function AccountSecurityContent() {
   }
 
   function closeDanger() {
+  const t = tUi;
     if (dangerBusy) return;
     setDangerAction(null);
     setDangerError("");
   }
 
   async function submitDanger() {
+  const t = tUi;
     if (!dangerAction) return;
     const expected = dangerAction === "deactivate" ? "DEACTIVATE" : "DELETE";
     if (dangerConfirm !== expected) {
-      setDangerError(`Nhập chính xác "${expected}" để xác nhận.`);
+      setDangerError(t('Nhập chính xác "{{expected}}" để xác nhận.', { expected }));
       return;
     }
 
     const needsPassword = overview && (!overview.auth.isGoogleAccount || overview.auth.hasLocalPassword);
     if (needsPassword && !dangerPassword) {
-      setDangerError("Vui lòng nhập mật khẩu để xác nhận.");
+      setDangerError(t("Vui lòng nhập mật khẩu để xác nhận."));
       return;
     }
 
@@ -242,7 +252,7 @@ export default function AccountSecurityContent() {
       const message =
         err && typeof err === "object" && "message" in err
           ? String((err as { message: string }).message)
-          : "Không thể hoàn tất yêu cầu.";
+          : t("Không thể hoàn tất yêu cầu.");
       setDangerError(message);
     } finally {
       setDangerBusy(false);
@@ -257,7 +267,7 @@ export default function AccountSecurityContent() {
       <div className="ea-main sec-panel">
         <div className="sec-panel__loading">
           <span className="sec-panel__spinner" aria-hidden />
-          <p>Đang tải cài đặt bảo mật...</p>
+          <p>{t("Đang tải cài đặt bảo mật...")}</p>
         </div>
       </div>
     );
@@ -270,10 +280,11 @@ export default function AccountSecurityContent() {
           <FaShieldAlt />
         </div>
         <div>
-          <h1 className="sec-panel__title">Bảo mật tài khoản</h1>
+          <h1 className="sec-panel__title">{t("Bảo mật tài khoản")}</h1>
           <p className="sec-panel__subtitle">
-            Quản lý xác thực, phiên đăng nhập, thông tin khôi phục và quyền riêng tư của bạn trên
-            Vĩnh Long Connected.
+            {t(
+              "Quản lý xác thực, phiên đăng nhập, thông tin khôi phục và quyền riêng tư của bạn trên Vĩnh Long Connected.",
+            )}
           </p>
         </div>
       </header>
@@ -297,7 +308,7 @@ export default function AccountSecurityContent() {
         <div className="sec-section__head">
           <div>
             <h2 id="sec-auth-heading" className="sec-section__title">
-              Xác thực nâng cao
+              {t("Xác thực nâng cao")}
             </h2>
           </div>
         </div>
@@ -305,33 +316,36 @@ export default function AccountSecurityContent() {
           <article className="sec-feature">
             <h3 className="sec-feature__title">
               <span>
-                <FaKey aria-hidden /> Xác thực hai yếu tố (2FA)
+                <FaKey aria-hidden /> {t("Xác thực hai yếu tố (2FA)")}
               </span>
-              <span className="sec-badge sec-badge--soon">Sắp ra mắt</span>
+              <span className="sec-badge sec-badge--soon">{t("Sắp ra mắt")}</span>
             </h3>
             <p className="sec-feature__desc">
-              Ứng dụng tạo mã (Google Authenticator, Authy), OTP qua SMS/Email và mã dự phòng dùng một
-              lần.
+              {t(
+                "Ứng dụng tạo mã (Google Authenticator, Authy), OTP qua SMS/Email và mã dự phòng dùng một lần.",
+              )}
             </p>
           </article>
           <article className="sec-feature">
             <h3 className="sec-feature__title">
               <span>
-                <FaFingerprint aria-hidden /> Passkey (WebAuthn)
+                <FaFingerprint aria-hidden /> {t("Passkey (WebAuthn)")}
               </span>
-              <span className="sec-badge sec-badge--soon">Sắp ra mắt</span>
+              <span className="sec-badge sec-badge--soon">{t("Sắp ra mắt")}</span>
             </h3>
             <p className="sec-feature__desc">
-              Đăng nhập bằng vân tay hoặc khuôn mặt trên thiết bị — không cần nhập mật khẩu mỗi lần.
+              {t(
+                "Đăng nhập bằng vân tay hoặc khuôn mặt trên thiết bị — không cần nhập mật khẩu mỗi lần.",
+              )}
             </p>
           </article>
         </div>
         {overview?.auth.isGoogleOnly ? (
           <p className="sec-banner sec-banner--info" style={{ marginTop: "0.75rem" }}>
             <GoogleLogo className="sec-google-logo" size={18} />
-            Bạn đang dùng Google SSO. Hãy{" "}
-            <Link href="/edit-account/ten-dang-nhap">tạo mật khẩu VLC</Link> để tăng cường bảo mật
-            trước khi bật 2FA.
+            {t("Bạn đang dùng Google SSO. Hãy")}{" "}
+            <Link href="/edit-account/ten-dang-nhap">{t("tạo mật khẩu VLC")}</Link>{" "}
+            {t("để tăng cường bảo mật trước khi bật 2FA.")}
           </p>
         ) : null}
       </section>
@@ -342,7 +356,7 @@ export default function AccountSecurityContent() {
         <div className="sec-section__head">
           <div>
             <h2 id="sec-sessions-heading" className="sec-section__title">
-              Phiên đăng nhập
+              {t("Phiên đăng nhập")}
             </h2>
           </div>
           {otherSessions.length > 0 ? (
@@ -354,14 +368,14 @@ export default function AccountSecurityContent() {
                 onClick={() => void handleRevokeOthers()}
               >
                 <FaSignOutAlt aria-hidden />
-                {sessionBusy === "others" ? "Đang xử lý..." : "Đăng xuất thiết bị khác"}
+                {sessionBusy === "others" ? t("Đang xử lý...") : t("Đăng xuất thiết bị khác")}
               </button>
             </div>
           ) : null}
         </div>
         <div className="sec-card">
           {sessions.length === 0 ? (
-            <p className="sec-empty">Không có phiên đăng nhập đang hoạt động.</p>
+            <p className="sec-empty">{t("Không có phiên đăng nhập đang hoạt động.")}</p>
           ) : (
             sessions.map((session) => (
               <div key={session.id} className="sec-row">
@@ -372,15 +386,15 @@ export default function AccountSecurityContent() {
                   <div>
                     <p className="sec-row__label">{session.deviceLabel}</p>
                     <p className="sec-row__meta">
-                      {session.ipAddress ? `IP: ${session.ipAddress}` : "IP không xác định"}
+                      {session.ipAddress ? `IP: ${session.ipAddress}` : t("IP không xác định")}
                       {" · "}
-                      Đăng nhập {formatDateTime(session.createdAt)}
+                      {t("Đăng nhập")} {formatDateTime(session.createdAt)}
                     </p>
                   </div>
                 </div>
                 <div className="sec-row__aside">
                   {session.isCurrent ? (
-                    <span className="sec-badge sec-badge--current">Phiên hiện tại</span>
+                    <span className="sec-badge sec-badge--current">{t("Phiên hiện tại")}</span>
                   ) : (
                     <button
                       type="button"
@@ -388,7 +402,7 @@ export default function AccountSecurityContent() {
                       disabled={sessionBusy !== null}
                       onClick={() => void handleRevokeSession(session.id)}
                     >
-                      {sessionBusy === session.id ? "..." : "Đăng xuất"}
+                      {sessionBusy === session.id ? "..." : t("Đăng xuất")}
                     </button>
                   )}
                 </div>
@@ -403,13 +417,13 @@ export default function AccountSecurityContent() {
         <div className="sec-section__head">
           <div>
             <h2 id="sec-history-heading" className="sec-section__title">
-              Lịch sử đăng nhập
+              {t("Lịch sử đăng nhập")}
             </h2>
           </div>
         </div>
         <div className="sec-card">
           {history.length === 0 ? (
-            <p className="sec-empty">Chưa có lịch sử đăng nhập.</p>
+            <p className="sec-empty">{t("Chưa có lịch sử đăng nhập.")}</p>
           ) : (
             <ul className="sec-history-list">
               {history.map((entry) => (
@@ -429,7 +443,7 @@ export default function AccountSecurityContent() {
                   <span
                     className={`sec-badge ${entry.success ? "sec-badge--success" : "sec-badge--fail"}`}
                   >
-                    {entry.success ? "Thành công" : "Thất bại"}
+                    {entry.success ? t("Thành công") : t("Thất bại")}
                   </span>
                 </li>
               ))}
@@ -445,14 +459,14 @@ export default function AccountSecurityContent() {
         <div className="sec-section__head">
           <div>
             <h2 id="sec-recovery-heading" className="sec-section__title">
-              Khôi phục &amp; cảnh báo
+              {t("Khôi phục & cảnh báo")}
             </h2>
           </div>
         </div>
         <div className="sec-card">
           <div className="sec-form-grid">
             <div className="sec-field">
-              <label htmlFor="sec-login-email">Email đăng nhập</label>
+              <label htmlFor="sec-login-email">{t("Email đăng nhập")}</label>
               <input
                 id="sec-login-email"
                 type="email"
@@ -460,21 +474,21 @@ export default function AccountSecurityContent() {
                 readOnly
                 disabled
               />
-              <p className="sec-field__hint">Quản lý tại mục Tên đăng nhập &amp; Mật khẩu.</p>
+              <p className="sec-field__hint">{t("Quản lý tại mục Tên đăng nhập & Mật khẩu.")}</p>
             </div>
             <div className="sec-field">
-              <label htmlFor="sec-profile-phone">SĐT hồ sơ</label>
+              <label htmlFor="sec-profile-phone">{t("SĐT hồ sơ")}</label>
               <input
                 id="sec-profile-phone"
                 type="tel"
                 value={overview?.recovery.profilePhone ?? ""}
                 readOnly
                 disabled
-                placeholder="Chưa cập nhật"
+                placeholder={t("Chưa cập nhật")}
               />
             </div>
             <div className="sec-field">
-              <label htmlFor="sec-recovery-email">Email khôi phục</label>
+              <label htmlFor="sec-recovery-email">{t("Email khôi phục")}</label>
               <input
                 id="sec-recovery-email"
                 type="email"
@@ -485,7 +499,7 @@ export default function AccountSecurityContent() {
               />
             </div>
             <div className="sec-field">
-              <label htmlFor="sec-recovery-phone">SĐT khôi phục</label>
+              <label htmlFor="sec-recovery-phone">{t("SĐT khôi phục")}</label>
               <input
                 id="sec-recovery-phone"
                 type="tel"
@@ -499,10 +513,10 @@ export default function AccountSecurityContent() {
           <div className="sec-toggle">
             <div>
               <p className="sec-row__label">
-                <FaBell aria-hidden /> Cảnh báo đăng nhập bất thường
+                <FaBell aria-hidden /> {t("Cảnh báo đăng nhập bất thường")}
               </p>
               <p className="sec-row__meta">
-                Gửi thông báo khi phát hiện đăng nhập từ IP hoặc thiết bị mới.
+                {t("Gửi thông báo khi phát hiện đăng nhập từ IP hoặc thiết bị mới.")}
               </p>
             </div>
             <button
@@ -510,13 +524,13 @@ export default function AccountSecurityContent() {
               className="sec-toggle__switch"
               role="switch"
               aria-checked={loginAlerts}
-              aria-label="Bật cảnh báo đăng nhập bất thường"
+              aria-label={t("Bật cảnh báo đăng nhập bất thường")}
               onClick={() => setLoginAlerts((v) => !v)}
             />
           </div>
           <div className="sec-row" style={{ borderTop: "1px solid #f3f4f6" }}>
             <p className="sec-row__meta" style={{ margin: 0 }}>
-              <FaSms aria-hidden /> OTP qua SMS sẽ khả dụng cùng tính năng 2FA.
+              <FaSms aria-hidden /> {t("OTP qua SMS sẽ khả dụng cùng tính năng 2FA.")}
             </p>
             <button
               type="button"
@@ -524,7 +538,7 @@ export default function AccountSecurityContent() {
               disabled={savingRecovery}
               onClick={() => void handleSaveRecovery()}
             >
-              {savingRecovery ? "Đang lưu..." : "Lưu thay đổi"}
+              {savingRecovery ? t("Đang lưu...") : t("Lưu thay đổi")}
             </button>
           </div>
         </div>
@@ -535,7 +549,7 @@ export default function AccountSecurityContent() {
         <div className="sec-section__head">
           <div>
             <h2 id="sec-linked-heading" className="sec-section__title">
-              Tài khoản liên kết
+              {t("Tài khoản liên kết")}
             </h2>
           </div>
         </div>
@@ -550,23 +564,23 @@ export default function AccountSecurityContent() {
                 <p className="sec-row__meta">
                   {googleLinked?.linked
                     ? googleLinked.email ?? overview?.recovery.loginEmail
-                    : "Chưa liên kết"}
+                    : t("Chưa liên kết")}
                 </p>
               </div>
             </div>
             <div className="sec-row__aside">
               {googleLinked?.linked ? (
                 <span className="sec-badge sec-badge--linked">
-                  <FaLink aria-hidden /> Đã liên kết
+                  <FaLink aria-hidden /> {t("Đã liên kết")}
                 </span>
               ) : (
-                <span className="sec-badge sec-badge--soon">Chưa liên kết</span>
+                <span className="sec-badge sec-badge--soon">{t("Chưa liên kết")}</span>
               )}
             </div>
           </div>
           <div className="sec-row sec-card--muted">
             <p className="sec-row__meta" style={{ margin: 0 }}>
-              Facebook, Apple và Zalo sẽ được bổ sung trong các phiên bản tiếp theo.
+              {t("Facebook, Apple và Zalo sẽ được bổ sung trong các phiên bản tiếp theo.")}
             </p>
           </div>
         </div>
@@ -578,7 +592,7 @@ export default function AccountSecurityContent() {
         <div className="sec-section__head">
           <div>
             <h2 id="sec-danger-heading" className="sec-section__title">
-              Quyền riêng tư &amp; tài khoản
+              {t("Quyền riêng tư & tài khoản")}
             </h2>
           </div>
         </div>
@@ -589,9 +603,9 @@ export default function AccountSecurityContent() {
                 <FaUserSlash aria-hidden />
               </div>
               <div>
-                <p className="sec-row__label">Tạm khóa tài khoản</p>
+                <p className="sec-row__label">{t("Tạm khóa tài khoản")}</p>
                 <p className="sec-row__meta">
-                  Vô hiệu hóa đăng nhập và đăng xuất mọi phiên. Liên hệ hỗ trợ để kích hoạt lại.
+                  {t("Vô hiệu hóa đăng nhập và đăng xuất mọi phiên. Liên hệ hỗ trợ để kích hoạt lại.")}
                 </p>
               </div>
             </div>
@@ -600,7 +614,7 @@ export default function AccountSecurityContent() {
               className="sec-btn sec-btn--danger"
               onClick={() => openDanger("deactivate")}
             >
-              Tạm khóa
+              {t("Tạm khóa")}
             </button>
           </div>
           <div className="sec-row">
@@ -609,9 +623,9 @@ export default function AccountSecurityContent() {
                 <FaTrashAlt aria-hidden />
               </div>
               <div>
-                <p className="sec-row__label">Xóa tài khoản vĩnh viễn</p>
+                <p className="sec-row__label">{t("Xóa tài khoản vĩnh viễn")}</p>
                 <p className="sec-row__meta">
-                  Xóa dữ liệu cá nhân theo quy định bảo vệ dữ liệu. Không thể hoàn tác.
+                  {t("Xóa dữ liệu cá nhân theo quy định bảo vệ dữ liệu. Không thể hoàn tác.")}
                 </p>
               </div>
             </div>
@@ -620,7 +634,7 @@ export default function AccountSecurityContent() {
               className="sec-btn sec-btn--danger-solid"
               onClick={() => openDanger("delete")}
             >
-              Xóa tài khoản
+              {t("Xóa tài khoản")}
             </button>
           </div>
         </div>
@@ -640,19 +654,19 @@ export default function AccountSecurityContent() {
                 id="sec-danger-modal-title"
                 className={`sec-modal__title${dangerAction === "delete" ? " sec-modal__title--danger" : ""}`}
               >
-                {dangerAction === "deactivate" ? "Tạm khóa tài khoản" : "Xóa tài khoản vĩnh viễn"}
+                {dangerAction === "deactivate" ? t("Tạm khóa tài khoản") : t("Xóa tài khoản vĩnh viễn")}
               </h3>
               <p className="sec-modal__text">
                 {dangerAction === "deactivate"
-                  ? "Tài khoản sẽ không thể đăng nhập cho đến khi được kích hoạt lại bởi hỗ trợ."
-                  : "Toàn bộ dữ liệu cá nhân sẽ bị ẩn danh hóa. Hành động này không thể hoàn tác."}
+                  ? t("Tài khoản sẽ không thể đăng nhập cho đến khi được kích hoạt lại bởi hỗ trợ.")
+                  : t("Toàn bộ dữ liệu cá nhân sẽ bị ẩn danh hóa. Hành động này không thể hoàn tác.")}
               </p>
             </div>
             <div className="sec-modal__body">
               {overview && (overview.auth.isGoogleAccount === false || overview.auth.hasLocalPassword) ? (
                 <div className="sec-field">
                   <label htmlFor="sec-danger-pwd">
-                    <FaUserLock aria-hidden /> Mật khẩu hiện tại
+                    <FaUserLock aria-hidden /> {t("Mật khẩu hiện tại")}
                   </label>
                   <input
                     id="sec-danger-pwd"
@@ -665,8 +679,9 @@ export default function AccountSecurityContent() {
               ) : null}
               <div className="sec-field">
                 <label htmlFor="sec-danger-confirm">
-                  Nhập <strong>{dangerAction === "deactivate" ? "DEACTIVATE" : "DELETE"}</strong> để
-                  xác nhận
+                  {t("Nhập")}{" "}
+                  <strong>{dangerAction === "deactivate" ? "DEACTIVATE" : "DELETE"}</strong>{" "}
+                  {t("để xác nhận")}
                 </label>
                 <input
                   id="sec-danger-confirm"
@@ -692,7 +707,7 @@ export default function AccountSecurityContent() {
                 onClick={closeDanger}
                 disabled={dangerBusy}
               >
-                Hủy
+                {t("Hủy")}
               </button>
               <button
                 type="button"
@@ -701,10 +716,10 @@ export default function AccountSecurityContent() {
                 onClick={() => void submitDanger()}
               >
                 {dangerBusy
-                  ? "Đang xử lý..."
+                  ? t("Đang xử lý...")
                   : dangerAction === "deactivate"
-                    ? "Xác nhận tạm khóa"
-                    : "Xác nhận xóa"}
+                    ? t("Xác nhận tạm khóa")
+                    : t("Xác nhận xóa")}
               </button>
             </div>
           </div>

@@ -1,11 +1,12 @@
 "use client";
 
+import { formatDateUi, tUi, formatVndUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { FaCheckCircle, FaListUl, FaMapMarkerAlt } from "react-icons/fa";
 import { type JobListing } from "@/lib/api/jobs";
 import UserAvatar from "@/components/ui/UserAvatar";
-import { formatDate, formatVnd } from "@/lib/format";
 import {
   parseJobImages,
   parseJobTags,
@@ -30,7 +31,9 @@ type JobCardProps = {
   guestMode?: boolean;
 };
 
-export default function JobCard({ job, onAccepted, onSavedChange, guestMode = false }: JobCardProps) {
+export default function JobCard({
+  job, onAccepted, onSavedChange, guestMode = false }: JobCardProps) {  const { t, formatVnd, formatDate } = useTranslation();
+
   const { user, isClient } = useStoredUser({ refreshFromApi: false });
   const [proposalOpen, setProposalOpen] = useState(false);
   const [clientNoticeOpen, setClientNoticeOpen] = useState(false);
@@ -39,7 +42,7 @@ export default function JobCard({ job, onAccepted, onSavedChange, guestMode = fa
   const hasActiveQuote = blocksNewJobQuote(job);
   const canSubmit = String(job.status).toLowerCase() === "open" && !hasActiveQuote;
 
-  const budgetText = job.budget != null ? formatVnd(job.budget) : "Thỏa thuận";
+  const budgetText = job.budget != null ? formatVndUi(job.budget) : "Thỏa thuận";
   const tags = parseJobTags(job.tags);
   const images = parseJobImages(job.images);
   const hasMedia = images.length > 0;
@@ -48,10 +51,14 @@ export default function JobCard({ job, onAccepted, onSavedChange, guestMode = fa
   const categoryLabel = job.category?.trim() || null;
 
   function handleProposalSuccess() {
+  const t = tUi;
+  const formatDate = formatDateUi;
     onAccepted?.(job.id);
   }
 
   function quoteStatusChip() {
+  const t = tUi;
+  const formatDate = formatDateUi;
     if (quotePhase === "offered") {
       return (
         <span className="rounded border border-amber-300 bg-amber-50 px-4 py-1.5 text-sm font-semibold text-amber-800">
@@ -86,6 +93,8 @@ export default function JobCard({ job, onAccepted, onSavedChange, guestMode = fa
   const quoteChip = quoteStatusChip();
 
   function openQuoteFlow() {
+  const t = tUi;
+  const formatDate = formatDateUi;
     if (isClient) {
       setClientNoticeOpen(true);
       return;
@@ -107,7 +116,7 @@ export default function JobCard({ job, onAccepted, onSavedChange, guestMode = fa
         {job.due_at ? (
           <div className="text-right text-xs text-gray-500">
             Hạn gửi trước ngày:{" "}
-            <span className="font-semibold text-gray-700">{formatDate(job.due_at)}</span>
+            <span className="font-semibold text-gray-700">{formatDateUi(job.due_at)}</span>
           </div>
         ) : null}
       </div>
@@ -163,19 +172,19 @@ export default function JobCard({ job, onAccepted, onSavedChange, guestMode = fa
               name={job.client_name}
               size={40}
               className="h-10 w-10"
-              alt={job.client_name || "Khách hàng"}
+              alt={job.client_name || t("Khách hàng")}
             />
             <div>
               <div className="cursor-pointer text-sm font-bold text-blue-600 hover:underline">
-                {job.client_name || "Khách hàng"}
+                {job.client_name || t("Khách hàng")}
               </div>
               <div className="flex items-center text-xs text-gray-500">
                 {clientLocation}
                 {job.client_email_verified ? (
                   <FaCheckCircle
                     className="ml-1 text-green-500"
-                    title="Email đã xác minh"
-                    aria-label="Email đã xác minh"
+                    title={t("Email đã xác minh")}
+                    aria-label={t("Email đã xác minh")}
                   />
                 ) : null}
               </div>

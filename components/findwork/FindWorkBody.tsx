@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "@/hooks/useTranslation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useStoredUser } from "@/hooks/useStoredUser";
@@ -36,6 +37,8 @@ function buildPageItems(current: number, totalPages: number): PageItem[] {
 }
 
 export default function FindWorkBody() {
+  const { t } = useTranslation();
+
   const { user, ready } = useStoredUser({ refreshFromApi: false });
   const isGuest = ready && !user;
 
@@ -129,7 +132,7 @@ export default function FindWorkBody() {
   return (
     <div className="fw-main">
       <div className="mb-6">
-        <h1 className="mb-2 text-2xl font-bold text-gray-800">Tìm việc làm tự do</h1>
+        <h1 className="mb-2 text-2xl font-bold text-gray-800">{t("Tìm việc làm tự do")}</h1>
         <p className="text-sm text-gray-600">
           {isGuest
             ? `Khám phá ${total > 0 ? total.toLocaleString("vi-VN") : "các"} công việc đang mở tại Vĩnh Long. Đăng nhập để gửi báo giá và nhận việc.`
@@ -185,13 +188,13 @@ export default function FindWorkBody() {
       </div>
 
       {loading ? (
-        <p className="text-gray-500">Đang tải việc làm...</p>
+        <p className="text-gray-500">{t("Đang tải việc làm...")}</p>
       ) : error ? (
         <p className="rounded border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
           {error}
         </p>
       ) : jobs.length === 0 ? (
-        <p className="text-gray-500">Không có việc làm phù hợp với bộ lọc hiện tại.</p>
+        <p className="text-gray-500">{t("Không có việc làm phù hợp với bộ lọc hiện tại.")}</p>
       ) : (
         jobs.map((job) => (
           <JobCard key={job.id} job={job} onAccepted={handleAccepted} guestMode={isGuest} />
@@ -199,14 +202,14 @@ export default function FindWorkBody() {
       )}
 
       {!loading && !error && totalPages > 1 ? (
-        <nav className="mt-8 flex justify-center" aria-label="Phân trang">
+        <nav className="mt-8 flex justify-center" aria-label={t("Phân trang")}>
           <div className="flex items-center space-x-1">
             <button
               type="button"
               disabled={page <= 1}
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               className="rounded border px-3 py-1 text-gray-400 hover:bg-gray-50 disabled:opacity-40"
-              aria-label="Trang trước"
+              aria-label={t("Trang trước")}
             >
               &lt;
             </button>

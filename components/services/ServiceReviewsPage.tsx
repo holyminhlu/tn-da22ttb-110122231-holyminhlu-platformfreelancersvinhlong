@@ -1,15 +1,16 @@
 "use client";
 
+import { formatDateUi, tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useCallback, useEffect, useState } from "react";
 import {
   listMyServiceReviews,
   replyServiceReview,
   type ServiceReviewRow,
 } from "@/lib/api/services";
-import { formatDate } from "@/lib/format";
 import ServicesShell from "./ServicesShell";
 
-export default function ServiceReviewsPage() {
+export default function ServiceReviewsPage() {  const { t, formatDate } = useTranslation();
   const [reviews, setReviews] = useState<ServiceReviewRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -38,6 +39,8 @@ export default function ServiceReviewsPage() {
   }, [load]);
 
   async function submitReply(reviewId: string) {
+  const t = tUi;
+  const formatDate = formatDateUi;
     const reply = replyDraft[reviewId]?.trim();
     if (!reply) return;
     setBusyId(reviewId);
@@ -60,22 +63,22 @@ export default function ServiceReviewsPage() {
     <ServicesShell>
       <header className="svc-hub__head">
         <div>
-          <h1 className="svc-hub__title">Đánh giá &amp; Phản hồi</h1>
+          <h1 className="svc-hub__title">{t("Đánh giá &amp; Phản hồi")}</h1>
           <p className="svc-hub__lead">
-            Xem đánh giá khách hàng sau khi hoàn thành đơn dịch vụ và phản hồi để tăng uy tín trên nền tảng.
+            {t("Xem đánh giá khách hàng sau khi hoàn thành đơn dịch vụ và phản hồi để tăng uy tín trên nền tảng.")}
           </p>
         </div>
       </header>
 
       {loading ? (
-        <p className="text-sm text-gray-500">Đang tải...</p>
+        <p className="text-sm text-gray-500">{t("Đang tải...")}</p>
       ) : error ? (
         <p className="text-sm text-red-700" role="alert">
           {error}
         </p>
       ) : reviews.length === 0 ? (
         <div className="svc-panel text-sm text-gray-600 text-center">
-          Chưa có đánh giá nào. Đánh giá xuất hiện sau khi khách hàng nghiệm thu đơn dịch vụ.
+          {t("Chưa có đánh giá nào. Đánh giá xuất hiện sau khi khách hàng nghiệm thu đơn dịch vụ.")}
         </div>
       ) : (
         <div className="svc-review__list">
@@ -87,20 +90,20 @@ export default function ServiceReviewsPage() {
                   <p className="text-sm font-semibold text-gray-800">
                     {review.clientName || "Khách hàng"} · {review.serviceTitle || "Dịch vụ"}
                   </p>
-                  <p className="text-xs text-gray-500">{formatDate(review.createdAt)}</p>
+                  <p className="text-xs text-gray-500">{formatDateUi(review.createdAt)}</p>
                 </div>
               </div>
               {review.comment ? (
                 <p className="mt-2 text-sm text-gray-700 leading-relaxed">{review.comment}</p>
               ) : (
-                <p className="mt-2 text-sm text-gray-400 italic">Không có nhận xét văn bản.</p>
+                <p className="mt-2 text-sm text-gray-400 italic">{t("Không có nhận xét văn bản.")}</p>
               )}
               {review.freelancerReply ? (
                 <div className="mt-3 rounded bg-blue-50 border border-blue-100 p-3 text-sm text-gray-700">
-                  <strong>Phản hồi của bạn:</strong> {review.freelancerReply}
+                  <strong>{t("Phản hồi của bạn:")}</strong> {review.freelancerReply}
                   {review.freelancerReplyAt ? (
                     <span className="block text-xs text-gray-500 mt-1">
-                      {formatDate(review.freelancerReplyAt)}
+                      {formatDateUi(review.freelancerReplyAt)}
                     </span>
                   ) : null}
                 </div>
@@ -109,7 +112,7 @@ export default function ServiceReviewsPage() {
                   <textarea
                     className="w-full border border-gray-300 rounded p-2 text-sm"
                     rows={2}
-                    placeholder="Viết phản hồi lịch sự, chuyên nghiệp..."
+                    placeholder={t("Viết phản hồi lịch sự, chuyên nghiệp...")}
                     value={replyDraft[review.id] ?? ""}
                     onChange={(e) =>
                       setReplyDraft((prev) => ({ ...prev, [review.id]: e.target.value }))

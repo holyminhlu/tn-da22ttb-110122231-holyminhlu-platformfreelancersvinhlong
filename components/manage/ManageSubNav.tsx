@@ -2,16 +2,20 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { MANAGE_NAV } from "./manageNav";
+import { useTranslation } from "@/hooks/useTranslation";
+import { getManageNav } from "./manageNav";
 import "@/components/hire/hire.css";
 
 export default function ManageSubNav() {
+  const { t } = useTranslation();
+
   const pathname = usePathname();
+  const nav = getManageNav(t);
 
   return (
-    <nav className="hire-subnav manage-subnav" aria-label="Quản lý">
+    <nav className="hire-subnav manage-subnav" aria-label={t("Quản lý")}>
       <div className="hire-subnav__inner">
-        {MANAGE_NAV.map((tab) => {
+        {nav.map((tab) => {
           const active = tab.exact
             ? pathname === tab.href
             : pathname === tab.href || pathname.startsWith(`${tab.href}/`);

@@ -1,5 +1,7 @@
 "use client";
 
+import { tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import { FaTimes } from "react-icons/fa";
@@ -9,7 +11,10 @@ type JobCardMediaProps = {
   title: string;
 };
 
-export default function JobCardMedia({ images, title }: JobCardMediaProps) {
+export default function JobCardMedia({
+  images, title }: JobCardMediaProps) {
+  const { t } = useTranslation();
+
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
 
@@ -19,6 +24,7 @@ export default function JobCardMedia({ images, title }: JobCardMediaProps) {
     if (!lightboxOpen) return;
 
     function onKeyDown(e: KeyboardEvent) {
+  const t = tUi;
       if (e.key === "Escape") closeLightbox();
       if (e.key === "ArrowRight" && images.length > 1) {
         setActiveIndex((i) => (i + 1) % images.length);
@@ -82,7 +88,7 @@ export default function JobCardMedia({ images, title }: JobCardMediaProps) {
             type="button"
             className="fw-lightbox__close"
             onClick={closeLightbox}
-            aria-label="Đóng"
+            aria-label={t("Đóng")}
           >
             <FaTimes aria-hidden />
           </button>
@@ -103,7 +109,7 @@ export default function JobCardMedia({ images, title }: JobCardMediaProps) {
                   type="button"
                   className="fw-lightbox__nav-btn"
                   onClick={() => setActiveIndex((i) => (i - 1 + images.length) % images.length)}
-                  aria-label="Ảnh trước"
+                  aria-label={t("Ảnh trước")}
                 >
                   ‹
                 </button>

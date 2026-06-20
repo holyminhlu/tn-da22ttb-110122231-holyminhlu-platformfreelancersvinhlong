@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useStoredUser } from "@/hooks/useStoredUser";
@@ -23,6 +24,8 @@ const FILTERS: { value: JobContractFilter; label: string }[] = [
 ];
 
 export default function FreelancerJobContractsPage() {
+  const { t } = useTranslation();
+
   const { user, ready, isFreelancer } = useStoredUser({ refreshFromApi: false });
   const isGuest = ready && !user;
 
@@ -45,7 +48,7 @@ export default function FreelancerJobContractsPage() {
     try {
       const data = await getMyWork();
       if (data.role !== "freelancer") {
-        setError("Trang này dành cho tài khoản freelancer.");
+        setError(t("Trang này dành cho tài khoản freelancer."));
         setItems([]);
         return;
       }
@@ -79,47 +82,46 @@ export default function FreelancerJobContractsPage() {
       <div className="fw-contracts">
         <header className="fw-contracts__head">
           <div>
-            <h1 className="fw-contracts__title">Hợp đồng việc</h1>
+            <h1 className="fw-contracts__title">{t("Hợp đồng việc")}</h1>
             <p className="fw-contracts__lead">
-              Các hợp đồng từ báo giá job được client chốt tuyển — theo dõi tiến độ, bàn giao và
-              nghiệm thu. Đơn đặt gói dịch vụ (gig) nằm ở mục Đơn hàng dịch vụ.
+              {t("Các hợp đồng từ báo giá job được client chốt tuyển — theo dõi tiến độ, bàn giao và nghiệm thu. Đơn đặt gói dịch vụ (gig) nằm ở mục Đơn hàng dịch vụ.")}
             </p>
           </div>
           <Link href="/findwork/quotes" className="fw-contracts__cta">
-            Báo giá job
+            {t("Báo giá job")}
           </Link>
         </header>
 
         {isGuest ? (
           <div className="fw-contracts__guest">
-            <p>Đăng nhập freelancer để xem hợp đồng việc đã được tuyển.</p>
+            <p>{t("Đăng nhập freelancer để xem hợp đồng việc đã được tuyển.")}</p>
             <Link href="/dang-nhap" className="fw-contracts__cta">
-              Đăng nhập
+              {t("Đăng nhập")}
             </Link>
           </div>
         ) : ready && user && !isFreelancer ? (
           <p className="fw-contracts__error" role="alert">
             Trang này dành cho tài khoản freelancer. Client quản lý việc tại{" "}
-            <Link href="/hire/joblist">Danh sách việc làm</Link>.
+            <Link href="/hire/joblist">{t("Danh sách việc làm")}</Link>.
           </p>
         ) : (
           <>
-            <div className="fw-contracts__stats" aria-label="Tóm tắt hợp đồng">
+            <div className="fw-contracts__stats" aria-label={t("Tóm tắt hợp đồng")}>
               <div className="fw-contracts__stat">
                 <span className="fw-contracts__stat-value">{counts.all}</span>
-                <span className="fw-contracts__stat-label">Hợp đồng job</span>
+                <span className="fw-contracts__stat-label">{t("Hợp đồng job")}</span>
               </div>
               <div className="fw-contracts__stat">
                 <span className="fw-contracts__stat-value">{counts.active}</span>
-                <span className="fw-contracts__stat-label">Đang thực hiện</span>
+                <span className="fw-contracts__stat-label">{t("Đang thực hiện")}</span>
               </div>
               <div className="fw-contracts__stat">
                 <span className="fw-contracts__stat-value">{counts.completed}</span>
-                <span className="fw-contracts__stat-label">Hoàn thành</span>
+                <span className="fw-contracts__stat-label">{t("Hoàn thành")}</span>
               </div>
               <div className="fw-contracts__stat">
                 <span className="fw-contracts__stat-value">{counts.archived}</span>
-                <span className="fw-contracts__stat-label">Đã đóng</span>
+                <span className="fw-contracts__stat-label">{t("Đã đóng")}</span>
               </div>
             </div>
 
@@ -127,12 +129,12 @@ export default function FreelancerJobContractsPage() {
               <input
                 type="search"
                 className="fw-contracts__search"
-                placeholder="Tìm theo việc, client, mã..."
+                placeholder={t("Tìm theo việc, client, mã...")}
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
-                aria-label="Tìm hợp đồng"
+                aria-label={t("Tìm hợp đồng")}
               />
-              <div className="fw-contracts__filters" role="tablist" aria-label="Lọc hợp đồng">
+              <div className="fw-contracts__filters" role="tablist" aria-label={t("Lọc hợp đồng")}>
                 {FILTERS.map((item) => (
                   <button
                     key={item.value}
@@ -142,7 +144,7 @@ export default function FreelancerJobContractsPage() {
                     className={`fw-contracts__filter${filter === item.value ? " fw-contracts__filter--active" : ""}`}
                     onClick={() => setFilter(item.value)}
                   >
-                    {item.label}
+                    {t(item.label)}
                     <span className="fw-contracts__filter-count">{counts[item.value]}</span>
                   </button>
                 ))}
@@ -150,7 +152,7 @@ export default function FreelancerJobContractsPage() {
             </div>
 
             {loading ? (
-              <p className="text-sm text-gray-500">Đang tải...</p>
+              <p className="text-sm text-gray-500">{t("Đang tải...")}</p>
             ) : error ? (
               <p className="fw-contracts__error" role="alert">
                 {error}
@@ -162,7 +164,7 @@ export default function FreelancerJobContractsPage() {
                   : "Không có hợp đồng trong bộ lọc này."}
                 <br />
                 <Link href="/findwork" style={{ marginTop: "0.75rem", display: "inline-block" }}>
-                  Tìm việc làm
+                  {t("Tìm việc làm")}
                 </Link>
               </div>
             ) : (
@@ -179,7 +181,7 @@ export default function FreelancerJobContractsPage() {
             {serviceOrderCount > 0 ? (
               <p className="fw-contracts__note">
                 Bạn có {serviceOrderCount} đơn dịch vụ (gig) — xem tại{" "}
-                <Link href="/dich-vu/don-hang">Đơn hàng dịch vụ</Link>.
+                <Link href="/dich-vu/don-hang">{t("Đơn hàng dịch vụ")}</Link>.
               </p>
             ) : null}
           </>

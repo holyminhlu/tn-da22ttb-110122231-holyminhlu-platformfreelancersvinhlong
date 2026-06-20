@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "@/hooks/useTranslation";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useStoredUser } from "@/hooks/useStoredUser";
@@ -10,6 +11,8 @@ export default function RedirectAdminFromUserRoutes({
 }: {
   children: React.ReactNode;
 }) {
+  const { t } = useTranslation();
+
   const pathname = usePathname();
   const router = useRouter();
   const { ready, isAdmin } = useStoredUser({ refreshFromApi: false });

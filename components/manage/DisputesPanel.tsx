@@ -1,5 +1,7 @@
 "use client";
 
+import { formatDateUi, formatVndUi, tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -39,7 +41,8 @@ export default function DisputesPanel({
   audience = "client",
   initialDisputeId = null,
   initialContractId = null,
-}: DisputesPanelProps) {
+}: DisputesPanelProps) {  const { t, formatVnd, formatDate } = useTranslation();
+
   const [rows, setRows] = useState<DisputeListRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -125,6 +128,8 @@ export default function DisputesPanel({
   );
 
   async function handleSendMessage(body: string) {
+  const formatDate = formatDateUi;
+  const formatVnd = formatVndUi;
     if (!selectedId) return;
     setBusy(true);
     setActionError("");
@@ -191,7 +196,7 @@ export default function DisputesPanel({
                   </span>
                 </div>
                 <p className="resolution-card__meta">
-                  {disputeIssueLabel(row.issue_category)} · {formatDate(row.created_at)}
+                  {disputeIssueLabel(row.issue_category)} · {formatDateUi(row.created_at)}
                 </p>
               </button>
             </li>
@@ -206,7 +211,7 @@ export default function DisputesPanel({
               <h3 className="resolution-card__title">{orderTitle(selected)}</h3>
               <p className="resolution-card__meta">
                 {audience === "freelancer" ? "Client" : "Freelancer"}:{" "}
-                {selected.counterparty_name} · {formatVnd(selected.agreed_price)}
+                {selected.counterparty_name} · {formatVndUi(selected.agreed_price)}
               </p>
               <DisputeProgressSteps
                 steps={DISPUTE_PROGRESS_STEPS}

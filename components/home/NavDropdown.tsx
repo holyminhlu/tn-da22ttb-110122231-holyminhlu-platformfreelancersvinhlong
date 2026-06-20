@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { FaChevronDown } from "./icons";
@@ -15,6 +16,8 @@ type NavDropdownProps = {
 };
 
 export default function NavDropdown({ label, items }: NavDropdownProps) {
+  const { t } = useTranslation();
+
   const menuId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);

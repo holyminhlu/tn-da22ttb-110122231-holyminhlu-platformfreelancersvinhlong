@@ -1,5 +1,7 @@
 "use client";
 
+import { tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -13,14 +15,16 @@ const PAGE_SIZE = 12;
 const ALL_STATUS = "all";
 
 const STATUS_OPTIONS = [
-  { value: ALL_STATUS, label: "Tất cả trạng thái" },
-  { value: "open", label: "Đang mở" },
-  { value: "in_progress", label: "Đang thực hiện" },
-  { value: "closed", label: "Đã đóng" },
-  { value: "cancelled", label: "Đã hủy" },
+  { value: ALL_STATUS, label: tUi("Tất cả trạng thái") },
+  { value: "open", label: tUi("Đang mở") },
+  { value: "in_progress", label: tUi("Đang thực hiện") },
+  { value: "closed", label: tUi("Đã đóng") },
+  { value: "cancelled", label: tUi("Đã hủy") },
 ];
 
 export default function ClientHireJoblistPage() {
+  const { t } = useTranslation();
+
   const searchParams = useSearchParams();
   const postedSuccess = Boolean(searchParams.get("posted"));
 
@@ -77,11 +81,13 @@ export default function ClientHireJoblistPage() {
   );
 
   function applySearch() {
+  const t = tUi;
     setSearchQuery(searchInput.trim());
     setOffset(0);
   }
 
   function handleSearchKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
+  const t = tUi;
     if (event.key === "Enter") {
       event.preventDefault();
       applySearch();
@@ -89,6 +95,7 @@ export default function ClientHireJoblistPage() {
   }
 
   function handleSelect(id: string, checked: boolean) {
+  const t = tUi;
     setSelectedIds((prev) => {
       const next = new Set(prev);
       if (checked) next.add(id);
@@ -98,6 +105,7 @@ export default function ClientHireJoblistPage() {
   }
 
   function handleSelectAllOnPage(checked: boolean) {
+  const t = tUi;
     setSelectedIds((prev) => {
       const next = new Set(prev);
       for (const job of jobs) {
@@ -113,7 +121,7 @@ export default function ClientHireJoblistPage() {
       <div className="hire-page hire-joblist hire-joblist--full-width">
         <header className="hire-page__head">
           <div>
-            <h1 className="hire-page__title">Danh sách việc làm</h1>
+            <h1 className="hire-page__title">{t("Danh sách việc làm")}</h1>
             <p className="hire-page__lead">
               Quản lý các công việc bạn đã đăng — theo dõi báo giá và trạng thái từng dự án.
             </p>
@@ -134,7 +142,7 @@ export default function ClientHireJoblistPage() {
             <input
               type="search"
               className="hire-page__search-input"
-              placeholder="Tìm công việc đã đăng"
+              placeholder={t("Tìm công việc đã đăng")}
               value={searchInput}
               onChange={(e) => {
                 const value = e.target.value;
@@ -145,12 +153,12 @@ export default function ClientHireJoblistPage() {
                 }
               }}
               onKeyDown={handleSearchKeyDown}
-              aria-label="Tìm công việc"
+              aria-label={t("Tìm công việc")}
             />
             <button
               type="button"
               className="hire-page__search-btn"
-              aria-label="Tìm kiếm"
+              aria-label={t("Tìm kiếm")}
               onClick={applySearch}
             >
               <FaSearch aria-hidden />
@@ -205,14 +213,14 @@ export default function ClientHireJoblistPage() {
         </div>
 
         {loading ? (
-          <p className="hire-page__state">Đang tải...</p>
+          <p className="hire-page__state">{t("Đang tải...")}</p>
         ) : error ? (
           <p className="hire-page__state hire-page__state--error" role="alert">
             {error}
           </p>
         ) : jobs.length === 0 ? (
           <div className="hire-page__empty">
-            <p className="hire-page__empty-text">Bạn chưa đăng công việc nào phù hợp bộ lọc.</p>
+            <p className="hire-page__empty-text">{t("Bạn chưa đăng công việc nào phù hợp bộ lọc.")}</p>
             <p className="hire-favorites__lead-sub">
               Chạy <code>backend/sql/hire_joblist_columns.sql</code> nếu API báo thiếu cột hoặc bảng{" "}
               <code>job_quotes</code>.
@@ -235,7 +243,7 @@ export default function ClientHireJoblistPage() {
             </div>
 
             {totalPages > 1 ? (
-              <nav className="hire-search__pagination" aria-label="Phân trang">
+              <nav className="hire-search__pagination" aria-label={t("Phân trang")}>
                 <button
                   type="button"
                   className="hire-search__page-btn"

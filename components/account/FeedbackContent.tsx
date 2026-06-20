@@ -1,5 +1,7 @@
 "use client";
 
+import { formatDateUi, tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -28,6 +30,7 @@ function StarRating({ rating }: { rating: number }) {
 }
 
 function FeedbackCard({ item }: { item: FeedbackReview }) {
+  const formatDate = formatDateUi;
   const hasComment = Boolean(item.comment?.trim());
 
   return (
@@ -43,7 +46,7 @@ function FeedbackCard({ item }: { item: FeedbackReview }) {
           </span>
         )}
         <time className="fb-card__date" dateTime={item.created_at}>
-          {formatDate(item.created_at)}
+          {formatDateUi(item.created_at)}
         </time>
       </div>
       <StarRating rating={item.rating} />
@@ -60,6 +63,8 @@ function FeedbackCard({ item }: { item: FeedbackReview }) {
 }
 
 export default function FeedbackContent() {
+  const { t, formatDate } = useTranslation();
+
   const router = useRouter();
   const [tab, setTab] = useState<FeedbackTab>("reviews");
   const [reviews, setReviews] = useState<FeedbackReview[]>([]);

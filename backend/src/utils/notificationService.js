@@ -1,3 +1,5 @@
+const { isInAppNotificationAllowed } = require("./notificationPreferences");
+
 let ioInstance = null;
 
 function setNotificationIo(io) {
@@ -87,9 +89,13 @@ async function createNotification(db, params) {
 }
 
 async function notifyUser(db, params) {
-  const { recipientId, actorId } = params;
+  const { recipientId, actorId, category, action } = params;
   if (!recipientId) return null;
   if (actorId && String(recipientId) === String(actorId)) return null;
+
+  const allowed = await isInAppNotificationAllowed(db, recipientId, { category, action });
+  if (!allowed) return null;
+
   return createNotification(db, { ...params, userId: recipientId });
 }
 
@@ -98,7 +104,7 @@ function clientOrderHref(contractId) {
 }
 
 function freelancerOrderHref(contractId) {
-  return `/findwork/orders/${contractId}`;
+  return `/dich-vu/don-hang/${contractId}`;
 }
 
 function clientMessagesHref(conversationId) {

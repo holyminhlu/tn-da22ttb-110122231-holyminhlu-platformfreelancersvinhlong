@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "@/hooks/useTranslation";
 import type { ProfileStatsViewPoint } from "@/lib/api/users";
 
 type ProfileViewsChartProps = {
@@ -13,6 +14,8 @@ function formatAxisDate(iso: string) {
 }
 
 export default function ProfileViewsChart({ series }: ProfileViewsChartProps) {
+  const { t } = useTranslation();
+
   const maxViews = Math.max(1, ...series.map((p) => p.views));
   const yTicks = Array.from({ length: maxViews + 1 }, (_, i) => i);
 

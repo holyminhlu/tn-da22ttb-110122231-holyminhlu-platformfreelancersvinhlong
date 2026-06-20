@@ -1,5 +1,7 @@
 "use client";
 
+import { tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { FaCar, FaCrosshairs, FaMapMarkerAlt, FaRoute } from "react-icons/fa";
@@ -31,6 +33,8 @@ export default function WorkDetailCommutePanel({
   job,
   isFreelancerViewer,
 }: WorkDetailCommutePanelProps) {
+  const { t } = useTranslation();
+
   const [jobPoint, setJobPoint] = useState<GeoPoint | null>(() => jobSitePoint(job));
   const [jobGeoLoading, setJobGeoLoading] = useState(false);
   const [freelancerPoint, setFreelancerPoint] = useState<GeoPoint | null>(null);
@@ -40,7 +44,7 @@ export default function WorkDetailCommutePanel({
   const [routeStats, setRouteStats] = useState<RouteStats | null>(null);
   const [routeLoading, setRouteLoading] = useState(false);
 
-  const siteLabel = job.location_label?.trim() || "Địa điểm làm việc";
+  const siteLabel = job.location_label?.trim() || t("Địa điểm làm việc");
 
   useEffect(() => {
     const coords = jobSitePoint(job);
@@ -143,6 +147,7 @@ export default function WorkDetailCommutePanel({
   const mapUrl = useMemo(() => osmEmbedBboxUrl(mapPoints), [mapPoints]);
 
   function useMyGps() {
+  const t = tUi;
     setGpsError("");
     if (!navigator.geolocation) {
       setGpsError("Trình duyệt không hỗ trợ GPS.");
@@ -186,7 +191,7 @@ export default function WorkDetailCommutePanel({
       </p>
 
       {jobGeoLoading ? (
-        <p className="wd-commute__hint">Đang xác định vị trí công việc trên bản đồ...</p>
+        <p className="wd-commute__hint">{t("Đang xác định vị trí công việc trên bản đồ...")}</p>
       ) : null}
 
       {!jobPoint && !jobGeoLoading ? (
@@ -198,7 +203,7 @@ export default function WorkDetailCommutePanel({
       {jobPoint ? (
         <div className="wd-commute__map-wrap">
           <iframe
-            title="Bản đồ địa điểm làm việc"
+            title={t("Bản đồ địa điểm làm việc")}
             className="wd-commute__map"
             src={mapUrl}
             loading="lazy"
@@ -246,14 +251,14 @@ export default function WorkDetailCommutePanel({
       ) : null}
 
       {routeLoading ? (
-        <p className="wd-commute__hint">Đang tính quãng đường...</p>
+        <p className="wd-commute__hint">{t("Đang tính quãng đường...")}</p>
       ) : null}
 
       {routeStats && freelancerPoint && jobPoint ? (
         <div className="wd-commute__stats">
           <div className="wd-commute__stat">
             <FaRoute className="wd-commute__stat-icon" aria-hidden />
-            <span className="wd-commute__stat-label">Khoảng cách</span>
+            <span className="wd-commute__stat-label">{t("Khoảng cách")}</span>
             <strong className="wd-commute__stat-value">
               {formatDistanceKm(routeStats.distanceKm)}
             </strong>
@@ -263,16 +268,16 @@ export default function WorkDetailCommutePanel({
           </div>
           <div className="wd-commute__stat">
             <FaCar className="wd-commute__stat-icon" aria-hidden />
-            <span className="wd-commute__stat-label">Thời gian di chuyển</span>
+            <span className="wd-commute__stat-label">{t("Thời gian di chuyển")}</span>
             <strong className="wd-commute__stat-value">
               {formatDurationMinutes(routeStats.durationMinutes)}
             </strong>
-            <span className="wd-commute__stat-note">Ước tính ô tô / xe máy</span>
+            <span className="wd-commute__stat-note">{t("Ước tính ô tô / xe máy")}</span>
           </div>
         </div>
       ) : jobPoint && !freelancerPoint ? (
         <p className="wd-commute__hint">
-          Bấm <strong>Dùng vị trí hiện tại</strong> để xem khoảng cách và thời gian di chuyển từ
+          Bấm <strong>{t("Dùng vị trí hiện tại")}</strong> để xem khoảng cách và thời gian di chuyển từ
           bạn đến địa điểm làm việc.
         </p>
       ) : null}

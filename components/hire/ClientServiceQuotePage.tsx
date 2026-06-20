@@ -1,5 +1,7 @@
 "use client";
 
+import { tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -18,17 +20,20 @@ import "./hire.css";
 import "./hire-quote.css";
 
 function defaultMilestones(total: number) {
+  const t = tUi;
   const p1 = Math.round(total * 0.3);
   const p2 = Math.round(total * 0.4);
   const p3 = Math.max(0, total - p1 - p2);
   return [
-    { title: "Thiết kế / Phân tích yêu cầu", amount: p1 },
-    { title: "Phát triển & triển khai", amount: p2 },
-    { title: "Kiểm thử & bàn giao", amount: p3 },
+    { title: tUi("Thiết kế / Phân tích yêu cầu"), amount: p1 },
+    { title: tUi("Phát triển & triển khai"), amount: p2 },
+    { title: tUi("Kiểm thử & bàn giao"), amount: p3 },
   ];
 }
 
 export default function ClientServiceQuotePage() {
+  const { t } = useTranslation();
+
   const router = useRouter();
   const searchParams = useSearchParams();
   const serviceId = searchParams.get("serviceId") || "";
@@ -47,7 +52,7 @@ export default function ClientServiceQuotePage() {
 
   const load = useCallback(async () => {
     if (!serviceId) {
-      setError("Thiếu mã dịch vụ. Quay lại tìm kiếm và chọn freelancer.");
+      setError(t("Thiếu mã dịch vụ. Quay lại tìm kiếm và chọn freelancer."));
       setLoading(false);
       return;
     }
@@ -60,7 +65,7 @@ export default function ClientServiceQuotePage() {
     try {
       const data = await getService(serviceId);
       if (freelancerId && data.service.freelancer_id !== freelancerId) {
-        setError("Dịch vụ không khớp với freelancer đã chọn.");
+        setError(t("Dịch vụ không khớp với freelancer đã chọn."));
         return;
       }
       setServiceTitle(data.service.title);
@@ -98,6 +103,7 @@ export default function ClientServiceQuotePage() {
   );
 
   async function handleSubmit(event: React.FormEvent) {
+  const t = tUi;
     event.preventDefault();
     if (!selected || !clientBrief.trim()) return;
     setSubmitting(true);
@@ -134,7 +140,7 @@ export default function ClientServiceQuotePage() {
 
         <header className="hire-page__head">
           <div>
-            <h1 className="hire-page__title">Yêu cầu báo giá</h1>
+            <h1 className="hire-page__title">{t("Yêu cầu báo giá")}</h1>
             <p className="hire-page__lead">
               Chọn gói dịch vụ, mô tả yêu cầu và gửi đề xuất — freelancer sẽ phản hồi trước khi
               ký quỹ.
@@ -143,18 +149,18 @@ export default function ClientServiceQuotePage() {
         </header>
 
         {verifyLoading ? (
-          <p className="hire-page__state">Đang kiểm tra tài khoản...</p>
+          <p className="hire-page__state">{t("Đang kiểm tra tài khoản...")}</p>
         ) : !verified ? (
           <ClientIdentityVerifyGate
             user={user}
             idv={idv}
-            title="Xác minh danh tính trước khi gửi yêu cầu báo giá"
-            lead="Hoàn thành 5 mục thông tin nhận dạng và xác minh thẻ tín dụng (bước 2) tại trang xác minh, sau đó bạn có thể gửi yêu cầu báo giá."
+            title={t("Xác minh danh tính trước khi gửi yêu cầu báo giá")}
+            lead={t("Hoàn thành 5 mục thông tin nhận dạng và xác minh thẻ tín dụng (bước 2) tại trang xác minh, sau đó bạn có thể gửi yêu cầu báo giá.")}
             backHref="/hire/search"
-            backLabel="Quay lại tìm kiếm freelancer"
+            backLabel={t("Quay lại tìm kiếm freelancer")}
           />
         ) : loading ? (
-          <p className="hire-page__state">Đang tải dịch vụ...</p>
+          <p className="hire-page__state">{t("Đang tải dịch vụ...")}</p>
         ) : error ? (
           <p className="hire-page__state hire-page__state--error" role="alert">
             {error}
@@ -167,8 +173,8 @@ export default function ClientServiceQuotePage() {
                 <p className="hire-quote__freelancer">Freelancer: {freelancerName}</p>
               </div>
 
-              <h3 className="hire-quote__section-title">Chọn gói dịch vụ</h3>
-              <ul className="hire-quote__packages" role="listbox" aria-label="Gói dịch vụ">
+              <h3 className="hire-quote__section-title">{t("Chọn gói dịch vụ")}</h3>
+              <ul className="hire-quote__packages" role="listbox" aria-label={t("Gói dịch vụ")}>
                 {packages.map((pack) => (
                   <li key={pack.id}>
                     <button
@@ -181,7 +187,7 @@ export default function ClientServiceQuotePage() {
                       <p className="hire-quote__package-name">{pack.name}</p>
                       <p className="hire-quote__package-price">{formatPackagePrice(pack.price)}</p>
                       <p className="hire-quote__package-meta">
-                        {pack.deliveryDays} ngày · {pack.revisions || "2 lần chỉnh sửa"}
+                        {pack.deliveryDays} ngày · {pack.revisions || t("2 lần chỉnh sửa")}
                       </p>
                       {pack.features.length > 0 ? (
                         <ul className="hire-quote__package-features">
@@ -200,28 +206,28 @@ export default function ClientServiceQuotePage() {
               </h3>
               <textarea
                 className="hire-quote__brief"
-                placeholder="Mô tả mục tiêu, phạm vi, deadline, công nghệ mong muốn, tài liệu đính kèm..."
+                placeholder={t("Mô tả mục tiêu, phạm vi, deadline, công nghệ mong muốn, tài liệu đính kèm...")}
                 value={clientBrief}
                 onChange={(e) => setClientBrief(e.target.value)}
                 required
-                aria-label="Mô tả yêu cầu"
+                aria-label={t("Mô tả yêu cầu")}
               />
             </div>
 
             <aside className="hire-quote__sidebar">
-              <h3 className="hire-quote__section-title">Tóm tắt đơn hàng</h3>
+              <h3 className="hire-quote__section-title">{t("Tóm tắt đơn hàng")}</h3>
               {selected ? (
                 <>
                   <div className="hire-quote__summary-row">
-                    <span>Gói</span>
+                    <span>{t("Gói")}</span>
                     <strong>{selected.name}</strong>
                   </div>
                   <div className="hire-quote__summary-row">
-                    <span>Tổng dự kiến</span>
+                    <span>{t("Tổng dự kiến")}</span>
                     <strong>{formatPackagePrice(selected.price)}</strong>
                   </div>
                   <div className="hire-quote__summary-row">
-                    <span>Thời gian</span>
+                    <span>{t("Thời gian")}</span>
                     <strong>{selected.deliveryDays} ngày</strong>
                   </div>
                   <h4 className="hire-quote__section-title" style={{ marginTop: "1rem" }}>
@@ -237,7 +243,7 @@ export default function ClientServiceQuotePage() {
                   </ul>
                 </>
               ) : (
-                <p className="hire-quote__hint">Chọn một gói dịch vụ.</p>
+                <p className="hire-quote__hint">{t("Chọn một gói dịch vụ.")}</p>
               )}
 
               {submitError ? (

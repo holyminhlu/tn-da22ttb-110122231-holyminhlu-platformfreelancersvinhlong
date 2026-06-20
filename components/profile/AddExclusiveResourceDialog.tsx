@@ -1,5 +1,7 @@
 "use client";
 
+import { tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useRef, useState } from "react";
 import { createExclusiveResource, uploadProfileFile } from "@/lib/api/users";
 
@@ -10,7 +12,10 @@ type AddExclusiveResourceDialogProps = {
 
 type ResourceMode = "link" | "file";
 
-export default function AddExclusiveResourceDialog({ onClose, onSaved }: AddExclusiveResourceDialogProps) {
+export default function AddExclusiveResourceDialog({
+  onClose, onSaved }: AddExclusiveResourceDialogProps) {
+  const { t } = useTranslation();
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [mode, setMode] = useState<ResourceMode>("link");
   const [title, setTitle] = useState("");
@@ -22,6 +27,7 @@ export default function AddExclusiveResourceDialog({ onClose, onSaved }: AddExcl
   const [error, setError] = useState("");
 
   async function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+  const t = tUi;
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file) return;
@@ -42,18 +48,19 @@ export default function AddExclusiveResourceDialog({ onClose, onSaved }: AddExcl
   }
 
   async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  const t = tUi;
+  e.preventDefault();
     const trimmedTitle = title.trim();
     if (!trimmedTitle) {
-      setError("Tiêu đề tài nguyên là bắt buộc.");
+      setError(t("Tiêu đề tài nguyên là bắt buộc."));
       return;
     }
     if (mode === "link" && !linkUrl.trim()) {
-      setError("Vui lòng nhập link tài nguyên.");
+      setError(t("Vui lòng nhập link tài nguyên."));
       return;
     }
     if (mode === "file" && !uploadedFile) {
-      setError("Vui lòng tải lên tệp tài nguyên.");
+      setError(t("Vui lòng tải lên tệp tài nguyên."));
       return;
     }
 
@@ -92,19 +99,19 @@ export default function AddExclusiveResourceDialog({ onClose, onSaved }: AddExcl
         <div className="mp-dialog__head">
           <div>
             <h3 id="add-resource-title" className="mp-dialog__title">
-              Thêm tài nguyên dành riêng
+              {t("Thêm tài nguyên dành riêng")}
             </h3>
             <p className="mp-dialog__lead">
-              Chia sẻ link hoặc tệp chỉ dành cho khách hàng đã thuê bạn.
+              {t("Chia sẻ link hoặc tệp chỉ dành cho khách hàng đã thuê bạn.")}
             </p>
           </div>
         </div>
 
         <label className="mp-dialog__field">
-          <span className="mp-dialog__label">Tiêu đề *</span>
+          <span className="mp-dialog__label">{t("Tiêu đề *")}</span>
           <input
             className="mp-dialog__input"
-            placeholder="VD: Bộ template Figma cho client VIP"
+            placeholder={t("VD: Bộ template Figma cho client VIP")}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             required
@@ -113,10 +120,10 @@ export default function AddExclusiveResourceDialog({ onClose, onSaved }: AddExcl
         </label>
 
         <label className="mp-dialog__field">
-          <span className="mp-dialog__label">Mô tả ngắn</span>
+          <span className="mp-dialog__label">{t("Mô tả ngắn")}</span>
           <textarea
             className="mp-dialog__input mp-dialog__textarea"
-            placeholder="Giải thích nội dung và cách khách hàng sử dụng..."
+            placeholder={t("Giải thích nội dung và cách khách hàng sử dụng...")}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={3}
@@ -124,7 +131,7 @@ export default function AddExclusiveResourceDialog({ onClose, onSaved }: AddExcl
         </label>
 
         <div className="mp-dialog__field">
-          <span className="mp-dialog__label">Loại tài nguyên</span>
+          <span className="mp-dialog__label">{t("Loại tài nguyên")}</span>
           <div className="mp-dialog__mode-row">
             <button
               type="button"
@@ -138,14 +145,14 @@ export default function AddExclusiveResourceDialog({ onClose, onSaved }: AddExcl
               className={`mp-dialog__mode-btn${mode === "file" ? " mp-dialog__mode-btn--active" : ""}`}
               onClick={() => setMode("file")}
             >
-              Tệp tin
+              {t("Tệp tin")}
             </button>
           </div>
         </div>
 
         {mode === "link" ? (
           <label className="mp-dialog__field">
-            <span className="mp-dialog__label">Link tài nguyên *</span>
+            <span className="mp-dialog__label">{t("Link tài nguyên *")}</span>
             <input
               className="mp-dialog__input"
               placeholder="https://..."
@@ -155,7 +162,7 @@ export default function AddExclusiveResourceDialog({ onClose, onSaved }: AddExcl
           </label>
         ) : (
           <div className="mp-dialog__field">
-            <span className="mp-dialog__label">Tệp tài nguyên *</span>
+            <span className="mp-dialog__label">{t("Tệp tài nguyên *")}</span>
             <input
               ref={fileInputRef}
               type="file"
@@ -173,7 +180,7 @@ export default function AddExclusiveResourceDialog({ onClose, onSaved }: AddExcl
             {uploadedFile ? (
               <p className="mp-dialog__upload-name">{uploadedFile.fileName}</p>
             ) : (
-              <p className="mp-dialog__hint">PDF, Word, Excel, ZIP hoặc ảnh (tối đa 15MB).</p>
+              <p className="mp-dialog__hint">{t("PDF, Word, Excel, ZIP hoặc ảnh (tối đa 15MB).")}</p>
             )}
           </div>
         )}
@@ -191,7 +198,7 @@ export default function AddExclusiveResourceDialog({ onClose, onSaved }: AddExcl
             disabled={saving || uploading}
             onClick={onClose}
           >
-            Hủy
+            {t("Hủy")}
           </button>
           <button type="submit" className="mp-dialog__btn mp-dialog__btn--primary" disabled={saving || uploading}>
             {saving ? "Đang lưu..." : "Thêm tài nguyên"}

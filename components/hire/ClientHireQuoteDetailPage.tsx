@@ -1,5 +1,7 @@
 "use client";
 
+import { tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -17,6 +19,8 @@ import HireShell from "./HireShell";
 import "./hire.css";
 
 export default function ClientHireQuoteDetailPage() {
+  const { t } = useTranslation();
+
   const { verified: clientIdentityVerified, loading: clientIdentityLoading } =
     useClientIdentityVerification({ refreshOnVisible: false });
   const params = useParams();
@@ -32,7 +36,7 @@ export default function ClientHireQuoteDetailPage() {
 
   const load = useCallback(async () => {
     if (!quoteId) {
-      setError("Không tìm thấy báo giá.");
+      setError(t("Không tìm thấy báo giá."));
       setLoading(false);
       return;
     }
@@ -42,7 +46,7 @@ export default function ClientHireQuoteDetailPage() {
     try {
       const row = await getMyJobQuote(quoteId);
       if (!row) {
-        setError("Báo giá không tồn tại hoặc bạn không có quyền xem.");
+        setError(t("Báo giá không tồn tại hoặc bạn không có quyền xem."));
         setQuote(null);
         return;
       }
@@ -64,6 +68,7 @@ export default function ClientHireQuoteDetailPage() {
   }, [load]);
 
   async function handleQuoteAction(action: PatchJobQuoteAction) {
+  const t = tUi;
     if (!quote) return;
     setActionError("");
     setBusy(true);
@@ -96,7 +101,7 @@ export default function ClientHireQuoteDetailPage() {
         </Link>
 
         {loading ? (
-          <p className="hire-page__state">Đang tải chi tiết báo giá...</p>
+          <p className="hire-page__state">{t("Đang tải chi tiết báo giá...")}</p>
         ) : error ? (
           <p className="hire-page__state hire-page__state--error" role="alert">
             {error}

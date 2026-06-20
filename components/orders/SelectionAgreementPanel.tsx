@@ -1,5 +1,7 @@
 "use client";
 
+import { formatDateUi, tUi, formatVndUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -14,7 +16,6 @@ import {
 } from "react-icons/fa";
 import type { ContractMilestone, WorkflowContract } from "@/lib/api/contracts";
 import { formatPackagePrice } from "@/lib/hire/servicePackages";
-import { formatDate, formatVnd } from "@/lib/format";
 import WorkflowDeadlineBanner from "./WorkflowDeadlineBanner";
 import {
   formatTimelineDisplay,
@@ -50,6 +51,7 @@ function formatTimelineLabel(days: number) {
 }
 
 function buildProposalText(scope: string, deliveryDays: number) {
+  const t = tUi;
   const blocks: string[] = [];
   const s = scope.trim();
   if (s) blocks.push(`${SECTION_MARKERS.scope}\n${s}`);
@@ -80,7 +82,8 @@ export default function SelectionAgreementPanel({
   onWithdrawProposal,
   onRejectProposal,
   onCancelOrder,
-}: SelectionAgreementPanelProps) {
+}: SelectionAgreementPanelProps) {  const { t, formatVnd, formatDate } = useTranslation();
+
   const parsed = useMemo(
     () => parseProposalSections(contract.proposal_text || ""),
     [contract.proposal_text],
@@ -109,12 +112,14 @@ export default function SelectionAgreementPanel({
   }, [hasProposal]);
 
   const agreedDisplay =
-    contract.agreed_price != null ? formatVnd(contract.agreed_price) : "Thỏa thuận";
+    contract.agreed_price != null ? formatVndUi(contract.agreed_price) : "Thỏa thuận";
 
   const proposalSections = hasProposal ? parsed : null;
   const canSubmit = scope.trim().length >= 20 && deliveryDays != null;
 
   function handleSubmit() {
+  const t = tUi;
+  const formatDate = formatDateUi;
     if (deliveryDays == null) return;
     onSubmitProposal({ proposalText: buildProposalText(scope, deliveryDays) });
   }
@@ -131,8 +136,8 @@ export default function SelectionAgreementPanel({
       />
       <div className="hire-selection__hero">
         <div className="hire-selection__hero-text">
-          <span className="hire-selection__eyebrow">Giai đoạn 1</span>
-          <h2 className="hire-selection__title">Tiếp cận & Chốt thỏa thuận</h2>
+          <span className="hire-selection__eyebrow">{t("Giai đoạn 1")}</span>
+          <h2 className="hire-selection__title">{t("Tiếp cận & Chốt thỏa thuận")}</h2>
           <p className="hire-selection__lead">
             {isClient
               ? "Xem đề xuất từ freelancer, trao đổi làm rõ yêu cầu, sau đó chấp nhận để chuyển sang ký quỹ (Escrow)."
@@ -141,20 +146,20 @@ export default function SelectionAgreementPanel({
                 : "Trình bày phạm vi công việc và chọn thời gian hoàn thành dự kiến."}
           </p>
         </div>
-        <ul className="hire-selection__steps" aria-label="Các bước trong giai đoạn">
+        <ul className="hire-selection__steps" aria-label={t("Các bước trong giai đoạn")}>
           <li className={`hire-selection__step${hasProposal ? " hire-selection__step--done" : hasRejection ? " hire-selection__step--rejected" : " hire-selection__step--current"}`}>
             <span className="hire-selection__step-icon" aria-hidden>
               {hasProposal ? <FaCheckCircle /> : hasRejection ? <FaTimesCircle /> : "1"}
             </span>
-            <span>Freelancer gửi đề xuất</span>
+            <span>{t("Freelancer gửi đề xuất")}</span>
           </li>
           <li className={`hire-selection__step${hasProposal && isClient ? " hire-selection__step--current" : ""}${!hasProposal ? " hire-selection__step--muted" : ""}`}>
             <span className="hire-selection__step-icon" aria-hidden>2</span>
-            <span>Client xem & chấp nhận</span>
+            <span>{t("Client xem & chấp nhận")}</span>
           </li>
           <li className="hire-selection__step hire-selection__step--muted">
             <span className="hire-selection__step-icon" aria-hidden>3</span>
-            <span>Nạp Escrow & bắt đầu</span>
+            <span>{t("Nạp Escrow & bắt đầu")}</span>
           </li>
         </ul>
       </div>
@@ -172,13 +177,13 @@ export default function SelectionAgreementPanel({
                 <dd>{counterpartyName || "—"}</dd>
               </div>
               <div>
-                <dt>Giá tham chiếu</dt>
+                <dt>{t("Giá tham chiếu")}</dt>
                 <dd>{agreedDisplay}</dd>
               </div>
               {contract.proposal_submitted_at ? (
                 <div>
-                  <dt>Đề xuất gửi lúc</dt>
-                  <dd>{formatDate(contract.proposal_submitted_at)}</dd>
+                  <dt>{t("Đề xuất gửi lúc")}</dt>
+                  <dd>{formatDateUi(contract.proposal_submitted_at)}</dd>
                 </div>
               ) : null}
             </dl>
@@ -196,7 +201,7 @@ export default function SelectionAgreementPanel({
 
           {milestones.length > 0 ? (
             <div className="hire-selection__context-card">
-              <h3 className="hire-selection__context-title">Cột mốc dự kiến</h3>
+              <h3 className="hire-selection__context-title">{t("Cột mốc dự kiến")}</h3>
               <ul className="hire-selection__milestones">
                 {milestones.map((m, idx) => (
                   <li key={m.id}>
@@ -216,14 +221,14 @@ export default function SelectionAgreementPanel({
           {!isClient && !hasProposal && hasRejection ? (
             <div className="hire-selection__state-card hire-selection__state-card--rejected">
               <FaTimesCircle className="hire-selection__state-icon" aria-hidden />
-              <h3 className="hire-selection__state-title">Đề xuất trước bị Client từ chối</h3>
+              <h3 className="hire-selection__state-title">{t("Đề xuất trước bị Client từ chối")}</h3>
               {contract.last_rejected_proposal_at ? (
                 <p className="hire-selection__state-meta">
-                  Từ chối lúc {formatDate(contract.last_rejected_proposal_at)}
+                  Từ chối lúc {formatDateUi(contract.last_rejected_proposal_at)}
                 </p>
               ) : null}
               <div className="hire-selection__rejection-reason">
-                <h4 className="hire-selection__rejection-reason-title">Lý do từ chối</h4>
+                <h4 className="hire-selection__rejection-reason-title">{t("Lý do từ chối")}</h4>
                 <p className="hire-selection__rejection-reason-body">
                   {contract.proposal_rejection_note?.trim()
                     ? contract.proposal_rejection_note
@@ -231,10 +236,10 @@ export default function SelectionAgreementPanel({
                 </p>
               </div>
               <div className="hire-selection__proposal-preview">
-                <p className="hire-selection__rejection-preview-label">Nội dung đề xuất đã gửi</p>
-                <ProposalSectionView title="Phạm vi & giải pháp" body={rejectedParsed.scope} />
+                <p className="hire-selection__rejection-preview-label">{t("Nội dung đề xuất đã gửi")}</p>
+                <ProposalSectionView title={t("Phạm vi & giải pháp")} body={rejectedParsed.scope} />
                 <ProposalSectionView
-                  title="Tiến độ dự kiến"
+                  title={t("Tiến độ dự kiến")}
                   body={formatTimelineDisplay(rejectedParsed.timeline)}
                 />
                 {!rejectedParsed.scope && contract.last_rejected_proposal_text ? (
@@ -283,7 +288,7 @@ export default function SelectionAgreementPanel({
                     rows={5}
                     value={scope}
                     onChange={(e) => setScope(e.target.value)}
-                    placeholder="Ví dụ: Thiết kế UI 5 màn, API Node.js, triển khai VPS..."
+                    placeholder={t("Ví dụ: Thiết kế UI 5 màn, API Node.js, triển khai VPS...")}
                     required
                     minLength={20}
                   />
@@ -298,7 +303,7 @@ export default function SelectionAgreementPanel({
                   <span className="hire-selection__hint">
                     Chọn thời gian hoàn thành dự kiến (ngày làm việc).
                   </span>
-                  <div className="hire-selection__day-picker" role="radiogroup" aria-label="Số ngày dự kiến">
+                  <div className="hire-selection__day-picker" role="radiogroup" aria-label={t("Số ngày dự kiến")}>
                     {DELIVERY_DAY_OPTIONS.map((days) => (
                       <button
                         key={days}
@@ -333,13 +338,13 @@ export default function SelectionAgreementPanel({
           {!isClient && hasProposal ? (
             <div className="hire-selection__state-card hire-selection__state-card--sent">
               <FaUserClock className="hire-selection__state-icon" aria-hidden />
-              <h3 className="hire-selection__state-title">Đề xuất đã gửi</h3>
+              <h3 className="hire-selection__state-title">{t("Đề xuất đã gửi")}</h3>
               <p className="hire-selection__state-desc">
                 Client đang xem xét. Bạn có thể trao đổi thêm qua tin nhắn hoặc cuộc gọi trong lúc chờ phản hồi.
               </p>
               {contract.proposal_submitted_at ? (
                 <p className="hire-selection__state-meta">
-                  Gửi lúc {formatDate(contract.proposal_submitted_at)}
+                  Gửi lúc {formatDateUi(contract.proposal_submitted_at)}
                 </p>
               ) : null}
               {onWithdrawProposal ? (
@@ -353,9 +358,9 @@ export default function SelectionAgreementPanel({
                 </button>
               ) : null}
               <div className="hire-selection__proposal-preview">
-                <ProposalSectionView title="Phạm vi & giải pháp" body={proposalSections?.scope ?? ""} />
+                <ProposalSectionView title={t("Phạm vi & giải pháp")} body={proposalSections?.scope ?? ""} />
                 <ProposalSectionView
-                  title="Tiến độ dự kiến"
+                  title={t("Tiến độ dự kiến")}
                   body={formatTimelineDisplay(proposalSections?.timeline ?? "")}
                 />
               </div>
@@ -365,7 +370,7 @@ export default function SelectionAgreementPanel({
           {isClient && !hasProposal ? (
             <div className="hire-selection__state-card hire-selection__state-card--wait">
               <FaUserClock className="hire-selection__state-icon" aria-hidden />
-              <h3 className="hire-selection__state-title">Đang chờ đề xuất</h3>
+              <h3 className="hire-selection__state-title">{t("Đang chờ đề xuất")}</h3>
               <p className="hire-selection__state-desc">
                 Freelancer chưa gửi đề xuất. Bạn có thể nhắn hoặc gọi để làm rõ yêu cầu trước khi họ gửi form
                 bên dưới.
@@ -380,7 +385,7 @@ export default function SelectionAgreementPanel({
             <div className="hire-selection__review">
               <header className="hire-selection__review-head">
                 <div>
-                  <h3 className="hire-selection__form-title">Đề xuất từ Freelancer</h3>
+                  <h3 className="hire-selection__form-title">{t("Đề xuất từ Freelancer")}</h3>
                   <p className="hire-selection__form-sub">
                     Kiểm tra phạm vi và thời gian dự kiến trước khi chấp nhận — bước tiếp theo là nạp ký
                     quỹ Escrow.
@@ -388,16 +393,16 @@ export default function SelectionAgreementPanel({
                 </div>
                 {proposalSections?.timeline ? (
                   <div className="hire-selection__days-chip">
-                    <span className="hire-selection__days-chip-label">Thời gian</span>
+                    <span className="hire-selection__days-chip-label">{t("Thời gian")}</span>
                     <strong>{formatTimelineDisplay(proposalSections.timeline)}</strong>
                   </div>
                 ) : null}
               </header>
 
               <div className="hire-selection__proposal-doc">
-                <ProposalSectionView title="Phạm vi & giải pháp" body={proposalSections?.scope ?? ""} />
+                <ProposalSectionView title={t("Phạm vi & giải pháp")} body={proposalSections?.scope ?? ""} />
                 <ProposalSectionView
-                  title="Tiến độ dự kiến"
+                  title={t("Tiến độ dự kiến")}
                   body={formatTimelineDisplay(proposalSections?.timeline ?? "")}
                 />
                 {!proposalSections?.scope && contract.proposal_text ? (
@@ -407,7 +412,7 @@ export default function SelectionAgreementPanel({
 
               {contract.proposal_submitted_at ? (
                 <p className="hire-selection__review-meta">
-                  Nhận lúc {formatDate(contract.proposal_submitted_at)}
+                  Nhận lúc {formatDateUi(contract.proposal_submitted_at)}
                 </p>
               ) : null}
 
@@ -431,13 +436,13 @@ export default function SelectionAgreementPanel({
                     <FaArrowLeft aria-hidden />
                     Quay lại
                   </button>
-                  <h4 className="hire-selection__reject-title">Từ chối đề xuất</h4>
+                  <h4 className="hire-selection__reject-title">{t("Từ chối đề xuất")}</h4>
                   <p className="hire-selection__reject-lead">
                     Ghi rõ lý do để freelancer điều chỉnh và gửi đề xuất mới. Bạn có thể để trống nếu
                     muốn trao đổi trực tiếp qua tin nhắn.
                   </p>
                   <label className="hire-selection__field" htmlFor="sel-reject-reason">
-                    <span>Lý do từ chối (tùy chọn)</span>
+                    <span>{t("Lý do từ chối (tùy chọn)")}</span>
                     <textarea
                       id="sel-reject-reason"
                       className="hire-selection__textarea"
@@ -445,7 +450,7 @@ export default function SelectionAgreementPanel({
                       maxLength={2000}
                       value={rejectReason}
                       onChange={(e) => setRejectReason(e.target.value)}
-                      placeholder="Ví dụ: Tiến độ 5 ngày quá gấp, cần bổ sung phần bảo trì sau bàn giao..."
+                      placeholder={t("Ví dụ: Tiến độ 5 ngày quá gấp, cần bổ sung phần bảo trì sau bàn giao...")}
                       disabled={busy}
                     />
                     <span className="hire-selection__counter">{rejectReason.length}/2000</span>

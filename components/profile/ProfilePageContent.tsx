@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "@/hooks/useTranslation";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { getMe, isClientMeResponse, isFreelancerMeResponse } from "@/lib/api/users";
@@ -9,6 +10,8 @@ import MyProfileContent from "./MyProfileContent";
 type ProfileView = "loading" | "client" | "freelancer" | "error";
 
 export default function ProfilePageContent() {
+  const { t } = useTranslation();
+
   const router = useRouter();
   const [view, setView] = useState<ProfileView>("loading");
   const [error, setError] = useState("");
@@ -29,7 +32,7 @@ export default function ProfilePageContent() {
         } else if (isClientMeResponse(data)) {
           setView("client");
         } else {
-          setError("Không xác định được loại tài khoản.");
+          setError(t("Không xác định được loại tài khoản."));
           setView("error");
         }
       } catch (err) {
@@ -44,7 +47,7 @@ export default function ProfilePageContent() {
   }, [router]);
 
   if (view === "loading") {
-    return <p className="ea-loading px-4 py-12">Đang tải hồ sơ...</p>;
+    return <p className="ea-loading px-4 py-12">{t("Đang tải hồ sơ...")}</p>;
   }
 
   if (view === "error") {

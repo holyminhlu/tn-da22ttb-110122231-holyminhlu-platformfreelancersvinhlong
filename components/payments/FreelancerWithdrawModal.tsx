@@ -1,5 +1,7 @@
 "use client";
 
+import { tUi, formatVndUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { FaCheckCircle, FaShieldAlt, FaSpinner, FaTimesCircle, FaUniversity } from "react-icons/fa";
@@ -14,7 +16,6 @@ import {
   getFreelancerWithdrawalStatus,
   requestFreelancerWithdrawal,
 } from "@/lib/api/payments";
-import { formatVnd } from "@/lib/format";
 import { maskAccountNumber, resolveBankVisual } from "@/lib/payments/bankDisplay";
 import {
   MIN_WITHDRAW_VND,
@@ -52,7 +53,8 @@ export default function FreelancerWithdrawModal({
   withdrawalPin,
   onClose,
   onCompleted,
-}: FreelancerWithdrawModalProps) {
+}: FreelancerWithdrawModalProps) {  const { t, formatVnd } = useTranslation();
+
   const [step, setStep] = useState<Step>("amount");
   const [amountDigits, setAmountDigits] = useState(String(WITHDRAW_AMOUNT_PRESETS[1]));
   const [pin, setPin] = useState("");
@@ -112,6 +114,8 @@ export default function FreelancerWithdrawModal({
   useEffect(() => {
     if (!open) return;
     function onKeyDown(event: KeyboardEvent) {
+  const t = tUi;
+  const formatVnd = formatVndUi;
       if (event.key === "Escape" && !busy && step !== "processing") onClose();
     }
     window.addEventListener("keydown", onKeyDown);
@@ -173,6 +177,8 @@ export default function FreelancerWithdrawModal({
   }, [autoCloseIn, open, step, order, onClose]);
 
   function stopPolling() {
+  const t = tUi;
+  const formatVnd = formatVndUi;
     if (pollRef.current) {
       clearInterval(pollRef.current);
       pollRef.current = null;
@@ -180,6 +186,8 @@ export default function FreelancerWithdrawModal({
   }
 
   function startPolling(orderId: string) {
+  const t = tUi;
+  const formatVnd = formatVndUi;
     stopPolling();
     pollRef.current = setInterval(() => {
       void (async () => {
@@ -206,19 +214,18 @@ export default function FreelancerWithdrawModal({
     }, POLL_MS);
   }
 
-  async function handleAmountSubmit(event: FormEvent) {
-    event.preventDefault();
+  async function handleAmountSubmit(event: FormEvent) {  event.preventDefault();
     setError("");
     if (amount < MIN_WITHDRAW_VND) {
-      setError(`Số tiền rút tối thiểu ${formatVnd(MIN_WITHDRAW_VND)}.`);
+      setError(`${t("Số tiền rút tối thiểu ")}${formatVndUi(MIN_WITHDRAW_VND)}.`);
       return;
     }
     if (amount > balance) {
-      setError(`Số dư khả dụng không đủ (hiện có ${formatVnd(balance)}).`);
+      setError(`${t("Số dư khả dụng không đủ (hiện có ")}${formatVndUi(balance)}).`);
       return;
     }
     if (!payoutProfile.isConfigured) {
-      setError("Bạn chưa liên kết tài khoản ngân hàng.");
+      setError(t("Bạn chưa liên kết tài khoản ngân hàng."));
       return;
     }
 
@@ -228,7 +235,7 @@ export default function FreelancerWithdrawModal({
       setOrder(result.order);
       setStep("done");
       setResultMessage(
-        `Đã tạo yêu cầu rút ${formatVnd(result.order.amount)}. Dự kiến nhận tiền trong 5-30 phút sau khi hệ thống xử lý.`,
+        `Đã tạo yêu cầu rút ${formatVndUi(result.order.amount)}. Dự kiến nhận tiền trong 5-30 phút sau khi hệ thống xử lý.`,
       );
     } catch (err) {
       const message =
@@ -242,11 +249,13 @@ export default function FreelancerWithdrawModal({
   }
 
   async function handleVerifySubmit(event: FormEvent) {
-    event.preventDefault();
+  const t = tUi;
+  const formatVnd = formatVndUi;
+  event.preventDefault();
     if (!order) return;
     setError("");
     if (!pin || pin.length !== 6) {
-      setError("Vui lòng nhập đủ 6 chữ số PIN.");
+      setError(t("Vui lòng nhập đủ 6 chữ số PIN."));
       return;
     }
 
@@ -298,7 +307,7 @@ export default function FreelancerWithdrawModal({
         <header className="pay-method-modal__header">
           <div>
             <h2 id="fl-withdraw-title" className="pay-method-modal__title">
-              Rút tiền về ngân hàng
+              {t("Rút tiền về ngân hàng")}
             </h2>
             <p className="fl-withdraw-modal__subtitle">
               {step === "amount" && "Bước 1: Nhập số tiền và chọn tài khoản nhận"}
@@ -312,7 +321,7 @@ export default function FreelancerWithdrawModal({
             <button
               type="button"
               className="pay-method-modal__close"
-              aria-label="Đóng"
+              aria-label={t("Đóng")}
               onClick={onClose}
             >
               ×
@@ -324,7 +333,7 @@ export default function FreelancerWithdrawModal({
           {step === "amount" ? (
             <form onSubmit={(e) => void handleAmountSubmit(e)} className="fl-withdraw-modal__form">
               <label className="pay-method-modal__label" htmlFor="fl-withdraw-amount">
-                Số tiền muốn rút
+                {t("Số tiền muốn rút")}
               </label>
               <PaymentsMoneyInput
                 id="fl-withdraw-amount"
@@ -341,24 +350,24 @@ export default function FreelancerWithdrawModal({
                     disabled={busy || preset > balance}
                     onClick={() => setAmountDigits(String(preset))}
                   >
-                    {formatVnd(preset)}
+                    {formatVndUi(preset)}
                   </button>
                 ))}
               </div>
               <p className="payments-muted">
-                Số dư khả dụng: <strong>{formatVnd(balance)}</strong>
+                {t("Số dư khả dụng:")} <strong>{formatVndUi(balance)}</strong>
               </p>
 
               <div className="fl-withdraw-modal__bank-card">
                 <div className="fl-withdraw-modal__bank-head">
                   <FaUniversity aria-hidden />
-                  <span>Tài khoản nhận tiền</span>
+                  <span>{t("Tài khoản nhận tiền")}</span>
                 </div>
                 {payoutProfile.isConfigured ? (
                   <div className="fl-withdraw-modal__bank-body">
                     <BankBadgeIcon bankName={payoutProfile.bankName} size={44} />
                     <div>
-                      <p className="fl-withdraw-modal__bank-name">{bankVisual.name}</p>
+                      <p className="fl-withdraw-modal__bank-name">{t(bankVisual.name)}</p>
                       <p className="fl-withdraw-modal__bank-meta">
                         {payoutProfile.accountHolderName}
                         {" · "}
@@ -367,7 +376,7 @@ export default function FreelancerWithdrawModal({
                     </div>
                   </div>
                 ) : (
-                  <p className="payments-muted">Chưa liên kết tài khoản ngân hàng.</p>
+                  <p className="payments-muted">{t("Chưa liên kết tài khoản ngân hàng.")}</p>
                 )}
               </div>
 
@@ -379,7 +388,7 @@ export default function FreelancerWithdrawModal({
 
               <footer className="pay-method-modal__footer">
                 <button type="button" className="payments-btn payments-btn--secondary" onClick={onClose}>
-                  Hủy
+                  {t("Hủy")}
                 </button>
                 <button
                   type="submit"
@@ -396,20 +405,20 @@ export default function FreelancerWithdrawModal({
             <form onSubmit={(e) => void handleVerifySubmit(e)} className="fl-withdraw-modal__form">
               <div className="fl-withdraw-modal__summary">
                 <p>
-                  Số tiền: <strong>{formatVnd(order.amount)}</strong>
+                  {t("Số tiền:")} <strong>{formatVndUi(order.amount)}</strong>
                 </p>
                 <p>
-                  Ngân hàng: <strong>{order.bankName}</strong> ·{" "}
+                  {t("Ngân hàng:")} <strong>{order.bankName}</strong> ·{" "}
                   {maskAccountNumber("", order.accountLast4)}
                 </p>
               </div>
 
               <label className="pay-method-modal__label">
-                <FaShieldAlt aria-hidden /> Mã PIN rút tiền (6 số)
+                <FaShieldAlt aria-hidden /> {t("Mã PIN rút tiền (6 số)")}
               </label>
               <PinInput id="fl-withdraw-pin" value={pin} onChange={setPin} disabled={busy} autoFocus />
               <p className="payments-muted fl-withdraw-modal__hint">
-                Hệ thống sẽ chuyển tiền vào tài khoản ngân hàng sau khi PIN đúng.
+                {t("Hệ thống sẽ chuyển tiền vào tài khoản ngân hàng sau khi PIN đúng.")}
               </p>
 
               {error ? (
@@ -428,7 +437,7 @@ export default function FreelancerWithdrawModal({
                     setError("");
                   }}
                 >
-                  Quay lại
+                  {t("Quay lại")}
                 </button>
                 <button type="submit" className="payments-btn payments-btn--primary" disabled={busy}>
                   {busy ? "Đang gửi..." : "Xác nhận rút tiền"}
@@ -440,19 +449,19 @@ export default function FreelancerWithdrawModal({
           {step === "no_pin" ? (
             <div className="fl-withdraw-modal__status">
               <FaShieldAlt className="fl-withdraw-modal__icon" aria-hidden style={{ color: "#2563eb" }} />
-              <p className="fl-withdraw-modal__status-title">Chưa có mã PIN rút tiền</p>
+              <p className="fl-withdraw-modal__status-title">{t("Chưa có mã PIN rút tiền")}</p>
               <p className="payments-muted">
-                Vào <strong>Cài đặt tài khoản</strong> để thiết lập PIN 6 số trước khi rút tiền.
+                {t("Vào")} <strong>{t("Cài đặt tài khoản")}</strong> để thiết lập PIN 6 số trước khi rút tiền.
                 {withdrawalPin.requiresAppPasswordSetup
                   ? " Tài khoản Google cần đặt thêm mật khẩu ứng dụng khi tạo PIN lần đầu."
                   : " Bạn cần nhập mật khẩu đăng nhập để xác minh khi tạo PIN."}
               </p>
               <footer className="pay-method-modal__footer">
                 <button type="button" className="payments-btn payments-btn--secondary" onClick={onClose}>
-                  Đóng
+                  {t("Đóng")}
                 </button>
                 <Link href="/edit-account/cai-dat" className="payments-btn payments-btn--primary">
-                  Thiết lập PIN
+                  {t("Thiết lập PIN")}
                 </Link>
               </footer>
             </div>
@@ -461,14 +470,13 @@ export default function FreelancerWithdrawModal({
           {step === "processing" ? (
             <div className="fl-withdraw-modal__status" aria-live="polite">
               <FaSpinner className="fl-withdraw-modal__spinner" aria-hidden />
-              <p className="fl-withdraw-modal__status-title">Đang xử lý lệnh rút</p>
+              <p className="fl-withdraw-modal__status-title">{t("Đang xử lý lệnh rút")}</p>
               <p className="payments-muted">
-                Hệ thống đang chuyển tiền vào tài khoản ngân hàng của bạn. Thao tác của bạn đã hoàn
-                tất — vui lòng đợi trong giây lát.
+                {t("Hệ thống đang chuyển tiền vào tài khoản ngân hàng của bạn. Thao tác của bạn đã hoàn tất — vui lòng đợi trong giây lát.")}
               </p>
               {order ? (
                 <p className="fl-withdraw-modal__ref">
-                  Mã tham chiếu: <code>{order.referenceId}</code>
+                  {t("Mã tham chiếu:")} <code>{order.referenceId}</code>
                 </p>
               ) : null}
             </div>
@@ -492,18 +500,18 @@ export default function FreelancerWithdrawModal({
               </p>
               <p className="payments-muted">{resultMessage}</p>
               <p className="fl-withdraw-modal__summary">
-                {formatVnd(order.amount)} → {order.bankName} ·{" "}
+                {formatVndUi(order.amount)} → {order.bankName} ·{" "}
                 {maskAccountNumber("", order.accountLast4)}
               </p>
               {order.status !== "SUCCEEDED" &&
               order.status !== "FAILED" &&
               order.status !== "CANCELLED" ? (
-                <p className="payments-muted">Thời gian dự kiến nhận: 5-30 phút.</p>
+                <p className="payments-muted">{t("Thời gian dự kiến nhận: 5-30 phút.")}</p>
               ) : null}
               <footer className="pay-method-modal__footer">
                 <p className="payments-muted">Tự động đóng sau {autoCloseIn}s.</p>
                 <button type="button" className="payments-btn payments-btn--primary" onClick={onClose}>
-                  Đóng
+                  {t("Đóng")}
                 </button>
               </footer>
             </div>

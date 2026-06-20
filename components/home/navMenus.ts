@@ -1,6 +1,6 @@
 export const ABOUT_NAV = [
-  { href: "/about", label: "Giới thiệu về VLC" },
-  { href: "/how-vlc-works", label: "Cách VLC hoạt động" },
-  { href: "/why-vlc", label: "Tại sao chọn VLC" },
-  { href: "/blog", label: "Blog" },
+  { href: "/about", labelKey: "aboutNav.aboutVlc" },
+  { href: "/how-vlc-works", labelKey: "aboutNav.howVlcWorks" },
+  { href: "/why-vlc", labelKey: "aboutNav.whyVlc" },
+  { href: "/blog", labelKey: "aboutNav.blog" },
 ] as const;

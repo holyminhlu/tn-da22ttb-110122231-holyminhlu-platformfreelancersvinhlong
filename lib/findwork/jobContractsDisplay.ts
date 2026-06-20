@@ -79,16 +79,4 @@ export function countJobContractsByFilter(
   };
 }
 
-export function jobContractHref(
-  item: JobsListItem,
-  role: "client" | "freelancer" = "freelancer",
-): string {
-  if (item.id && item.id !== item.jobId) {
-    return role === "client"
-      ? `/hire/orders/${item.id}`
-      : `/findwork/orders/${item.id}`;
-  }
-  return role === "client"
-    ? `/hire/joblist/${item.jobId}`
-    : `/work/detail/${item.jobId}`;
-}
+export { jobContractHref } from "@/lib/routes/paths";

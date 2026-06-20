@@ -1,5 +1,7 @@
 "use client";
 
+import { tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import Image from "next/image";
 import { useRef, useState } from "react";
 import { FaImage, FaTimes } from "react-icons/fa";
@@ -12,7 +14,10 @@ type AddPortfolioDialogProps = {
   onSaved: () => void;
 };
 
-export default function AddPortfolioDialog({ onClose, onSaved }: AddPortfolioDialogProps) {
+export default function AddPortfolioDialog({
+  onClose, onSaved }: AddPortfolioDialogProps) {
+  const { t } = useTranslation();
+
   const imageInputRef = useRef<HTMLInputElement>(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -23,6 +28,7 @@ export default function AddPortfolioDialog({ onClose, onSaved }: AddPortfolioDia
   const [error, setError] = useState("");
 
   async function handleImagesChange(event: React.ChangeEvent<HTMLInputElement>) {
+  const t = tUi;
     const files = Array.from(event.target.files ?? []);
     event.target.value = "";
     if (!files.length) return;
@@ -43,14 +49,16 @@ export default function AddPortfolioDialog({ onClose, onSaved }: AddPortfolioDia
   }
 
   function removeImage(url: string) {
+  const t = tUi;
     setImageUrls((prev) => prev.filter((item) => item !== url));
   }
 
   async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  const t = tUi;
+  e.preventDefault();
     const trimmedTitle = title.trim();
     if (!trimmedTitle) {
-      setError("Tiêu đề portfolio là bắt buộc.");
+      setError(t("Tiêu đề portfolio là bắt buộc."));
       return;
     }
     setSaving(true);
@@ -86,19 +94,19 @@ export default function AddPortfolioDialog({ onClose, onSaved }: AddPortfolioDia
         <div className="mp-dialog__head">
           <div>
             <h3 id="add-portfolio-title" className="mp-dialog__title">
-              Thêm portfolio
+              {t("Thêm portfolio")}
             </h3>
             <p className="mp-dialog__lead">
-              Trưng bày công việc đã làm để thu hút khách hàng.
+              {t("Trưng bày công việc đã làm để thu hút khách hàng.")}
             </p>
           </div>
         </div>
 
         <label className="mp-dialog__field">
-          <span className="mp-dialog__label">Tiêu đề dự án *</span>
+          <span className="mp-dialog__label">{t("Tiêu đề dự án *")}</span>
           <input
             className="mp-dialog__input"
-            placeholder="VD: Website thương mại điện tử cho thương hiệu nội thất"
+            placeholder={t("VD: Website thương mại điện tử cho thương hiệu nội thất")}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             required
@@ -107,10 +115,10 @@ export default function AddPortfolioDialog({ onClose, onSaved }: AddPortfolioDia
         </label>
 
         <label className="mp-dialog__field">
-          <span className="mp-dialog__label">Mô tả ngắn</span>
+          <span className="mp-dialog__label">{t("Mô tả ngắn")}</span>
           <textarea
             className="mp-dialog__input mp-dialog__textarea"
-            placeholder="Vai trò của bạn, công nghệ sử dụng, kết quả đạt được..."
+            placeholder={t("Vai trò của bạn, công nghệ sử dụng, kết quả đạt được...")}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={4}
@@ -118,7 +126,7 @@ export default function AddPortfolioDialog({ onClose, onSaved }: AddPortfolioDia
         </label>
 
         <label className="mp-dialog__field">
-          <span className="mp-dialog__label">Link dự án (tùy chọn)</span>
+          <span className="mp-dialog__label">{t("Link dự án (tùy chọn)")}</span>
           <input
             className="mp-dialog__input"
             placeholder="https://..."
@@ -128,7 +136,7 @@ export default function AddPortfolioDialog({ onClose, onSaved }: AddPortfolioDia
         </label>
 
         <div className="mp-dialog__field">
-          <span className="mp-dialog__label">Ảnh minh họa (tùy chọn)</span>
+          <span className="mp-dialog__label">{t("Ảnh minh họa (tùy chọn)")}</span>
           <input
             ref={imageInputRef}
             type="file"
@@ -158,7 +166,7 @@ export default function AddPortfolioDialog({ onClose, onSaved }: AddPortfolioDia
                     <button
                       type="button"
                       className="mp-dialog__image-remove"
-                      aria-label="Xóa ảnh"
+                      aria-label={t("Xóa ảnh")}
                       onClick={() => removeImage(url)}
                     >
                       <FaTimes aria-hidden />
@@ -168,7 +176,7 @@ export default function AddPortfolioDialog({ onClose, onSaved }: AddPortfolioDia
               })}
             </ul>
           ) : (
-            <p className="mp-dialog__hint">Tối đa 6 ảnh, mỗi ảnh tối đa 5MB.</p>
+            <p className="mp-dialog__hint">{t("Tối đa 6 ảnh, mỗi ảnh tối đa 5MB.")}</p>
           )}
         </div>
 
@@ -185,7 +193,7 @@ export default function AddPortfolioDialog({ onClose, onSaved }: AddPortfolioDia
             disabled={saving || uploadingImages}
             onClick={onClose}
           >
-            Hủy
+            {t("Hủy")}
           </button>
           <button type="submit" className="mp-dialog__btn mp-dialog__btn--primary" disabled={saving || uploadingImages}>
             {saving ? "Đang lưu..." : "Thêm portfolio"}

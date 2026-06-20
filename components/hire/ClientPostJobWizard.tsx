@@ -1,28 +1,30 @@
 "use client";
 
+import { tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { FaCheck, FaImage, FaMapMarkerAlt, FaMoneyBillWave, FaTimes } from "react-icons/fa";
 import { DEFAULT_JOB_CATEGORIES } from "@/components/findwork/constants";
 import { createJob, getJob, updateMyJob, uploadJobImages } from "@/lib/api/jobs";
-import { formatJobBudgetLine } from "@/lib/jobsDisplay";
 import {
   isoToLocalDateInputValue,
   isDateInputBeforeToday,
   localDateInputValue,
 } from "@/lib/format";
+import { formatJobBudgetLine } from "@/lib/jobsDisplay";
 import JobWorkLocationField, {
   REMOTE_WORK_LOCATION_LABEL,
   type WorkLocationMode,
 } from "./JobWorkLocationField";
 
 const STEPS = [
-  { id: 1, title: "Thông tin cơ bản", icon: FaCheck },
-  { id: 2, title: "Ngân sách", icon: FaMoneyBillWave },
-  { id: 3, title: "Địa điểm & thời hạn", icon: FaMapMarkerAlt },
-  { id: 4, title: "Hình ảnh", icon: FaImage },
-  { id: 5, title: "Xem lại & đăng", icon: FaCheck },
+  { id: 1, title: tUi("Thông tin cơ bản"), icon: FaCheck },
+  { id: 2, title: tUi("Ngân sách"), icon: FaMoneyBillWave },
+  { id: 3, title: tUi("Địa điểm & thời hạn"), icon: FaMapMarkerAlt },
+  { id: 4, title: tUi("Hình ảnh"), icon: FaImage },
+  { id: 5, title: tUi("Xem lại & đăng"), icon: FaCheck },
 ] as const;
 
 type BudgetType = "fixed" | "hourly";
@@ -83,7 +85,10 @@ type ClientPostJobWizardProps = {
   editJobId?: string | null;
 };
 
-export default function ClientPostJobWizard({ editJobId = null }: ClientPostJobWizardProps) {
+export default function ClientPostJobWizard({
+  editJobId = null }: ClientPostJobWizardProps) {
+  const { t } = useTranslation();
+
   const router = useRouter();
   const isEdit = Boolean(editJobId);
   const [step, setStep] = useState(1);
@@ -165,15 +170,15 @@ export default function ClientPostJobWizard({ editJobId = null }: ClientPostJobW
     setStepError("");
     if (current === 1) {
       if (form.title.trim().length < 5) {
-        setStepError("Tiêu đề cần ít nhất 5 ký tự.");
+        setStepError(t("Tiêu đề cần ít nhất 5 ký tự."));
         return false;
       }
       if (form.description.trim().length < 20) {
-        setStepError("Mô tả cần ít nhất 20 ký tự.");
+        setStepError(t("Mô tả cần ít nhất 20 ký tự."));
         return false;
       }
       if (!form.category.trim()) {
-        setStepError("Vui lòng chọn danh mục.");
+        setStepError(t("Vui lòng chọn danh mục."));
         return false;
       }
       return true;
@@ -182,31 +187,31 @@ export default function ClientPostJobWizard({ editJobId = null }: ClientPostJobW
       const min = form.budget.trim() ? Number(form.budget) : null;
       const max = form.budgetMax.trim() ? Number(form.budgetMax) : null;
       if (min !== null && (!Number.isFinite(min) || min < 0)) {
-        setStepError("Ngân sách không hợp lệ.");
+        setStepError(t("Ngân sách không hợp lệ."));
         return false;
       }
       if (max !== null && (!Number.isFinite(max) || max < 0)) {
-        setStepError("Ngân sách tối đa không hợp lệ.");
+        setStepError(t("Ngân sách tối đa không hợp lệ."));
         return false;
       }
       if (min === null && max === null) {
-        setStepError("Nhập ít nhất mức ngân sách hoặc khoảng ngân sách.");
+        setStepError(t("Nhập ít nhất mức ngân sách hoặc khoảng ngân sách."));
         return false;
       }
       if (min !== null && max !== null && max < min) {
-        setStepError("Ngân sách tối đa phải lớn hơn hoặc bằng mức tối thiểu.");
+        setStepError(t("Ngân sách tối đa phải lớn hơn hoặc bằng mức tối thiểu."));
         return false;
       }
       return true;
     }
     if (current === 3) {
       if (form.locationMode !== "remote" && !form.locationLabel.trim()) {
-        setStepError("Vui lòng chọn địa chỉ tại Vĩnh Long hoặc dùng GPS.");
+        setStepError(t("Vui lòng chọn địa chỉ tại Vĩnh Long hoặc dùng GPS."));
         return false;
       }
       if (form.dueAt) {
         if (isDateInputBeforeToday(form.dueAt)) {
-          setStepError("Hạn hoàn thành dự kiến không được là ngày trong quá khứ.");
+          setStepError(t("Hạn hoàn thành dự kiến không được là ngày trong quá khứ."));
           return false;
         }
       }
@@ -214,7 +219,7 @@ export default function ClientPostJobWizard({ editJobId = null }: ClientPostJobW
     }
     if (current === 4) {
       if (existingImages.length + imageFiles.length > 3) {
-        setStepError("Tối đa 3 ảnh đính kèm.");
+        setStepError(t("Tối đa 3 ảnh đính kèm."));
         return false;
       }
       return true;
@@ -223,16 +228,19 @@ export default function ClientPostJobWizard({ editJobId = null }: ClientPostJobW
   }
 
   function goNext() {
+  const t = tUi;
     if (!validateStep(step)) return;
     setStep((s) => Math.min(5, s + 1));
   }
 
   function goBack() {
+  const t = tUi;
     setStepError("");
     setStep((s) => Math.max(1, s - 1));
   }
 
   function onPickImages(event: React.ChangeEvent<HTMLInputElement>) {
+  const t = tUi;
     const picked = Array.from(event.target.files ?? []);
     if (!picked.length) return;
     setImageFiles((prev) => [...prev, ...picked].slice(0, 3));
@@ -240,12 +248,14 @@ export default function ClientPostJobWizard({ editJobId = null }: ClientPostJobW
   }
 
   function removeImage(index: number) {
+  const t = tUi;
     setImageFiles((prev) => prev.filter((_, i) => i !== index));
   }
 
   async function handleSubmit() {
+  const t = tUi;
     if (!validateStep(1) || !validateStep(2) || !validateStep(3) || !validateStep(4)) {
-      setSubmitError("Vui lòng kiểm tra lại các bước trước khi đăng.");
+      setSubmitError(t("Vui lòng kiểm tra lại các bước trước khi đăng."));
       return;
     }
     setSubmitting(true);
@@ -302,7 +312,7 @@ export default function ClientPostJobWizard({ editJobId = null }: ClientPostJobW
   });
 
   if (loadingJob) {
-    return <p className="hire-page__state">Đang tải tin cần chỉnh sửa...</p>;
+    return <p className="hire-page__state">{t("Đang tải tin cần chỉnh sửa...")}</p>;
   }
   if (loadJobError) {
     return (
@@ -314,7 +324,7 @@ export default function ClientPostJobWizard({ editJobId = null }: ClientPostJobW
 
   return (
     <div className="post-job-wizard">
-      <ol className="post-job-wizard__steps" aria-label="Các bước đăng tin">
+      <ol className="post-job-wizard__steps" aria-label={t("Các bước đăng tin")}>
         {STEPS.map((s) => {
           const done = s.id < step;
           const active = s.id === step;
@@ -335,30 +345,30 @@ export default function ClientPostJobWizard({ editJobId = null }: ClientPostJobW
       <div className="post-job-wizard__panel">
         {step === 1 ? (
           <div className="post-job-wizard__fields">
-            <h2 className="post-job-wizard__heading">Thông tin cơ bản</h2>
+            <h2 className="post-job-wizard__heading">{t("Thông tin cơ bản")}</h2>
             <label className="post-job-field">
-              <span>Tiêu đề công việc *</span>
+              <span>{t("Tiêu đề công việc *")}</span>
               <input
                 type="text"
                 value={form.title}
                 onChange={(e) => patch({ title: e.target.value })}
-                placeholder="VD: Thiết kế landing page cho startup fintech"
+                placeholder={t("VD: Thiết kế landing page cho startup fintech")}
                 maxLength={200}
               />
             </label>
             <label className="post-job-field">
-              <span>Mô tả chi tiết *</span>
+              <span>{t("Mô tả chi tiết *")}</span>
               <textarea
                 value={form.description}
                 onChange={(e) => patch({ description: e.target.value })}
-                placeholder="Mô tả phạm vi, yêu cầu, deliverables, timeline mong muốn..."
+                placeholder={t("Mô tả phạm vi, yêu cầu, deliverables, timeline mong muốn...")}
                 rows={6}
               />
             </label>
             <label className="post-job-field">
-              <span>Danh mục *</span>
+              <span>{t("Danh mục *")}</span>
               <select value={form.category} onChange={(e) => patch({ category: e.target.value })}>
-                <option value="">— Chọn danh mục —</option>
+                <option value="">{t("— Chọn danh mục —")}</option>
                 {DEFAULT_JOB_CATEGORIES.map((c) => (
                   <option key={c} value={c}>
                     {c}
@@ -367,7 +377,7 @@ export default function ClientPostJobWizard({ editJobId = null }: ClientPostJobW
               </select>
             </label>
             <label className="post-job-field">
-              <span>Kỹ năng / thẻ (tối đa 12, phân cách bằng dấu phẩy)</span>
+              <span>{t("Kỹ năng / thẻ (tối đa 12, phân cách bằng dấu phẩy)")}</span>
               <input
                 type="text"
                 value={form.tagsInput}
@@ -389,9 +399,9 @@ export default function ClientPostJobWizard({ editJobId = null }: ClientPostJobW
 
         {step === 2 ? (
           <div className="post-job-wizard__fields">
-            <h2 className="post-job-wizard__heading">Ngân sách</h2>
+            <h2 className="post-job-wizard__heading">{t("Ngân sách")}</h2>
             <fieldset className="post-job-wizard__radio-group">
-              <legend>Loại ngân sách</legend>
+              <legend>{t("Loại ngân sách")}</legend>
               <label>
                 <input
                   type="radio"
@@ -441,7 +451,7 @@ export default function ClientPostJobWizard({ editJobId = null }: ClientPostJobW
 
         {step === 3 ? (
           <div className="post-job-wizard__fields">
-            <h2 className="post-job-wizard__heading">Địa điểm & thời hạn</h2>
+            <h2 className="post-job-wizard__heading">{t("Địa điểm & thời hạn")}</h2>
             <JobWorkLocationField
               mode={form.locationMode}
               onModeChange={(locationMode) => {
@@ -463,7 +473,7 @@ export default function ClientPostJobWizard({ editJobId = null }: ClientPostJobW
               onCoordsChange={(locationLat, locationLng) => patch({ locationLat, locationLng })}
             />
             <label className="post-job-field">
-              <span>Hạn hoàn thành dự kiến (tùy chọn)</span>
+              <span>{t("Hạn hoàn thành dự kiến (tùy chọn)")}</span>
               <input
                 type="date"
                 value={form.dueAt}
@@ -471,7 +481,7 @@ export default function ClientPostJobWizard({ editJobId = null }: ClientPostJobW
                 onChange={(e) => {
                   const value = e.target.value;
                   if (value && isDateInputBeforeToday(value)) {
-                    setStepError("Hạn hoàn thành dự kiến không được là ngày trong quá khứ.");
+                    setStepError(t("Hạn hoàn thành dự kiến không được là ngày trong quá khứ."));
                     return;
                   }
                   setStepError("");
@@ -484,8 +494,8 @@ export default function ClientPostJobWizard({ editJobId = null }: ClientPostJobW
 
         {step === 4 ? (
           <div className="post-job-wizard__fields">
-            <h2 className="post-job-wizard__heading">Hình ảnh minh họa</h2>
-            <p className="post-job-wizard__hint">Tải tối đa 3 ảnh (JPG, PNG). Giúp freelancer hiểu rõ yêu cầu.</p>
+            <h2 className="post-job-wizard__heading">{t("Hình ảnh minh họa")}</h2>
+            <p className="post-job-wizard__hint">{t("Tải tối đa 3 ảnh (JPG, PNG). Giúp freelancer hiểu rõ yêu cầu.")}</p>
             <label className="post-job-upload">
               <input
                 type="file"
@@ -505,7 +515,7 @@ export default function ClientPostJobWizard({ editJobId = null }: ClientPostJobW
                       type="button"
                       className="post-job-wizard__remove-img"
                       onClick={() => removeImage(i)}
-                      aria-label="Xóa ảnh"
+                      aria-label={t("Xóa ảnh")}
                     >
                       <FaTimes aria-hidden />
                     </button>
@@ -523,23 +533,23 @@ export default function ClientPostJobWizard({ editJobId = null }: ClientPostJobW
             </h2>
             <dl className="post-job-review">
               <div>
-                <dt>Tiêu đề</dt>
+                <dt>{t("Tiêu đề")}</dt>
                 <dd>{form.title}</dd>
               </div>
               <div>
-                <dt>Danh mục</dt>
+                <dt>{t("Danh mục")}</dt>
                 <dd>{form.category}</dd>
               </div>
               <div>
-                <dt>Mô tả</dt>
+                <dt>{t("Mô tả")}</dt>
                 <dd className="post-job-review__desc">{form.description}</dd>
               </div>
               <div>
-                <dt>Ngân sách</dt>
+                <dt>{t("Ngân sách")}</dt>
                 <dd>{budgetPreview}</dd>
               </div>
               <div>
-                <dt>Địa điểm làm việc</dt>
+                <dt>{t("Địa điểm làm việc")}</dt>
                 <dd>
                   {form.locationMode === "remote" ? "Làm tại nhà" : "Làm trực tiếp tại chỗ"}
                   <br />
@@ -556,18 +566,18 @@ export default function ClientPostJobWizard({ editJobId = null }: ClientPostJobW
               </div>
               {form.dueAt ? (
                 <div>
-                  <dt>Hạn hoàn thành</dt>
+                  <dt>{t("Hạn hoàn thành")}</dt>
                   <dd>{form.dueAt}</dd>
                 </div>
               ) : null}
               {tags.length > 0 ? (
                 <div>
-                  <dt>Kỹ năng</dt>
+                  <dt>{t("Kỹ năng")}</dt>
                   <dd>{tags.join(", ")}</dd>
                 </div>
               ) : null}
               <div>
-                <dt>Ảnh đính kèm</dt>
+                <dt>{t("Ảnh đính kèm")}</dt>
                 <dd>{existingImages.length + imageFiles.length} ảnh</dd>
               </div>
             </dl>

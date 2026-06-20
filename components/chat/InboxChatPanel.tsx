@@ -1,5 +1,7 @@
 "use client";
 
+import { formatDateUi, tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -25,7 +27,6 @@ import {
   type ChatConversation,
   type ChatMessage,
 } from "@/lib/api/chat";
-import { formatDate } from "@/lib/format";
 import ChatActionMenu from "./ChatActionMenu";
 import ChatEmojiPicker from "./ChatEmojiPicker";
 import ChatPeerAvatar from "./ChatPeerAvatar";
@@ -42,11 +43,10 @@ type InboxChatPanelProps = {
   onConversationRead?: (conversationId: string) => void;
 };
 
-function formatChatTime(iso: string) {
-  try {
+function formatChatTime(iso: string) {  try {
     return new Date(iso).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" });
   } catch {
-    return formatDate(iso);
+    return formatDateUi(iso);
   }
 }
 
@@ -90,6 +90,8 @@ function groupMessagesByDate(messages: ChatMessage[]) {
 }
 
 function highlightText(text: string, query: string) {
+
+  const t = tUi;
   if (!query.trim()) return text;
   const parts = text.split(new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "gi"));
   return parts.map((part, index) =>
@@ -104,6 +106,7 @@ function highlightText(text: string, query: string) {
 }
 
 function InboxMessage({ msg, searchQuery }: { msg: ChatMessage; searchQuery: string }) {
+  const t = tUi;
   if (msg.kind === "context") {
     const isService = msg.contextType === "service";
     return (
@@ -149,7 +152,7 @@ function InboxMessage({ msg, searchQuery }: { msg: ChatMessage; searchQuery: str
         ) : null}
         <div className="fw-inbox-bubble__meta">
           <span className="fw-inbox-bubble__time">{formatChatTime(msg.createdAt)}</span>
-          {msg.mine && msg.kind !== "context" ? (
+          {msg.mine ? (
             <span
               className={`fw-inbox-bubble__status${msg.readByPeer ? " fw-inbox-bubble__status--read" : ""}`}
             >
@@ -172,6 +175,8 @@ export default function InboxChatPanel({
   onConversationUpdated,
   onConversationRead,
 }: InboxChatPanelProps) {
+  const { t, formatDate } = useTranslation();
+
   const router = useRouter();
   const { user } = useStoredUser({ refreshFromApi: false });
   const [draft, setDraft] = useState("");
@@ -227,7 +232,8 @@ export default function InboxChatPanel({
   }, [filteredMessages, convState.id, searchOpen]);
 
   async function handleSubmit(e: FormEvent) {
-    e.preventDefault();
+  const t = tUi;
+  e.preventDefault();
     if (isBlocked) return;
     const text = draft.trim();
     if (!text) return;
@@ -236,6 +242,8 @@ export default function InboxChatPanel({
   }
 
   async function handleUpload(file: File, preferImage: boolean) {
+
+  const t = tUi;
     if (isBlocked || !convState.id) return;
     setUploading(true);
     try {
@@ -260,7 +268,9 @@ export default function InboxChatPanel({
   }
 
   async function handleDeleteConversation() {
-    if (!window.confirm("Xóa hội thoại này khỏi danh sách? Tin nhắn vẫn được lưu nếu đối phương gửi lại.")) {
+
+  const t = tUi;
+    if (!window.confirm(t("Xóa hội thoại này khỏi danh sách? Tin nhắn vẫn được lưu nếu đối phương gửi lại."))) {
       return;
     }
     setActionBusy(true);
@@ -279,7 +289,8 @@ export default function InboxChatPanel({
   }
 
   async function handleToggleBlock() {
-    const nextBlock = !convState.blockedByMe;
+  const t = tUi;
+  const nextBlock = !convState.blockedByMe;
     const confirmMsg = nextBlock
       ? `Chặn tin nhắn từ ${convState.peerName}? Bạn sẽ không nhận tin nhắn mới từ người này.`
       : `Bỏ chặn ${convState.peerName}?`;
@@ -363,7 +374,7 @@ export default function InboxChatPanel({
               type="button"
               className="fw-inbox-chat__back"
               onClick={onBack}
-              aria-label="Quay lại danh sách"
+              aria-label={t("Quay lại danh sách")}
             >
               ←
             </button>
@@ -386,7 +397,7 @@ export default function InboxChatPanel({
           <button
             type="button"
             className={`fw-inbox-chat__icon-btn${searchOpen ? " fw-inbox-chat__icon-btn--active" : ""}`}
-            aria-label="Tìm trong hội thoại"
+            aria-label={t("Tìm trong hội thoại")}
             aria-pressed={searchOpen}
             onClick={() => setSearchOpen((prev) => !prev)}
           >
@@ -397,7 +408,7 @@ export default function InboxChatPanel({
               ref={menuBtnRef}
               type="button"
               className="fw-inbox-chat__icon-btn"
-              aria-label="Tùy chọn"
+              aria-label={t("Tùy chọn")}
               aria-expanded={menuOpen}
               onClick={() => setMenuOpen((prev) => !prev)}
             >
@@ -420,7 +431,7 @@ export default function InboxChatPanel({
           <input
             type="search"
             className="fw-inbox-chat__search-input"
-            placeholder="Tìm tin nhắn trong hội thoại..."
+            placeholder={t("Tìm tin nhắn trong hội thoại...")}
             value={messageSearch}
             onChange={(e) => setMessageSearch(e.target.value)}
             autoFocus
@@ -428,7 +439,7 @@ export default function InboxChatPanel({
           <button
             type="button"
             className="fw-inbox-chat__search-clear"
-            aria-label="Đóng tìm kiếm"
+            aria-label={t("Đóng tìm kiếm")}
             onClick={() => {
               setSearchOpen(false);
               setMessageSearch("");
@@ -446,7 +457,7 @@ export default function InboxChatPanel({
             : `${convState.peerName} đã chặn tin nhắn. Bạn không thể gửi tin nhắn mới.`}
           {convState.blockedByMe ? (
             <button type="button" className="fw-inbox-chat__blocked-action" onClick={() => void handleToggleBlock()}>
-              Bỏ chặn
+              {t("Bỏ chặn")}
             </button>
           ) : null}
         </p>
@@ -460,16 +471,16 @@ export default function InboxChatPanel({
 
       <div ref={listRef} className="fw-inbox-chat__messages">
         {loading ? (
-          <p className="fw-inbox-chat__loading">Đang tải tin nhắn...</p>
+          <p className="fw-inbox-chat__loading">{t("Đang tải tin nhắn...")}</p>
         ) : filteredMessages.length === 0 ? (
           <p className="fw-inbox-chat__empty">
             {messageSearch ? "Không tìm thấy tin nhắn phù hợp." : "Chưa có tin nhắn. Hãy bắt đầu trò chuyện!"}
           </p>
         ) : (
           messageGroups.map((group) => (
-            <div key={group.label} className="fw-inbox-chat__day-group">
+            <div key={t(group.label)} className="fw-inbox-chat__day-group">
               <div className="fw-inbox-chat__date-sep">
-                <span>{group.label}</span>
+                <span>{t(group.label)}</span>
               </div>
               {group.items.map((msg) => (
                 <InboxMessage key={msg.id} msg={msg} searchQuery={messageSearch} />
@@ -486,7 +497,7 @@ export default function InboxChatPanel({
               ref={emojiBtnRef}
               type="button"
               className={`fw-inbox-chat__tool${emojiOpen ? " fw-inbox-chat__tool--active" : ""}`}
-              aria-label="Biểu cảm"
+              aria-label={t("Biểu cảm")}
               disabled={composerDisabled}
               onClick={() => setEmojiOpen((prev) => !prev)}
             >
@@ -505,7 +516,7 @@ export default function InboxChatPanel({
           <button
             type="button"
             className="fw-inbox-chat__tool"
-            aria-label="Gửi ảnh"
+            aria-label={t("Gửi ảnh")}
             disabled={composerDisabled}
             onClick={() => imageInputRef.current?.click()}
           >
@@ -514,7 +525,7 @@ export default function InboxChatPanel({
           <button
             type="button"
             className="fw-inbox-chat__tool"
-            aria-label="Đính kèm tệp"
+            aria-label={t("Đính kèm tệp")}
             disabled={composerDisabled}
             onClick={() => fileInputRef.current?.click()}
           >
@@ -542,7 +553,7 @@ export default function InboxChatPanel({
               if (file) void handleUpload(file, false);
             }}
           />
-          {uploading ? <span className="fw-inbox-chat__uploading">Đang tải lên...</span> : null}
+          {uploading ? <span className="fw-inbox-chat__uploading">{t("Đang tải lên...")}</span> : null}
         </div>
         <form className="fw-inbox-chat__input-row" onSubmit={(e) => void handleSubmit(e)}>
           <input
@@ -562,7 +573,7 @@ export default function InboxChatPanel({
             type="submit"
             className="fw-inbox-chat__send-like"
             disabled={composerDisabled || !draft.trim()}
-            aria-label="Gửi tin nhắn"
+            aria-label={t("Gửi tin nhắn")}
           >
             <FaThumbsUp />
           </button>

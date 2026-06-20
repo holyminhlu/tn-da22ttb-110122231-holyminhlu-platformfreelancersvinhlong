@@ -1,5 +1,7 @@
 "use client";
 
+import { tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import {
   forwardRef,
   useCallback,
@@ -37,6 +39,7 @@ type PaymentCardEntryProps = {
 };
 
 function readCardFieldValues(preview: { number: string; expiry: string; cvc: string }) {
+  const t = tUi;
   if (typeof document === "undefined") {
     return {
       cardDigits: parseCardDigits(preview.number),
@@ -65,6 +68,7 @@ const FOCUS_MAP: Record<string, Focused> = {
 
 const PaymentCardEntry = forwardRef<PaymentCardEntryHandle, PaymentCardEntryProps>(
   function PaymentCardEntry({ mode, cardholderName, onCardholderNameChange }, ref) {
+  const t = tUi;
     const [preview, setPreview] = useState({
       number: "",
       expiry: "",
@@ -108,28 +112,28 @@ const PaymentCardEntry = forwardRef<PaymentCardEntryHandle, PaymentCardEntryProp
           const cardDigits = values.cardDigits;
           if (mode === "intl") {
             if (!isValidCardNumber(cardDigits)) {
-              return "Số thẻ không hợp lệ.";
+              return tUi("Số thẻ không hợp lệ.");
             }
-            if (cardholderName.trim().length < 2) return "Vui lòng nhập tên in trên thẻ.";
+            if (cardholderName.trim().length < 2) return tUi("Vui lòng nhập tên in trên thẻ.");
             const expiryValue = normalizeCardExpiryInput(values.expiry) ?? values.expiry;
             if (!parseCardExpiry(expiryValue)) {
-              return "Ngày hết hạn không hợp lệ (MM/YY).";
+              return tUi("Ngày hết hạn không hợp lệ (MM/YY).");
             }
             const cvvDigits = values.cvv;
             if (cvvDigits.length < 3 || cvvDigits.length > 4) {
-              return "Mã CVV phải có 3–4 chữ số.";
+              return tUi("Mã CVV phải có 3–4 chữ số.");
             }
             return null;
           }
 
           if (cardDigits.length < 16 || cardDigits.length > 19) {
-            return "Số thẻ ATM nội địa phải có 16–19 chữ số.";
+            return tUi("Số thẻ ATM nội địa phải có 16–19 chữ số.");
           }
-          if (cardholderName.trim().length < 2) return "Vui lòng nhập tên chủ thẻ.";
+          if (cardholderName.trim().length < 2) return tUi("Vui lòng nhập tên chủ thẻ.");
           return null;
         },
       }),
-      [cardholderName, mode, preview],
+      [cardholderName, mode, preview, t],
     );
 
     const cardNumberProps = getCardNumberProps({
@@ -158,7 +162,7 @@ const PaymentCardEntry = forwardRef<PaymentCardEntryHandle, PaymentCardEntryProp
 
         <label className="pay-method-modal__field">
           <span className="pay-method-modal__label">
-            {mode === "intl" ? "Số thẻ" : "Số thẻ ATM"}
+            {mode === "intl" ? tUi("Số thẻ") : tUi("Số thẻ ATM")}
           </span>
           <div className="pay-method-modal__input-wrap">
             <input
@@ -176,7 +180,7 @@ const PaymentCardEntry = forwardRef<PaymentCardEntryHandle, PaymentCardEntryProp
 
         <label className="pay-method-modal__field">
           <span className="pay-method-modal__label">
-            {mode === "intl" ? "Tên in trên thẻ" : "Tên chủ thẻ"}
+            {mode === "intl" ? tUi("Tên in trên thẻ") : tUi("Tên chủ thẻ")}
           </span>
           <input
             className="pay-method-modal__input"
@@ -193,7 +197,7 @@ const PaymentCardEntry = forwardRef<PaymentCardEntryHandle, PaymentCardEntryProp
         {mode === "intl" ? (
           <div className="pay-method-modal__row-2">
             <label className="pay-method-modal__field">
-              <span className="pay-method-modal__label">Ngày hết hạn</span>
+              <span className="pay-method-modal__label">{tUi("Ngày hết hạn")}</span>
               <input
                 {...expiryProps}
                 className="pay-method-modal__input"
@@ -203,17 +207,17 @@ const PaymentCardEntry = forwardRef<PaymentCardEntryHandle, PaymentCardEntryProp
 
             <label className="pay-method-modal__field">
               <span className="pay-method-modal__label-row">
-                <span className="pay-method-modal__label">Mã bảo mật (CVV)</span>
+                <span className="pay-method-modal__label">{tUi("Mã bảo mật (CVV)")}</span>
                 <span className="pay-method-modal__cvv-help">
                   <button
                     type="button"
                     className="pay-method-modal__cvv-help-btn"
-                    aria-label="CVV là gì?"
+                    aria-label={tUi("CVV là gì?")}
                   >
                     ?
                   </button>
                   <span className="pay-method-modal__cvv-help-pop" role="tooltip">
-                    CVV là 3 số ở mặt sau thẻ (hoặc 4 số với Amex). Không lưu trên hệ thống.
+                    {tUi("CVV là 3 số ở mặt sau thẻ (hoặc 4 số với Amex). Không lưu trên hệ thống.")}
                   </span>
                 </span>
               </span>
@@ -227,7 +231,7 @@ const PaymentCardEntry = forwardRef<PaymentCardEntryHandle, PaymentCardEntryProp
                 <button
                   type="button"
                   className="pay-method-modal__cvv-toggle"
-                  aria-label={showCvv ? "Ẩn CVV" : "Hiện CVV"}
+                  aria-label={showCvv ? tUi("Ẩn CVV") : tUi("Hiện CVV")}
                   onClick={() => setShowCvv((prev) => !prev)}
                 >
                   {showCvv ? <FaEyeSlash /> : <FaEye />}

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { FaIdCard, FaShieldAlt } from "react-icons/fa";
 import { CLIENT_VERIFY_PAGE } from "@/lib/hire/clientVerification";
@@ -9,14 +10,17 @@ type ClientVerifyNoticeProps = {
   className?: string;
 };
 
-export default function ClientVerifyNotice({ message, className = "" }: ClientVerifyNoticeProps) {
+export default function ClientVerifyNotice({
+  message, className = "" }: ClientVerifyNoticeProps) {
+  const { t } = useTranslation();
+
   return (
     <div className={`client-verify-notice${className ? ` ${className}` : ""}`} role="status">
       <FaShieldAlt className="client-verify-notice__icon" aria-hidden />
       <p className="client-verify-notice__text">{message}</p>
       <Link href={CLIENT_VERIFY_PAGE} className="client-verify-notice__cta">
         <FaIdCard aria-hidden />
-        Đi xác minh ngay
+        {t("Đi xác minh ngay")}
       </Link>
     </div>
   );

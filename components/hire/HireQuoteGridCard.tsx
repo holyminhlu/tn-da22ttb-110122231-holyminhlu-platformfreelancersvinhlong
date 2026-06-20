@@ -1,11 +1,12 @@
 "use client";
 
+import { formatDateUi, tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { FaStar } from "react-icons/fa";
 import type { JobQuoteRow, PatchJobQuoteAction } from "@/lib/api/jobQuotes";
 import FreelancerAvatarFrame from "@/components/freelancer/FreelancerAvatarFrame";
 import { getUserInitials, resolveAvatarSrc } from "@/lib/authSession";
-import { formatDate } from "@/lib/format";
 import {
   formatQuoteAmount,
   quoteClientActions,
@@ -40,7 +41,8 @@ export default function HireQuoteGridCard({
   aiCompareBusy = false,
   clientIdentityVerified = true,
   clientIdentityLoading = false,
-}: HireQuoteGridCardProps) {
+}: HireQuoteGridCardProps) {  const { t, formatDate } = useTranslation();
+
   const needsVerify = !clientIdentityLoading && !clientIdentityVerified;
   const avatarSrc = resolveAvatarSrc(quote.freelancer_avatar_url);
   const name = quote.freelancer_name?.trim() || "Freelancer";
@@ -106,7 +108,7 @@ export default function HireQuoteGridCard({
           </p>
         ) : null}
 
-        <p className="hire-quote-product-card__meta-time">Gửi lúc {formatDate(quote.created_at)}</p>
+        <p className="hire-quote-product-card__meta-time">Gửi lúc {formatDateUi(quote.created_at)}</p>
 
         <p className="hire-quote-product-card__price">
           {formatQuoteAmount(quote)}

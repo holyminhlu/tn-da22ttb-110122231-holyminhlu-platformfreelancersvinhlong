@@ -1,5 +1,7 @@
 "use client";
 
+import { tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useId, useRef, useState } from "react";
 import {
   FaChevronDown,
@@ -69,6 +71,8 @@ export default function FindWorkToolbar({
   onFiltersOpenChange,
   onClearFilters,
 }: FindWorkToolbarProps) {
+  const { t } = useTranslation();
+
   const categoryMenuId = useId();
   const criteriaMenuId = useId();
   const sortMenuId = useId();
@@ -96,16 +100,19 @@ export default function FindWorkToolbar({
     JOB_SORT_OPTIONS.find((o) => o.value === query.sort)?.label ?? "Mới nhất";
 
   function selectCategory(name: string | null) {
+  const t = tUi;
     onQueryChange({ category: name });
     setCategoryOpen(false);
   }
 
   function selectCriteria(value: ClientCriteria) {
+  const t = tUi;
     onQueryChange({ clientCriteria: value });
     setCriteriaOpen(false);
   }
 
   function selectSort(value: JobSort) {
+  const t = tUi;
     onQueryChange({ sort: value });
     setSortOpen(false);
   }
@@ -131,7 +138,7 @@ export default function FindWorkToolbar({
                 id={categoryMenuId}
                 className="fw-dropdown__menu"
                 role="listbox"
-                aria-label="Danh mục việc làm"
+                aria-label={t("Danh mục việc làm")}
               >
                 <li>
                   <button
@@ -173,13 +180,13 @@ export default function FindWorkToolbar({
           >
             <input
               type="search"
-              placeholder="Tìm kiếm việc làm tự do"
+              placeholder={t("Tìm kiếm việc làm tự do")}
               value={searchInput}
               onChange={(e) => onSearchInputChange(e.target.value)}
               className="fw-toolbar__input"
-              aria-label="Tìm kiếm việc làm"
+              aria-label={t("Tìm kiếm việc làm")}
             />
-            <button type="submit" className="fw-toolbar__search-btn" aria-label="Tìm kiếm">
+            <button type="submit" className="fw-toolbar__search-btn" aria-label={t("Tìm kiếm")}>
               <FaSearch aria-hidden />
             </button>
           </form>
@@ -204,7 +211,7 @@ export default function FindWorkToolbar({
                 id={criteriaMenuId}
                 className="fw-dropdown__menu fw-dropdown__menu--right"
                 role="listbox"
-                aria-label="Chỉ tiêu nhà tuyển dụng"
+                aria-label={t("Chỉ tiêu nhà tuyển dụng")}
               >
                 {CLIENT_CRITERIA_OPTIONS.map((opt) => (
                   <li key={opt.value}>
@@ -249,7 +256,7 @@ export default function FindWorkToolbar({
 
       <div className="fw-toolbar__meta">
         <div className="fw-dropdown fw-dropdown--inline" ref={sortRef}>
-          <span className="text-sm text-gray-500">Sắp xếp theo: </span>
+          <span className="text-sm text-gray-500">{t("Sắp xếp theo:")} </span>
           <button
             type="button"
             className="fw-sort-trigger"
@@ -266,7 +273,7 @@ export default function FindWorkToolbar({
               id={sortMenuId}
               className="fw-dropdown__menu fw-dropdown__menu--sort"
               role="listbox"
-              aria-label="Sắp xếp"
+              aria-label={t("Sắp xếp")}
             >
               {JOB_SORT_OPTIONS.map((opt) => (
                 <li key={opt.value}>
@@ -298,6 +305,7 @@ export function FindWorkActiveChips({
   onQueryChange: (patch: Partial<FindWorkQueryState>) => void;
   onClearAll: () => void;
 }) {
+  const t = tUi;
   const chips: { key: string; label: string; clear: () => void }[] = [];
 
   if (query.category) {
@@ -324,14 +332,14 @@ export function FindWorkActiveChips({
   if (query.clientCriteria === "verified") {
     chips.push({
       key: "verified",
-      label: "Email xác minh",
+      label: t("Email xác minh"),
       clear: () => onQueryChange({ clientCriteria: "all" }),
     });
   }
   if (query.clientCriteria === "with_location") {
     chips.push({
       key: "has_loc",
-      label: "Có địa điểm",
+      label: t("Có địa điểm"),
       clear: () => onQueryChange({ clientCriteria: "all" }),
     });
   }
@@ -352,7 +360,7 @@ export function FindWorkActiveChips({
   if (query.hasDue) {
     chips.push({
       key: "due",
-      label: "Có hạn nộp",
+      label: t("Có hạn nộp"),
       clear: () => onQueryChange({ hasDue: false }),
     });
   }

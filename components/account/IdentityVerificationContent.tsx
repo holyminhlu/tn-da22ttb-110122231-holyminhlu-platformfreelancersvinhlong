@@ -1,5 +1,7 @@
 "use client";
 
+import { tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -71,6 +73,8 @@ const CARD_ICONS: Record<VerifyItemId, (done: boolean) => React.ReactNode> = {
 };
 
 export default function IdentityVerificationContent() {
+  const { t } = useTranslation();
+
   const router = useRouter();
   const searchParams = useSearchParams();
   const [user, setUser] = useState<MeUser | null>(null);
@@ -200,6 +204,7 @@ export default function IdentityVerificationContent() {
   const isRejected = reviewStatus === "rejected";
 
   async function handleSubmitReview() {
+  const t = tUi;
     setSubmitting(true);
     try {
       await patchIdentityVerification({ submitForReview: true });

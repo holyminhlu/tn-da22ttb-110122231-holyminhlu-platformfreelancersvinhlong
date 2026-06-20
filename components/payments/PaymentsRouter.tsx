@@ -1,17 +1,20 @@
 "use client";
 
+import { useTranslation } from "@/hooks/useTranslation";
 import FreelancerPlaceholderPage from "@/components/layout/FreelancerPlaceholderPage";
 import ClientPaymentsPage from "@/components/payments/ClientPaymentsPage";
 import FreelancerPaymentsPage from "@/components/payments/FreelancerPaymentsPage";
 import { useStoredUser } from "@/hooks/useStoredUser";
 
 export default function PaymentsRouter() {
+  const { t } = useTranslation();
+
   const { user, ready, isClient, isFreelancer } = useStoredUser();
 
   if (!ready) {
     return (
       <div className="home-landing flex min-h-screen items-center justify-center bg-white text-gray-500">
-        Đang tải...
+        {t("Đang tải...")}
       </div>
     );
   }
@@ -30,8 +33,8 @@ export default function PaymentsRouter() {
 
   return (
     <FreelancerPlaceholderPage
-      title="Thanh toán"
-      description="Vui lòng đăng nhập để xem thanh toán."
+      title={t("Thanh toán")}
+      description={t("Vui lòng đăng nhập để xem thanh toán.")}
     />
   );
 }

@@ -60,6 +60,7 @@ export const apiPaths = {
     securityRecovery: "/api/users/me/security/recovery",
     securityDeactivate: "/api/users/me/security/deactivate",
     securityDeleteAccount: "/api/users/me/security/account",
+    notificationPreferences: "/api/users/me/notification-preferences",
     skills: "/api/users/me/skills",
     portfolio: "/api/users/me/portfolio",
     exclusiveResources: "/api/users/me/exclusive-resources",

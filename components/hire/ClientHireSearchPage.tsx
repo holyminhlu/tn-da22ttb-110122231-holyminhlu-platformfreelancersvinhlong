@@ -1,5 +1,7 @@
 "use client";
 
+import { tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -22,6 +24,8 @@ const PAGE_SIZE = 12;
 const ALL = "Tất cả";
 
 export default function ClientHireSearchPage() {
+  const { t } = useTranslation();
+
   const { verified: clientIdentityVerified, loading: clientIdentityLoading } =
     useClientIdentityVerification({ refreshOnVisible: false });
   const [rows, setRows] = useState<FreelancerSearchRow[]>([]);
@@ -105,6 +109,7 @@ export default function ClientHireSearchPage() {
 
   useEffect(() => {
     function onPointerDown(event: MouseEvent) {
+  const t = tUi;
       const target = event.target as Node;
       if (!skillRef.current?.contains(target)) setSkillOpen(false);
       if (!districtRef.current?.contains(target)) setDistrictOpen(false);
@@ -126,11 +131,13 @@ export default function ClientHireSearchPage() {
   );
 
   function applySearch() {
+  const t = tUi;
     setSearchQuery(searchInput.trim());
     setOffset(0);
   }
 
   function handleSearchKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
+  const t = tUi;
     if (event.key === "Enter") {
       event.preventDefault();
       applySearch();
@@ -141,6 +148,7 @@ export default function ClientHireSearchPage() {
     type: "skill" | "district" | "category",
     value: string,
   ) {
+  const t = tUi;
     if (type === "skill") {
       setSkill(value);
       setSkillOpen(false);
@@ -155,6 +163,7 @@ export default function ClientHireSearchPage() {
   }
 
   function handleSelect(id: string, checked: boolean) {
+  const t = tUi;
     setSelectedIds((prev) => {
       const next = new Set(prev);
       if (checked) next.add(id);
@@ -164,6 +173,7 @@ export default function ClientHireSearchPage() {
   }
 
   function handleSelectAllOnPage(checked: boolean) {
+  const t = tUi;
     setSelectedIds((prev) => {
       const next = new Set(prev);
       for (const row of rows) {
@@ -175,6 +185,7 @@ export default function ClientHireSearchPage() {
   }
 
   async function handleToggleFavorite(id: string) {
+  const t = tUi;
     try {
       const result = await toggleFavorite(id);
       setFavoriteCounts((prev) => ({ ...prev, [id]: result.favoriteCount }));
@@ -192,7 +203,7 @@ export default function ClientHireSearchPage() {
       <div className="hire-page hire-search hire-search--full-width">
         <header className="hire-search__intro">
           <div>
-            <h1 className="hire-page__title">Tìm và thuê freelancer</h1>
+            <h1 className="hire-page__title">{t("Tìm và thuê freelancer")}</h1>
             <p className="hire-search__summary">
               {loading
                 ? "Đang tải..."
@@ -249,7 +260,7 @@ export default function ClientHireSearchPage() {
               <input
                 type="search"
                 className="hire-search__search-input"
-                placeholder="Tìm freelancer"
+                placeholder={t("Tìm freelancer")}
                 value={searchInput}
                 onChange={(e) => {
                   const value = e.target.value;
@@ -260,12 +271,12 @@ export default function ClientHireSearchPage() {
                   }
                 }}
                 onKeyDown={handleSearchKeyDown}
-                aria-label="Tìm freelancer"
+                aria-label={t("Tìm freelancer")}
               />
               <button
                 type="button"
                 className="hire-search__search-btn"
-                aria-label="Tìm kiếm"
+                aria-label={t("Tìm kiếm")}
                 onClick={applySearch}
               >
                 <FaSearch aria-hidden />
@@ -320,7 +331,7 @@ export default function ClientHireSearchPage() {
                 </button>
                 {filtersOpen ? (
                   <div className="hire-page__filter-panel hire-search__dropdown hire-search__dropdown--wide">
-                    <p className="hire-search__dropdown-title">Kỹ năng</p>
+                    <p className="hire-search__dropdown-title">{t("Kỹ năng")}</p>
                     <button
                       type="button"
                       className={`hire-page__filter-option${skill === ALL ? " hire-page__filter-option--active" : ""}`}
@@ -392,19 +403,19 @@ export default function ClientHireSearchPage() {
             </span>
           </label>
           <p className="hire-search__sort">
-            Sắp xếp: <strong>Phù hợp nhất</strong>
+            Sắp xếp: <strong>{t("Phù hợp nhất")}</strong>
           </p>
         </div>
 
         {loading ? (
-          <p className="hire-page__state">Đang tải freelancer...</p>
+          <p className="hire-page__state">{t("Đang tải freelancer...")}</p>
         ) : error ? (
           <p className="hire-page__state hire-page__state--error" role="alert">
             {error}
           </p>
         ) : rows.length === 0 ? (
           <div className="hire-page__empty">
-            <p className="hire-page__empty-text">Không tìm thấy freelancer phù hợp.</p>
+            <p className="hire-page__empty-text">{t("Không tìm thấy freelancer phù hợp.")}</p>
             <p className="hire-favorites__lead-sub">
               Thử đổi từ khóa hoặc bộ lọc. Nếu thiếu cột địa điểm, chạy{" "}
               <code>backend/sql/freelancer_search_listing.sql</code> trên PostgreSQL.
@@ -429,7 +440,7 @@ export default function ClientHireSearchPage() {
             </div>
 
             {totalPages > 1 ? (
-              <nav className="hire-search__pagination" aria-label="Phân trang">
+              <nav className="hire-search__pagination" aria-label={t("Phân trang")}>
                 <button
                   type="button"
                   className="hire-search__page-btn"

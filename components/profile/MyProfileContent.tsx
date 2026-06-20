@@ -1,5 +1,7 @@
 "use client";
 
+import { tUi, formatVndUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -33,7 +35,6 @@ import {
   type MeUser,
 } from "@/lib/api/users";
 import { getUserInitials, persistStoredUser, resolveAvatarSrc, toStoredUser } from "@/lib/authSession";
-import { formatVnd } from "@/lib/format";
 import AddExclusiveResourceDialog from "./AddExclusiveResourceDialog";
 import AddPortfolioDialog from "./AddPortfolioDialog";
 import AddProfileFileDialog from "./AddProfileFileDialog";
@@ -109,7 +110,7 @@ function ProfileSection({
   );
 }
 
-export default function MyProfileContent() {
+export default function MyProfileContent() {  const { t, formatVnd } = useTranslation();
   const router = useRouter();
   const searchParams = useSearchParams();
   const avatarInputRef = useRef<HTMLInputElement>(null);
@@ -132,7 +133,7 @@ export default function MyProfileContent() {
     try {
       const res = await getMe();
       if (!isFreelancerMeResponse(res)) {
-        setError("Trang này dành cho freelancer.");
+        setError(t("Trang này dành cho freelancer."));
         return;
       }
       setData(res);
@@ -167,6 +168,8 @@ export default function MyProfileContent() {
   }, [searchParams]);
 
   async function handleAvatarChange(event: React.ChangeEvent<HTMLInputElement>) {
+  const t = tUi;
+  const formatVnd = formatVndUi;
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file || !data?.user) return;
@@ -205,7 +208,7 @@ export default function MyProfileContent() {
   }
 
   if (loading) {
-    return <p className="ea-loading px-4 py-12">Đang tải hồ sơ...</p>;
+    return <p className="ea-loading px-4 py-12">{t("Đang tải hồ sơ...")}</p>;
   }
 
   if (error || !data) {
@@ -234,6 +237,8 @@ export default function MyProfileContent() {
   const completedJobs = user.completedJobs ?? data.freelancerProfile?.completed_jobs ?? 0;
 
   async function handleShareProfile() {
+  const t = tUi;
+  const formatVnd = formatVndUi;
     const url =
       typeof window !== "undefined"
         ? `${window.location.origin}${publicProfilePath}`
@@ -281,18 +286,18 @@ export default function MyProfileContent() {
                     <button
                       type="button"
                       className="mp-avatar-overlay__btn"
-                      aria-label="Đổi ảnh đại diện"
+                      aria-label={t("Đổi ảnh đại diện")}
                       disabled={avatarUploading}
                       onClick={() => avatarInputRef.current?.click()}
                     >
                       <FaCamera aria-hidden />
-                      <span>Đổi</span>
+                      <span>{t("Đổi")}</span>
                     </button>
                     {avatarSrc ? (
                       <button
                         type="button"
                         className="mp-avatar-overlay__btn"
-                        aria-label="Xem ảnh đại diện"
+                        aria-label={t("Xem ảnh đại diện")}
                         disabled={avatarUploading}
                         onClick={() => setAvatarPreviewOpen(true)}
                       >
@@ -314,11 +319,11 @@ export default function MyProfileContent() {
                 <div className="mp-profile-card__info">
                   <div className="mp-name">
                     {user.fullName || user.email}
-                    <Link href="/edit-account" className="mp-name-edit" aria-label="Sửa tên">
+                    <Link href="/edit-account" className="mp-name-edit" aria-label={t("Sửa tên")}>
                       <FaPencilAlt aria-hidden />
                     </Link>
                   </div>
-                  {user.tagline ? <p className="mp-tagline">{user.tagline}</p> : null}
+                  {user.tagline ? <p className="mp-tagline">{t(user.tagline)}</p> : null}
                   <p className="mp-location">{locationLine || "—"}</p>
                   <div className="mp-social-row">
                     {[FaGlobe, FaPlay, FaFacebookF, FaLinkedinIn].map((Icon, i) => (
@@ -343,7 +348,7 @@ export default function MyProfileContent() {
                       : "Xem trước — cần ít nhất một dịch vụ đã xuất bản và mục Giới thiệu để hiển thị đầy đủ"
                   }
                 >
-                  Xem hồ sơ công khai
+                  {t("Xem hồ sơ công khai")}
                   <FaExternalLinkAlt className="mp-card-actions__icon" aria-hidden />
                 </Link>
                 <button
@@ -351,7 +356,7 @@ export default function MyProfileContent() {
                   onClick={() => void handleShareProfile()}
                   title={isPublicReady ? "Chia sẻ link hồ sơ" : "Chia sẻ link xem trước hồ sơ"}
                 >
-                  Chia sẻ <FaShareAlt className="mp-card-actions__icon" aria-hidden />
+                  {t("Chia sẻ")} <FaShareAlt className="mp-card-actions__icon" aria-hidden />
                 </button>
               </div>
             </div>
@@ -368,29 +373,29 @@ export default function MyProfileContent() {
           ) : null}
 
           <ProfileSection
-            title="Giới thiệu"
-            emptyDescription="Dùng không gian này để giới thiệu bản thân với nhà tuyển dụng."
-            emptyButtonLabel="Thêm chi tiết"
+            title={t("Giới thiệu")}
+            emptyDescription={t("Dùng không gian này để giới thiệu bản thân với nhà tuyển dụng.")}
+            emptyButtonLabel={t("Thêm chi tiết")}
             onEmptyAction={() => setAboutOpen(true)}
             isEmpty={!hasAbout}
             emptyIcon={<FaUserEdit aria-hidden />}
           >
             <div className="mp-about-card">
-              {user.tagline ? <p className="mp-about-card__tagline">{user.tagline}</p> : null}
+              {user.tagline ? <p className="mp-about-card__tagline">{t(user.tagline)}</p> : null}
               <p className="mp-about-text">{user.bio || "—"}</p>
               <button type="button" className="mp-section__edit-btn" onClick={() => setAboutOpen(true)}>
                 <FaPencilAlt aria-hidden />
-                Sửa giới thiệu
+                {t("Sửa giới thiệu")}
               </button>
             </div>
           </ProfileSection>
 
           <ProfileSection
-            title="Kỹ năng"
+            title={t("Kỹ năng")}
             count={skills.length}
             onAdd={() => setSkillOpen(true)}
-            emptyDescription="Thêm kỹ năng để nhà tuyển dụng hiểu rõ năng lực của bạn."
-            emptyButtonLabel="Thêm kỹ năng"
+            emptyDescription={t("Thêm kỹ năng để nhà tuyển dụng hiểu rõ năng lực của bạn.")}
+            emptyButtonLabel={t("Thêm kỹ năng")}
             onEmptyAction={() => setSkillOpen(true)}
             isEmpty={skills.length === 0}
             emptyIcon={<FaTools aria-hidden />}
@@ -398,7 +403,7 @@ export default function MyProfileContent() {
             <div className="mp-skill-grid">
               {skills.map((s) => (
                 <div key={s.id} className="mp-skill-chip">
-                  <span className="mp-skill-chip__name">{s.name}</span>
+                  <span className="mp-skill-chip__name">{t(s.name)}</span>
                   <span className="mp-skill-chip__meta">
                     {s.level || "Chưa ghi cấp độ"} · {s.years_of_experience ?? 0} năm
                   </span>
@@ -407,15 +412,15 @@ export default function MyProfileContent() {
             </div>
             <button type="button" className="mp-section__edit-btn" onClick={() => setSkillOpen(true)}>
               <FaPlus aria-hidden />
-              Thêm kỹ năng khác
+              {t("Thêm kỹ năng khác")}
             </button>
           </ProfileSection>
 
           <ProfileSection
-            title="Dịch vụ"
+            title={t("Dịch vụ")}
             count={services.length}
-            emptyDescription="Cho nhà tuyển dụng biết bạn cung cấp dịch vụ gì."
-            emptyButtonLabel="Thêm dịch vụ"
+            emptyDescription={t("Cho nhà tuyển dụng biết bạn cung cấp dịch vụ gì.")}
+            emptyButtonLabel={t("Thêm dịch vụ")}
             onEmptyAction={() => router.push("/dashboard")}
             isEmpty={services.length === 0}
             emptyIcon={<FaBriefcase aria-hidden />}
@@ -423,19 +428,19 @@ export default function MyProfileContent() {
             <ul className="mp-service-list">
               {services.map((s) => (
                 <li key={s.id} className="mp-list-item">
-                  <p className="mp-list-item__title">{s.title}</p>
-                  <p className="mp-list-item__meta">{formatVnd(s.price)}</p>
+                  <p className="mp-list-item__title">{t(s.title)}</p>
+                  <p className="mp-list-item__meta">{formatVndUi(s.price)}</p>
                 </li>
               ))}
             </ul>
           </ProfileSection>
 
           <ProfileSection
-            title="Hồ sơ dự án"
+            title={t("Hồ sơ dự án")}
             count={portfolio.length}
             onAdd={() => setPortfolioOpen(true)}
-            emptyDescription="Trưng bày công việc đã làm để thu hút khách hàng."
-            emptyButtonLabel="Thêm portfolio"
+            emptyDescription={t("Trưng bày công việc đã làm để thu hút khách hàng.")}
+            emptyButtonLabel={t("Thêm portfolio")}
             onEmptyAction={() => setPortfolioOpen(true)}
             isEmpty={portfolio.length === 0}
             emptyIcon={<FaImages aria-hidden />}
@@ -463,9 +468,9 @@ export default function MyProfileContent() {
                       )}
                     </div>
                     <div className="mp-portfolio-card__body">
-                      <h4 className="mp-portfolio-card__title">{p.title}</h4>
+                      <h4 className="mp-portfolio-card__title">{t(p.title)}</h4>
                       {p.description ? (
-                        <p className="mp-portfolio-card__desc">{p.description}</p>
+                        <p className="mp-portfolio-card__desc">{t(p.description)}</p>
                       ) : null}
                       {p.project_url ? (
                         <a
@@ -474,7 +479,7 @@ export default function MyProfileContent() {
                           target="_blank"
                           rel="noreferrer"
                         >
-                          Xem dự án <FaExternalLinkAlt aria-hidden />
+                          {t("Xem dự án")} <FaExternalLinkAlt aria-hidden />
                         </a>
                       ) : null}
                     </div>
@@ -484,16 +489,16 @@ export default function MyProfileContent() {
             </div>
             <button type="button" className="mp-section__edit-btn" onClick={() => setPortfolioOpen(true)}>
               <FaPlus aria-hidden />
-              Thêm portfolio khác
+              {t("Thêm portfolio khác")}
             </button>
           </ProfileSection>
 
           <ProfileSection
-            title="Tài nguyên dành riêng"
+            title={t("Tài nguyên dành riêng")}
             count={exclusiveResources.length}
             onAdd={() => setResourceOpen(true)}
-            emptyDescription="Thêm tài nguyên dành riêng cho khách hàng."
-            emptyButtonLabel="Thêm tài nguyên"
+            emptyDescription={t("Thêm tài nguyên dành riêng cho khách hàng.")}
+            emptyButtonLabel={t("Thêm tài nguyên")}
             onEmptyAction={() => setResourceOpen(true)}
             isEmpty={exclusiveResources.length === 0}
             emptyIcon={<FaFolderOpen aria-hidden />}
@@ -510,9 +515,9 @@ export default function MyProfileContent() {
                       {item.resource_type === "link" ? <FaGlobe /> : <FaFileAlt />}
                     </div>
                     <div className="mp-asset-card__body">
-                      <h4 className="mp-asset-card__title">{item.title}</h4>
+                      <h4 className="mp-asset-card__title">{t(item.title)}</h4>
                       {item.description ? (
-                        <p className="mp-asset-card__desc">{item.description}</p>
+                        <p className="mp-asset-card__desc">{t(item.description)}</p>
                       ) : null}
                       <p className="mp-asset-card__meta">
                         {item.resource_type === "link" ? "Liên kết" : item.file_name || "Tệp đính kèm"}
@@ -524,7 +529,7 @@ export default function MyProfileContent() {
                           target="_blank"
                           rel="noreferrer"
                         >
-                          Mở tài nguyên <FaExternalLinkAlt aria-hidden />
+                          {t("Mở tài nguyên")} <FaExternalLinkAlt aria-hidden />
                         </a>
                       ) : null}
                     </div>
@@ -534,16 +539,16 @@ export default function MyProfileContent() {
             </ul>
             <button type="button" className="mp-section__edit-btn" onClick={() => setResourceOpen(true)}>
               <FaPlus aria-hidden />
-              Thêm tài nguyên khác
+              {t("Thêm tài nguyên khác")}
             </button>
           </ProfileSection>
 
           <ProfileSection
-            title="Tệp tin"
+            title={t("Tệp tin")}
             count={profileFiles.length}
             onAdd={() => setFileOpen(true)}
-            emptyDescription="Thêm tệp để chia sẻ với khách hàng."
-            emptyButtonLabel="Thêm tệp"
+            emptyDescription={t("Thêm tệp để chia sẻ với khách hàng.")}
+            emptyButtonLabel={t("Thêm tệp")}
             onEmptyAction={() => setFileOpen(true)}
             isEmpty={profileFiles.length === 0}
             emptyIcon={<FaFileAlt aria-hidden />}
@@ -557,9 +562,9 @@ export default function MyProfileContent() {
                       <FaFileAlt />
                     </div>
                     <div className="mp-asset-card__body">
-                      <h4 className="mp-asset-card__title">{item.title}</h4>
+                      <h4 className="mp-asset-card__title">{t(item.title)}</h4>
                       {item.description ? (
-                        <p className="mp-asset-card__desc">{item.description}</p>
+                        <p className="mp-asset-card__desc">{t(item.description)}</p>
                       ) : null}
                       <p className="mp-asset-card__meta">
                         {item.file_name || "Tệp đính kèm"}
@@ -567,7 +572,7 @@ export default function MyProfileContent() {
                       </p>
                       {href ? (
                         <a href={href} className="mp-list-item__link" target="_blank" rel="noreferrer">
-                          Tải / xem tệp <FaExternalLinkAlt aria-hidden />
+                          {t("Tải / xem tệp")} <FaExternalLinkAlt aria-hidden />
                         </a>
                       ) : null}
                     </div>
@@ -577,7 +582,7 @@ export default function MyProfileContent() {
             </ul>
             <button type="button" className="mp-section__edit-btn" onClick={() => setFileOpen(true)}>
               <FaPlus aria-hidden />
-              Thêm tệp khác
+              {t("Thêm tệp khác")}
             </button>
           </ProfileSection>
         </div>
@@ -589,12 +594,12 @@ export default function MyProfileContent() {
             className="mp-avatar-preview"
             role="dialog"
             aria-modal="true"
-            aria-label="Ảnh đại diện"
+            aria-label={t("Ảnh đại diện")}
           >
             <button
               type="button"
               className="mp-avatar-preview__close"
-              aria-label="Đóng"
+              aria-label={t("Đóng")}
               onClick={() => setAvatarPreviewOpen(false)}
             >
               ×
@@ -612,7 +617,7 @@ export default function MyProfileContent() {
                 className="mp-dialog__btn mp-dialog__btn--ghost"
                 onClick={() => setAvatarPreviewOpen(false)}
               >
-                Đóng
+                {t("Đóng")}
               </button>
               <button
                 type="button"
@@ -623,7 +628,7 @@ export default function MyProfileContent() {
                   avatarInputRef.current?.click();
                 }}
               >
-                Đổi ảnh
+                {t("Đổi ảnh")}
               </button>
             </div>
           </div>

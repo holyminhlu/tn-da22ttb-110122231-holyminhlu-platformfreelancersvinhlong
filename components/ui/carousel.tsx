@@ -1,4 +1,5 @@
 "use client";
+import { useTranslation } from "@/hooks/useTranslation";
 import { IconArrowNarrowRight } from "@tabler/icons-react";
 import { useState, useRef, useId, useEffect } from "react";
 
@@ -154,6 +155,8 @@ interface CarouselProps {
 }
 
 export default function Carousel({ slides }: CarouselProps) {
+  const { t } = useTranslation();
+
   const [current, setCurrent] = useState(0);
 
   const handlePreviousClick = () => {

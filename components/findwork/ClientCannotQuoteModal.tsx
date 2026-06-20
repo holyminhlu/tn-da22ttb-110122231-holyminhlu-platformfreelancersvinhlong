@@ -1,5 +1,7 @@
 "use client";
 
+import { tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { useEffect, useId } from "react";
 import { FaBriefcase, FaSearch, FaTimes, FaUserTie } from "react-icons/fa";
@@ -21,11 +23,14 @@ export default function ClientCannotQuoteModal({
   isOwnJob = false,
   jobId,
 }: ClientCannotQuoteModalProps) {
+  const { t } = useTranslation();
+
   const titleId = useId();
 
   useEffect(() => {
     if (!open) return;
     function onKeyDown(e: KeyboardEvent) {
+  const t = tUi;
       if (e.key === "Escape") onClose();
     }
     document.addEventListener("keydown", onKeyDown);
@@ -53,7 +58,7 @@ export default function ClientCannotQuoteModal({
           type="button"
           className="job-proposal-modal__close"
           onClick={onClose}
-          aria-label="Đóng"
+          aria-label={t("Đóng")}
         >
           <FaTimes aria-hidden />
         </button>
@@ -81,7 +86,7 @@ export default function ClientCannotQuoteModal({
             </p>
           ) : (
             <p>
-              Bạn đang đăng nhập bằng tài khoản <strong>khách hàng</strong>. Chỉ{" "}
+              Bạn đang đăng nhập bằng tài khoản <strong>{t("khách hàng")}</strong>. Chỉ{" "}
               <strong>freelancer</strong> mới gửi báo giá cho công việc của người khác.
             </p>
           )}

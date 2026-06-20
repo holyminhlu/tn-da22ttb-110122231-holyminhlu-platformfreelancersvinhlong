@@ -1,5 +1,6 @@
 "use client"
 
+import { tUi } from "@/lib/i18n/runtime";
 import * as React from "react"
 import { Avatar as AvatarPrimitive } from "@base-ui/react/avatar"
 
@@ -88,6 +89,7 @@ function AvatarGroupCount({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const t = tUi;
   return (
     <div
       data-slot="avatar-group-count"

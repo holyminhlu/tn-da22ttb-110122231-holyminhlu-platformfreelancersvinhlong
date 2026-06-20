@@ -1,9 +1,10 @@
 "use client";
 
+import { formatDateUi, tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import type { JobQuoteRow } from "@/lib/api/jobQuotes";
 import UserAvatar from "@/components/ui/UserAvatar";
-import { formatDate } from "@/lib/format";
 import { quoteStatusLabel } from "@/lib/hire/quoteDisplay";
 import {
   canWithdrawFreelancerQuote,
@@ -28,9 +29,11 @@ function badgeToneClass(status: string): string {
   return "fw-quotes__badge fw-quotes__badge--muted";
 }
 
-export default function FindworkQuoteCard({ quote, busy = false, onWithdraw }: FindworkQuoteCardProps) {
+export default function FindworkQuoteCard({
+  quote, busy = false, onWithdraw }: FindworkQuoteCardProps) {  const { t, formatDate } = useTranslation();
+
   const status = String(quote.status).toLowerCase();
-  const clientName = quote.client_name?.trim() || "Khách hàng";
+  const clientName = quote.client_name?.trim() || t("Khách hàng");
   const jobHref = `/work/detail/${quote.job_id}`;
   const message = quote.message?.trim() || "";
   const canWithdraw = canWithdrawFreelancerQuote(quote);
@@ -57,7 +60,7 @@ export default function FindworkQuoteCard({ quote, busy = false, onWithdraw }: F
         </div>
 
         <h2 className="fw-quotes__job-title">
-          <Link href={jobHref}>{quote.job_title?.trim() || "Công việc"}</Link>
+          <Link href={jobHref}>{quote.job_title?.trim() || t("Công việc")}</Link>
         </h2>
 
         <p className="fw-quotes__hint">{freelancerQuoteStatusHint(quote.status)}</p>
@@ -73,9 +76,9 @@ export default function FindworkQuoteCard({ quote, busy = false, onWithdraw }: F
         </p>
 
         <p className="fw-quotes__time">
-          Gửi {formatDate(quote.created_at)}
+          Gửi {formatDateUi(quote.created_at)}
           {quote.updated_at !== quote.created_at
-            ? ` · Cập nhật ${formatDate(quote.updated_at)}`
+            ? ` · Cập nhật ${formatDateUi(quote.updated_at)}`
             : ""}
         </p>
 

@@ -1,5 +1,7 @@
 "use client";
 
+import { formatDateUi, tUi, formatVndUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -12,7 +14,6 @@ import {
   countServicesByStatus,
   listingStatusLabel,
 } from "@/lib/services/servicesDisplay";
-import { formatDate, formatVnd } from "@/lib/format";
 import ServicesShell from "./ServicesShell";
 
 const TABS: { value: ServiceListingStatus | "all"; label: string }[] = [
@@ -29,7 +30,7 @@ function badgeClass(status: string): string {
   return `svc-manage__badge svc-manage__badge--${s}`;
 }
 
-export default function ManageServicesPage() {
+export default function ManageServicesPage() {  const { t, formatVnd, formatDate } = useTranslation();
   const [services, setServices] = useState<MyServiceRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -68,6 +69,9 @@ export default function ManageServicesPage() {
   }, [services, tab]);
 
   async function changeStatus(serviceId: string, status: ServiceListingStatus) {
+  const t = tUi;
+  const formatDate = formatDateUi;
+  const formatVnd = formatVndUi;
     setBusyId(serviceId);
     try {
       const result = await patchMyServiceStatus(serviceId, status);
@@ -88,13 +92,13 @@ export default function ManageServicesPage() {
     <ServicesShell>
       <header className="svc-hub__head">
         <div>
-          <h1 className="svc-hub__title">Quản lý dịch vụ</h1>
+          <h1 className="svc-hub__title">{t("Quản lý dịch vụ")}</h1>
           <p className="svc-hub__lead">
-            Theo dõi trạng thái hiển thị — nháp, chờ duyệt, đang hoạt động, tạm dừng hoặc cần chỉnh sửa.
+            {t("Theo dõi trạng thái hiển thị — nháp, chờ duyệt, đang hoạt động, tạm dừng hoặc cần chỉnh sửa.")}
           </p>
         </div>
         <Link href="/dich-vu/tao-moi" className="svc-hub__cta">
-          + Đăng dịch vụ mới
+          {t("+ Đăng dịch vụ mới")}
         </Link>
       </header>
 
@@ -108,13 +112,13 @@ export default function ManageServicesPage() {
             className={`svc-manage__tab${tab === item.value ? " svc-manage__tab--active" : ""}`}
             onClick={() => setTab(item.value)}
           >
-            {item.label} ({counts[item.value] ?? 0})
+            {t(item.label)} ({counts[item.value] ?? 0})
           </button>
         ))}
       </div>
 
       {loading ? (
-        <p className="text-sm text-gray-500">Đang tải...</p>
+        <p className="text-sm text-gray-500">{t("Đang tải...")}</p>
       ) : error ? (
         <p className="text-sm text-red-700" role="alert">
           {error}
@@ -134,18 +138,18 @@ export default function ManageServicesPage() {
                 <span className={badgeClass(status)}>{listingStatusLabel(status)}</span>
                 <h2 className="svc-manage__card-title">
                   <Link href={`/dich-vu/quan-ly/${svc.id}`} className="svc-manage__card-title-link">
-                    {svc.title}
+                    {t(svc.title)}
                   </Link>
                 </h2>
                 <p className="text-sm text-gray-600">{svc.category || "—"}</p>
-                <p className="text-sm font-semibold text-gray-800">{formatVnd(svc.price)}</p>
+                <p className="text-sm font-semibold text-gray-800">{formatVndUi(svc.price)}</p>
                 {svc.admin_note ? (
                   <p className="text-xs text-red-700">Góp ý Admin: {svc.admin_note}</p>
                 ) : null}
-                <p className="text-xs text-gray-400">Cập nhật {formatDate(svc.updated_at || svc.created_at)}</p>
+                <p className="text-xs text-gray-400">Cập nhật {formatDateUi(svc.updated_at || svc.created_at)}</p>
                 <div className="svc-manage__card-actions">
                   <Link href={`/dich-vu/quan-ly/${svc.id}`} className="svc-btn svc-btn--primary">
-                    Xem chi tiết
+                    {t("Xem chi tiết")}
                   </Link>
                   {status === "draft" || status === "denied" ? (
                     <button
@@ -154,7 +158,7 @@ export default function ManageServicesPage() {
                       disabled={busyId === svc.id}
                       onClick={() => void changeStatus(svc.id, "pending")}
                     >
-                      Gửi duyệt
+                      {t("Gửi duyệt")}
                     </button>
                   ) : null}
                   {status === "pending" ? (
@@ -164,7 +168,7 @@ export default function ManageServicesPage() {
                       disabled={busyId === svc.id}
                       onClick={() => void changeStatus(svc.id, "active")}
                     >
-                      Hiển thị (sau duyệt)
+                      {t("Hiển thị (sau duyệt)")}
                     </button>
                   ) : null}
                   {status === "active" ? (
@@ -174,7 +178,7 @@ export default function ManageServicesPage() {
                       disabled={busyId === svc.id}
                       onClick={() => void changeStatus(svc.id, "paused")}
                     >
-                      Tạm dừng
+                      {t("Tạm dừng")}
                     </button>
                   ) : null}
                   {status === "paused" ? (
@@ -184,11 +188,11 @@ export default function ManageServicesPage() {
                       disabled={busyId === svc.id}
                       onClick={() => void changeStatus(svc.id, "active")}
                     >
-                      Kích hoạt lại
+                      {t("Kích hoạt lại")}
                     </button>
                   ) : null}
                   <Link href={`/dich-vu/quan-ly/${svc.id}/chinh-sua`} className="svc-btn svc-btn--secondary">
-                    Chỉnh sửa
+                    {t("Chỉnh sửa")}
                   </Link>
                 </div>
               </li>

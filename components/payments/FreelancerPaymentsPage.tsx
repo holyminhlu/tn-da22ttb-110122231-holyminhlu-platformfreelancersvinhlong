@@ -1,5 +1,7 @@
 "use client";
 
+import { formatDateUi, tUi, formatVndUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import FreelancerShell from "@/components/layout/FreelancerShell";
@@ -12,7 +14,6 @@ import {
   type FreelancerBillingOverview,
   type FreelancerTransaction,
 } from "@/lib/api/payments";
-import { formatDate, formatVnd } from "@/lib/format";
 import { maskAccountNumber } from "@/lib/payments/bankDisplay";
 import {
   contractDetailHref,
@@ -79,16 +80,16 @@ function withdrawalStatusClass(status?: FreelancerTransaction["withdrawalStatus"
 }
 
 function monthKey(iso: string) {
+  const t = tUi;
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "";
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 }
 
-function exportFreelancerCsv(rows: FreelancerTransaction[]) {
-  const header = ["Ngày", "Dự án", "Khách hàng", "Loại", "Số tiền", "Mã tham chiếu"];
+function exportFreelancerCsv(rows: FreelancerTransaction[]) {  const header = ["Ngày", "Dự án", "Khách hàng", "Loại", "Số tiền", "Mã tham chiếu"];
   const lines = rows.map((r) =>
     [
-      formatDate(r.occurredAt),
+      formatDateUi(r.occurredAt),
       r.projectTitle,
       r.clientName,
       freelancerTransactionCategoryLabel(r.category),
@@ -109,7 +110,7 @@ function exportFreelancerCsv(rows: FreelancerTransaction[]) {
   URL.revokeObjectURL(url);
 }
 
-export default function FreelancerPaymentsPage() {
+export default function FreelancerPaymentsPage() {  const { t, formatVnd, formatDate } = useTranslation();
   const { user, ready, isFreelancer } = useStoredUser({ refreshFromApi: false });
   const isGuest = ready && !user;
 
@@ -174,27 +175,29 @@ export default function FreelancerPaymentsPage() {
     ? withdrawNumeric
     : null;
 
-  function openWithdrawFlow() {
-    if (!data?.payoutProfile.isConfigured) {
-      alert("Bạn chưa liên kết tài khoản ngân hàng. Vui lòng liên kết trước khi rút tiền.");
+  function openWithdrawFlow() {  if (!data?.payoutProfile.isConfigured) {
+      alert(t("Bạn chưa liên kết tài khoản ngân hàng. Vui lòng liên kết trước khi rút tiền."));
       return;
     }
     if (withdrawNumeric < MIN_WITHDRAW_VND) {
-      alert(`Số tiền rút tối thiểu ${formatVnd(MIN_WITHDRAW_VND)}.`);
+      alert(`${t("Số tiền rút tối thiểu ")}${formatVndUi(MIN_WITHDRAW_VND)}.`);
       return;
     }
     if (!data.withdrawalPin?.isConfigured) {
-      alert("Bạn chưa thiết lập mã PIN rút tiền. Vào Cài đặt tài khoản để tạo PIN.");
+      alert(t("Bạn chưa thiết lập mã PIN rút tiền. Vào Cài đặt tài khoản để tạo PIN."));
       return;
     }
     if (data && withdrawNumeric > data.account.balance) {
-      alert(`Số dư khả dụng không đủ (hiện có ${formatVnd(data.account.balance)}).`);
+      alert(`${t("Số dư khả dụng không đủ (hiện có ")}${formatVndUi(data.account.balance)}).`);
       return;
     }
     setWithdrawOpen(true);
   }
 
   function handleWithdrawCompleted(account: FreelancerBillingOverview["account"]) {
+  const t = tUi;
+  const formatDate = formatDateUi;
+  const formatVnd = formatVndUi;
     setData((prev) => (prev ? { ...prev, account } : prev));
     void load();
   }
@@ -204,27 +207,26 @@ export default function FreelancerPaymentsPage() {
       <div className="payments-page payments-page--full-width fl-payments">
         <header className="hire-page__head payments-page__head">
           <div>
-            <h1 className="hire-page__title">Thanh toán</h1>
+            <h1 className="hire-page__title">{t("Thanh toán")}</h1>
             <p className="hire-page__lead">
-              Theo dõi thu nhập từ hợp đồng, số dư khả dụng, tiền đang chờ giải ngân và lịch sử
-              rút tiền.
+              {t("Theo dõi thu nhập từ hợp đồng, số dư khả dụng, tiền đang chờ giải ngân và lịch sử rút tiền.")}
             </p>
           </div>
           <Link href="/payments#payout-account" className="hire-page__post-btn">
-            Tài khoản nhận tiền
+            {t("Tài khoản nhận tiền")}
           </Link>
         </header>
 
         {isGuest ? (
           <div className="fl-payments__guest">
-            <p>Đăng nhập freelancer để xem thu nhập và rút tiền.</p>
+            <p>{t("Đăng nhập freelancer để xem thu nhập và rút tiền.")}</p>
             <Link href="/dang-nhap" className="hire-page__post-btn">
-              Đăng nhập
+              {t("Đăng nhập")}
             </Link>
           </div>
         ) : ready && user && !isFreelancer ? (
           <p className="hire-page__state hire-page__state--error" role="alert">
-            Trang này dành cho tài khoản freelancer.
+            {t("Trang này dành cho tài khoản freelancer.")}
           </p>
         ) : loading ? (
           <div className="payments-page__loading" aria-busy="true">
@@ -240,41 +242,41 @@ export default function FreelancerPaymentsPage() {
           <>
             <section className="payments-panel">
               <PaymentsSectionTitle icon={<FaChartLine />}>
-                Thu nhập &amp; số dư
+                {t("Thu nhập &amp; số dư")}
               </PaymentsSectionTitle>
               <div className="payments-balance-grid fl-payments__balance-grid">
                 <PaymentsBalanceCard
                   variant="available"
                   featured
-                  label="Số dư khả dụng"
-                  amount={formatVnd(data.account.balance)}
-                  hint="Có thể rút về tài khoản ngân hàng"
+                  label={t("Số dư khả dụng")}
+                  amount={formatVndUi(data.account.balance)}
+                  hint={t("Có thể rút về tài khoản ngân hàng")}
                 />
                 <PaymentsBalanceCard
                   variant="pending"
-                  label="Chờ giải ngân"
-                  amount={formatVnd(data.account.pendingBalance)}
-                  hint="Escrow đã nạp, chưa chuyển vào ví của bạn"
+                  label={t("Chờ giải ngân")}
+                  amount={formatVndUi(data.account.pendingBalance)}
+                  hint={t("Escrow đã nạp, chưa chuyển vào ví của bạn")}
                 />
                 <PaymentsBalanceCard
                   variant="earned"
-                  label="Tổng đã nhận"
-                  amount={formatVnd(data.account.totalEarned)}
-                  hint="Tích lũy từ các hợp đồng đã giải ngân"
+                  label={t("Tổng đã nhận")}
+                  amount={formatVndUi(data.account.totalEarned)}
+                  hint={t("Tích lũy từ các hợp đồng đã giải ngân")}
                 />
               </div>
 
               <div className="payments-deposit-card fl-payments__withdraw-card">
                 <div className="payments-deposit-card__head">
-                  <h3 className="payments-deposit-card__title">Rút tiền về tài khoản ngân hàng</h3>
+                  <h3 className="payments-deposit-card__title">{t("Rút tiền về tài khoản ngân hàng")}</h3>
                   <p className="payments-deposit-card__hint">
-                    Chi hộ Napas 24/7 — xác nhận bằng PIN 6 số, tối thiểu {formatVnd(MIN_WITHDRAW_VND)}.
+                    Chi hộ Napas 24/7 — xác nhận bằng PIN 6 số, tối thiểu {formatVndUi(MIN_WITHDRAW_VND)}.
                   </p>
                 </div>
 
                 <div className="payments-deposit__controls">
                   <label className="payments-deposit__label sr-only" htmlFor="withdraw-amount">
-                    Số tiền rút
+                    {t("Số tiền rút")}
                   </label>
                   <PaymentsMoneyInput
                     id="withdraw-amount"
@@ -282,7 +284,7 @@ export default function FreelancerPaymentsPage() {
                     value={withdrawAmount}
                     onChange={setWithdrawAmount}
                     disabled={data.account.balance < MIN_WITHDRAW_VND}
-                    aria-label="Số tiền rút về ngân hàng"
+                    aria-label={t("Số tiền rút về ngân hàng")}
                   />
                   <div className="payments-deposit__presets">
                     {WITHDRAW_AMOUNT_PRESETS.map((preset) => (
@@ -298,7 +300,7 @@ export default function FreelancerPaymentsPage() {
                         disabled={preset > data.account.balance}
                         onClick={() => setWithdrawAmount(String(preset))}
                       >
-                        {formatVnd(preset)}
+                        {formatVndUi(preset)}
                       </button>
                     ))}
                   </div>
@@ -308,7 +310,7 @@ export default function FreelancerPaymentsPage() {
                     disabled={data.account.balance < MIN_WITHDRAW_VND}
                     onClick={openWithdrawFlow}
                   >
-                    Rút tiền
+                    {t("Rút tiền")}
                   </button>
                 </div>
 
@@ -324,20 +326,20 @@ export default function FreelancerPaymentsPage() {
                       </p>
                     </div>
                     <Link href="/payments#payout-account" className="fl-payments__withdraw-bank-link">
-                      Đổi TK
+                      {t("Đổi TK")}
                     </Link>
                   </div>
                 ) : (
                   <p className="fl-payments__withdraw-unlinked">
                     Chưa liên kết tài khoản nhận tiền.{" "}
-                    <Link href="/payments#payout-account">Liên kết ngay</Link>
+                    <Link href="/payments#payout-account">{t("Liên kết ngay")}</Link>
                   </p>
                 )}
 
                 {!data.withdrawalPin?.isConfigured ? (
                   <p className="fl-payments__withdraw-pin-hint">
                     Chưa có PIN rút tiền.{" "}
-                    <Link href="/edit-account/cai-dat">Thiết lập tại Cài đặt</Link>
+                    <Link href="/edit-account/cai-dat">{t("Thiết lập tại Cài đặt")}</Link>
                     {data.withdrawalPin?.requiresAppPasswordSetup
                       ? " (tài khoản Google cần đặt mật khẩu ứng dụng khi tạo PIN)."
                       : "."}
@@ -345,7 +347,7 @@ export default function FreelancerPaymentsPage() {
                 ) : null}
 
                 <p className="payments-muted fl-payments__note">
-                  Tiền chuyển vào tài khoản đã liên kết sau khi giao dịch được xác nhận thành công.
+                  {t("Tiền chuyển vào tài khoản đã liên kết sau khi giao dịch được xác nhận thành công.")}
                 </p>
               </div>
 
@@ -364,14 +366,14 @@ export default function FreelancerPaymentsPage() {
 
             <section className="payments-panel" id="payout-account">
               <div className="payments-panel__head">
-                <h2 className="payments-panel__title">Tài khoản nhận tiền</h2>
+                <h2 className="payments-panel__title">{t("Tài khoản nhận tiền")}</h2>
               </div>
               <FreelancerPayoutAccountPanel profile={data.payoutProfile} onUpdated={load} />
             </section>
 
             {data.pendingItems.length > 0 ? (
               <section className="payments-panel">
-                <h2 className="payments-panel__title">Đang chờ giải ngân</h2>
+                <h2 className="payments-panel__title">{t("Đang chờ giải ngân")}</h2>
                 <ul className="fl-payments__pending-list">
                   {data.pendingItems.map((item) => (
                     <li key={item.contractId}>
@@ -383,12 +385,12 @@ export default function FreelancerPaymentsPage() {
                           <p className="fl-payments__pending-title">{item.projectTitle}</p>
                           <p className="fl-payments__pending-meta">
                             Client: {item.clientName}
-                            {item.fundedAt ? ` · Escrow ${formatDate(item.fundedAt)}` : ""}
+                            {item.fundedAt ? ` · Escrow ${formatDateUi(item.fundedAt)}` : ""}
                           </p>
                         </div>
                         <div className="fl-payments__pending-aside">
                           <span className="fl-payments__pending-amount">
-                            {formatVnd(item.amount)}
+                            {formatVndUi(item.amount)}
                           </span>
                           <span className="fl-payments__pending-badge">
                             {pendingStageLabel(item.workflowStage)}
@@ -403,17 +405,17 @@ export default function FreelancerPaymentsPage() {
 
             {(data.activeWithdrawals?.length ?? 0) > 0 ? (
               <section className="payments-panel" id="withdrawals">
-                <h2 className="payments-panel__title">Yêu cầu rút tiền</h2>
+                <h2 className="payments-panel__title">{t("Yêu cầu rút tiền")}</h2>
                 <ul className="fl-payments__withdraw-list">
                   {data.activeWithdrawals.map((item) => (
                     <li key={item.id} className="fl-payments__withdraw-item">
                       <div className="fl-payments__withdraw-item-main">
-                        <p className="fl-payments__withdraw-item-amount">{formatVnd(item.amount)}</p>
+                        <p className="fl-payments__withdraw-item-amount">{formatVndUi(item.amount)}</p>
                         <p className="fl-payments__withdraw-item-meta">
                           <BankNameWithLogo
                             bankName={item.bankName}
                             size={20}
-                            suffix={`${item.accountLast4 ? ` · ****${item.accountLast4}` : ""} · ${formatDate(item.createdAt)}`}
+                            suffix={`${item.accountLast4 ? ` · ****${item.accountLast4}` : ""} · ${formatDateUi(item.createdAt)}`}
                           />
                         </p>
                         <p className="fl-payments__withdraw-item-ref">{item.referenceId}</p>
@@ -430,7 +432,7 @@ export default function FreelancerPaymentsPage() {
             <section className="payments-panel">
               <div className="payments-panel__head payments-tx-panel__head">
                 <PaymentsSectionTitle icon={<FaHistory />}>
-                  Lịch sử giao dịch
+                  {t("Lịch sử giao dịch")}
                 </PaymentsSectionTitle>
                 <button
                   type="button"
@@ -438,12 +440,12 @@ export default function FreelancerPaymentsPage() {
                   disabled={filteredTransactions.length === 0}
                   onClick={() => exportFreelancerCsv(filteredTransactions)}
                 >
-                  Xuất CSV
+                  {t("Xuất CSV")}
                 </button>
               </div>
 
               <div className="fl-payments__tx-filters">
-                <div className="fl-payments__tx-tabs" role="tablist" aria-label="Lọc loại giao dịch">
+                <div className="fl-payments__tx-tabs" role="tablist" aria-label={t("Lọc loại giao dịch")}>
                   {TX_FILTERS.map((item) => (
                     <button
                       key={item.value}
@@ -453,48 +455,48 @@ export default function FreelancerPaymentsPage() {
                       className={`fl-payments__tx-tab${txFilter === item.value ? " fl-payments__tx-tab--active" : ""}`}
                       onClick={() => setTxFilter(item.value)}
                     >
-                      {item.label}
+                      {t(item.label)}
                     </button>
                   ))}
                 </div>
                 <input
                   type="search"
                   className="fl-payments__search"
-                  placeholder="Tìm dự án, client..."
+                  placeholder={t("Tìm dự án, client...")}
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
-                  aria-label="Tìm giao dịch"
+                  aria-label={t("Tìm giao dịch")}
                 />
               </div>
 
               <div className="payments-filters">
                 <select
-                  aria-label="Lọc theo dự án"
+                  aria-label={t("Lọc theo dự án")}
                   value={filterJobId}
                   onChange={(e) => setFilterJobId(e.target.value)}
                 >
-                  <option value="">Tất cả dự án</option>
+                  <option value="">{t("Tất cả dự án")}</option>
                   {data.filterOptions.jobs.map((j) => (
                     <option key={j.id} value={j.id}>
-                      {j.title}
+                      {t(j.title)}
                     </option>
                   ))}
                 </select>
                 <select
-                  aria-label="Lọc theo client"
+                  aria-label={t("Lọc theo client")}
                   value={filterClientId}
                   onChange={(e) => setFilterClientId(e.target.value)}
                 >
-                  <option value="">Tất cả client</option>
+                  <option value="">{t("Tất cả client")}</option>
                   {data.filterOptions.clients.map((c) => (
                     <option key={c.id} value={c.id}>
-                      {c.name}
+                      {t(c.name)}
                     </option>
                   ))}
                 </select>
                 <input
                   type="month"
-                  aria-label="Lọc theo tháng"
+                  aria-label={t("Lọc theo tháng")}
                   value={filterMonth}
                   onChange={(e) => setFilterMonth(e.target.value)}
                 />
@@ -502,7 +504,7 @@ export default function FreelancerPaymentsPage() {
 
               {filteredTransactions.length === 0 ? (
                 <p className="payments-muted">
-                  Chưa có giao dịch. Thu nhập sẽ hiển thị khi client giải ngân Escrow sau nghiệm thu.
+                  {t("Chưa có giao dịch. Thu nhập sẽ hiển thị khi client giải ngân Escrow sau nghiệm thu.")}
                 </p>
               ) : (
                 <>
@@ -510,20 +512,20 @@ export default function FreelancerPaymentsPage() {
                     <table className="payments-table">
                       <thead>
                         <tr>
-                          <th>Ngày</th>
-                          <th>Dự án</th>
+                          <th>{t("Ngày")}</th>
+                          <th>{t("Dự án")}</th>
                           <th>Client</th>
-                          <th>Loại</th>
-                          <th>Ngân hàng</th>
-                          <th>Trạng thái</th>
-                          <th>Số tiền</th>
-                          <th>Tham chiếu</th>
+                          <th>{t("Loại")}</th>
+                          <th>{t("Ngân hàng")}</th>
+                          <th>{t("Trạng thái")}</th>
+                          <th>{t("Số tiền")}</th>
+                          <th>{t("Tham chiếu")}</th>
                         </tr>
                       </thead>
                       <tbody>
                         {txPage.items.map((item) => (
                           <tr key={item.id}>
-                            <td>{formatDate(item.occurredAt)}</td>
+                            <td>{formatDateUi(item.occurredAt)}</td>
                             <td className="payments-table__project">
                               {item.contractId ? (
                                 <Link href={contractDetailHref(item.contractId)}>
@@ -567,7 +569,7 @@ export default function FreelancerPaymentsPage() {
                             </td>
                             <td className={item.amount < 0 ? "payments-neg" : "payments-pos"}>
                               {item.amount >= 0 ? "+" : ""}
-                              {formatVnd(item.amount)}
+                              {formatVndUi(item.amount)}
                             </td>
                             <td>{item.withdrawalReferenceId || item.reference || "—"}</td>
                           </tr>
@@ -590,7 +592,7 @@ export default function FreelancerPaymentsPage() {
 
             <p className="payments-muted fl-payments__footer-note">
               Đơn đặt gói dịch vụ (gig) cũng giải ngân qua Escrow — xem chi tiết tại{" "}
-              <Link href="/dich-vu/don-hang">Đơn hàng dịch vụ</Link>.
+              <Link href="/dich-vu/don-hang">{t("Đơn hàng dịch vụ")}</Link>.
             </p>
           </>
         ) : null}

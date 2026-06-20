@@ -44,6 +44,18 @@ export function cancelTypeLabel(cancelType: string | null | undefined): string {
   }
 }
 
+/** Thông báo hiển thị khi đơn ở trạng thái kết thúc (SLA / hủy). */
+export function terminalOrderMessage(
+  cancelType: string | null | undefined,
+  cancelReason: string | null | undefined,
+): string {
+  const reason = cancelReason?.trim();
+  if (reason) return reason;
+  const type = cancelTypeLabel(cancelType);
+  if (type && type !== "—") return `Đơn đã kết thúc: ${type}`;
+  return "Không thể tiếp tục workflow.";
+}
+
 export function isContractDisputed(status: string | null | undefined): boolean {
   return String(status || "").toLowerCase() === "disputed";
 }

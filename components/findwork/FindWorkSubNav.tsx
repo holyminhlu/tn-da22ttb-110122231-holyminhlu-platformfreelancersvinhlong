@@ -1,11 +1,14 @@
 "use client";
 
+import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useStoredUser } from "@/hooks/useStoredUser";
 import { FINDWORK_NAV } from "./findworkNav";
 
 export default function FindWorkSubNav() {
+  const { t } = useTranslation();
+
   const pathname = usePathname();
   const { user, ready, isFreelancer } = useStoredUser({ refreshFromApi: false });
   const isGuest = ready && !user;
@@ -16,7 +19,7 @@ export default function FindWorkSubNav() {
   );
 
   return (
-    <nav className="hire-subnav" aria-label="Tìm việc">
+    <nav className="hire-subnav" aria-label={t("Tìm việc")}>
       <div className="hire-subnav__inner">
         {tabs.map((tab) => {
           if ("disabled" in tab && tab.disabled) {

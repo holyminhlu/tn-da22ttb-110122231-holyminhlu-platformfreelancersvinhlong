@@ -1,10 +1,11 @@
 "use client";
 
+import { tUi, formatVndUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useEffect, useId, useState } from "react";
 import { FaCheckCircle, FaTimes } from "react-icons/fa";
 import { isClientCannotQuoteError } from "@/components/findwork/ClientCannotQuoteModal";
 import { acceptJob, type JobListing, type SubmitJobQuotePayload } from "@/lib/api/jobs";
-import { formatVnd } from "@/lib/format";
 import { formatJobBudgetLine } from "@/lib/jobsDisplay";
 import "./job-proposal-form.css";
 
@@ -36,8 +37,9 @@ function parseBudgetNumber(value: string | number | null | undefined): number | 
 }
 
 function formatQuoteAmount(amount: number | null, pricingType: "fixed" | "hourly"): string {
+
   if (amount == null || !Number.isFinite(amount)) return "Theo ngân sách client";
-  const base = formatVnd(amount);
+  const base = formatVndUi(amount);
   return pricingType === "hourly" ? `${base}/giờ` : base;
 }
 
@@ -51,7 +53,8 @@ export default function JobProposalFormModal({
   onClose,
   onSuccess,
   onClientBlocked,
-}: JobProposalFormModalProps) {
+}: JobProposalFormModalProps) {  const { t, formatVnd } = useTranslation();
+
   const titleId = useId();
   const [step, setStep] = useState<Step>("form");
   const fixedPricingType = defaultPricingType(job);
@@ -77,6 +80,8 @@ export default function JobProposalFormModal({
   useEffect(() => {
     if (!open) return;
     function onKeyDown(e: KeyboardEvent) {
+  const t = tUi;
+  const formatVnd = formatVndUi;
       if (e.key === "Escape" && !submitting) onClose();
     }
     document.addEventListener("keydown", onKeyDown);
@@ -103,7 +108,7 @@ export default function JobProposalFormModal({
       return false;
     }
     if (hasBudgetRange && parsedAmount != null && (parsedAmount < minBudget || parsedAmount > maxBudget)) {
-      setFieldError(`Mức giá phải nằm trong khoảng ${formatVnd(minBudget)} - ${formatVnd(maxBudget)}.`);
+      setFieldError(`Mức giá phải nằm trong khoảng ${formatVndUi(minBudget)} - ${formatVndUi(maxBudget)}.`);
       return false;
     }
     setFieldError("");
@@ -111,12 +116,16 @@ export default function JobProposalFormModal({
   }
 
   function handleContinue() {
+  const t = tUi;
+  const formatVnd = formatVndUi;
     if (!validateForm()) return;
     setSubmitError("");
     setStep("confirm");
   }
 
   async function handleSubmit() {
+  const t = tUi;
+  const formatVnd = formatVndUi;
     if (!validateForm()) {
       setStep("form");
       return;
@@ -164,20 +173,20 @@ export default function JobProposalFormModal({
           className="job-proposal-modal__close"
           onClick={onClose}
           disabled={submitting}
-          aria-label="Đóng"
+          aria-label={t("Đóng")}
         >
           <FaTimes aria-hidden />
         </button>
 
         <header className="job-proposal-modal__header">
-          <p className="job-proposal-modal__eyebrow">Mẫu đề xuất</p>
+          <p className="job-proposal-modal__eyebrow">{t("Mẫu đề xuất")}</p>
           <h2 id={titleId} className="job-proposal-modal__title">
             {step === "form" ? "Chuẩn bị báo giá" : "Xác nhận chi tiết báo giá"}
           </h2>
           <p className="job-proposal-modal__subtitle">{job.title}</p>
         </header>
 
-        <ol className="job-proposal-modal__steps" aria-label="Các bước gửi báo giá">
+        <ol className="job-proposal-modal__steps" aria-label={t("Các bước gửi báo giá")}>
           <li className={step === "form" ? "is-active" : step === "confirm" ? "is-done" : ""}>
             <span>1</span> Soạn đề xuất
           </li>
@@ -189,12 +198,12 @@ export default function JobProposalFormModal({
         {step === "form" ? (
           <div className="job-proposal-modal__body">
             <div className="job-proposal-modal__job-ref">
-              <span>Ngân sách client</span>
+              <span>{t("Ngân sách client")}</span>
               <strong>{clientBudget}</strong>
             </div>
 
             <fieldset className="job-proposal-field">
-              <legend>Hình thức báo giá</legend>
+              <legend>{t("Hình thức báo giá")}</legend>
               <div className="job-proposal-field__radios">
                 <label className="job-proposal-radio">
                   <input
@@ -234,7 +243,7 @@ export default function JobProposalFormModal({
                 inputMode="numeric"
                 className="job-proposal-field__input"
                 placeholder={
-                  job.budget != null ? defaultAmountInput(job) || "Nhập số tiền" : "Nhập số tiền"
+                  job.budget != null ? defaultAmountInput(job) || t("Nhập số tiền") : "Nhập số tiền"
                 }
                 value={amountInput}
                 onChange={(e) => setAmountInput(e.target.value)}
@@ -242,7 +251,7 @@ export default function JobProposalFormModal({
               />
               <span className="job-proposal-field__hint">
                 {hasBudgetRange
-                  ? `Nhập trong khoảng ${formatVnd(minBudget)} - ${formatVnd(maxBudget)}.`
+                  ? `Nhập trong khoảng ${formatVndUi(minBudget)} - ${formatVndUi(maxBudget)}.`
                   : minBudget != null
                     ? "Giá được cố định theo ngân sách client."
                     : "Để trống nếu muốn dùng ngân sách client làm mức báo giá mặc định."}
@@ -250,11 +259,11 @@ export default function JobProposalFormModal({
             </label>
 
             <label className="job-proposal-field">
-              <span className="job-proposal-field__label">Thư đề xuất</span>
+              <span className="job-proposal-field__label">{t("Thư đề xuất")}</span>
               <textarea
                 className="job-proposal-field__textarea"
                 rows={6}
-                placeholder="Giới thiệu kinh nghiệm, cách tiếp cận, thời gian hoàn thành và lý do client nên chọn bạn..."
+                placeholder={t("Giới thiệu kinh nghiệm, cách tiếp cận, thời gian hoàn thành và lý do client nên chọn bạn...")}
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
               />
@@ -273,23 +282,23 @@ export default function JobProposalFormModal({
           <div className="job-proposal-modal__body">
             <div className="job-proposal-review">
               <div className="job-proposal-review__row">
-                <dt>Công việc</dt>
+                <dt>{t("Công việc")}</dt>
                 <dd>{job.title}</dd>
               </div>
               <div className="job-proposal-review__row">
-                <dt>Hình thức</dt>
+                <dt>{t("Hình thức")}</dt>
                 <dd>{pricingTypeLabel(fixedPricingType)}</dd>
               </div>
               <div className="job-proposal-review__row">
-                <dt>Mức báo giá</dt>
+                <dt>{t("Mức báo giá")}</dt>
                 <dd>{formatQuoteAmount(parsedAmount ?? minBudget, fixedPricingType)}</dd>
               </div>
               <div className="job-proposal-review__row">
-                <dt>Ngân sách client</dt>
+                <dt>{t("Ngân sách client")}</dt>
                 <dd>{clientBudget}</dd>
               </div>
               <div className="job-proposal-review__message">
-                <dt>Thư đề xuất</dt>
+                <dt>{t("Thư đề xuất")}</dt>
                 <dd>{message.trim()}</dd>
               </div>
             </div>

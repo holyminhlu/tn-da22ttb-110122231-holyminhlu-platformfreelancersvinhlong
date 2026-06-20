@@ -1,5 +1,7 @@
 "use client";
 
+import { formatDateUi, tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { listServiceOrders, type ServiceOrderListItem } from "@/lib/api/contracts";
@@ -22,19 +24,19 @@ import {
   type OrderListFilter,
 } from "@/lib/orders/serviceOrderDisplay";
 import { orderDeadlineSubtitle } from "@/lib/orders/workflowSlaDisplay";
-import { formatDate } from "@/lib/format";
 import UserAvatar from "@/components/ui/UserAvatar";
 import FreelancerWorkShell from "./FreelancerWorkShell";
 import "./findwork-orders.css";
 
 const FILTERS: { value: OrderListFilter; label: string }[] = [
-  { value: "all", label: "Tất cả" },
-  { value: "action", label: "Cần xử lý" },
-  { value: "active", label: "Đang làm" },
-  { value: "done", label: "Hoàn tất" },
+  { value: "all", label: tUi("Tất cả") },
+  { value: "action", label: tUi("Cần xử lý") },
+  { value: "active", label: tUi("Đang làm") },
+  { value: "done", label: tUi("Hoàn tất") },
 ];
 
-export default function FreelancerServiceOrdersPage() {
+export default function FreelancerServiceOrdersPage() {  const { t, formatDate } = useTranslation();
+
   const [orders, setOrders] = useState<ServiceOrderListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -46,7 +48,7 @@ export default function FreelancerServiceOrdersPage() {
     try {
       const data = await listServiceOrders();
       if (data.role !== "freelancer") {
-        setError("Trang này dành cho tài khoản freelancer.");
+        setError(t("Trang này dành cho tài khoản freelancer."));
         setOrders([]);
         return;
       }
@@ -81,7 +83,7 @@ export default function FreelancerServiceOrdersPage() {
     <FreelancerWorkShell>
       <div className="fw-orders">
         <header className="fw-orders__head">
-          <h1 className="fw-orders__title">Việc & đơn đã nhận</h1>
+          <h1 className="fw-orders__title">{t("Việc & đơn đã nhận")}</h1>
           <p className="fw-orders__lead">
             Gồm đơn dịch vụ (gigs) và công việc client chốt tuyển từ báo giá — cập nhật tiến độ,
             bàn giao và nghiệm thu theo từng giai đoạn.
@@ -89,7 +91,7 @@ export default function FreelancerServiceOrdersPage() {
           </p>
         </header>
 
-        <div className="fw-orders__filters" role="tablist" aria-label="Lọc đơn">
+        <div className="fw-orders__filters" role="tablist" aria-label={t("Lọc đơn")}>
           {FILTERS.map((item) => (
             <button
               key={item.value}
@@ -105,7 +107,7 @@ export default function FreelancerServiceOrdersPage() {
         </div>
 
         {loading ? (
-          <p className="text-sm text-gray-500">Đang tải...</p>
+          <p className="text-sm text-gray-500">{t("Đang tải...")}</p>
         ) : error ? (
           <p className="text-sm text-red-700" role="alert">
             {error}
@@ -174,7 +176,7 @@ export default function FreelancerServiceOrdersPage() {
                         <span className={orderStatusChipClass(deadlineTone)}>{deadlineLine}</span>
                       ) : null}
                       <span className="fw-orders__card-foot-date">
-                        Cập nhật: {formatDate(order.updated_at || order.created_at)}
+                        Cập nhật: {formatDateUi(order.updated_at || order.created_at)}
                       </span>
                     </div>
                   </Link>

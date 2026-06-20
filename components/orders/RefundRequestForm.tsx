@@ -1,7 +1,8 @@
 "use client";
 
+import { tUi, formatVndUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useMemo, useState } from "react";
-import { formatVnd } from "@/lib/format";
 import type { RefundRequestPayload } from "@/lib/api/resolution";
 import { REFUND_REASON_OPTIONS } from "@/lib/orders/refundDisputeData";
 import { computeRefundSettlement } from "@/lib/orders/refundSettlement";
@@ -23,7 +24,8 @@ export default function RefundRequestForm({
   eligible = true,
   busy,
   onSubmit,
-}: RefundRequestFormProps) {
+}: RefundRequestFormProps) {  const { t, formatVnd } = useTranslation();
+
   const [reasonCode, setReasonCode] = useState("");
   const [detail, setDetail] = useState("");
 
@@ -42,6 +44,8 @@ export default function RefundRequestForm({
   }, [agreedPrice, workflowStage, hasProgress, reasonCode, eligible]);
 
   function handleSubmit() {
+  const t = tUi;
+  const formatVnd = formatVndUi;
     if (!canSubmit) return;
     onSubmit({ reasonCode, detail: detail.trim() || undefined, refundMethod: "wallet" });
   }
@@ -49,7 +53,7 @@ export default function RefundRequestForm({
   return (
     <div className="resolution-form">
       <header className="resolution-form__head">
-        <h4 className="resolution-form__title">Yêu cầu hoàn tiền</h4>
+        <h4 className="resolution-form__title">{t("Yêu cầu hoàn tiền")}</h4>
         <p className="resolution-form__sub">
           Hệ thống phân loại lý do chính đáng / không chính đáng để tính mức hoàn. Freelancer có 3
           ngày phản hồi; nếu lý do &quot;khác&quot;, admin sẽ xem xét trước khi quyết định.
@@ -58,13 +62,13 @@ export default function RefundRequestForm({
 
       <div className="resolution-form__refund-box resolution-form__refund-box--wallet">
         <div>
-          <span className="resolution-form__refund-label">Phương thức nhận lại</span>
-          <strong className="resolution-form__refund-amount">Ví VLC (mặc định)</strong>
+          <span className="resolution-form__refund-label">{t("Phương thức nhận lại")}</span>
+          <strong className="resolution-form__refund-amount">{t("Ví VLC (mặc định)")}</strong>
         </div>
         <div>
-          <span className="resolution-form__refund-label">Tổng ký quỹ</span>
+          <span className="resolution-form__refund-label">{t("Tổng ký quỹ")}</span>
           <strong className="resolution-form__refund-amount">
-            {agreedPrice != null ? formatVnd(agreedPrice) : "—"}
+            {agreedPrice != null ? formatVndUi(agreedPrice) : "—"}
           </strong>
         </div>
       </div>
@@ -79,7 +83,7 @@ export default function RefundRequestForm({
           onChange={(e) => setReasonCode(e.target.value)}
           disabled={!eligible}
         >
-          <option value="">— Chọn lý do —</option>
+          <option value="">{t("— Chọn lý do —")}</option>
           {REFUND_REASON_OPTIONS.map((opt) => (
             <option key={opt.value} value={opt.value}>
               {opt.label}

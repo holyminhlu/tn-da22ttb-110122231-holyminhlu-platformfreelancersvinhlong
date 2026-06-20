@@ -5,18 +5,20 @@ export type NotificationPrefs = {
   orders: boolean;
   messages: boolean;
   quotes: boolean;
-  emailDigest: boolean;
 };
 
-const THEME_KEY = "vlc_theme";
-const LOCALE_KEY = "vlc_locale";
+import { THEME_STORAGE_KEY } from "@/lib/theme";
+
+const THEME_KEY = THEME_STORAGE_KEY;
+export const LOCALE_STORAGE_KEY = "vlc_locale";
+const LOCALE_KEY = LOCALE_STORAGE_KEY;
+export const LOCALE_CHANGE_EVENT = "vlc-locale-change";
 const NOTIF_KEY = "vlc_notification_prefs";
 
 export const DEFAULT_NOTIFICATION_PREFS: NotificationPrefs = {
   orders: true,
   messages: true,
   quotes: true,
-  emailDigest: false,
 };
 
 function canUseStorage() {
@@ -58,6 +60,7 @@ export function setLocalePreference(locale: LocalePreference) {
   if (!canUseStorage()) return;
   localStorage.setItem(LOCALE_KEY, locale);
   document.documentElement.lang = locale;
+  window.dispatchEvent(new CustomEvent(LOCALE_CHANGE_EVENT, { detail: locale }));
 }
 
 export function getNotificationPrefs(): NotificationPrefs {
@@ -77,9 +80,24 @@ export function setNotificationPrefs(prefs: NotificationPrefs) {
   localStorage.setItem(NOTIF_KEY, JSON.stringify(prefs));
 }
 
+export function cacheNotificationPrefs(prefs: NotificationPrefs) {
+  setNotificationPrefs(prefs);
+}
+
 export function applyStoredUserPreferences() {
   applyThemePreference(getThemePreference());
   if (typeof document !== "undefined") {
     document.documentElement.lang = getLocalePreference();
   }
+}
+
+/** Cập nhật theme khi OS đổi sáng/tối (chế độ "Theo hệ thống"). */
+export function subscribeToSystemThemeChange(onChange: () => void): () => void {
+  if (typeof window === "undefined") return () => {};
+  const mq = window.matchMedia("(prefers-color-scheme: dark)");
+  const handler = () => {
+    if (getThemePreference() === "system") onChange();
+  };
+  mq.addEventListener("change", handler);
+  return () => mq.removeEventListener("change", handler);
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -9,6 +10,8 @@ import ClientDashboard from "./ClientDashboard";
 import FreelancerDashboard from "./FreelancerDashboard";
 
 export default function DashboardRouter() {
+  const { t } = useTranslation();
+
   const router = useRouter();
   const { user, ready, isFreelancer, isClient, isAdmin } = useStoredUser();
 

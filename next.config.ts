@@ -28,15 +28,22 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
+      // Auth aliases
+      { source: "/login", destination: "/dang-nhap", permanent: true },
+      { source: "/register", destination: "/dang-ky", permanent: true },
+      { source: "/auth/google/callback", destination: "/dang-nhap", permanent: false },
+
+      // Account / profile aliases
+      { source: "/xac-minh-danh-tinh", destination: "/edit-account/xac-minh", permanent: true },
+      { source: "/profile", destination: "/ho-so", permanent: true },
+      { source: "/settings", destination: "/edit-account", permanent: true },
+
+      // Freelancer service orders — canonical path is /dich-vu/don-hang
+      { source: "/findwork/orders", destination: "/dich-vu/don-hang", permanent: true },
       {
-        source: "/login",
-        destination: "/dang-nhap",
+        source: "/findwork/orders/:contractId",
+        destination: "/dich-vu/don-hang/:contractId",
         permanent: true,
-      },
-      {
-        source: "/auth/google/callback",
-        destination: "/dang-nhap",
-        permanent: false,
       },
     ];
   },

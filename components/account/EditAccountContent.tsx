@@ -1,5 +1,7 @@
 "use client";
 
+import { tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import {
@@ -107,6 +109,8 @@ function AddressBlock({ label, value }: { label: string; value: string }) {
 }
 
 export default function EditAccountContent() {
+  const { t } = useTranslation();
+
   const router = useRouter();
   const [user, setUser] = useState<MeUser | null>(null);
   const [freelancerTitle, setFreelancerTitle] = useState<string | null>(null);
@@ -156,6 +160,7 @@ export default function EditAccountContent() {
   }, []);
 
   function onWhatsappToggle(checked: boolean) {
+  const t = tUi;
     setWhatsappOn(checked);
     if (typeof window !== "undefined") {
       window.localStorage.setItem(WHATSAPP_PREF_KEY, checked ? "1" : "0");
@@ -169,6 +174,7 @@ export default function EditAccountContent() {
     bio?: string | null;
     districtCity?: string | null;
   }) {
+  const t = tUi;
     if (!user) return;
     setSaving(true);
     try {
@@ -205,6 +211,7 @@ export default function EditAccountContent() {
   }
 
   function openEdit(field: EditFieldKey) {
+  const t = tUi;
     if (!user) return;
     if (field === "fullName") {
       setDialog({ field, title: "Họ và tên", value: user.fullName || "" });
@@ -224,6 +231,7 @@ export default function EditAccountContent() {
   }
 
   async function handleDialogSave() {
+  const t = tUi;
     if (!dialog || !user) return;
     const fullName = (user.fullName || "").trim();
     if (!fullName) {

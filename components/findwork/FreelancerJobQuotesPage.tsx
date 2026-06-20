@@ -1,5 +1,7 @@
 "use client";
 
+import { tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import DashboardPagination from "@/components/dashboard/DashboardPagination";
@@ -21,22 +23,24 @@ import "./findwork-quotes.css";
 const PAGE_SIZE = 12;
 
 const FILTERS: { value: FreelancerQuoteFilter; label: string }[] = [
-  { value: "all", label: "Tất cả" },
-  { value: "active", label: "Đang mở" },
-  { value: "pending", label: "Đang chờ" },
-  { value: "offered", label: "Đề xuất" },
-  { value: "accepted", label: "Đã tuyển" },
-  { value: "declined", label: "Từ chối" },
+  { value: "all", label: tUi("Tất cả") },
+  { value: "active", label: tUi("Đang mở") },
+  { value: "pending", label: tUi("Đang chờ") },
+  { value: "offered", label: tUi("Đề xuất") },
+  { value: "accepted", label: tUi("Đã tuyển") },
+  { value: "declined", label: tUi("Từ chối") },
 ];
 
 const SORT_OPTIONS: { value: FreelancerQuoteSort; label: string }[] = [
-  { value: "newest", label: "Ưu tiên trạng thái" },
-  { value: "updated", label: "Cập nhật mới" },
-  { value: "price_desc", label: "Giá cao → thấp" },
-  { value: "price_asc", label: "Giá thấp → cao" },
+  { value: "newest", label: tUi("Ưu tiên trạng thái") },
+  { value: "updated", label: tUi("Cập nhật mới") },
+  { value: "price_desc", label: tUi("Giá cao → thấp") },
+  { value: "price_asc", label: tUi("Giá thấp → cao") },
 ];
 
 export default function FreelancerJobQuotesPage() {
+  const { t } = useTranslation();
+
   const { user, ready, isFreelancer } = useStoredUser({ refreshFromApi: false });
   const isGuest = ready && !user;
 
@@ -99,7 +103,8 @@ export default function FreelancerJobQuotesPage() {
   }, [visibleQuotes, safePage]);
 
   async function handleWithdraw(quoteId: string) {
-    if (!window.confirm("Rút báo giá này? Bạn có thể gửi lại sau nếu việc vẫn đang mở.")) {
+  const t = tUi;
+    if (!window.confirm(t("Rút báo giá này? Bạn có thể gửi lại sau nếu việc vẫn đang mở."))) {
       return;
     }
     setActionError("");
@@ -123,7 +128,7 @@ export default function FreelancerJobQuotesPage() {
       <div className="fw-quotes">
         <header className="fw-quotes__head">
           <div>
-            <h1 className="fw-quotes__title">Báo giá job</h1>
+            <h1 className="fw-quotes__title">{t("Báo giá job")}</h1>
             <p className="fw-quotes__lead">
               Theo dõi báo giá bạn đã gửi cho khách hàng — trạng thái phỏng vấn, đề xuất và
               kết quả tuyển chọn.
@@ -137,7 +142,7 @@ export default function FreelancerJobQuotesPage() {
 
         {isGuest ? (
           <div className="fw-quotes__guest">
-            <p>Đăng nhập freelancer để xem và quản lý báo giá job đã gửi.</p>
+            <p>{t("Đăng nhập freelancer để xem và quản lý báo giá job đã gửi.")}</p>
             <Link href="/dang-nhap" className="fw-quotes__cta">
               Đăng nhập
             </Link>
@@ -148,22 +153,22 @@ export default function FreelancerJobQuotesPage() {
           </p>
         ) : (
           <>
-            <div className="fw-quotes__stats" aria-label="Tóm tắt báo giá">
+            <div className="fw-quotes__stats" aria-label={t("Tóm tắt báo giá")}>
               <div className="fw-quotes__stat">
                 <span className="fw-quotes__stat-value">{counts.all}</span>
-                <span className="fw-quotes__stat-label">Tổng báo giá</span>
+                <span className="fw-quotes__stat-label">{t("Tổng báo giá")}</span>
               </div>
               <div className="fw-quotes__stat">
                 <span className="fw-quotes__stat-value">{counts.active}</span>
-                <span className="fw-quotes__stat-label">Đang mở</span>
+                <span className="fw-quotes__stat-label">{t("Đang mở")}</span>
               </div>
               <div className="fw-quotes__stat">
                 <span className="fw-quotes__stat-value">{counts.offered}</span>
-                <span className="fw-quotes__stat-label">Có đề xuất</span>
+                <span className="fw-quotes__stat-label">{t("Có đề xuất")}</span>
               </div>
               <div className="fw-quotes__stat">
                 <span className="fw-quotes__stat-value">{counts.accepted}</span>
-                <span className="fw-quotes__stat-label">Đã tuyển</span>
+                <span className="fw-quotes__stat-label">{t("Đã tuyển")}</span>
               </div>
             </div>
 
@@ -171,16 +176,16 @@ export default function FreelancerJobQuotesPage() {
               <input
                 type="search"
                 className="fw-quotes__search"
-                placeholder="Tìm theo việc, client, nội dung..."
+                placeholder={t("Tìm theo việc, client, nội dung...")}
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
-                aria-label="Tìm báo giá"
+                aria-label={t("Tìm báo giá")}
               />
               <select
                 className="fw-quotes__sort"
                 value={sort}
                 onChange={(e) => setSort(e.target.value as FreelancerQuoteSort)}
-                aria-label="Sắp xếp"
+                aria-label={t("Sắp xếp")}
               >
                 {SORT_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
@@ -198,7 +203,7 @@ export default function FreelancerJobQuotesPage() {
               </label>
             </div>
 
-            <div className="fw-quotes__filters" role="tablist" aria-label="Lọc báo giá">
+            <div className="fw-quotes__filters" role="tablist" aria-label={t("Lọc báo giá")}>
               {FILTERS.map((item) => (
                 <button
                   key={item.value}
@@ -223,7 +228,7 @@ export default function FreelancerJobQuotesPage() {
             ) : null}
 
             {loading ? (
-              <p className="text-sm text-gray-500">Đang tải...</p>
+              <p className="text-sm text-gray-500">{t("Đang tải...")}</p>
             ) : error ? (
               <p className="fw-quotes__error" role="alert">
                 {error}

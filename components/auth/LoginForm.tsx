@@ -1,10 +1,12 @@
 "use client";
 
+import { tUi } from "@/lib/i18n/runtime";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
 import AuthLayout from "./AuthLayout";
 import GoogleButton from "./GoogleButton";
+import { useTranslation } from "@/hooks/useTranslation";
 import { login } from "@/lib/api/auth";
 import { persistAuthTokens, persistStoredUser, toStoredUser } from "@/lib/authSession";
 import { resolvePostLoginPath } from "@/lib/auth/roleRoutes";
@@ -16,6 +18,8 @@ function safeNextPath(raw: string | null): string | null {
 }
 
 export default function LoginForm() {
+  const { t } = useTranslation();
+
   const router = useRouter();
   const searchParams = useSearchParams();
   const nextPath = safeNextPath(searchParams.get("next"));
@@ -33,6 +37,7 @@ export default function LoginForm() {
   }, [error]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  const t = tUi;
     event.preventDefault();
     setError("");
     setSuccess("");
@@ -49,7 +54,7 @@ export default function LoginForm() {
         persistStoredUser(toStoredUser(data.user));
       }
 
-      setSuccess("Đăng nhập thành công. Đang chuyển hướng…");
+      setSuccess(t("auth.loginSuccess"));
       router.push(resolvePostLoginPath(data.user?.role, nextPath));
       router.refresh();
     } catch (err) {
@@ -57,7 +62,7 @@ export default function LoginForm() {
         err && typeof err === "object" && "message" in err
           ? String((err as { message: string }).message)
           : "";
-      setError(message || "Không thể kết nối máy chủ.");
+      setError(message || t("auth.serverError"));
     } finally {
       setLoading(false);
     }
@@ -65,23 +70,21 @@ export default function LoginForm() {
 
   return (
     <AuthLayout variant="login">
-      <h2 className={styles.title}>Đăng nhập</h2>
-      <p className={styles.subtitle}>
-        Đăng nhập bằng email hoặc tiếp tục với Google
-      </p>
+      <h2 className={styles.title}>{t("auth.login")}</h2>
+      <p className={styles.subtitle}>{t("auth.loginSubtitle")}</p>
 
       {error ? (
         <div className={styles.toastStack} role="alert" aria-live="assertive">
           <div className={styles.toastError}>
             <div>
-              <p className={styles.toastTitle}>Đăng nhập thất bại</p>
+              <p className={styles.toastTitle}>{t("auth.loginFailed")}</p>
               <p className={styles.toastMessage}>{error}</p>
             </div>
             <button
               type="button"
               className={styles.toastClose}
               onClick={() => setError("")}
-              aria-label="Đóng thông báo"
+              aria-label={t("common.closeNotification")}
             >
               ×
             </button>
@@ -98,7 +101,7 @@ export default function LoginForm() {
       <form onSubmit={handleSubmit}>
         <div className={styles.field}>
           <label className={styles.label} htmlFor="login-email">
-            Email
+            {t("common.email")}
           </label>
           <input
             id="login-email"
@@ -113,7 +116,7 @@ export default function LoginForm() {
         </div>
         <div className={styles.field}>
           <label className={styles.label} htmlFor="login-password">
-            Mật khẩu
+            {t("common.password")}
           </label>
           <input
             id="login-password"
@@ -128,17 +131,17 @@ export default function LoginForm() {
         </div>
 
         <button type="submit" className={styles.submit} disabled={loading}>
-          {loading ? "Đang xử lý…" : "Đăng nhập"}
+          {loading ? t("common.processing") : t("auth.login")}
         </button>
       </form>
 
-      <div className={styles.divider}>hoặc</div>
+      <div className={styles.divider}>{t("common.or")}</div>
       <GoogleButton nextPath={nextPath} />
 
       <p className={styles.helperText}>
-        Chưa có tài khoản?{" "}
+        {t("auth.noAccount")}{" "}
         <Link href={nextPath ? `/dang-ky?next=${encodeURIComponent(nextPath)}` : "/dang-ky"}>
-          Đăng ký ngay
+          {t("auth.signUpNow")}
         </Link>
       </p>
     </AuthLayout>

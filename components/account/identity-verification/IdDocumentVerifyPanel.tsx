@@ -1,5 +1,7 @@
 "use client";
 
+import { tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useState } from "react";
 import { apiPaths } from "@/config/api.config";
 import {
@@ -22,12 +24,15 @@ type IdDocumentVerifyPanelProps = {
 };
 
 export default function IdDocumentVerifyPanel({ data, onSaved }: IdDocumentVerifyPanelProps) {
+  const { t } = useTranslation();
+
   const [docType, setDocType] = useState(data.verification?.id_doc_type ?? "national_id");
   const [uploadingFront, setUploadingFront] = useState(false);
   const [uploadingBack, setUploadingBack] = useState(false);
   const [message, setMessage] = useState("");
 
   async function saveType(value: string) {
+  const t = tUi;
     setDocType(value);
     await patchIdentityVerification({ idDocType: value });
   }

@@ -1,4 +1,5 @@
 import type { FreelancerTransaction } from "@/lib/api/payments";
+import { freelancerServiceOrderHref } from "@/lib/routes/paths";
 import { workflowStageLabel } from "@/lib/orders/serviceOrderDisplay";
 
 export type FreelancerTxFilter = "all" | "income" | "withdraw" | "other";
@@ -43,5 +44,5 @@ export function pendingStageLabel(stage: string | null): string {
 }
 
 export function contractDetailHref(contractId: string): string {
-  return `/findwork/orders/${contractId}`;
+  return freelancerServiceOrderHref(contractId);
 }

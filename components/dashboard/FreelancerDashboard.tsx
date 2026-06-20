@@ -1,5 +1,7 @@
 "use client";
 
+import { formatDateUi, tUi, formatVndUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
@@ -78,6 +80,7 @@ function DashboardWidget({
   children: ReactNode;
   alignLeft?: boolean;
 }) {
+  const t = tUi;
   return (
     <section className="client-widget">
       <header className="client-widget__head">
@@ -92,6 +95,8 @@ function DashboardWidget({
 }
 
 function WidgetWorkList({ items }: { items: JobsListItem[] }) {
+  const t = tUi;
+  const formatVnd = formatVndUi;
   const { items: pageItems, page, totalPages, total, setPage } = usePagedList(items, WIDGET_PAGE_SIZE);
 
   return (
@@ -105,7 +110,7 @@ function WidgetWorkList({ items }: { items: JobsListItem[] }) {
             <p className="client-widget__list-meta">
               {item.counterparty ? `${item.counterparty} · ` : ""}
               {jobContractStageLabel(item)}
-              {item.agreedPrice != null ? ` · ${formatVnd(item.agreedPrice)}` : ""}
+              {item.agreedPrice != null ? ` · ${formatVndUi(item.agreedPrice)}` : ""}
             </p>
           </li>
         ))}
@@ -116,6 +121,8 @@ function WidgetWorkList({ items }: { items: JobsListItem[] }) {
 }
 
 function WidgetServiceList({ services }: { services: FreelancerService[] }) {
+  const t = tUi;
+  const formatVnd = formatVndUi;
   const { items, page, totalPages, total, setPage } = usePagedList(services, WIDGET_PAGE_SIZE);
 
   return (
@@ -127,7 +134,7 @@ function WidgetServiceList({ services }: { services: FreelancerService[] }) {
               {service.title}
             </Link>
             <p className="client-widget__list-meta">
-              {formatVnd(service.price)}
+              {formatVndUi(service.price)}
               {service.delivery_days != null ? ` · Giao ${service.delivery_days} ngày` : ""}
             </p>
           </li>
@@ -139,6 +146,9 @@ function WidgetServiceList({ services }: { services: FreelancerService[] }) {
 }
 
 function WidgetPaymentsList({ transactions }: { transactions: FreelancerTransaction[] }) {
+  const t = tUi;
+  const formatDate = formatDateUi;
+  const formatVnd = formatVndUi;
   const { items, page, totalPages, total, setPage } = usePagedList(transactions, WIDGET_PAGE_SIZE);
 
   return (
@@ -148,12 +158,12 @@ function WidgetPaymentsList({ transactions }: { transactions: FreelancerTransact
           <li key={tx.id} className="client-widget__list-item">
             <span className="client-widget__list-title">{tx.projectTitle || "Giao dịch"}</span>
             <p className="client-widget__list-meta">
-              {formatVnd(tx.amount)}
+              {formatVndUi(tx.amount)}
               {tx.clientName ? ` · ${tx.clientName}` : ""}
               {" · "}
               {freelancerTransactionCategoryLabel(tx.category)}
               {" · "}
-              {formatDate(tx.occurredAt)}
+              {formatDateUi(tx.occurredAt)}
             </p>
           </li>
         ))}
@@ -189,6 +199,7 @@ function ReviewsHighlightPanel({
   profile: FreelancerProfile | null;
   reviews: ContractReview[];
 }) {
+  const formatDate = formatDateUi;
   const avg = profile ? Number(profile.rating_avg) : 0;
   const totalReviews = profile?.total_reviews ?? reviews.length;
   const successScore = profile?.job_success_score;
@@ -227,7 +238,7 @@ function ReviewsHighlightPanel({
             <footer className="fd-review-featured__foot">
               <StarRating rating={featured.rating} size="sm" />
               <span>
-                {featured.reviewer_name || "Khách hàng"} · {formatDate(featured.created_at)}
+                {featured.reviewer_name || "Khách hàng"} · {formatDateUi(featured.created_at)}
               </span>
             </footer>
           </blockquote>
@@ -370,7 +381,8 @@ function ProfileQuickPanel({
   );
 }
 
-export default function FreelancerDashboard() {
+export default function FreelancerDashboard() {  const { t, formatVnd, formatDate } = useTranslation();
+
   const router = useRouter();
   const [data, setData] = useState<FreelancerMeResponse | null>(null);
   const [billing, setBilling] = useState<FreelancerBillingOverview | null>(null);
@@ -505,7 +517,7 @@ export default function FreelancerDashboard() {
                 {profile?.title ? (
                   <p className="client-dashboard__billing">
                     {profile.title}
-                    {profile.hourly_rate != null ? ` · ${formatVnd(profile.hourly_rate)}/giờ` : ""}
+                    {profile.hourly_rate != null ? ` · ${formatVndUi(profile.hourly_rate)}/giờ` : ""}
                   </p>
                 ) : null}
               </div>
@@ -515,7 +527,7 @@ export default function FreelancerDashboard() {
                 <FaWallet className="client-dashboard__cash-icon" aria-hidden />
                 <span>
                   <strong>Số dư khả dụng:</strong>{" "}
-                  <span className="client-dashboard__cash-amount">{formatVnd(balance)}</span>
+                  <span className="client-dashboard__cash-amount">{formatVndUi(balance)}</span>
                 </span>
               </div>
               {pendingBalance > 0 ? (
@@ -523,7 +535,7 @@ export default function FreelancerDashboard() {
                   <span>
                     <strong>Đang chờ giải ngân:</strong>{" "}
                     <span className="client-dashboard__cash-amount client-dashboard__cash-amount--secondary">
-                      {formatVnd(pendingBalance)}
+                      {formatVndUi(pendingBalance)}
                     </span>
                   </span>
                 </div>
@@ -612,10 +624,10 @@ export default function FreelancerDashboard() {
           </div>
 
           <div className="client-dashboard__grid client-dashboard__grid--duo">
-            <ReviewsHighlightPanel profile={profile} reviews={reviews} />
+            <ReviewsHighlightPanel profile={profile ?? null} reviews={reviews} />
             <ProfileQuickPanel
               user={user}
-              profile={profile}
+              profile={profile ?? null}
               completionScore={data.completionScore}
               skillsCount={data.skills.length}
               portfolioCount={data.portfolio.length}

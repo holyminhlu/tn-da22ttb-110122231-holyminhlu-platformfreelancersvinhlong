@@ -1,3 +1,4 @@
+import { useTranslation } from "@/hooks/useTranslation";
 import { formatMoneyInputDigits, parseMoneyInputDigits } from "@/lib/format";
 
 type PaymentsMoneyInputProps = {
@@ -17,6 +18,8 @@ export default function PaymentsMoneyInput({
   disabled = false,
   "aria-label": ariaLabel,
 }: PaymentsMoneyInputProps) {
+  const { t } = useTranslation();
+
   return (
     <div className={`payments-money-input${className ? ` ${className}` : ""}`}>
       <input

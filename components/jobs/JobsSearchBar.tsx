@@ -1,5 +1,7 @@
 "use client";
 
+import { tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import { FaSearch, FaTimes } from "react-icons/fa";
 
 type JobsSearchBarProps = {
@@ -8,9 +10,13 @@ type JobsSearchBarProps = {
   onSubmit: () => void;
 };
 
-export default function JobsSearchBar({ value, onChange, onSubmit }: JobsSearchBarProps) {
+export default function JobsSearchBar({
+  value, onChange, onSubmit }: JobsSearchBarProps) {
+  const { t } = useTranslation();
+
   function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  const t = tUi;
+  e.preventDefault();
     onSubmit();
   }
 
@@ -19,22 +25,22 @@ export default function JobsSearchBar({ value, onChange, onSubmit }: JobsSearchB
       <input
         type="search"
         className="jobs-search__input"
-        placeholder="Nhập chức danh hoặc mã số công việc"
+        placeholder={t("Nhập chức danh hoặc mã số công việc")}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        aria-label="Tìm trong việc làm của bạn"
+        aria-label={t("Tìm trong việc làm của bạn")}
       />
       {value ? (
         <button
           type="button"
           className="jobs-search__clear"
           onClick={() => onChange("")}
-          aria-label="Xóa từ khóa"
+          aria-label={t("Xóa từ khóa")}
         >
           <FaTimes aria-hidden />
         </button>
       ) : null}
-      <button type="submit" className="jobs-search__btn" aria-label="Tìm kiếm">
+      <button type="submit" className="jobs-search__btn" aria-label={t("Tìm kiếm")}>
         <FaSearch aria-hidden />
       </button>
     </form>

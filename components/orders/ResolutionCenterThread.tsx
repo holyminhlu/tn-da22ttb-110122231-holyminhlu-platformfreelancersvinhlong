@@ -1,10 +1,11 @@
 "use client";
 
+import { formatDateUi, tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useState } from "react";
 import { FaFilePdf, FaVideo } from "react-icons/fa";
 import type { DisputeMessage } from "@/lib/api/resolution";
 import { resolveAvatarSrc } from "@/lib/authSession";
-import { formatDate } from "@/lib/format";
 import { formatDeadlineCountdown } from "@/lib/orders/workflowSlaDisplay";
 
 type ResolutionCenterThreadProps = {
@@ -30,6 +31,7 @@ function parseAttachments(raw: unknown): string[] {
 }
 
 function fileNameFromUrl(url: string) {
+  const t = tUi;
   return decodeURIComponent(url.split("/").pop() || "minh-chung");
 }
 
@@ -86,7 +88,8 @@ export default function ResolutionCenterThread({
   viewerRole,
   busy,
   onSend,
-}: ResolutionCenterThreadProps) {
+}: ResolutionCenterThreadProps) {  const { t, formatDate } = useTranslation();
+
   const [draft, setDraft] = useState("");
   const countdown = respondByAt ? formatDeadlineCountdown(respondByAt) : null;
 
@@ -94,8 +97,8 @@ export default function ResolutionCenterThread({
     <div className="resolution-thread">
       <header className="resolution-thread__head">
         <div className="resolution-thread__head-top">
-          <h4 className="resolution-thread__title">Trung tâm giải quyết tranh chấp</h4>
-          <div className="resolution-thread__legend" aria-label="Màu theo vai trò">
+          <h4 className="resolution-thread__title">{t("Trung tâm giải quyết tranh chấp")}</h4>
+          <div className="resolution-thread__legend" aria-label={t("Màu theo vai trò")}>
             <span className="resolution-thread__legend-item resolution-thread__legend-item--client">
               Khách hàng
             </span>
@@ -121,7 +124,7 @@ export default function ResolutionCenterThread({
 
       <div className="resolution-thread__messages" role="log" aria-live="polite">
         {messages.length === 0 ? (
-          <p className="resolution-thread__empty">Chưa có tin nhắn.</p>
+          <p className="resolution-thread__empty">{t("Chưa có tin nhắn.")}</p>
         ) : (
           messages.map((msg) => {
             const mine =
@@ -154,7 +157,7 @@ export default function ResolutionCenterThread({
                       {roleLabel(msg.author_role)}
                     </span>
                     {!mine ? <strong>{displayName}</strong> : null}
-                    <time dateTime={msg.created_at}>{formatDate(msg.created_at)}</time>
+                    <time dateTime={msg.created_at}>{formatDateUi(msg.created_at)}</time>
                   </header>
                   <p className="resolution-thread__msg-body">{msg.body}</p>
                   <DisputeAttachments urls={attachments} />
@@ -172,7 +175,7 @@ export default function ResolutionCenterThread({
             rows={3}
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
-            placeholder="Trao đổi với bên còn lại và Admin..."
+            placeholder={t("Trao đổi với bên còn lại và Admin...")}
           />
           <button
             type="button"
@@ -187,7 +190,7 @@ export default function ResolutionCenterThread({
           </button>
         </footer>
       ) : (
-        <p className="resolution-thread__closed">Tranh chấp đã đóng — chỉ xem lại lịch sử trao đổi.</p>
+        <p className="resolution-thread__closed">{t("Tranh chấp đã đóng — chỉ xem lại lịch sử trao đổi.")}</p>
       )}
     </div>
   );

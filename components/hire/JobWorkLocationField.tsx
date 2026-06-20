@@ -1,5 +1,7 @@
 "use client";
 
+import { tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import { useEffect, useState } from "react";
 import { FaHome, FaMapMarkerAlt } from "react-icons/fa";
 import AddressSearchPicker, { type AddressFormSlice } from "@/components/account/identity-verification/AddressSearchPicker";
@@ -39,6 +41,8 @@ export default function JobWorkLocationField({
   lng,
   onCoordsChange,
 }: JobWorkLocationFieldProps) {
+  const { t } = useTranslation();
+
   const [address, setAddress] = useState<AddressFormSlice>(() => ({
     ...emptyAddressSlice(),
     addressSearch: mode === "onsite" ? locationLabel : "",
@@ -52,6 +56,7 @@ export default function JobWorkLocationField({
   }, [mode, locationLabel, address.addressSearch]);
 
   function selectOnsite() {
+  const t = tUi;
     onModeChange("onsite");
     if (!locationLabel.trim() || locationLabel === REMOTE_WORK_LOCATION_LABEL) {
       onLocationLabelChange(address.addressSearch.trim());
@@ -59,12 +64,14 @@ export default function JobWorkLocationField({
   }
 
   function selectRemote() {
+  const t = tUi;
     onModeChange("remote");
     onLocationLabelChange(REMOTE_WORK_LOCATION_LABEL);
     onCoordsChange(null, null);
   }
 
   function handleAddressChange(next: AddressFormSlice) {
+  const t = tUi;
     setAddress(next);
     onLocationLabelChange(next.addressSearch.trim());
   }
@@ -72,7 +79,7 @@ export default function JobWorkLocationField({
   return (
     <div className="post-job-location">
       <fieldset className="post-job-wizard__radio-group post-job-location__modes">
-        <legend className="idv-field__label">Hình thức làm việc *</legend>
+        <legend className="idv-field__label">{t("Hình thức làm việc *")}</legend>
         <label className={`post-job-location__mode${mode === "onsite" ? " post-job-location__mode--active" : ""}`}>
           <input
             type="radio"
@@ -82,8 +89,8 @@ export default function JobWorkLocationField({
           />
           <FaMapMarkerAlt aria-hidden />
           <span>
-            <strong>Làm trực tiếp tại chỗ</strong>
-            <small>Dùng GPS hoặc chọn / nhập địa chỉ tại tỉnh Vĩnh Long</small>
+            <strong>{t("Làm trực tiếp tại chỗ")}</strong>
+            <small>{t("Dùng GPS hoặc chọn / nhập địa chỉ tại tỉnh Vĩnh Long")}</small>
           </span>
         </label>
         <label className={`post-job-location__mode${mode === "remote" ? " post-job-location__mode--active" : ""}`}>
@@ -95,8 +102,8 @@ export default function JobWorkLocationField({
           />
           <FaHome aria-hidden />
           <span>
-            <strong>Làm tại nhà</strong>
-            <small>Freelancer làm sản phẩm tại nhà, không cần đến địa điểm</small>
+            <strong>{t("Làm tại nhà")}</strong>
+            <small>{t("Freelancer làm sản phẩm tại nhà, không cần đến địa điểm")}</small>
           </span>
         </label>
       </fieldset>

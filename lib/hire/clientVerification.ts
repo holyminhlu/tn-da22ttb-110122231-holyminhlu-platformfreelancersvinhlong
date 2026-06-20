@@ -2,7 +2,9 @@ import { buildVerifyItems } from "@/components/account/identity-verification/typ
 import type { IdentityVerificationResponse } from "@/lib/api/identityVerification";
 import type { MeUser } from "@/lib/api/users";
 
-export const CLIENT_VERIFY_PAGE = "/edit-account/xac-minh";
+import { ROUTES } from "@/lib/routes/paths";
+
+export const CLIENT_VERIFY_PAGE = ROUTES.account.verify;
 
 export const CLIENT_VERIFY_LEAD =
   "Hoàn thành 5 mục thông tin nhận dạng và xác minh thẻ tín dụng (bước 2) tại trang xác minh.";

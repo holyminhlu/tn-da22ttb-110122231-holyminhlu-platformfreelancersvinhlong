@@ -1,4 +1,6 @@
 import type { AppNotification } from "@/lib/api/notifications";
+import { ROUTES, serviceOrderHref } from "@/lib/routes/paths";
+import { disputeCenterPath } from "@/lib/orders/resolutionLinks";
 
 type ViewerRole = "client" | "freelancer" | "admin" | null;
 
@@ -28,15 +30,16 @@ const DISPUTE_ACTIONS = new Set([
 
 function resolveOrderRoute(contractId: string | null, role: ViewerRole): string | null {
   if (!contractId) return null;
-  if (role === "client") return `/hire/orders/${contractId}`;
-  if (role === "freelancer") return `/findwork/orders/${contractId}`;
+  if (role === "client") return serviceOrderHref(contractId, "client");
+  if (role === "freelancer") return serviceOrderHref(contractId, "freelancer");
   return null;
 }
 
 function resolveDisputeRoute(contractId: string | null, role: ViewerRole): string | null {
   if (!contractId) return null;
-  if (role === "client") return `/manage/tranh-chap?contract=${contractId}`;
-  if (role === "freelancer") return `/dich-vu/tranh-chap?contract=${contractId}`;
+  if (role === "client" || role === "freelancer") {
+    return disputeCenterPath(role, { contractId });
+  }
   return null;
 }
 
@@ -51,19 +54,21 @@ export function resolveNotificationHref(
   const entityId = notification.entityId || null;
   const category = String(notification.category || "").toLowerCase();
 
-  if (action.startsWith("withdrawal_")) return "/payments";
-  if (action.startsWith("identity_review_")) return "/edit-account/xac-minh";
-  if (action === "security_new_login") return "/edit-account/bao-mat";
+  if (action.startsWith("withdrawal_")) return ROUTES.payments.hub;
+  if (action.startsWith("identity_review_")) return ROUTES.account.verify;
+  if (action === "security_new_login") return ROUTES.account.security;
 
   if (entityType === "conversation" || action === "message_received") {
-    if (!entityId) return viewerRole === "client" ? "/hire/messages" : "/findwork/messages";
+    if (!entityId) {
+      return viewerRole === "client" ? ROUTES.hire.messages : ROUTES.findwork.messages;
+    }
     return viewerRole === "client"
-      ? `/hire/messages?c=${entityId}`
-      : `/findwork/messages?c=${entityId}`;
+      ? `${ROUTES.hire.messages}?c=${entityId}`
+      : `${ROUTES.findwork.messages}?c=${entityId}`;
   }
 
   if (entityType === "job_quote" || action.startsWith("quote_")) {
-    return viewerRole === "client" ? "/hire/quotes" : "/findwork/quotes";
+    return viewerRole === "client" ? ROUTES.hire.quotes : ROUTES.findwork.quotes;
   }
 
   if (entityType === "contract" || category === "order") {
@@ -71,19 +76,21 @@ export function resolveNotificationHref(
       return resolveDisputeRoute(entityId, viewerRole);
     }
     if (CLIENT_CONTRACT_ACTIONS.has(action)) {
-      return entityId ? `/hire/orders/${entityId}` : "/manage/phong-lam-viec";
+      return entityId ? serviceOrderHref(entityId, "client") : ROUTES.manage.workspace;
     }
     if (FREELANCER_CONTRACT_ACTIONS.has(action)) {
-      return entityId ? `/findwork/orders/${entityId}` : "/dich-vu/don-hang";
+      return entityId ? serviceOrderHref(entityId, "freelancer") : ROUTES.services.orders;
     }
     return resolveOrderRoute(entityId, viewerRole);
   }
 
   if (category === "message") {
-    return viewerRole === "client" ? "/hire/messages" : "/findwork/messages";
+    return viewerRole === "client" ? ROUTES.hire.messages : ROUTES.findwork.messages;
   }
   if (category === "review") return null;
-  if (category === "quote") return viewerRole === "client" ? "/hire/quotes" : "/findwork/quotes";
+  if (category === "quote") {
+    return viewerRole === "client" ? ROUTES.hire.quotes : ROUTES.findwork.quotes;
+  }
 
   return null;
 }

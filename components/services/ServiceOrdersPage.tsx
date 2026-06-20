@@ -1,5 +1,7 @@
 "use client";
 
+import { formatDateUi, tUi } from "@/lib/i18n/runtime";
+import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { listServiceOrders, type ServiceOrderListItem } from "@/lib/api/contracts";
@@ -25,7 +27,6 @@ import {
   workflowStageTone,
 } from "@/lib/orders/serviceOrderDisplay";
 import { orderDeadlineSubtitle } from "@/lib/orders/workflowSlaDisplay";
-import { formatDate } from "@/lib/format";
 import ServicesShell from "./ServicesShell";
 import "../findwork/findwork-orders.css";
 
@@ -38,7 +39,7 @@ const BUCKETS: ServiceOrderBucket[] = [
   "cancelled",
 ];
 
-export default function ServiceOrdersPage() {
+export default function ServiceOrdersPage() {  const { t, formatDate } = useTranslation();
   const [orders, setOrders] = useState<ServiceOrderListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -50,7 +51,7 @@ export default function ServiceOrdersPage() {
     try {
       const data = await listServiceOrders();
       if (data.role !== "freelancer") {
-        setError("Trang này dành cho freelancer.");
+        setError(t("Trang này dành cho freelancer."));
         setOrders([]);
         return;
       }
@@ -80,13 +81,13 @@ export default function ServiceOrdersPage() {
     <ServicesShell>
       <div className="fw-orders">
         <header className="fw-orders__head">
-          <h1 className="fw-orders__title">Đơn hàng dịch vụ</h1>
+          <h1 className="fw-orders__title">{t("Đơn hàng dịch vụ")}</h1>
           <p className="fw-orders__lead">
-            Quản lý đơn Client đặt từ gig của bạn — tiếp nhận, thực hiện, giao bài và nghiệm thu.
+            {t("Quản lý đơn Client đặt từ gig của bạn — tiếp nhận, thực hiện, giao bài và nghiệm thu.")}
           </p>
         </header>
 
-        <div className="fw-orders__filters" role="tablist" aria-label="Lọc đơn hàng">
+        <div className="fw-orders__filters" role="tablist" aria-label={t("Lọc đơn hàng")}>
           {BUCKETS.map((key) => (
             <button
               key={key}
@@ -102,7 +103,7 @@ export default function ServiceOrdersPage() {
         </div>
 
         {loading ? (
-          <p className="text-sm text-gray-500">Đang tải...</p>
+          <p className="text-sm text-gray-500">{t("Đang tải...")}</p>
         ) : error ? (
           <p className="text-sm text-red-700" role="alert">
             {error}
@@ -156,7 +157,7 @@ export default function ServiceOrdersPage() {
                         <span className={orderStatusChipClass(deadlineTone)}>{deadlineLine}</span>
                       ) : null}
                       <span className="fw-orders__card-foot-date">
-                        Cập nhật: {formatDate(order.updated_at || order.created_at)}
+                        Cập nhật: {formatDateUi(order.updated_at || order.created_at)}
                       </span>
                     </div>
                   </Link>
