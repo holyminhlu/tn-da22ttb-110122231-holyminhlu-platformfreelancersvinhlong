@@ -9,6 +9,10 @@
     "dev:be": "npm --prefix backend run start:dev",
     "build": "next build",
     "start": "next start",
+    "docker:up": "docker compose up -d --build",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f",
+    "docker:ps": "docker compose ps",
     "lint": "eslint"
   },
   "dependencies": {

@@ -23,6 +23,7 @@ function apiImageRemotePattern(): { protocol: "http" | "https"; hostname: string
 const apiRemote = apiImageRemotePattern();
 
 const nextConfig: NextConfig = {
+  output: "standalone",
   env: {
     NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: googleMapsApiKey,
   },
