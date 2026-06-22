@@ -1187,9 +1187,9 @@
 
 .payments-panel .dashboard-pagination.payments-pagination {
   padding: 0.85rem 1rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--vlc-border);
   border-radius: 0.5rem;
-  background: #f9fafb;
+  background: var(--vlc-surface-muted);
   font-size: 0.8125rem;
 }
 
@@ -1203,7 +1203,7 @@
 
 .payments-panel .payments-pagination .dashboard-pagination__info {
   font-weight: 500;
-  color: #374151;
+  color: var(--vlc-text-secondary);
 }
 
 .payments-tx-panel__head {

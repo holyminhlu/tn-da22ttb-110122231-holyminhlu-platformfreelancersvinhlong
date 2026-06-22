@@ -12,9 +12,9 @@
 }
 
 .edit-account-page .ps-section {
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--vlc-border);
   border-radius: 8px;
-  background: #fff;
+  background: var(--vlc-layer-surface);
   padding: 1.25rem 1.5rem;
 }
 
@@ -41,9 +41,9 @@
 }
 
 .edit-account-page .ps-period__btn {
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--vlc-border);
   border-radius: 0.25rem;
-  background: #fff;
+  background: var(--vlc-layer-surface);
   padding: 0.3rem 0.65rem;
   font-size: 0.75rem;
   color: #4b5563;
@@ -58,7 +58,7 @@
 
 .edit-account-page .ps-period__btn--active {
   border-color: #2563eb;
-  background: #eff6ff;
+  background: var(--vlc-accent-soft);
   font-weight: 600;
   color: #2563eb;
 }
@@ -140,7 +140,7 @@
 .edit-account-page .ps-metric {
   border: 1px solid #f3f4f6;
   border-radius: 6px;
-  background: #fafafa;
+  background: var(--vlc-surface-muted);
   padding: 1rem 1.25rem;
 }
 
@@ -177,7 +177,7 @@
 .edit-account-page .ps-table th {
   font-weight: 600;
   color: #6b7280;
-  background: #fafafa;
+  background: var(--vlc-surface-muted);
 }
 
 .edit-account-page .ps-table td {
@@ -206,7 +206,7 @@
   text-align: center;
   padding: 1rem;
   border-radius: 8px;
-  background: linear-gradient(135deg, #eff6ff 0%, #f0fdf4 100%);
+  background: var(--vlc-accent-soft);
 }
 
 .edit-account-page .ps-tms__score {
@@ -238,9 +238,9 @@
 .edit-account-page .ps-score-item {
   text-align: center;
   padding: 0.65rem 0.5rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--vlc-border);
   border-radius: 6px;
-  background: #fafafa;
+  background: var(--vlc-surface-muted);
 }
 
 .edit-account-page .ps-score-item__val {

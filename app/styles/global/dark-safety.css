@@ -1,0 +1,112 @@
+/*
+ * Lưới an toàn Dark Mode — bắt các input/table/card còn sót màu sáng.
+ * Chỉ can thiệp color, background, border-color, box-shadow, opacity.
+ * Không đụng width/height/margin/padding/display/gap/font-size/border-width.
+ */
+
+/* ── Input / textarea / select chưa migrate ── */
+.dark input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="image"]),
+.dark textarea,
+.dark select {
+  background-color: var(--vlc-layer-element);
+  color: var(--vlc-text);
+  border-color: var(--vlc-border);
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: var(--vlc-text-faint);
+  opacity: 1;
+}
+
+/* Tránh chữ trắng trên nền trắng khi trình duyệt autofill */
+.dark input:-webkit-autofill,
+.dark input:-webkit-autofill:hover,
+.dark input:-webkit-autofill:focus,
+.dark input:-webkit-autofill:active,
+.dark textarea:-webkit-autofill,
+.dark textarea:-webkit-autofill:hover,
+.dark textarea:-webkit-autofill:focus,
+.dark textarea:-webkit-autofill:active,
+.dark select:-webkit-autofill,
+.dark select:-webkit-autofill:hover,
+.dark select:-webkit-autofill:focus,
+.dark select:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px var(--vlc-layer-element) inset !important;
+  box-shadow: 0 0 0 1000px var(--vlc-layer-element) inset !important;
+  -webkit-text-fill-color: var(--vlc-text) !important;
+  caret-color: var(--vlc-text);
+  transition: background-color 99999s ease-out 0s;
+}
+
+.dark input:disabled,
+.dark textarea:disabled,
+.dark select:disabled {
+  opacity: 0.55;
+  color: var(--vlc-text-muted);
+}
+
+/* color-scheme giúp native control (date, time, select arrow) theo dark */
+.dark {
+  color-scheme: dark;
+}
+
+/* ── Table chưa migrate ── */
+.dark table {
+  background-color: transparent;
+  color: var(--vlc-text);
+  border-color: var(--vlc-border);
+}
+
+.dark thead {
+  background-color: var(--vlc-surface-muted);
+}
+
+.dark th {
+  background-color: var(--vlc-surface-muted);
+  color: var(--vlc-text-muted);
+  border-color: var(--vlc-border);
+}
+
+.dark td {
+  background-color: var(--vlc-layer-surface);
+  color: var(--vlc-text-secondary);
+  border-color: var(--vlc-border-subtle);
+}
+
+.dark tbody tr:nth-child(even) td {
+  background-color: var(--vlc-surface-subtle);
+}
+
+.dark tbody tr:hover td {
+  background-color: var(--vlc-surface-elevated);
+}
+
+/* ── Card / panel còn background trắng inline hoặc class cũ ── */
+.dark .home-landing,
+.dark .client-shell,
+.dark .enterprise-page,
+.dark .about-page,
+.dark .how-vlc-page {
+  background-color: var(--vlc-layer-base);
+  color: var(--vlc-text);
+}
+
+.dark [class*="__card"],
+.dark [class*="-card"],
+.dark [class*="__panel"],
+.dark [class*="-panel"],
+.dark [class*="__widget"],
+.dark [class*="-widget"] {
+  background-color: var(--vlc-layer-surface);
+  border-color: var(--vlc-border);
+  color: inherit;
+}
+
+/* ea-card / shadcn card slot */
+.dark .ea-card,
+.dark [data-slot="card"] {
+  background-color: var(--vlc-layer-surface);
+  border-color: var(--vlc-border);
+  color: var(--vlc-text);
+}

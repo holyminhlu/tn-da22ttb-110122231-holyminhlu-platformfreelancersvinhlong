@@ -47,7 +47,7 @@ export default function NavDropdown({ label, items }: NavDropdownProps) {
     <div ref={rootRef} className="home-navbar__nav-dropdown relative">
       <button
         type="button"
-        className="flex items-center hover:text-blue-600"
+        className="flex items-center hover:text-primary"
         aria-expanded={open}
         aria-haspopup="menu"
         aria-controls={menuId}
@@ -60,14 +60,14 @@ export default function NavDropdown({ label, items }: NavDropdownProps) {
         <div
           id={menuId}
           role="menu"
-          className="absolute left-0 top-[calc(100%+0.5rem)] z-[60] min-w-[15rem] overflow-hidden rounded-md border border-gray-200 bg-white py-1 shadow-lg"
+          className="absolute left-0 top-[calc(100%+0.5rem)] z-[60] min-w-[15rem] overflow-hidden rounded-md border border-border bg-card py-1 text-card-foreground shadow-lg"
         >
           {items.map((item) => (
             <Link
               key={item.href}
               href={item.href}
               role="menuitem"
-              className="block px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600"
+              className="block px-4 py-2.5 text-sm text-muted-foreground hover:bg-muted hover:text-primary"
               onClick={close}
             >
               {item.label}

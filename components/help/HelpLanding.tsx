@@ -1,3 +1,5 @@
+"use client";
+
 import { useTranslation } from "@/hooks/useTranslation";
 import type { ReactNode } from "react";
 import Link from "next/link";

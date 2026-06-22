@@ -1,6 +1,6 @@
 .svc-hub-page .svc-subnav {
-  border-bottom: 1px solid #e5e7eb;
-  background: #fff;
+  border-bottom: 1px solid var(--vlc-border);
+  background: var(--vlc-layer-surface);
 }
 
 .svc-hub-main {

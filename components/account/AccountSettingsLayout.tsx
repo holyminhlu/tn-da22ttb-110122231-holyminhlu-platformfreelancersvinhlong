@@ -34,7 +34,7 @@ export default function AccountSettingsLayout({ children }: AccountSettingsLayou
 
   return (
     <div
-      className={`home-landing edit-account-page text-gray-900${isProfile ? " my-profile-page" : ""}`}
+      className={`home-landing edit-account-page text-foreground${isProfile ? " my-profile-page" : ""}`}
     >
       <HomeNavbar />
       <main id="main-content">

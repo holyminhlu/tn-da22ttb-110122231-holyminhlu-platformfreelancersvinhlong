@@ -10,7 +10,7 @@ export default function HomeNavbarLogo() {
 
   return (
     <Link href={href} className="flex shrink-0 items-center" aria-label="Vĩnh Long Connect — về trang chủ">
-      <span className="relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border border-gray-100 bg-white shadow-sm ring-1 ring-black/5">
+      <span className="relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border border-border bg-background shadow-sm ring-1 ring-black/5 dark:ring-white/10">
         <Image
           src="/Logo/Logo.png"
           alt="Vĩnh Long Connect"

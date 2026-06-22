@@ -1,6 +1,6 @@
 .my-profile-page .cp-header {
-  border-bottom: 1px solid #e5e7eb;
-  background: #fff;
+  border-bottom: 1px solid var(--vlc-border);
+  background: var(--vlc-layer-surface);
   padding: 0.85rem 0;
 }
 
@@ -20,25 +20,25 @@
 
 .my-profile-page .cp-back {
   margin-top: 0.15rem;
-  color: #6b7280;
+  color: var(--vlc-text-muted);
   font-size: 1rem;
 }
 
 .my-profile-page .cp-back:hover {
-  color: #0066cc;
+  color: var(--vlc-link);
 }
 
 .my-profile-page .cp-header__title {
   margin: 0;
   font-size: 1.125rem;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--vlc-text);
 }
 
 .my-profile-page .cp-header__sub {
   margin: 0.2rem 0 0;
   font-size: 0.8125rem;
-  color: #6b7280;
+  color: var(--vlc-text-muted);
 }
 
 .my-profile-page .cp-role-badge {
@@ -46,11 +46,11 @@
   padding: 0.25rem 0.55rem;
   border-radius: 0.25rem;
   border: 1px solid #bfdbfe;
-  background: #eff6ff;
+  background: var(--vlc-accent-soft);
   font-size: 0.625rem;
   font-weight: 700;
   letter-spacing: 0.06em;
-  color: #1d4ed8;
+  color: var(--vlc-link-hover);
 }
 
 .my-profile-page .cp-body {
@@ -63,9 +63,9 @@
 
 .my-profile-page .cp-profile-card {
   margin-bottom: 1rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--vlc-border);
   border-radius: var(--card-radius);
-  background: #fff;
+  background: var(--vlc-layer-surface);
   padding: 1.25rem 1.5rem;
 }
 
@@ -156,23 +156,23 @@
   gap: 0.5rem;
   font-size: 1.25rem;
   font-weight: 600;
-  color: #111827;
+  color: var(--vlc-text);
 }
 
 .my-profile-page .cp-name-edit {
-  color: #9ca3af;
+  color: var(--vlc-text-faint);
   font-size: 0.875rem;
 }
 
 .my-profile-page .cp-name-edit:hover {
-  color: #0066cc;
+  color: var(--vlc-link);
 }
 
 .my-profile-page .cp-tagline {
   margin: 0.35rem 0 0;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #374151;
+  color: var(--vlc-text-secondary);
 }
 
 .my-profile-page .cp-location {
@@ -181,7 +181,7 @@
   gap: 0.35rem;
   margin: 0.35rem 0 0;
   font-size: 0.8125rem;
-  color: #6b7280;
+  color: var(--vlc-text-muted);
 }
 
 .my-profile-page .cp-verified-row {
@@ -197,17 +197,17 @@
   gap: 0.3rem;
   padding: 0.2rem 0.55rem;
   border-radius: 999px;
-  border: 1px solid #e5e7eb;
-  background: #f9fafb;
+  border: 1px solid var(--vlc-border);
+  background: var(--vlc-surface-muted);
   font-size: 0.6875rem;
   font-weight: 600;
-  color: #6b7280;
+  color: var(--vlc-text-muted);
 }
 
 .my-profile-page .cp-verified-pill--ok {
   border-color: #bbf7d0;
-  background: #ecfdf5;
-  color: #047857;
+  background: var(--vlc-success-bg);
+  color: var(--vlc-success-text);
 }
 
 .my-profile-page .cp-card-actions {
@@ -236,18 +236,18 @@
 
 .my-profile-page .cp-card-actions__btn--outline {
   border: 1px solid #0066cc;
-  background: #fff;
-  color: #0066cc;
+  background: var(--vlc-layer-surface);
+  color: var(--vlc-link);
 }
 
 .my-profile-page .cp-card-actions__btn--outline:hover {
-  background: #eff6ff;
+  background: var(--vlc-accent-soft);
 }
 
 .my-profile-page .cp-inline-error {
   margin: 0 0 1rem;
   font-size: 0.8125rem;
-  color: #b91c1c;
+  color: var(--vlc-danger-text);
 }
 
 .my-profile-page .cp-grid {
@@ -282,26 +282,26 @@
   width: 100%;
   max-width: 9.5rem;
   padding: 1rem 0.75rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--vlc-border);
   border-radius: var(--card-radius);
-  background: #fff;
+  background: var(--vlc-layer-surface);
   text-align: center;
 }
 
 .my-profile-page .cp-stat-card--accent {
   border-color: #93c5fd;
-  background: linear-gradient(180deg, #eff6ff 0%, #fff 100%);
+  background: var(--vlc-accent-soft);
 }
 
 .my-profile-page .cp-stat-card__icon {
   font-size: 1.1rem;
-  color: #0066cc;
+  color: var(--vlc-link);
 }
 
 .my-profile-page .cp-stat-card__value {
   font-size: 1.5rem;
   font-weight: 800;
-  color: #111827;
+  color: var(--vlc-text);
   line-height: 1.1;
 }
 
@@ -312,20 +312,20 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: #6b7280;
+  color: var(--vlc-text-muted);
   text-align: center;
 }
 
 .my-profile-page .cp-panel {
   margin-bottom: 1.25rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--vlc-border);
   border-radius: 0.35rem;
-  background: #fff;
+  background: var(--vlc-layer-surface);
   padding: 1.15rem 1.25rem;
 }
 
 .my-profile-page .cp-panel--wallet {
-  background: linear-gradient(180deg, #f8fafc 0%, #fff 100%);
+  background: var(--vlc-layer-surface);
 }
 
 .my-profile-page .cp-panel__head {
@@ -340,7 +340,7 @@
   margin: 0 0 0.85rem;
   font-size: 0.9375rem;
   font-weight: 700;
-  color: #1f2937;
+  color: var(--vlc-text);
 }
 
 .my-profile-page .cp-panel__head .cp-panel__title {
@@ -356,7 +356,7 @@
   background: none;
   font-size: 0.8125rem;
   font-weight: 600;
-  color: #0066cc;
+  color: var(--vlc-link);
   text-decoration: none;
   cursor: pointer;
 }
@@ -377,19 +377,19 @@
 .my-profile-page .cp-completion__score {
   font-size: 1.75rem;
   font-weight: 800;
-  color: #0066cc;
+  color: var(--vlc-link);
 }
 
 .my-profile-page .cp-completion__hint {
   font-size: 0.75rem;
-  color: #6b7280;
+  color: var(--vlc-text-muted);
 }
 
 .my-profile-page .cp-completion__bar {
   height: 0.45rem;
   margin-bottom: 0.85rem;
   border-radius: 999px;
-  background: #e5e7eb;
+  background: var(--vlc-border);
   overflow: hidden;
 }
 
@@ -415,16 +415,16 @@
   align-items: center;
   gap: 0.4rem;
   font-size: 0.75rem;
-  color: #6b7280;
+  color: var(--vlc-text-muted);
 }
 
 .my-profile-page .cp-completion__item--done {
-  color: #047857;
+  color: var(--vlc-success-text);
 }
 
 .my-profile-page .cp-completion__check {
   flex-shrink: 0;
-  color: #d1d5db;
+  color: var(--vlc-text-faint);
 }
 
 .my-profile-page .cp-completion__check--done {
@@ -440,13 +440,13 @@
 }
 
 .my-profile-page .cp-completion__link:hover {
-  color: #0066cc;
+  color: var(--vlc-link);
 }
 
 .my-profile-page .cp-wallet__code {
   margin: 0 0 0.85rem;
   font-size: 0.75rem;
-  color: #6b7280;
+  color: var(--vlc-text-muted);
 }
 
 .my-profile-page .cp-wallet__rows {
@@ -464,7 +464,7 @@
 
 .my-profile-page .cp-wallet__icon {
   margin-top: 0.15rem;
-  color: #0066cc;
+  color: var(--vlc-link);
 }
 
 .my-profile-page .cp-wallet__icon--escrow {
@@ -477,13 +477,13 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: #9ca3af;
+  color: var(--vlc-text-faint);
 }
 
 .my-profile-page .cp-wallet__amount {
   font-size: 1.125rem;
   font-weight: 700;
-  color: #111827;
+  color: var(--vlc-text);
 }
 
 .my-profile-page .cp-wallet__amount--secondary {
@@ -496,7 +496,7 @@
   gap: 0.4rem;
   font-size: 0.8125rem;
   font-weight: 600;
-  color: #0066cc;
+  color: var(--vlc-link);
   text-decoration: none;
 }
 
@@ -509,14 +509,14 @@
   font-size: 1rem;
   font-weight: 500;
   font-style: italic;
-  color: #374151;
+  color: var(--vlc-text-secondary);
 }
 
 .my-profile-page .cp-about__bio {
   margin: 0;
   font-size: 0.875rem;
   line-height: 1.6;
-  color: #4b5563;
+  color: var(--vlc-text-muted);
   white-space: pre-wrap;
 }
 
@@ -528,7 +528,7 @@
 .my-profile-page .cp-empty p {
   margin: 0 0 0.75rem;
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--vlc-text-muted);
 }
 
 .my-profile-page .cp-empty__btn {
@@ -555,7 +555,7 @@
 
 .my-profile-page .cp-job-list__item {
   padding: 0.65rem 0;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--vlc-border-subtle);
 }
 
 .my-profile-page .cp-job-list__item:last-child {
@@ -566,7 +566,7 @@
 .my-profile-page .cp-job-list__title {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #0066cc;
+  color: var(--vlc-link);
   text-decoration: none;
 }
 
@@ -577,7 +577,7 @@
 .my-profile-page .cp-job-list__meta {
   margin: 0.2rem 0 0;
   font-size: 0.75rem;
-  color: #6b7280;
+  color: var(--vlc-text-muted);
 }
 
 .my-profile-page .cp-quick-actions {
@@ -598,12 +598,12 @@
   align-items: center;
   gap: 0.45rem;
   padding: 1rem 0.75rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--vlc-border);
   border-radius: 0.35rem;
-  background: #f9fafb;
+  background: var(--vlc-surface-muted);
   font-size: 0.75rem;
   font-weight: 600;
-  color: #374151;
+  color: var(--vlc-text-secondary);
   text-decoration: none;
   text-align: center;
   transition: border-color 0.15s, background 0.15s;
@@ -611,13 +611,13 @@
 
 .my-profile-page .cp-quick-action svg {
   font-size: 1.25rem;
-  color: #0066cc;
+  color: var(--vlc-link);
 }
 
 .my-profile-page .cp-quick-action:hover {
   border-color: #93c5fd;
-  background: #eff6ff;
-  color: #1d4ed8;
+  background: var(--vlc-accent-soft);
+  color: var(--vlc-link-hover);
 }
 
 .my-profile-page .cp-timeline {
@@ -631,7 +631,7 @@
   flex-wrap: wrap;
   gap: 0.35rem 0.75rem;
   padding: 0.55rem 0;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--vlc-border-subtle);
   font-size: 0.8125rem;
 }
 
@@ -641,12 +641,12 @@
 
 .my-profile-page .cp-timeline__time {
   flex-shrink: 0;
-  color: #9ca3af;
+  color: var(--vlc-text-faint);
   font-size: 0.75rem;
 }
 
 .my-profile-page .cp-timeline__title {
-  color: #374151;
+  color: var(--vlc-text-secondary);
 }
 
 .my-profile-page .cp-preview-backdrop {
@@ -663,7 +663,7 @@
 .my-profile-page .cp-preview {
   max-width: 20rem;
   border-radius: 0.35rem;
-  background: #fff;
+  background: var(--vlc-layer-surface);
   padding: 0.75rem;
   text-align: center;
 }
@@ -677,9 +677,9 @@
 .my-profile-page .cp-preview__close {
   margin-top: 0.65rem;
   padding: 0.35rem 0.85rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--vlc-border);
   border-radius: 0.25rem;
-  background: #f9fafb;
+  background: var(--vlc-surface-muted);
   font-size: 0.8125rem;
   cursor: pointer;
 }

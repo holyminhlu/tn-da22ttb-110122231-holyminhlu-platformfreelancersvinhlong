@@ -22,7 +22,7 @@ export default function DashboardRouter() {
 
   if (!ready) {
     return (
-      <div className="home-landing flex min-h-screen items-center justify-center bg-white text-gray-500">
+      <div className="home-landing flex min-h-screen items-center justify-center bg-background text-muted-foreground">
         Đang tải...
       </div>
     );
@@ -30,9 +30,9 @@ export default function DashboardRouter() {
 
   if (!user) {
     return (
-      <div className="home-landing flex min-h-screen flex-col items-center justify-center gap-3 bg-white text-gray-500">
+      <div className="home-landing flex min-h-screen flex-col items-center justify-center gap-3 bg-background text-muted-foreground">
         <p>Vui lòng đăng nhập để xem bảng tổng quan.</p>
-        <Link href="/dang-nhap" className="text-sm font-medium text-[#0066cc] hover:underline">
+        <Link href="/dang-nhap" className="text-sm font-medium text-primary hover:underline">
           Đăng nhập
         </Link>
       </div>
@@ -41,7 +41,7 @@ export default function DashboardRouter() {
 
   if (isAdmin) {
     return (
-      <div className="home-landing flex min-h-screen items-center justify-center bg-white text-gray-500">
+      <div className="home-landing flex min-h-screen items-center justify-center bg-background text-muted-foreground">
         Đang chuyển đến trang quản trị…
       </div>
     );
@@ -56,7 +56,7 @@ export default function DashboardRouter() {
   }
 
   return (
-    <div className="home-landing flex min-h-screen items-center justify-center bg-white text-gray-500">
+    <div className="home-landing flex min-h-screen items-center justify-center bg-background text-muted-foreground">
       Tài khoản của bạn không có quyền truy cập bảng tổng quan.
     </div>
   );

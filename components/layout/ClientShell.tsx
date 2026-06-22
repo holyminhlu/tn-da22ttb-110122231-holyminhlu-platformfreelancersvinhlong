@@ -12,7 +12,7 @@ type ClientShellProps = {
 
 export default function ClientShell({ children, beforeMain, wide }: ClientShellProps) {
   return (
-    <div className="home-landing client-shell min-h-screen bg-white text-gray-900">
+    <div className="home-landing client-shell min-h-screen bg-background text-foreground">
       <HomeNavbar />
       {beforeMain}
       <main

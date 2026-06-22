@@ -11,7 +11,7 @@ type FreelancerShellProps = {
 
 export default function FreelancerShell({ children, wide }: FreelancerShellProps) {
   return (
-    <div className="home-landing client-shell min-h-screen bg-white text-gray-900">
+    <div className="home-landing client-shell min-h-screen bg-background text-foreground">
       <HomeNavbar />
       <main
         id="main-content"

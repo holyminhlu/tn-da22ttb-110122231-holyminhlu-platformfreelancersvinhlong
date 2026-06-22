@@ -31,14 +31,14 @@
 }
 
 .edit-account-page .idv-step--active {
-  border-color: #3b82f6;
-  background: #fff;
+  border-color: var(--vlc-link);
+  background: var(--vlc-layer-surface);
   box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
 }
 
 .edit-account-page .idv-step--inactive {
-  background: #f3f4f6;
-  color: #9ca3af;
+  background: var(--vlc-surface-subtle);
+  color: var(--vlc-text-faint);
 }
 
 .edit-account-page .idv-step__num {
@@ -55,12 +55,12 @@
 }
 
 .edit-account-page .idv-step--active .idv-step__num {
-  background: #2563eb;
+  background: var(--vlc-link);
   color: #fff;
 }
 
 .edit-account-page .idv-step--inactive .idv-step__num {
-  background: #d1d5db;
+  background: var(--vlc-border);
   color: #fff;
 }
 
@@ -70,13 +70,13 @@
 }
 
 .edit-account-page .idv-step--active .idv-step__title {
-  color: #374151;
+  color: var(--vlc-text-secondary);
 }
 
 .edit-account-page .idv-panel {
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--vlc-border);
   border-radius: 0.75rem;
-  background: #fff;
+  background: var(--vlc-layer-surface);
   padding: 2rem;
   box-shadow: 0 1px 2px rgb(0 0 0 / 0.05);
   overflow: visible;
@@ -95,7 +95,7 @@
   margin: 0;
   font-size: 1.5rem;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--vlc-text);
 }
 
 .edit-account-page .idv-progress {
@@ -103,7 +103,7 @@
   align-items: center;
   gap: 0.5rem;
   font-size: 0.875rem;
-  color: #4b5563;
+  color: var(--vlc-text-muted);
 }
 
 .edit-account-page .idv-progress__ring {
@@ -114,7 +114,7 @@
 
 .edit-account-page .idv-progress__track {
   fill: transparent;
-  stroke: #e2e8f0;
+  stroke: var(--vlc-border);
   stroke-width: 4;
 }
 
@@ -129,7 +129,7 @@
 .edit-account-page .idv-intro {
   margin: 0 0 2rem;
   font-size: 0.9375rem;
-  color: #4b5563;
+  color: var(--vlc-text-muted);
 }
 
 .edit-account-page .idv-grid {
@@ -157,9 +157,9 @@
   flex-direction: column;
   min-height: 100%;
   padding: 1.5rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--vlc-border);
   border-radius: var(--card-radius);
-  background: #fff;
+  background: var(--vlc-layer-surface);
   cursor: pointer;
   text-align: left;
   transition: border-color 0.15s, box-shadow 0.15s;
@@ -170,7 +170,7 @@
 }
 
 .edit-account-page .idv-card--selected {
-  border-color: #3b82f6;
+  border-color: var(--vlc-link);
   box-shadow: 0 0 0 1px #3b82f6;
 }
 
@@ -185,34 +185,34 @@
 }
 
 .edit-account-page .idv-card__icon--done {
-  color: #111827;
+  color: var(--vlc-text);
   font-size: 1rem;
 }
 
 .edit-account-page .idv-card__icon--active {
-  color: #2563eb;
+  color: var(--vlc-link);
 }
 
 .edit-account-page .idv-card__icon--muted {
-  color: #d1d5db;
+  color: var(--vlc-text-faint);
 }
 
 .edit-account-page .idv-card__title {
   margin: 0 0 0.5rem;
   font-size: 0.875rem;
   font-weight: 600;
-  color: #374151;
+  color: var(--vlc-text-secondary);
 }
 
 .edit-account-page .idv-card--selected .idv-card__title {
-  color: #111827;
+  color: var(--vlc-text);
 }
 
 .edit-account-page .idv-card__desc {
   margin: 0;
   font-size: 0.75rem;
   line-height: 1.5;
-  color: #6b7280;
+  color: var(--vlc-text-muted);
 }
 
 .edit-account-page .idv-card__badge {
@@ -221,7 +221,7 @@
   right: 0.65rem;
   font-size: 0.65rem;
   font-weight: 600;
-  color: #15803d;
+  color: var(--vlc-success-text);
 }
 
 .edit-account-page .idv-footer {
@@ -231,7 +231,7 @@
   gap: 1rem;
   margin-top: 2rem;
   padding-top: 1.5rem;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--vlc-border);
   clear: both;
 }
 
@@ -258,7 +258,7 @@
 .edit-account-page .idv-start {
   border: none;
   border-radius: 0.375rem;
-  background: #2563eb;
+  background: var(--vlc-link);
   padding: 0.625rem 2rem;
   font-size: 0.875rem;
   font-weight: 500;
@@ -272,15 +272,15 @@
 }
 
 .edit-account-page .idv-start--secondary {
-  background: #fff;
-  border: 1px solid #d1d5db;
-  color: #374151;
+  background: var(--vlc-layer-surface);
+  border: 1px solid var(--vlc-border);
+  color: var(--vlc-text-secondary);
 }
 
 .edit-account-page .idv-start--secondary:hover {
-  background: #f9fafb;
+  background: var(--vlc-surface-muted);
   border-color: #93c5fd;
-  color: #2563eb;
+  color: var(--vlc-link);
 }
 
 .edit-account-page .idv-start:disabled {
@@ -297,13 +297,13 @@
   margin: 0;
   font-size: 0.875rem;
   line-height: 1.5;
-  color: #4b5563;
+  color: var(--vlc-text-muted);
   flex: 1;
   min-width: 0;
 }
 
 .edit-account-page .idv-footer__hint a {
-  color: #2563eb;
+  color: var(--vlc-link);
   text-decoration: none;
 }
 
@@ -316,25 +316,25 @@
   padding: 0.75rem 1rem;
   border-radius: 0.5rem;
   border: 1px solid #bbf7d0;
-  background: #f0fdf4;
-  color: #15803d;
+  background: var(--vlc-success-bg);
+  color: var(--vlc-success-text);
   font-weight: 500;
 }
 
 .edit-account-page .idv-loading,
 .edit-account-page .idv-error {
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--vlc-text-muted);
 }
 
 .edit-account-page .idv-error {
-  color: #b91c1c;
+  color: var(--vlc-danger-text);
 }
 
 .edit-account-page .idv-detail-wrap {
   margin-top: 1.5rem;
   padding-top: 1.5rem;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--vlc-border);
   overflow: visible;
 }
 
@@ -352,7 +352,7 @@
   gap: 0.75rem;
   margin-top: 1.5rem;
   padding-top: 1.25rem;
-  border-top: 1px solid #f3f4f6;
+  border-top: 1px solid var(--vlc-border-subtle);
 }
 
 @media (min-width: 480px) {
@@ -367,21 +367,21 @@
   margin: 0 0 0.5rem;
   font-size: 1.25rem;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--vlc-text);
 }
 
 .edit-account-page .idv-detail__subtitle {
   margin: 1.25rem 0 0.35rem;
   font-size: 0.9375rem;
   font-weight: 600;
-  color: #374151;
+  color: var(--vlc-text-secondary);
 }
 
 .edit-account-page .idv-detail__lead {
   margin: 0 0 1rem;
   font-size: 0.875rem;
   line-height: 1.55;
-  color: #6b7280;
+  color: var(--vlc-text-muted);
 }
 
 .edit-account-page .idv-field {
@@ -394,12 +394,12 @@
   margin-bottom: 0.35rem;
   font-size: 0.8125rem;
   font-weight: 500;
-  color: #4b5563;
+  color: var(--vlc-text-muted);
 }
 
 .edit-account-page .idv-field__input {
   width: 100%;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--vlc-border);
   border-radius: 0.25rem;
   padding: 0.5rem 0.75rem;
   font-size: 0.875rem;
@@ -408,7 +408,7 @@
 }
 
 .edit-account-page .idv-field__input:focus {
-  border-color: #3b82f6;
+  border-color: var(--vlc-link);
   box-shadow: 0 0 0 1px #3b82f6;
 }
 
@@ -424,7 +424,7 @@
   gap: 0.5rem;
   margin-bottom: 0.5rem;
   font-size: 0.875rem;
-  color: #374151;
+  color: var(--vlc-text-secondary);
   cursor: pointer;
 }
 
@@ -452,7 +452,7 @@
   margin: 1rem 0;
   font-size: 0.8125rem;
   line-height: 1.5;
-  color: #374151;
+  color: var(--vlc-text-secondary);
   cursor: pointer;
 }
 
@@ -464,7 +464,7 @@
 .edit-account-page .idv-note {
   margin: 0 0 1rem;
   font-size: 0.75rem;
-  color: #9ca3af;
+  color: var(--vlc-text-faint);
 }
 
 .edit-account-page .idv-btn {
@@ -481,7 +481,7 @@
 
 .edit-account-page .idv-btn--primary {
   border: none;
-  background: #2563eb;
+  background: var(--vlc-link);
   color: #fff;
 }
 
@@ -490,14 +490,14 @@
 }
 
 .edit-account-page .idv-btn--ghost {
-  border: 1px solid #d1d5db;
-  background: #fff;
-  color: #374151;
+  border: 1px solid var(--vlc-border);
+  background: var(--vlc-layer-surface);
+  color: var(--vlc-text-secondary);
 }
 
 .edit-account-page .idv-btn--ghost:hover:not(:disabled) {
   border-color: #93c5fd;
-  color: #2563eb;
+  color: var(--vlc-link);
 }
 
 .edit-account-page .idv-btn:disabled {
@@ -508,11 +508,11 @@
 .edit-account-page .idv-msg {
   margin: 0 0 1rem;
   font-size: 0.8125rem;
-  color: #4b5563;
+  color: var(--vlc-text-muted);
 }
 
 .edit-account-page .idv-msg--ok {
-  color: #15803d;
+  color: var(--vlc-success-text);
 }
 
 .edit-account-page .idv-photo-layout {
@@ -527,9 +527,9 @@
 }
 
 .edit-account-page .idv-photo-preview {
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--vlc-border);
   border-radius: 0.5rem;
-  background: #f9fafb;
+  background: var(--vlc-surface-muted);
   overflow: hidden;
 }
 
@@ -545,7 +545,7 @@
   padding: 4rem 1rem;
   text-align: center;
   font-size: 0.875rem;
-  color: #9ca3af;
+  color: var(--vlc-text-faint);
 }
 
 .edit-account-page .idv-photo-tools {
@@ -553,15 +553,15 @@
   justify-content: center;
   gap: 0.5rem;
   padding: 0.5rem;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--vlc-border);
 }
 
 .edit-account-page .idv-photo-tools button {
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--vlc-border);
   border-radius: 0.25rem;
-  background: #fff;
+  background: var(--vlc-layer-surface);
   padding: 0.35rem 0.5rem;
-  color: #6b7280;
+  color: var(--vlc-text-muted);
   cursor: pointer;
 }
 
@@ -580,7 +580,7 @@
   margin: 0 0 0.5rem;
   font-size: 0.8125rem;
   font-weight: 600;
-  color: #15803d;
+  color: var(--vlc-success-text);
 }
 
 .edit-account-page .idv-guide__bad {
@@ -594,11 +594,11 @@
   margin: 0;
   padding-left: 1.1rem;
   font-size: 0.8125rem;
-  color: #4b5563;
+  color: var(--vlc-text-muted);
 }
 
 .edit-account-page .idv-list--bad {
-  color: #9ca3af;
+  color: var(--vlc-text-faint);
 }
 
 .edit-account-page .idv-upload {
@@ -629,7 +629,7 @@
 
 .edit-account-page .idv-upload__filename {
   font-size: 0.8125rem;
-  color: #6b7280;
+  color: var(--vlc-text-muted);
   word-break: break-all;
 }
 
@@ -646,13 +646,13 @@
   margin: 0 0 0.5rem;
   font-size: 0.8125rem;
   font-weight: 500;
-  color: #374151;
+  color: var(--vlc-text-secondary);
 }
 
 .edit-account-page .idv-upload__preview {
   margin-bottom: 0.75rem;
   max-width: 280px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--vlc-border);
   border-radius: 0.35rem;
   overflow: hidden;
 }
@@ -662,31 +662,31 @@
   width: 100%;
   max-height: 160px;
   object-fit: contain;
-  background: #f3f4f6;
+  background: var(--vlc-surface-subtle);
 }
 
 .edit-account-page .idv-upload__btn {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--vlc-border);
   border-radius: 0.25rem;
-  background: #fff;
+  background: var(--vlc-layer-surface);
   padding: 0.45rem 0.85rem;
   font-size: 0.8125rem;
-  color: #374151;
+  color: var(--vlc-text-secondary);
   cursor: pointer;
 }
 
 .edit-account-page .idv-upload__btn:hover:not(:disabled) {
-  border-color: #3b82f6;
-  color: #2563eb;
+  border-color: var(--vlc-link);
+  color: var(--vlc-link);
 }
 
 .edit-account-page .idv-upload__hint {
   margin: 0.5rem 0 0;
   font-size: 0.75rem;
-  color: #9ca3af;
+  color: var(--vlc-text-faint);
 }
 
 .edit-account-page .idv-detail__actions .idv-upload-row {
@@ -713,19 +713,19 @@
 }
 
 .edit-account-page .idv-chip {
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--vlc-border);
   border-radius: 9999px;
-  background: #fff;
+  background: var(--vlc-layer-surface);
   padding: 0.35rem 0.75rem;
   font-size: 0.75rem;
-  color: #4b5563;
+  color: var(--vlc-text-muted);
   cursor: pointer;
 }
 
 .edit-account-page .idv-chip--active {
-  border-color: #3b82f6;
-  background: #eff6ff;
-  color: #2563eb;
+  border-color: var(--vlc-link);
+  background: var(--vlc-accent-soft);
+  color: var(--vlc-link);
   font-weight: 600;
 }
 
@@ -741,7 +741,7 @@
   border: 0;
 }
 
-/* â€”â€” XÃ¡c minh tháº» tÃ­n dá»¥ng (bÆ°á»›c 2) â€”â€” */
+/* —— Xác minh thẻ tín dụng (bước 2) —— */
 .edit-account-page .idv-cc-actions {
   display: grid;
   gap: 1rem;
@@ -761,9 +761,9 @@
   align-items: flex-start;
   text-align: left;
   padding: 1.25rem;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--vlc-border);
   border-radius: var(--card-radius);
-  background: #fff;
+  background: var(--vlc-layer-surface);
   cursor: pointer;
   transition: border-color 0.15s, box-shadow 0.15s;
 }
@@ -781,32 +781,32 @@
 .edit-account-page .idv-cc-action-card__icon {
   margin-bottom: 0.75rem;
   font-size: 1.5rem;
-  color: #2563eb;
+  color: var(--vlc-link);
 }
 
 .edit-account-page .idv-cc-action-card__title {
   margin: 0 0 0.35rem;
   font-size: 0.9375rem;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--vlc-text);
 }
 
 .edit-account-page .idv-cc-action-card__desc {
   margin: 0;
   font-size: 0.8125rem;
   line-height: 1.5;
-  color: #6b7280;
+  color: var(--vlc-text-muted);
 }
 
 .edit-account-page .idv-cc-privacy {
   margin: 0 0 1rem;
   font-size: 0.8125rem;
   line-height: 1.6;
-  color: #6b7280;
+  color: var(--vlc-text-muted);
 }
 
 .edit-account-page .idv-cc-privacy a {
-  color: #2563eb;
+  color: var(--vlc-link);
   text-decoration: none;
 }
 
@@ -818,7 +818,7 @@
   display: flex;
   gap: 0;
   margin-bottom: 1.5rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--vlc-border);
 }
 
 .edit-account-page .idv-cc-wizard-nav__item {
@@ -829,14 +829,14 @@
   background: transparent;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #6b7280;
+  color: var(--vlc-text-muted);
   cursor: pointer;
   margin-bottom: -1px;
 }
 
 .edit-account-page .idv-cc-wizard-nav__item--active {
-  color: #2563eb;
-  border-bottom-color: #2563eb;
+  color: var(--vlc-link);
+  border-bottom-color: var(--vlc-link);
 }
 
 .edit-account-page .idv-cc-wizard-nav__item:disabled {
@@ -882,10 +882,10 @@
   margin: 0 0 1rem;
   padding: 0.75rem 1rem;
   border-radius: 0.375rem;
-  background: #f9fafb;
+  background: var(--vlc-surface-muted);
   font-size: 0.8125rem;
   line-height: 1.55;
-  color: #4b5563;
+  color: var(--vlc-text-muted);
 }
 
 .edit-account-page .idv-cc-charge-notice {
@@ -893,13 +893,13 @@
   padding: 0.875rem 1rem;
   border-radius: 0.5rem;
   border: 1px solid #fde68a;
-  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  background: var(--vlc-warn-bg);
 }
 
 .edit-account-page .idv-cc-charge-notice--prominent {
   margin-bottom: 1.25rem;
   border-color: #bfdbfe;
-  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  background: var(--vlc-accent-soft);
 }
 
 .edit-account-page .idv-cc-charge-notice__title {
@@ -912,7 +912,7 @@
 }
 
 .edit-account-page .idv-cc-charge-notice--prominent .idv-cc-charge-notice__title {
-  color: #1e40af;
+  color: var(--vlc-link-hover);
 }
 
 .edit-account-page .idv-cc-charge-notice__amount {
@@ -920,22 +920,22 @@
   font-size: 1.5rem;
   font-weight: 700;
   line-height: 1.2;
-  color: #1d4ed8;
+  color: var(--vlc-link-hover);
 }
 
 .edit-account-page .idv-cc-charge-notice__text {
   margin: 0;
   font-size: 0.8125rem;
   line-height: 1.55;
-  color: #4b5563;
+  color: var(--vlc-text-muted);
 }
 
 .edit-account-page .idv-cc-charge-notice__text strong {
-  color: #111827;
+  color: var(--vlc-text);
 }
 
 .edit-account-page .idv-cc-charge-notice a {
-  color: #2563eb;
+  color: var(--vlc-link);
   text-decoration: none;
   font-weight: 600;
 }
@@ -948,19 +948,19 @@
   margin: -0.25rem 0 0.75rem;
   font-size: 0.8125rem;
   line-height: 1.45;
-  color: #2563eb;
+  color: var(--vlc-link);
 }
 
 .edit-account-page .idv-field__optional {
   font-weight: 500;
   letter-spacing: normal;
   text-transform: none;
-  color: #9ca3af;
+  color: var(--vlc-text-faint);
 }
 
 .edit-account-page .idv-field__input--readonly {
-  background: #f9fafb;
-  color: #6b7280;
+  background: var(--vlc-surface-muted);
+  color: var(--vlc-text-muted);
   cursor: default;
 }
 
@@ -971,13 +971,13 @@
   margin-top: 0.4rem;
   font-size: 0.75rem;
   line-height: 1.4;
-  color: #6b7280;
+  color: var(--vlc-text-muted);
 }
 
 .edit-account-page .idv-cc-security-inline svg {
   flex-shrink: 0;
   margin-top: 0.1rem;
-  color: #16a34a;
+  color: var(--vlc-verify-ok);
 }
 
 .edit-account-page .idv-cc-form-footer {
@@ -987,7 +987,7 @@
   gap: 0.75rem 1rem;
   margin-top: 1.25rem;
   padding-top: 1rem;
-  border-top: 1px solid #f3f4f6;
+  border-top: 1px solid var(--vlc-border-subtle);
 }
 
 .edit-account-page .idv-cc-form-footer__back {
@@ -1008,13 +1008,13 @@
   min-width: 0;
   font-size: 0.6875rem;
   line-height: 1.35;
-  color: #6b7280;
+  color: var(--vlc-text-muted);
   text-align: center;
 }
 
 .edit-account-page .idv-cc-form-footer__trust svg {
   flex-shrink: 0;
-  color: #2563eb;
+  color: var(--vlc-link);
 }
 
 @media (max-width: 640px) {
@@ -1041,7 +1041,7 @@
 }
 
 .edit-account-page .idv-cc-charge-note a {
-  color: #2563eb;
+  color: var(--vlc-link);
   text-decoration: none;
 }
 
@@ -1080,7 +1080,7 @@
   left: 0.65rem;
   top: 50%;
   transform: translateY(-50%);
-  color: #9ca3af;
+  color: var(--vlc-text-faint);
   font-size: 0.75rem;
   pointer-events: none;
 }
@@ -1099,7 +1099,7 @@
 .edit-account-page .idv-address-picker__error {
   margin: 0.35rem 0 0;
   font-size: 0.8125rem;
-  color: #dc2626;
+  color: var(--vlc-danger-text);
 }
 
 .edit-account-page .idv-address-picker__suggestions {
@@ -1108,9 +1108,9 @@
   list-style: none;
   max-height: 16rem;
   overflow-y: auto;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--vlc-border);
   border-radius: 0.375rem;
-  background: #fff;
+  background: var(--vlc-layer-surface);
   box-shadow: 0 4px 12px rgb(0 0 0 / 0.08);
 }
 
@@ -1119,9 +1119,9 @@
   font-size: 0.6875rem;
   font-weight: 600;
   text-transform: uppercase;
-  color: #6b7280;
-  background: #f9fafb;
-  border-bottom: 1px solid #e5e7eb;
+  color: var(--vlc-text-muted);
+  background: var(--vlc-surface-muted);
+  border-bottom: 1px solid var(--vlc-border);
 }
 
 .edit-account-page .idv-address-picker__option {
@@ -1130,17 +1130,17 @@
   align-items: flex-start;
   gap: 0.5rem;
   border: none;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--vlc-border-subtle);
   padding: 0.55rem 0.75rem;
   text-align: left;
-  background: #fff;
+  background: var(--vlc-layer-surface);
   cursor: pointer;
   font-size: 0.8125rem;
-  color: #374151;
+  color: var(--vlc-text-secondary);
 }
 
 .edit-account-page .idv-address-picker__option:hover {
-  background: #eff6ff;
+  background: var(--vlc-accent-soft);
 }
 
 .edit-account-page .idv-address-picker__option strong {
@@ -1152,7 +1152,7 @@
   display: block;
   margin-top: 0.15rem;
   font-size: 0.6875rem;
-  color: #6b7280;
+  color: var(--vlc-text-muted);
   line-height: 1.35;
 }
 
@@ -1163,20 +1163,20 @@
 .edit-account-page .idv-address-picker__map-label {
   margin: 0 0 0.35rem;
   font-size: 0.75rem;
-  color: #6b7280;
+  color: var(--vlc-text-muted);
 }
 
 .edit-account-page .idv-address-picker__map {
   width: 100%;
   height: 220px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--vlc-border);
   border-radius: 0.375rem;
 }
 
 .edit-account-page .idv-address-picker__coords {
   margin: 0.35rem 0 0;
   font-size: 0.6875rem;
-  color: #9ca3af;
+  color: var(--vlc-text-faint);
 }
 
 .edit-account-page .idv-address-picker__hint {
@@ -1236,16 +1236,16 @@
 
 .edit-account-page .idv-status--approved {
   border-color: #bbf7d0;
-  background: #f0fdf4;
+  background: var(--vlc-success-bg);
   color: #14532d;
 }
 
 .edit-account-page .idv-status--approved .idv-status__icon {
-  color: #16a34a;
+  color: var(--vlc-verify-ok);
 }
 
 .edit-account-page .idv-status--approved .idv-status__link {
-  color: #15803d;
+  color: var(--vlc-success-text);
 }
 
 .edit-account-page .idv-status--approved .idv-status__link:hover {
@@ -1254,7 +1254,7 @@
 
 .edit-account-page .idv-status--pending {
   border-color: #fde68a;
-  background: #fffbeb;
+  background: var(--vlc-warn-bg);
   color: #78350f;
 }
 
@@ -1264,12 +1264,12 @@
 
 .edit-account-page .idv-status--rejected {
   border-color: #fecaca;
-  background: #fef2f2;
+  background: var(--vlc-danger-bg);
   color: #7f1d1d;
 }
 
 .edit-account-page .idv-status--rejected .idv-status__icon {
-  color: #dc2626;
+  color: var(--vlc-danger-text);
 }
 
 .edit-account-page .idv-status--rejected .idv-status__note {

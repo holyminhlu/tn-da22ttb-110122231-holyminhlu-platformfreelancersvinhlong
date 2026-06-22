@@ -1,7 +1,7 @@
 .edit-account-page .fb-panel {
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--vlc-border);
   border-radius: 8px;
-  background: #fff;
+  background: var(--vlc-layer-surface);
   padding: 1.5rem 1.75rem;
 }
 
@@ -9,13 +9,13 @@
   margin: 0 0 0.5rem;
   font-size: 1.25rem;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--vlc-text);
 }
 
 .edit-account-page .fb-desc {
   margin: 0 0 1.25rem;
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--vlc-text-muted);
   line-height: 1.5;
 }
 
@@ -23,7 +23,7 @@
   display: flex;
   gap: 0;
   margin-bottom: 1.5rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--vlc-border);
 }
 
 .edit-account-page .fb-tab {
@@ -33,17 +33,17 @@
   padding: 0.65rem 1rem;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #6b7280;
+  color: var(--vlc-text-muted);
   cursor: pointer;
   transition: color 0.15s;
 }
 
 .edit-account-page .fb-tab:hover {
-  color: #2563eb;
+  color: var(--vlc-link);
 }
 
 .edit-account-page .fb-tab--active {
-  color: #2563eb;
+  color: var(--vlc-link);
 }
 
 .edit-account-page .fb-tab--active::after {
@@ -53,12 +53,12 @@
   right: 0;
   bottom: -1px;
   height: 2px;
-  background: #2563eb;
+  background: var(--vlc-link);
 }
 
 .edit-account-page .fb-tab-sep {
   align-self: center;
-  color: #d1d5db;
+  color: var(--vlc-text-faint);
   font-size: 0.75rem;
   user-select: none;
 }
@@ -67,7 +67,7 @@
   padding: 3rem 1rem;
   text-align: center;
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--vlc-text-muted);
 }
 
 .edit-account-page .fb-list {
@@ -77,10 +77,10 @@
 }
 
 .edit-account-page .fb-card {
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--vlc-border);
   border-radius: var(--card-radius);
   padding: 1rem 1.25rem;
-  background: #fafafa;
+  background: var(--vlc-surface-muted);
 }
 
 .edit-account-page .fb-card__head {
@@ -95,7 +95,7 @@
 .edit-account-page .fb-card__job {
   font-size: 0.9375rem;
   font-weight: 600;
-  color: #2563eb;
+  color: var(--vlc-link);
   text-decoration: none;
 }
 
@@ -105,7 +105,7 @@
 
 .edit-account-page .fb-card__date {
   font-size: 0.75rem;
-  color: #9ca3af;
+  color: var(--vlc-text-faint);
 }
 
 .edit-account-page .fb-stars {
@@ -116,24 +116,24 @@
 
 .edit-account-page .fb-star {
   font-size: 0.875rem;
-  color: #d1d5db;
+  color: var(--vlc-text-faint);
 }
 
 .edit-account-page .fb-star--on {
-  color: #f59e0b;
+  color: var(--vlc-star);
 }
 
 .edit-account-page .fb-card__reviewer {
   margin: 0 0 0.5rem;
   font-size: 0.8125rem;
-  color: #4b5563;
+  color: var(--vlc-text-muted);
 }
 
 .edit-account-page .fb-card__comment {
   margin: 0;
   font-size: 0.875rem;
   line-height: 1.6;
-  color: #374151;
+  color: var(--vlc-text-secondary);
   white-space: pre-wrap;
 }
 
@@ -141,15 +141,15 @@
   margin: 0;
   font-size: 0.8125rem;
   font-style: italic;
-  color: #9ca3af;
+  color: var(--vlc-text-faint);
 }
 
 .edit-account-page .fb-loading,
 .edit-account-page .fb-error {
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--vlc-text-muted);
 }
 
 .edit-account-page .fb-error {
-  color: #b91c1c;
+  color: var(--vlc-danger-text);
 }

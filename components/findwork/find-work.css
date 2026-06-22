@@ -43,8 +43,8 @@
 
 /* Subnav — cùng phong cách menu Hire (client) */
 .find-work-page .hire-subnav {
-  border-bottom: 1px solid #e5e7eb;
-  background: #fff;
+  border-bottom: 1px solid var(--vlc-border);
+  background: var(--vlc-layer-surface);
 }
 
 .find-work-page .hire-subnav__inner {
@@ -62,20 +62,20 @@
   padding: 1rem 0.25rem;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #6b7280;
+  color: var(--vlc-text-muted);
   text-decoration: none;
   border-bottom: 2px solid transparent;
   transition: color 0.15s, border-color 0.15s;
 }
 
 .find-work-page .hire-subnav__link:hover {
-  color: #374151;
-  border-bottom-color: #d1d5db;
+  color: var(--vlc-text-secondary);
+  border-bottom-color: var(--vlc-border);
 }
 
 .find-work-page .hire-subnav__link--active {
-  color: #111827;
-  border-bottom-color: #3b82f6;
+  color: var(--vlc-text);
+  border-bottom-color: var(--vlc-link);
 }
 
 .find-work-page .hire-subnav__link--disabled {
@@ -85,7 +85,7 @@
 }
 
 .find-work-page .hire-subnav__link--disabled:hover {
-  color: #6b7280;
+  color: var(--vlc-text-muted);
   border-bottom-color: transparent;
 }
 

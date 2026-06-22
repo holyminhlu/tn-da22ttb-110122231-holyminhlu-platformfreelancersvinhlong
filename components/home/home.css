@@ -15,7 +15,7 @@
 }
 
 .home-landing .home-navbar__avatar-link:focus-visible {
-  box-shadow: 0 0 0 3px rgb(0 102 204 / 0.35);
+  box-shadow: 0 0 0 3px var(--vlc-focus-ring);
 }
 
 .home-landing .home-navbar__user-menu-item:disabled {
@@ -23,12 +23,12 @@
 }
 
 .home-landing .home-navbar__user-menu-item:not(:disabled):focus-visible {
-  outline: 2px solid #0066cc;
+  outline: 2px solid var(--vlc-accent);
   outline-offset: -2px;
 }
 
 .home-landing .home-navbar__nav-dropdown button:focus-visible {
-  outline: 2px solid #0066cc;
+  outline: 2px solid var(--vlc-accent);
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -36,20 +36,20 @@
 .home-landing .home-navbar__nav-link {
   display: inline-block;
   padding-bottom: 0.2rem;
-  color: #374151;
+  color: var(--vlc-text-secondary);
   text-decoration: none;
   border-bottom: 2px solid transparent;
   transition: color 0.15s ease, border-color 0.15s ease;
 }
 
 .home-landing .home-navbar__nav-link:hover {
-  color: #2563eb;
+  color: var(--vlc-link);
 }
 
 .home-landing .home-navbar__nav-link--active {
-  color: #1d4ed8;
+  color: var(--vlc-link-hover);
   font-weight: 700;
-  border-bottom-color: #2563eb;
+  border-bottom-color: var(--vlc-link);
 }
 
 .home-landing .hero-section {

@@ -1,5 +1,5 @@
 import type { FreelancerProfilePayload, FreelancerSearchRow } from "@/lib/api/freelancers";
-import { formatVnd } from "@/lib/format";
+import { formatVndUi } from "@/lib/format";
 import { resolveJobImageSrc } from "@/lib/jobsDisplay";
 
 export function parseProfileBadges(raw: unknown): string[] {

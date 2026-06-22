@@ -17,11 +17,11 @@ export function freelancerPageMetadata(title: string, description?: string): Met
 
 export default function FreelancerPlaceholderPage({ title, description }: FreelancerPlaceholderPageProps) {
   return (
-    <div className="home-landing min-h-screen bg-white text-gray-900">
+    <div className="home-landing min-h-screen bg-background text-foreground">
       <HomeNavbar />
       <main id="main-content" className="mx-auto max-w-3xl px-6 py-16">
-        <h1 className="text-2xl font-bold text-[#1c2e4a]">{title}</h1>
-        {description ? <p className="mt-3 text-gray-600">{description}</p> : null}
+        <h1 className="text-2xl font-bold text-foreground">{title}</h1>
+        {description ? <p className="mt-3 text-muted-foreground">{description}</p> : null}
       </main>
       <HomeFooter />
     </div>

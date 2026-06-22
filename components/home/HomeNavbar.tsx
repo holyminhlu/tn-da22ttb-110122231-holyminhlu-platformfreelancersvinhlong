@@ -6,7 +6,7 @@ import HomeNavbarNav from "./HomeNavbarNav";
 export default function HomeNavbar() {
   return (
     <header className="home-navbar sticky top-0 z-50">
-      <nav className="flex items-center justify-between border-b border-gray-100 bg-white/95 px-6 py-3 shadow-sm backdrop-blur-md supports-[backdrop-filter]:bg-white/80">
+      <nav className="flex items-center justify-between border-b border-border bg-background/95 px-6 py-3 shadow-sm backdrop-blur-md supports-[backdrop-filter]:bg-background/80">
         <div className="flex items-center space-x-8">
           <HomeNavbarLogo />
           <HomeNavbarNav />

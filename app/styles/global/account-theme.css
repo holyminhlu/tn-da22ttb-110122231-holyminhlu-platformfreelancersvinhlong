@@ -1,0 +1,239 @@
+/*
+ * Account & profile — đồng bộ màu nội dung panel phải (chỉ color/background/border).
+ */
+
+.edit-account-page .ea-shell__content,
+.my-profile-page .mp-body,
+.my-profile-page .cp-body,
+.my-profile-page .cp-content {
+  background: var(--vlc-layer-base);
+}
+
+/* Panel / card / modal */
+.edit-account-page .ea-card,
+.edit-account-page .fb-panel,
+.edit-account-page .fb-card,
+.edit-account-page .sec-panel,
+.edit-account-page .sec-card,
+.edit-account-page .sec-card--muted,
+.edit-account-page .sec-modal,
+.edit-account-page .sec-feature,
+.edit-account-page .sec-history-item,
+.edit-account-page .sec-empty,
+.edit-account-page .cred-panel,
+.edit-account-page .cred-card,
+.edit-account-page .cred-modal,
+.edit-account-page .cred-tip,
+.edit-account-page .cred-success,
+.edit-account-page .cred-modal__current,
+.edit-account-page .cred-modal__footer,
+.edit-account-page .cred-pwd-rules,
+.edit-account-page .idv-page,
+.edit-account-page .idv-panel,
+.edit-account-page .idv-step,
+.edit-account-page .idv-step--active,
+.edit-account-page .idv-step--inactive,
+.edit-account-page .idv-upload,
+.edit-account-page .idv-doc-card,
+.edit-account-page .idv-summary,
+.edit-account-page .ps-section,
+.edit-account-page .ps-metric,
+.edit-account-page .as-page .as-card,
+.edit-account-page .ea-dialog,
+.my-profile-page .mp-header,
+.my-profile-page .cp-header,
+.my-profile-page .mp-profile-card,
+.my-profile-page .mp-section,
+.my-profile-page .mp-card,
+.my-profile-page .mp-skill-row,
+.my-profile-page .mp-portfolio-item,
+.my-profile-page .mp-service-card,
+.my-profile-page .cp-profile-card,
+.my-profile-page .cp-card,
+.my-profile-page .cp-wallet,
+.my-profile-page .cp-jobs-card,
+.my-profile-page .cp-stat,
+.my-profile-page .cp-review-item {
+  border-color: var(--vlc-border);
+  color: inherit;
+}
+
+/* Nền surface cho khối chính */
+.edit-account-page .ea-card,
+.edit-account-page .fb-panel,
+.edit-account-page .sec-panel,
+.edit-account-page .sec-card,
+.edit-account-page .cred-panel,
+.edit-account-page .cred-card,
+.edit-account-page .cred-modal,
+.edit-account-page .idv-panel,
+.edit-account-page .ps-section,
+.edit-account-page .as-page .as-card,
+.edit-account-page .ea-dialog,
+.my-profile-page .mp-profile-card,
+.my-profile-page .mp-section,
+.my-profile-page .mp-card,
+.my-profile-page .cp-profile-card,
+.my-profile-page .cp-card,
+.my-profile-page .cp-wallet,
+.my-profile-page .cp-jobs-card {
+  background-color: var(--vlc-layer-surface);
+}
+
+/* Nền muted / inset */
+.edit-account-page .fb-card,
+.edit-account-page .sec-card--muted,
+.edit-account-page .sec-row__icon,
+.edit-account-page .cred-card__value-box,
+.edit-account-page .cred-modal__current,
+.edit-account-page .cred-modal__footer,
+.edit-account-page .cred-pwd-rules,
+.edit-account-page .idv-step--inactive,
+.edit-account-page .idv-upload,
+.edit-account-page .ps-metric,
+.my-profile-page .mp-skill-row,
+.my-profile-page .cp-stat,
+.my-profile-page .cp-review-item {
+  background-color: var(--vlc-surface-muted);
+}
+
+.edit-account-page .idv-step--active {
+  background-color: var(--vlc-layer-surface);
+}
+
+/* Ô nhập */
+.edit-account-page .ea-field-box,
+.edit-account-page .ea-dialog-input,
+.edit-account-page .sec-field input[type="text"],
+.edit-account-page .sec-field input[type="email"],
+.edit-account-page .sec-field input[type="tel"],
+.edit-account-page .sec-field input[type="password"],
+.edit-account-page .cred-modal__input,
+.edit-account-page .cred-card__value-box,
+.edit-account-page .idv-panel input,
+.edit-account-page .idv-panel select,
+.edit-account-page .idv-panel textarea,
+.edit-account-page .as-select,
+.my-profile-page .mp-dialog__input,
+.my-profile-page .mp-form input,
+.my-profile-page .mp-form textarea,
+.my-profile-page .mp-form select {
+  background-color: var(--vlc-layer-element);
+  color: var(--vlc-text);
+  border-color: var(--vlc-border);
+}
+
+.edit-account-page .ea-field-box {
+  background-color: var(--vlc-surface-muted);
+}
+
+/* Banner / badge semantic */
+.edit-account-page .sec-banner--success,
+.edit-account-page .cred-success,
+.edit-account-page .idv-banner--success {
+  background-color: var(--vlc-success-bg);
+  border-color: var(--vlc-success-border);
+  color: var(--vlc-success-text);
+}
+
+.edit-account-page .sec-banner--error,
+.edit-account-page .cred-modal__error {
+  background-color: var(--vlc-danger-bg);
+  border-color: var(--vlc-danger-border);
+  color: var(--vlc-danger-text);
+}
+
+.edit-account-page .sec-banner--info,
+.edit-account-page .cred-tip,
+.edit-account-page .cred-card__icon--email,
+.edit-account-page .cred-modal__header-icon--email {
+  background-color: var(--vlc-accent-soft);
+  border-color: var(--vlc-border);
+  color: var(--vlc-link);
+}
+
+.edit-account-page .cred-card__value-box--unset {
+  background-color: var(--vlc-warn-bg);
+}
+
+/* Tiêu đề & nhãn */
+.edit-account-page .ea-section-title,
+.edit-account-page .ea-title,
+.edit-account-page .fb-heading,
+.edit-account-page .sec-panel__title,
+.edit-account-page .sec-section__title,
+.edit-account-page .sec-row__label,
+.edit-account-page .cred-panel__title,
+.edit-account-page .cred-card__title,
+.edit-account-page .idv-panel__title,
+.edit-account-page .idv-step__title,
+.edit-account-page .ps-section__title,
+.my-profile-page .mp-header__title,
+.my-profile-page .cp-header__title,
+.my-profile-page .mp-section__title,
+.my-profile-page .cp-card__title,
+.my-profile-page .cp-profile-card__name {
+  color: var(--vlc-text);
+}
+
+.edit-account-page .ea-field-label,
+.edit-account-page .fb-desc,
+.edit-account-page .sec-panel__subtitle,
+.edit-account-page .sec-section__desc,
+.edit-account-page .sec-row__meta,
+.edit-account-page .cred-panel__subtitle,
+.edit-account-page .cred-card__desc,
+.my-profile-page .mp-header__hint,
+.my-profile-page .cp-header__sub,
+.my-profile-page .mp-section__hint {
+  color: var(--vlc-text-muted);
+}
+
+.edit-account-page .ea-field-value,
+.edit-account-page .cred-card__value,
+.edit-account-page .fb-card__reviewer,
+.edit-account-page .fb-card__comment,
+.my-profile-page .mp-visibility,
+.my-profile-page .cp-profile-card__bio {
+  color: var(--vlc-text-secondary);
+}
+
+.edit-account-page .ea-edit-btn,
+.edit-account-page .cred-card__btn,
+.edit-account-page .fb-card__job,
+.edit-account-page .fb-tab--active,
+.my-profile-page .cp-back:hover {
+  color: var(--vlc-link);
+}
+
+.edit-account-page .fb-tab--active::after {
+  background: var(--vlc-link);
+}
+
+/* Nút primary — giữ chữ trắng trên nền accent */
+.edit-account-page .sec-btn--primary,
+.edit-account-page .cred-modal__btn--primary,
+.edit-account-page .cred-card__btn,
+.edit-account-page .idv-btn--primary,
+.my-profile-page .mp-btn--primary,
+.my-profile-page .cp-btn--primary {
+  background-color: var(--vlc-link);
+  color: var(--vlc-on-accent);
+}
+
+.edit-account-page .sec-btn--primary:hover:not(:disabled),
+.edit-account-page .cred-modal__btn--primary:hover:not(:disabled),
+.edit-account-page .idv-btn--primary:hover:not(:disabled) {
+  background-color: var(--vlc-link-hover);
+}
+
+/* Viền phân cách nội bộ */
+.edit-account-page .sec-row,
+.edit-account-page .sec-history-item,
+.edit-account-page .cred-modal__header,
+.edit-account-page .cred-modal__footer,
+.edit-account-page .idv-panel__head,
+.my-profile-page .mp-section__head,
+.my-profile-page .cp-card__head {
+  border-color: var(--vlc-border-subtle);
+}

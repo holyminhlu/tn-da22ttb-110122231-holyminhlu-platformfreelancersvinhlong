@@ -15,13 +15,13 @@
 .client-page__title {
   font-size: 1.5rem;
   font-weight: 400;
-  color: #1f2937;
+  color: var(--vlc-text);
 }
 
 .client-page__desc {
   margin-top: 0.75rem;
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--vlc-text-muted);
 }
 
 .client-dashboard__header {
@@ -40,23 +40,23 @@
 }
 
 .client-dashboard__avatar {
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--vlc-border);
 }
 
 .client-dashboard__name {
   font-size: 1.5rem;
   font-weight: 400;
-  color: #1f2937;
+  color: var(--vlc-text);
   line-height: 1.2;
 }
 
 .client-dashboard__meta {
   font-size: 0.875rem;
-  color: #9ca3af;
+  color: var(--vlc-text-faint);
 }
 
 .client-dashboard__meta a {
-  color: #337ab7;
+  color: var(--vlc-link);
   text-decoration: none;
 }
 
@@ -67,7 +67,7 @@
 .client-dashboard__billing {
   margin-top: 0.25rem;
   font-size: 0.875rem;
-  color: #9ca3af;
+  color: var(--vlc-text-faint);
 }
 
 .client-dashboard__cash {
@@ -77,7 +77,7 @@
   gap: 0.35rem;
   text-align: right;
   font-size: 0.875rem;
-  color: #4b5563;
+  color: var(--vlc-text-muted);
 }
 
 .client-dashboard__cash-row {
@@ -90,11 +90,11 @@
 .client-dashboard__cash-icon {
   flex-shrink: 0;
   font-size: 0.95rem;
-  color: #0066cc;
+  color: var(--vlc-accent);
 }
 
 .client-dashboard__cash-icon--escrow {
-  color: #6b7280;
+  color: var(--vlc-text-muted);
 }
 
 .client-dashboard__cash strong {
@@ -103,12 +103,12 @@
 
 .client-dashboard__cash-amount {
   font-weight: 700;
-  color: #111827;
+  color: var(--vlc-text);
 }
 
 .client-dashboard__cash-amount--secondary {
   font-weight: 600;
-  color: #374151;
+  color: var(--vlc-text-secondary);
 }
 
 .client-dashboard__cash-deposit {
@@ -118,7 +118,7 @@
   margin-top: 0.15rem;
   font-size: 0.875rem;
   font-weight: 500;
-  color: #337ab7;
+  color: var(--vlc-link);
   text-decoration: none;
 }
 
@@ -173,21 +173,21 @@
   height: 100%;
   min-height: 24rem;
   flex-direction: column;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--vlc-border);
   border-radius: 2px;
-  background: #fff;
+  background: var(--vlc-surface);
 }
 
 .client-widget__head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--vlc-border-subtle);
   padding: 0.5rem 0.75rem;
-  background: #fcfcfc;
+  background: var(--vlc-surface-muted);
   font-size: 0.875rem;
   font-weight: 600;
-  color: #374151;
+  color: var(--vlc-text-secondary);
 }
 
 .client-widget__head-links {
@@ -196,7 +196,7 @@
 }
 
 .client-widget__head-links a {
-  color: #337ab7;
+  color: var(--vlc-link);
   text-decoration: none;
 }
 
@@ -206,7 +206,7 @@
 
 .client-widget__sep {
   margin: 0 0.25rem;
-  color: #d1d5db;
+  color: var(--vlc-text-faint);
 }
 
 .client-widget__body {
@@ -229,13 +229,13 @@
 .client-widget__title {
   margin-bottom: 0.5rem;
   font-weight: 700;
-  color: #374151;
+  color: var(--vlc-text-secondary);
 }
 
 .client-widget__link {
   display: block;
   font-size: 0.875rem;
-  color: #337ab7;
+  color: var(--vlc-link);
   text-decoration: none;
 }
 
@@ -250,7 +250,7 @@
 .client-widget__muted {
   font-size: 0.875rem;
   line-height: 1.4;
-  color: #6b7280;
+  color: var(--vlc-text-muted);
 }
 
 .client-widget__list {
@@ -268,7 +268,7 @@
 }
 
 .client-widget__list-item {
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--vlc-border-subtle);
   padding: 0.5rem 0;
 }
 
@@ -280,7 +280,7 @@
   display: block;
   font-size: 0.875rem;
   font-weight: 600;
-  color: #337ab7;
+  color: var(--vlc-link);
   text-decoration: none;
 }
 
@@ -292,5 +292,5 @@ a.client-widget__list-title:hover {
   margin-top: 0.2rem;
   font-size: 0.75rem;
   line-height: 1.35;
-  color: #6b7280;
+  color: var(--vlc-text-muted);
 }

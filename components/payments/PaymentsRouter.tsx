@@ -13,7 +13,7 @@ export default function PaymentsRouter() {
 
   if (!ready) {
     return (
-      <div className="home-landing flex min-h-screen items-center justify-center bg-white text-gray-500">
+      <div className="home-landing flex min-h-screen items-center justify-center bg-background text-muted-foreground">
         {t("Đang tải...")}
       </div>
     );

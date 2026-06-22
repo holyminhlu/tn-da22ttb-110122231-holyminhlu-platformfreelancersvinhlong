@@ -39,7 +39,7 @@ export default function HomeNavbarNav() {
     const adminHref = "/admin/duyet-tai-khoan";
     const active = isNavActive(pathname, adminHref);
     return (
-      <div className="hidden space-x-6 font-medium text-gray-700 md:flex">
+      <div className="hidden space-x-6 font-medium text-muted-foreground md:flex">
         <Link
           href={adminHref}
           className={`home-navbar__nav-link${active ? " home-navbar__nav-link--active" : ""}`}
@@ -53,7 +53,7 @@ export default function HomeNavbarNav() {
 
   if (user && isClient) {
     return (
-      <div className="hidden space-x-6 font-medium text-gray-700 md:flex">
+      <div className="hidden space-x-6 font-medium text-muted-foreground md:flex">
         {CLIENT_NAV.map((item) => {
           const active = isNavActive(pathname, item.href);
           return (
@@ -73,7 +73,7 @@ export default function HomeNavbarNav() {
 
   if (user && isFreelancer) {
     return (
-      <div className="hidden space-x-6 font-medium text-gray-700 md:flex">
+      <div className="hidden space-x-6 font-medium text-muted-foreground md:flex">
         {FREELANCER_NAV.map((item) => {
           const active = isNavActive(pathname, item.href);
           return (
@@ -97,11 +97,11 @@ export default function HomeNavbarNav() {
   }));
 
   return (
-    <div className="hidden space-x-6 font-medium text-gray-700 md:flex">
-      <Link href="/freelancers" className="hover:text-blue-600">
+    <div className="hidden space-x-6 font-medium text-muted-foreground md:flex">
+      <Link href="/freelancers" className="hover:text-primary">
         {t("nav.findFreelancer")}
       </Link>
-      <Link href="/findwork" className="hover:text-blue-600">
+      <Link href="/findwork" className="hover:text-primary">
         {t("nav.findWork")}
       </Link>
       <NavDropdown label={t("nav.about")} items={aboutItems} />

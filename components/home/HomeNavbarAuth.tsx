@@ -14,7 +14,7 @@ export default function HomeNavbarAuth() {
   const { user, ready, isAdmin } = useStoredUser({ refreshFromApi: false });
 
   if (!ready) {
-    return <div className="h-10 w-10 shrink-0 rounded-full bg-gray-100" aria-hidden />;
+    return <div className="h-10 w-10 shrink-0 rounded-full bg-muted" aria-hidden />;
   }
 
   if (user) {
@@ -28,11 +28,11 @@ export default function HomeNavbarAuth() {
 
   return (
     <>
-      <Link href="/dang-ky" className="flex items-center text-gray-600 hover:text-blue-600">
-        <FaEdit className="mr-2 text-blue-500" /> {t("auth.register")}
+      <Link href="/dang-ky" className="flex items-center text-muted-foreground hover:text-primary">
+        <FaEdit className="mr-2 text-primary" /> {t("auth.register")}
       </Link>
-      <Link href="/dang-nhap" className="flex items-center text-gray-600 hover:text-blue-600">
-        <FaSignInAlt className="mr-2 text-blue-500" /> {t("auth.login")}
+      <Link href="/dang-nhap" className="flex items-center text-muted-foreground hover:text-primary">
+        <FaSignInAlt className="mr-2 text-primary" /> {t("auth.login")}
       </Link>
     </>
   );

@@ -110,9 +110,9 @@ export default function UserAvatarMenu({
             fallback={getUserInitials(user.fullName, user.email)}
           />
         ) : (
-          <Avatar size="lg" className="size-10 ring-2 ring-[#0066cc]/25 transition hover:ring-[#0066cc]/50">
+          <Avatar size="lg" className="size-10 ring-2 ring-primary/25 transition hover:ring-primary/50">
             {avatarSrc ? <AvatarImage src={avatarSrc} alt={label} /> : null}
-            <AvatarFallback className="bg-[#e8f1fb] text-sm font-semibold text-[#0066cc]">
+            <AvatarFallback className="bg-primary/10 text-sm font-semibold text-primary">
               {getUserInitials(user.fullName, user.email)}
             </AvatarFallback>
           </Avatar>
@@ -124,14 +124,14 @@ export default function UserAvatarMenu({
           id={menuId}
           role="menu"
           aria-label={t("userMenu.menuAria")}
-          className="absolute right-0 top-[calc(100%+0.5rem)] z-[60] min-w-[14rem] overflow-hidden rounded-md border border-gray-200 bg-white py-1 shadow-lg"
+          className="absolute right-0 top-[calc(100%+0.5rem)] z-[60] min-w-[14rem] overflow-hidden rounded-md border border-border bg-card py-1 text-card-foreground shadow-lg"
         >
           {menuItems.map((item, index) => {
             if (item.type === "header") {
               return (
                 <p
                   key={`header-${index}`}
-                  className="px-4 pb-1 pt-2.5 text-[10px] font-bold tracking-wide text-gray-500"
+                  className="px-4 pb-1 pt-2.5 text-[10px] font-bold tracking-wide text-muted-foreground"
                 >
                   {item.label}
                 </p>
@@ -147,8 +147,8 @@ export default function UserAvatarMenu({
                 type="button"
                 role="menuitem"
                 disabled={disabled}
-                className={`home-navbar__user-menu-item block w-full px-4 py-2.5 text-left text-sm text-gray-800 hover:bg-gray-50 ${
-                  isLogout ? "border-t border-gray-100 font-medium text-[#0066cc]" : ""
+                className={`home-navbar__user-menu-item block w-full px-4 py-2.5 text-left text-sm text-foreground hover:bg-muted ${
+                  isLogout ? "border-t border-border font-medium text-primary" : ""
                 }`}
                 onClick={() => onMenuItemClick(item)}
               >
