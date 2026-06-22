@@ -69,7 +69,6 @@ export default function GoogleCallbackHandler() {
     let cancelled = false;
 
     async function run() {
-  const t = tUi;
       const hashParams = readHashParams();
       const error =
         searchParams.get("error") ||

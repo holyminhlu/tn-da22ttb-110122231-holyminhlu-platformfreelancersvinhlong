@@ -10,6 +10,7 @@ import {
   postDisputeMessage,
   type DisputeListRow,
 } from "@/lib/api/resolution";
+import { serviceOrderHref } from "@/lib/routes/paths";
 import { formatDate, formatVnd } from "@/lib/format";
 import {
   DISPUTE_PROGRESS_STEPS,
@@ -32,9 +33,7 @@ function orderTitle(row: DisputeListRow) {
 }
 
 function orderHref(contractId: string, audience: ResolutionAudience) {
-  return audience === "freelancer"
-    ? `/findwork/orders/${contractId}`
-    : `/hire/orders/${contractId}`;
+  return serviceOrderHref(contractId, audience === "freelancer" ? "freelancer" : "client");
 }
 
 export default function DisputesPanel({
@@ -128,8 +127,6 @@ export default function DisputesPanel({
   );
 
   async function handleSendMessage(body: string) {
-  const formatDate = formatDateUi;
-  const formatVnd = formatVndUi;
     if (!selectedId) return;
     setBusy(true);
     setActionError("");
@@ -166,7 +163,7 @@ export default function DisputesPanel({
         <h2 className="manage-page__empty-title">Chưa có tranh chấp</h2>
         <p className="manage-page__empty-text">
           {audience === "freelancer"
-            ? "Khi client (hoặc bạn) mở tranh chấp trên đơn dịch vụ, bạn có thể theo dõi và trao đổi tại đây."
+            ? "Khi khách hàng (hoặc bạn) mở tranh chấp trên đơn dịch vụ, bạn có thể theo dõi và trao đổi tại đây."
             : "Mở tranh chấp từ workspace đơn hàng khi có sự cố nghiêm trọng cần Admin can thiệp."}
         </p>
         <Link href={ordersListHref} className="manage-page__empty-link">
@@ -210,7 +207,7 @@ export default function DisputesPanel({
             <div className="resolution-card resolution-card--flat">
               <h3 className="resolution-card__title">{orderTitle(selected)}</h3>
               <p className="resolution-card__meta">
-                {audience === "freelancer" ? "Client" : "Freelancer"}:{" "}
+                {audience === "freelancer" ? "Khách hàng" : "Freelancer"}:{" "}
                 {selected.counterparty_name} · {formatVndUi(selected.agreed_price)}
               </p>
               <DisputeProgressSteps
@@ -226,7 +223,7 @@ export default function DisputesPanel({
                 </div>
                 <div className="dispute-highlight dispute-highlight--request">
                   <span className="dispute-highlight__label">
-                    {audience === "freelancer" ? "Yêu cầu từ client" : "Yêu cầu của bạn"}
+                    {audience === "freelancer" ? "Yêu cầu từ khách hàng" : "Yêu cầu của bạn"}
                   </span>
                   <span className="dispute-highlight__value">
                     {disputeResolutionLabel(selected.desired_resolution)}

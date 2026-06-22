@@ -4,7 +4,7 @@ import FreelancerOrderWorkflowPage from "@/components/findwork/FreelancerOrderWo
 
 export const metadata = freelancerPageMetadata(
   "Chi tiết đơn dịch vụ",
-  "Theo dõi và xử lý đơn đặt dịch vụ từ Client.",
+  "Theo dõi và xử lý đơn đặt dịch vụ từ Khách hàng.",
 );
 
 export default function FindworkOrderDetailPage() {

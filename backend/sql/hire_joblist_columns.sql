@@ -1,4 +1,4 @@
--- Cột & bảng phục vụ trang Hire / Job List (budget type, báo giá, thống kê client).
+-- Cột & bảng phục vụ trang Hire / Job List (budget type, báo giá, thống kê khách hàng).
 -- Chạy một lần trên PostgreSQL.
 
 BEGIN;

@@ -30,7 +30,6 @@ type ContactVerifyPanelProps = {
 
 function splitName(fullName: string | null | undefined) {
 
-  const t = tUi;
   const parts = String(fullName || "").trim().split(/\s+/).filter(Boolean);
 
   if (parts.length === 0) return { first: "", last: "" };
@@ -111,7 +110,6 @@ export default function ContactVerifyPanel({ data, onSaved }: ContactVerifyPanel
 
   async function handleSave() {
 
-  const t = tUi;
     if (!firstName.trim() || !lastName.trim()) {
 
       setMessage("Vui lòng nhập tên và họ.");

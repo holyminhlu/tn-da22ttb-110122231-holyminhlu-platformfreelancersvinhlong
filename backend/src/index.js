@@ -55,6 +55,7 @@ const chatRoutes = require("./routes/chat.routes");
 const notificationsRoutes = require("./routes/notifications.routes");
 const adminRoutes = require("./routes/admin.routes");
 const supportRoutes = require("./routes/support.routes");
+const contactRoutes = require("./routes/contact.routes");
 const mapsRoutes = require("./routes/maps.routes");
 const { initChatSocket } = require("./socket/chatSocket");
 const { setNotificationIo } = require("./utils/notificationService");
@@ -86,6 +87,7 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/notifications", notificationsRoutes);
 app.use("/api/support", supportRoutes);
+app.use("/api/contact", contactRoutes);
 app.use("/api/maps", mapsRoutes);
 
 /** Legacy: /api/auth/me/*, /api/auth/freelancers, … */

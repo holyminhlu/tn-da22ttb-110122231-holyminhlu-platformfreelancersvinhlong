@@ -6,7 +6,7 @@ function requireClientPayload(req, res) {
   const payload = verifyAccessToken(req, res);
   if (!payload) return null;
   if (payload.role !== "client") {
-    res.status(403).json({ message: "Chỉ client được lưu freelancer yêu thích." });
+    res.status(403).json({ message: "Chỉ khách hàng được lưu freelancer yêu thích." });
     return null;
   }
   return payload;

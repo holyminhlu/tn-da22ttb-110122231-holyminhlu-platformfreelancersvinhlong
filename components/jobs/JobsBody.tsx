@@ -70,12 +70,10 @@ export default function JobsBody() {
     filter === "safepay" || filter === "archived_safepay";
 
   function applySearch() {
-  const t = tUi;
     setSearchQuery(searchInput.trim());
   }
 
   function handleSearchInputChange(value: string) {
-  const t = tUi;
     setSearchInput(value);
     if (!value.trim()) setSearchQuery("");
   }

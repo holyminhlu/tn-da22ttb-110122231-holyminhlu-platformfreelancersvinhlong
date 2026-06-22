@@ -70,7 +70,8 @@
 
 .vlc-ai-support__panel {
   width: min(100vw - 2rem, 28rem);
-  max-height: min(80vh, 40rem);
+  height: min(78vh, 52rem);
+  max-height: min(92vh, 56rem);
   display: flex;
   flex-direction: column;
   border: 1px solid #e5e7eb;
@@ -140,8 +141,7 @@
 
 .vlc-ai-support__messages {
   flex: 1;
-  min-height: 14rem;
-  max-height: 26rem;
+  min-height: 0;
   margin: 0;
   padding: 0.875rem;
   overflow-y: auto;

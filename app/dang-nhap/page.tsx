@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import DangNhapEntry from "@/components/auth/DangNhapEntry";
 
 export const metadata: Metadata = {
-  title: "Đăng nhập | Vĩnh Long Connected",
+  title: "Đăng nhập | Vĩnh Long Connect",
   description: "Đăng nhập bằng email/password hoặc tiếp tục với Google.",
 };
 

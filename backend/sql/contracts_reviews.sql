@@ -1,4 +1,4 @@
--- Đánh giá freelancer theo hợp đồng (Client -> Freelancer)
+-- Đánh giá freelancer theo hợp đồng (Khách hàng -> Freelancer)
 
 CREATE TABLE IF NOT EXISTS public.contract_reviews (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),

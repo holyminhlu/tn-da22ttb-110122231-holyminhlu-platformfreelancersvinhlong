@@ -5,9 +5,9 @@ import "@/components/profile/my-profile.css";
 import "@/components/profile/client-profile.css";
 
 export const metadata: Metadata = {
-  title: "Hồ sơ của tôi — Vĩnh Long Connected",
+  title: "Hồ sơ của tôi — Vĩnh Long Connect",
   description:
-    "Quản lý hồ sơ Client hoặc Freelancer — thông tin cá nhân, giới thiệu và hoạt động trên nền tảng.",
+    "Quản lý hồ sơ Khách hàng hoặc Freelancer — thông tin cá nhân, giới thiệu và hoạt động trên nền tảng.",
 };
 
 export default function HoSoPage() {

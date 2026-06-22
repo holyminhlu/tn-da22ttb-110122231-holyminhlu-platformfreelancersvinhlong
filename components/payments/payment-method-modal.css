@@ -97,6 +97,41 @@
   color: #1d4ed8;
 }
 
+.pay-method-modal__tab--disabled {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  cursor: not-allowed;
+  opacity: 0.72;
+  background: #f3f4f6;
+  color: #9ca3af;
+}
+
+.pay-method-modal__tab-badge {
+  display: inline-block;
+  padding: 0.1rem 0.35rem;
+  border-radius: 999px;
+  background: #fef3c7;
+  color: #b45309;
+  font-size: 0.625rem;
+  font-weight: 700;
+  line-height: 1.3;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.pay-method-modal__coming-soon {
+  margin: 0;
+  padding: 0.85rem 1rem;
+  border-radius: 0.5rem;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  color: #92400e;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
 .pay-method-modal__field {
   display: grid;
   gap: 0.35rem;

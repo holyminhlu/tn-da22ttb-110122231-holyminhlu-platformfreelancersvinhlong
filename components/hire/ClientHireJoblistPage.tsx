@@ -1,6 +1,5 @@
 "use client";
 
-import { tUi } from "@/lib/i18n/runtime";
 import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -14,16 +13,19 @@ import "./hire.css";
 const PAGE_SIZE = 12;
 const ALL_STATUS = "all";
 
-const STATUS_OPTIONS = [
-  { value: ALL_STATUS, label: tUi("Tất cả trạng thái") },
-  { value: "open", label: tUi("Đang mở") },
-  { value: "in_progress", label: tUi("Đang thực hiện") },
-  { value: "closed", label: tUi("Đã đóng") },
-  { value: "cancelled", label: tUi("Đã hủy") },
-];
-
 export default function ClientHireJoblistPage() {
   const { t } = useTranslation();
+
+  const statusOptions = useMemo(
+    () => [
+      { value: ALL_STATUS, label: t("hirePage.jobStatusAll") },
+      { value: "open", label: t("hirePage.jobStatusFilterOpen") },
+      { value: "in_progress", label: t("hirePage.jobStatusInProgress") },
+      { value: "closed", label: t("hirePage.jobStatusClosed") },
+      { value: "cancelled", label: t("hirePage.jobStatusCancelled") },
+    ],
+    [t],
+  );
 
   const searchParams = useSearchParams();
   const postedSuccess = Boolean(searchParams.get("posted"));
@@ -55,7 +57,7 @@ export default function ClientHireJoblistPage() {
       const message =
         err && typeof err === "object" && "message" in err
           ? String((err as { message: string }).message)
-          : "Không thể tải danh sách công việc.";
+          : t("hirePage.loadJobsError");
       setError(message);
       setJobs([]);
     } finally {
@@ -73,7 +75,7 @@ export default function ClientHireJoblistPage() {
   const canNext = offset + PAGE_SIZE < total;
 
   const statusLabel =
-    STATUS_OPTIONS.find((o) => o.value === statusFilter)?.label ?? "Tất cả trạng thái";
+    statusOptions.find((o) => o.value === statusFilter)?.label ?? t("hirePage.jobStatusAll");
 
   const allSelectedOnPage = useMemo(
     () => jobs.length > 0 && jobs.every((j) => selectedIds.has(j.id)),
@@ -81,13 +83,11 @@ export default function ClientHireJoblistPage() {
   );
 
   function applySearch() {
-  const t = tUi;
     setSearchQuery(searchInput.trim());
     setOffset(0);
   }
 
   function handleSearchKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
-  const t = tUi;
     if (event.key === "Enter") {
       event.preventDefault();
       applySearch();
@@ -95,7 +95,6 @@ export default function ClientHireJoblistPage() {
   }
 
   function handleSelect(id: string, checked: boolean) {
-  const t = tUi;
     setSelectedIds((prev) => {
       const next = new Set(prev);
       if (checked) next.add(id);
@@ -105,7 +104,6 @@ export default function ClientHireJoblistPage() {
   }
 
   function handleSelectAllOnPage(checked: boolean) {
-  const t = tUi;
     setSelectedIds((prev) => {
       const next = new Set(prev);
       for (const job of jobs) {
@@ -121,19 +119,17 @@ export default function ClientHireJoblistPage() {
       <div className="hire-page hire-joblist hire-joblist--full-width">
         <header className="hire-page__head">
           <div>
-            <h1 className="hire-page__title">{t("Danh sách việc làm")}</h1>
-            <p className="hire-page__lead">
-              Quản lý các công việc bạn đã đăng — theo dõi báo giá và trạng thái từng dự án.
-            </p>
+            <h1 className="hire-page__title">{t("hireJoblist.title")}</h1>
+            <p className="hire-page__lead">{t("hireJoblist.lead")}</p>
           </div>
           <Link href="/hire/post" className="hire-page__post-btn">
-            Đăng tuyển dụng
+            {t("hirePage.postJob")}
           </Link>
         </header>
 
         {postedSuccess ? (
           <p className="hire-page__banner hire-page__banner--success" role="status">
-            Đăng tin tuyển dụng thành công. Công việc đã xuất hiện trong danh sách bên dưới.
+            {t("hireJoblist.postedSuccess")}
           </p>
         ) : null}
 
@@ -142,7 +138,7 @@ export default function ClientHireJoblistPage() {
             <input
               type="search"
               className="hire-page__search-input"
-              placeholder={t("Tìm công việc đã đăng")}
+              placeholder={t("hireJoblist.searchPlaceholder")}
               value={searchInput}
               onChange={(e) => {
                 const value = e.target.value;
@@ -153,12 +149,12 @@ export default function ClientHireJoblistPage() {
                 }
               }}
               onKeyDown={handleSearchKeyDown}
-              aria-label={t("Tìm công việc")}
+              aria-label={t("hireJoblist.searchAria")}
             />
             <button
               type="button"
               className="hire-page__search-btn"
-              aria-label={t("Tìm kiếm")}
+              aria-label={t("hirePage.search")}
               onClick={applySearch}
             >
               <FaSearch aria-hidden />
@@ -177,7 +173,7 @@ export default function ClientHireJoblistPage() {
             </button>
             {statusOpen ? (
               <div className="hire-page__filter-panel" role="listbox">
-                {STATUS_OPTIONS.map((opt) => (
+                {statusOptions.map((opt) => (
                   <button
                     key={opt.value}
                     type="button"
@@ -206,27 +202,26 @@ export default function ClientHireJoblistPage() {
               onChange={(e) => handleSelectAllOnPage(e.target.checked)}
             />
             <span>
-              {total.toLocaleString("en-US")} job{total === 1 ? "" : "s"}
-              {selectedIds.size > 0 ? ` · ${selectedIds.size} đã chọn` : ""}
+              {total === 1
+                ? t("hirePage.jobsCount", { count: total })
+                : t("hirePage.jobsCountPlural", { count: total })}
+              {selectedIds.size > 0 ? ` · ${t("hirePage.selected", { count: selectedIds.size })}` : ""}
             </span>
           </label>
         </div>
 
         {loading ? (
-          <p className="hire-page__state">{t("Đang tải...")}</p>
+          <p className="hire-page__state">{t("common.loading")}</p>
         ) : error ? (
           <p className="hire-page__state hire-page__state--error" role="alert">
             {error}
           </p>
         ) : jobs.length === 0 ? (
           <div className="hire-page__empty">
-            <p className="hire-page__empty-text">{t("Bạn chưa đăng công việc nào phù hợp bộ lọc.")}</p>
-            <p className="hire-favorites__lead-sub">
-              Chạy <code>backend/sql/hire_joblist_columns.sql</code> nếu API báo thiếu cột hoặc bảng{" "}
-              <code>job_quotes</code>.
-            </p>
+            <p className="hire-page__empty-text">{t("hireJoblist.emptyFilter")}</p>
+            <p className="hire-favorites__lead-sub">{t("hireJoblist.emptySqlHint")}</p>
             <Link href="/hire/post" className="hire-page__post-btn" style={{ marginTop: "1rem" }}>
-              Đăng công việc mới
+              {t("hirePage.postJobNew")}
             </Link>
           </div>
         ) : (
@@ -243,7 +238,7 @@ export default function ClientHireJoblistPage() {
             </div>
 
             {totalPages > 1 ? (
-              <nav className="hire-search__pagination" aria-label={t("Phân trang")}>
+              <nav className="hire-search__pagination" aria-label={t("hirePage.pagination")}>
                 <button
                   type="button"
                   className="hire-search__page-btn"
@@ -251,10 +246,10 @@ export default function ClientHireJoblistPage() {
                   onClick={() => setOffset((o) => Math.max(0, o - PAGE_SIZE))}
                 >
                   <FaChevronLeft aria-hidden />
-                  Trước
+                  {t("hirePage.prev")}
                 </button>
                 <span className="hire-search__page-label">
-                  Trang {page} / {totalPages}
+                  {t("hirePage.pageOf", { page, totalPages })}
                 </span>
                 <button
                   type="button"
@@ -262,7 +257,7 @@ export default function ClientHireJoblistPage() {
                   disabled={!canNext}
                   onClick={() => setOffset((o) => o + PAGE_SIZE)}
                 >
-                  Sau
+                  {t("hirePage.next")}
                   <FaChevronRight aria-hidden />
                 </button>
               </nav>

@@ -20,6 +20,7 @@ import {
   type LeadFilter,
 } from "@/lib/findwork/leadsDisplay";
 import { formatPackagePrice } from "@/lib/hire/servicePackages";
+import { serviceOrderHref } from "@/lib/routes/paths";
 import { relativePosted } from "@/lib/jobsDisplay";
 import FreelancerWorkShell from "./FreelancerWorkShell";
 import "./findwork-leads.css";
@@ -27,7 +28,7 @@ import "./findwork-leads.css";
 const FILTERS: { value: LeadFilter; label: string }[] = [
   { value: "all", label: tUi("Tất cả") },
   { value: "new", label: tUi("Việc mới") },
-  { value: "interested", label: tUi("Client quan tâm") },
+  { value: "interested", label: tUi("Khách hàng quan tâm") },
   { value: "service", label: tUi("Đơn chờ đề xuất") },
 ];
 
@@ -124,7 +125,7 @@ export default function FreelancerLeadsPage() {  const { t, formatVnd, formatDat
           <div>
             <h1 className="fw-leads__title">{t("Khách hàng tiềm năng")}</h1>
             <p className="fw-leads__lead">
-              Theo dõi client đang tuyển việc, phản hồi báo giá của bạn và đơn dịch vụ cần gửi đề
+              Theo dõi khách hàng đang tuyển việc, phản hồi báo giá của bạn và đơn dịch vụ cần gửi đề
               xuất — tập trung cơ hội cần hành động sớm.
             </p>
           </div>
@@ -169,7 +170,7 @@ export default function FreelancerLeadsPage() {  const { t, formatVnd, formatDat
               <input
                 type="search"
                 className="fw-leads__search"
-                placeholder={t("Tìm theo tên client, việc, dịch vụ...")}
+                placeholder={t("Tìm theo tên khách hàng, việc, dịch vụ...")}
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 aria-label={t("Tìm khách hàng tiềm năng")}
@@ -200,7 +201,7 @@ export default function FreelancerLeadsPage() {  const { t, formatVnd, formatDat
             ) : isEmpty ? (
               <div className="fw-leads__empty">
                 {filter === "all"
-                  ? "Chưa có khách hàng tiềm năng. Hãy duyệt Tìm việc làm và gửi báo giá, hoặc chờ client đặt gói dịch vụ của bạn."
+                  ? "Chưa có khách hàng tiềm năng. Hãy duyệt Tìm việc làm và gửi báo giá, hoặc chờ khách hàng đặt gói dịch vụ của bạn."
                   : "Không có mục nào trong bộ lọc này."}
               </div>
             ) : (
@@ -270,7 +271,7 @@ export default function FreelancerLeadsPage() {  const { t, formatVnd, formatDat
                       {filteredOrders.map((order) => (
                         <li key={order.id}>
                           <Link
-                            href={`/findwork/orders/${order.id}`}
+                            href={serviceOrderHref(order.id, "freelancer")}
                             className="fw-leads__card fw-leads__card--service"
                           >
                             <UserAvatar
@@ -289,7 +290,7 @@ export default function FreelancerLeadsPage() {  const { t, formatVnd, formatDat
                               <p className="fw-leads__card-meta">
                                 {order.client_brief
                                   ? `${order.client_brief.slice(0, 120)}${order.client_brief.length > 120 ? "…" : ""}`
-                                  : "Client đã đặt gói — cần gửi đề xuất của bạn."}
+                                  : "Khách hàng đã đặt gói — cần gửi đề xuất của bạn."}
                                 {order.agreed_price != null ? (
                                   <>
                                     <br />

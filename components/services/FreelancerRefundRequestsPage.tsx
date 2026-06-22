@@ -15,7 +15,7 @@ export default function FreelancerRefundRequestsPage() {
         <header className="svc-resolution-page__head">
           <h1 className="svc-resolution-page__title">{t("Yêu cầu hoàn tiền")}</h1>
           <p className="svc-resolution-page__lead">
-            {t("Xem yêu cầu hủy từ client và mức bạn nhận nếu đồng ý (50/50 ở GĐ3 chính đáng, hoặc phí phạt + việc đã làm nếu hủy ngang). Bạn có 3 ngày phản hồi.")}
+            {t("Xem yêu cầu hủy từ khách hàng và mức bạn nhận nếu đồng ý (50/50 ở GĐ3 chính đáng, hoặc phí phạt + việc đã làm nếu hủy ngang). Bạn có 3 ngày phản hồi.")}
           </p>
         </header>
         <RefundRequestsPanel audience="freelancer" />

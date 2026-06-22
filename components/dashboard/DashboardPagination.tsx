@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslation } from "@/hooks/useTranslation";
+
 type DashboardPaginationProps = {
   page: number;
   totalPages: number;
@@ -20,6 +22,8 @@ export default function DashboardPagination({
   alwaysShow = false,
   pageSize,
 }: DashboardPaginationProps) {
+  const { t } = useTranslation();
+
   if (total === 0) return null;
   if (totalPages <= 1 && !alwaysShow) return null;
 
@@ -30,7 +34,7 @@ export default function DashboardPagination({
   return (
     <nav
       className={`dashboard-pagination${className ? ` ${className}` : ""}`}
-      aria-label="Phân trang"
+      aria-label={t("dashboardPage.paginationAria")}
     >
       <button
         type="button"
@@ -38,12 +42,18 @@ export default function DashboardPagination({
         disabled={page <= 1}
         onClick={() => onPageChange(page - 1)}
       >
-        Trước
+        {t("dashboardPage.paginationPrev")}
       </button>
       <span className="dashboard-pagination__info">
         {pageSize != null && total > 0
-          ? `Hiển thị ${rangeStart}–${rangeEnd} / ${total} · Trang ${page}/${totalPages}`
-          : `Trang ${page}/${totalPages} · ${total} mục`}
+          ? t("dashboardPage.paginationRange", {
+              start: rangeStart,
+              end: rangeEnd,
+              total,
+              page,
+              totalPages,
+            })
+          : t("dashboardPage.paginationPage", { page, totalPages, total })}
       </span>
       <button
         type="button"
@@ -51,7 +61,7 @@ export default function DashboardPagination({
         disabled={page >= totalPages}
         onClick={() => onPageChange(page + 1)}
       >
-        Sau
+        {t("dashboardPage.paginationNext")}
       </button>
     </nav>
   );

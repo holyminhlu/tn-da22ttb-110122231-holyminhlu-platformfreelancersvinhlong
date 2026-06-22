@@ -114,8 +114,6 @@ export default function FreelancerWithdrawModal({
   useEffect(() => {
     if (!open) return;
     function onKeyDown(event: KeyboardEvent) {
-  const t = tUi;
-  const formatVnd = formatVndUi;
       if (event.key === "Escape" && !busy && step !== "processing") onClose();
     }
     window.addEventListener("keydown", onKeyDown);
@@ -177,8 +175,6 @@ export default function FreelancerWithdrawModal({
   }, [autoCloseIn, open, step, order, onClose]);
 
   function stopPolling() {
-  const t = tUi;
-  const formatVnd = formatVndUi;
     if (pollRef.current) {
       clearInterval(pollRef.current);
       pollRef.current = null;
@@ -186,8 +182,6 @@ export default function FreelancerWithdrawModal({
   }
 
   function startPolling(orderId: string) {
-  const t = tUi;
-  const formatVnd = formatVndUi;
     stopPolling();
     pollRef.current = setInterval(() => {
       void (async () => {
@@ -249,8 +243,6 @@ export default function FreelancerWithdrawModal({
   }
 
   async function handleVerifySubmit(event: FormEvent) {
-  const t = tUi;
-  const formatVnd = formatVndUi;
   event.preventDefault();
     if (!order) return;
     setError("");

@@ -1,7 +1,7 @@
 export const WHY_VLC_HERO = {
   slogan: "Kết nối nhân tài thực chất – Kiến tạo thành công bền vững.",
   description:
-    "Vĩnh Long Connected mang đến môi trường làm việc tự do minh bạch, chuyên nghiệp và an toàn — nơi doanh nghiệp tìm đúng người, freelancer nhận đúng việc và được trả đúng tiền.",
+    "Vĩnh Long Connect mang đến môi trường làm việc tự do minh bạch, chuyên nghiệp và an toàn — nơi doanh nghiệp tìm đúng người, freelancer nhận đúng việc và được trả đúng tiền.",
 } as const;
 
 export const CLIENT_BENEFITS = [
@@ -36,7 +36,7 @@ export const FREELANCER_BENEFITS = [
     icon: "safepay" as const,
     title: "Bảo vệ thu nhập tối đa",
     description:
-      "Không còn nỗi lo bị \"bùng tiền\" nhờ SafePay — client nạp ký quỹ Escrow trước, bạn nhận giải ngân sau khi nghiệm thu công việc.",
+      "Không còn nỗi lo bị \"bùng tiền\" nhờ SafePay — khách hàng nạp ký quỹ Escrow trước, bạn nhận giải ngân sau khi nghiệm thu công việc.",
   },
   {
     icon: "fee" as const,
@@ -84,7 +84,7 @@ export const TESTIMONIALS = [
   },
   {
     quote:
-      "Làm freelance 2 năm, tôi từng gặp client trả chậm. Từ khi dùng SafePay trên VLC, mọi hợp đồng đều có ký quỹ trước — tôi yên tâm làm việc và tập trung vào chất lượng sản phẩm.",
+      "Làm freelance 2 năm, tôi từng gặp khách hàng trả chậm. Từ khi dùng SafePay trên VLC, mọi hợp đồng đều có ký quỹ trước — tôi yên tâm làm việc và tập trung vào chất lượng sản phẩm.",
     name: "Anh Trần Minh Đức",
     role: "Freelancer thiết kế đồ họa",
     type: "freelancer" as const,
@@ -99,7 +99,7 @@ export const TESTIMONIALS = [
 ] as const;
 
 export const WHY_VLC_CTA = {
-  title: "Bắt đầu hành trình cùng Vĩnh Long Connected",
+  title: "Bắt đầu hành trình cùng Vĩnh Long Connect",
   subtitle: "Dù bạn cần thuê người hay tìm việc — nền tảng sẵn sàng đồng hành.",
   client: { label: "Đăng tin tuyển dụng", href: "/hire/post" },
   freelancer: { label: "Tìm việc", href: "/findwork" },

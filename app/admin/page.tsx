@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
+import { ROUTES } from "@/lib/routes/paths";
 
 export default function AdminIndexPage() {
-  redirect("/admin/duyet-tai-khoan");
+  redirect(ROUTES.admin.reports);
 }

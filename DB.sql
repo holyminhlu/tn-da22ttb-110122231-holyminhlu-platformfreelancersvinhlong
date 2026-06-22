@@ -424,21 +424,21 @@ COMMENT ON COLUMN public.jobs.due_at IS 'Thời điểm mong muốn hoàn thành
 -- Name: COLUMN jobs.location_label; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON COLUMN public.jobs.location_label IS 'Mô tả địa điểm làm việc do client nhập (VD: TP. Vĩnh Long — phường 1)';
+COMMENT ON COLUMN public.jobs.location_label IS 'Mô tả địa điểm làm việc do khách hàng nhập (VD: TP. Vĩnh Long — phường 1)';
 
 
 --
 -- Name: COLUMN jobs.location_lat; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON COLUMN public.jobs.location_lat IS 'Vĩ độ khi client dùng GPS lúc đăng tin (tùy chọn)';
+COMMENT ON COLUMN public.jobs.location_lat IS 'Vĩ độ khi khách hàng dùng GPS lúc đăng tin (tùy chọn)';
 
 
 --
 -- Name: COLUMN jobs.location_lng; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON COLUMN public.jobs.location_lng IS 'Kinh độ khi client dùng GPS lúc đăng tin (tùy chọn)';
+COMMENT ON COLUMN public.jobs.location_lng IS 'Kinh độ khi khách hàng dùng GPS lúc đăng tin (tùy chọn)';
 
 
 --
@@ -473,7 +473,7 @@ COMMENT ON COLUMN public.jobs.budget_max IS 'Ngân sách tối đa / trần dự
 -- Name: COLUMN jobs.deleted_at; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON COLUMN public.jobs.deleted_at IS 'Client xóa mềm tin — không hiển thị trong quản lý / danh sách của client';
+COMMENT ON COLUMN public.jobs.deleted_at IS 'Khách hàng xóa mềm tin — không hiển thị trong quản lý / danh sách của khách hàng';
 
 
 --

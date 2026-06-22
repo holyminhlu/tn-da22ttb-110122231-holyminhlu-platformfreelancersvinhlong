@@ -44,8 +44,6 @@ function EvidenceCard({
   url: string | null;
   submittedAt?: string | null;
 }) {
-  const t = tUi;
-  const formatDate = formatDateUi;
   const src = resolveIdentityAssetUrl(url);
   return (
     <figure className="admin-idv-detail__evidence">
@@ -89,7 +87,7 @@ export default function AdminIdentityReviewDetail({
             <h3 className="admin-idv-detail__name">{item.fullName || "—"}</h3>
             <p className="admin-idv-detail__email">{item.email}</p>
             <p className="admin-idv-detail__meta">
-              {item.role === "client" ? "Client" : "Freelancer"} · Gửi lúc{" "}
+              {item.role === "client" ? "Khách hàng" : "Freelancer"} · Gửi lúc{" "}
               {item.submittedAt ? formatDateUi(item.submittedAt) : "—"}
             </p>
           </div>
@@ -97,7 +95,7 @@ export default function AdminIdentityReviewDetail({
       </header>
 
       <section className="admin-idv-detail__section">
-        <h4 className="admin-idv-detail__section-title">{t("Bước 1 · Thông tin &amp; liên hệ")}</h4>
+        <h4 className="admin-idv-detail__section-title">{t("Bước 1 · Thông tin & liên hệ")}</h4>
         <dl className="admin-idv-detail__grid">
           <DetailField label={t("Loại tài khoản")} value={accountTypeLabel(item.accountType)} />
           <DetailField

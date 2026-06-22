@@ -27,13 +27,11 @@ export default function PaymentMethodMenu({
   useEffect(() => {
     if (!open) return;
     function onPointerDown(event: MouseEvent) {
-  const t = tUi;
   if (!rootRef.current?.contains(event.target as Node)) {
         setOpen(false);
       }
     }
     function onKeyDown(event: KeyboardEvent) {
-  const t = tUi;
       if (event.key === "Escape") setOpen(false);
     }
     document.addEventListener("mousedown", onPointerDown);
@@ -45,7 +43,6 @@ export default function PaymentMethodMenu({
   }, [open]);
 
   function handleDelete() {
-  const t = tUi;
     setOpen(false);
     const confirmed = window.confirm(
       `${t("Xóa phương thức")} "${methodLabel}"?\n\n${t("Hành động này không thể hoàn tác.")}`,
@@ -54,7 +51,6 @@ export default function PaymentMethodMenu({
   }
 
   function handleEdit() {
-  const t = tUi;
     setOpen(false);
     onEdit();
   }

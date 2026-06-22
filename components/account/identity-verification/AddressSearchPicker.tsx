@@ -85,7 +85,6 @@ export default function AddressSearchPicker({
 
   useEffect(() => {
     function onDocClick(e: MouseEvent) {
-  const t = tUi;
       if (!wrapRef.current?.contains(e.target as Node)) setOpen(false);
     }
     document.addEventListener("mousedown", onDocClick);
@@ -132,7 +131,6 @@ export default function AddressSearchPicker({
   }, []);
 
   function applyCommune(label: string) {
-  const t = tUi;
     onChange({
       ...value,
       addressSearch: label,
@@ -146,7 +144,6 @@ export default function AddressSearchPicker({
   }
 
   function applyOsmResult(result: NominatimSearchResult) {
-  const t = tUi;
     const latNum = Number(result.lat);
     const lonNum = Number(result.lon);
     const street = formatStreetFromNominatim(result.address);
@@ -167,7 +164,6 @@ export default function AddressSearchPicker({
   }
 
   function applyReverse(latNum: number, lonNum: number, data: Awaited<ReturnType<typeof reverseGeocode>>) {
-  const t = tUi;
     const street = formatStreetFromNominatim(data.address);
     const locality = formatLocalityFromNominatim(data.address);
     const display = data.display_name || `${latNum.toFixed(5)}, ${lonNum.toFixed(5)}`;
@@ -185,7 +181,6 @@ export default function AddressSearchPicker({
   }
 
   function handleUseGps() {
-  const t = tUi;
     setGpsError("");
     if (!navigator.geolocation) {
       setGpsError("Trình duyệt không hỗ trợ GPS.");

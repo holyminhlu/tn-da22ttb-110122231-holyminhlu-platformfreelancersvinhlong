@@ -52,7 +52,7 @@ type HireSearchFreelancerCardProps = {
   onToggleFavorite: (id: string) => void | Promise<void>;
   /** Khách chưa đăng nhập — xem công khai, thuê qua đăng nhập. */
   guestMode?: boolean;
-  /** Client đã hoàn tất xác minh danh tính. */
+  /** Khách hàng đã hoàn tất xác minh danh tính. */
   clientIdentityVerified?: boolean;
   clientIdentityLoading?: boolean;
   /** Liên kết hồ sơ dùng /freelancers thay vì /hire/search. */
@@ -116,8 +116,6 @@ function renderReviewList(
   emptyText: string,
 ) {
 
-  const t = tUi;
-  const formatDate = formatDateUi;
   if (reviews.length === 0) {
     return <p className="hire-modal-panel__hint">{emptyText}</p>;
   }
@@ -185,7 +183,6 @@ export default function HireSearchFreelancerCard({
   const profileBase = publicProfile ? "/freelancers" : "/hire/search";
 
   function profileHref(serviceId?: string | null) {
-  const t = tUi;
     if (serviceId) {
       return `${profileBase}/${row.id}?service=${encodeURIComponent(serviceId)}`;
     }
@@ -193,7 +190,6 @@ export default function HireSearchFreelancerCard({
   }
 
   function quoteHref(serviceId?: string | null) {
-  const t = tUi;
     const target = serviceId
       ? `/hire/quote?serviceId=${encodeURIComponent(serviceId)}&freelancerId=${encodeURIComponent(row.id)}`
       : profileHref(serviceId);
@@ -215,7 +211,6 @@ export default function HireSearchFreelancerCard({
       : "Yêu cầu báo giá";
 
   function favoriteHref() {
-  const t = tUi;
     return `/dang-nhap?next=${encodeURIComponent("/freelancers")}`;
   }
 
@@ -234,7 +229,6 @@ export default function HireSearchFreelancerCard({
   }, [detail, row.id, row.featured_service_id]);
 
   async function handleTabClick(tab: DetailTab) {
-  const t = tUi;
     if (activeModal === tab) {
       setActiveModal(null);
       setSelectedPortfolioId(null);
@@ -246,7 +240,6 @@ export default function HireSearchFreelancerCard({
   }
 
   function closeModal() {
-  const t = tUi;
     setActiveModal(null);
     setSelectedPortfolioId(null);
   }
@@ -254,7 +247,6 @@ export default function HireSearchFreelancerCard({
   useEffect(() => {
     if (!activeModal) return;
     function onKeyDown(event: KeyboardEvent) {
-  const t = tUi;
       if (event.key === "Escape") {
         if (selectedPortfolioId) {
           setSelectedPortfolioId(null);
@@ -285,7 +277,6 @@ export default function HireSearchFreelancerCard({
   ];
 
   function renderModalContent() {
-  const t = tUi;
     if (detailLoading) {
       return (
         <div className="hire-search__detail-loading" aria-busy="true">
@@ -433,7 +424,7 @@ export default function HireSearchFreelancerCard({
           ) : (
             <p className="hire-modal-panel__hint">{t("Chưa có thống kê hiệu suất.")}</p>
           )}
-          {renderReviewList(reviews, "Chưa có đánh giá từ client.")}
+          {renderReviewList(reviews, "Chưa có đánh giá từ khách hàng.")}
         </div>
       );
     }

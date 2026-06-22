@@ -21,7 +21,6 @@ type IdentityReviewStatusBannerProps = {
 };
 
 export default function IdentityReviewStatusBanner({ data }: IdentityReviewStatusBannerProps) {
-  const formatDate = formatDateUi;
   const v = data.verification;
   if (!v?.submitted_for_review_at) return null;
 

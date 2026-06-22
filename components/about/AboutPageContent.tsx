@@ -66,7 +66,7 @@ function IntroSection() {
       <div className="relative z-10 mx-auto max-w-7xl px-6">
         <div className="mx-auto max-w-3xl text-center">
           <p className="mb-4 text-sm font-semibold uppercase tracking-widest text-blue-300">
-            {tUi("Vĩnh Long Connected")}
+            {tUi("Vĩnh Long Connect")}
           </p>
           <h1 className="mb-6 text-3xl font-bold leading-tight md:text-5xl">{tUi(ABOUT_INTRO.title)}</h1>
           <p className="text-lg leading-relaxed text-neutral-300 md:text-xl">{tUi(ABOUT_INTRO.subtitle)}</p>
@@ -103,7 +103,7 @@ function WhyChooseSection() {
   return (
     <section className="bg-white py-20 md:py-24">
       <div className="mx-auto max-w-7xl px-6">
-        <SectionHeading title={tUi("Tại sao chọn Vĩnh Long Connected?")} />
+        <SectionHeading title={tUi("Tại sao chọn Vĩnh Long Connect?")} />
 
         <div className="grid gap-8 lg:grid-cols-2">
           {WHY_CHOOSE.map((item) => {
@@ -147,7 +147,7 @@ function StorySection() {
           <div className="relative aspect-[4/3] overflow-hidden rounded-2xl shadow-xl">
             <Image
               src="/Media/congchaoVL.jpg"
-              alt={tUi("Cảnh quan Vĩnh Long — nơi khởi nguồn Vĩnh Long Connected")}
+              alt={tUi("Cảnh quan Vĩnh Long — nơi khởi nguồn Vĩnh Long Connect")}
               fill
               className="object-cover"
               sizes="(max-width: 1024px) 100vw, 50vw"
@@ -220,7 +220,7 @@ function TeamSection() {
       <div className="mx-auto max-w-7xl px-6">
         <SectionHeading title={tUi("Đội ngũ của chúng tôi")} />
         <p className="-mt-6 mb-12 text-center text-gray-600">
-          {tUi("Những con người đam mê đang vận hành và phát triển Vĩnh Long Connected mỗi ngày.")}
+          {tUi("Những con người đam mê đang vận hành và phát triển Vĩnh Long Connect mỗi ngày.")}
         </p>
 
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
@@ -277,7 +277,6 @@ function CtaSection() {
 }
 
 export default function AboutPageContent() {
-  const t = tUi;
   return (
     <div className="about-page min-h-screen bg-white text-gray-900">
       <IntroSection />

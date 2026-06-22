@@ -155,7 +155,7 @@ export async function getBillingOverview() {
 export async function getClientBillingOverview() {
   const data = await getBillingOverview();
   if ("billingProfile" in data) return data;
-  throw { status: 403, message: "Chỉ client được truy cập trang thanh toán này." };
+  throw { status: 403, message: "Chỉ khách hàng được truy cập trang thanh toán này." };
 }
 
 export async function getFreelancerBillingOverview() {

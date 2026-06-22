@@ -1,4 +1,4 @@
--- Chat 1-1 giữa client và freelancer
+-- Chat 1-1 giữa khách hàng và freelancer
 CREATE TABLE IF NOT EXISTS public.chat_conversations (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   client_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,

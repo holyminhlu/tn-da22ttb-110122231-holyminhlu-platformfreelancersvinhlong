@@ -38,7 +38,7 @@ function parseBudgetNumber(value: string | number | null | undefined): number | 
 
 function formatQuoteAmount(amount: number | null, pricingType: "fixed" | "hourly"): string {
 
-  if (amount == null || !Number.isFinite(amount)) return "Theo ngân sách client";
+  if (amount == null || !Number.isFinite(amount)) return "Theo ngân sách khách hàng";
   const base = formatVndUi(amount);
   return pricingType === "hourly" ? `${base}/giờ` : base;
 }
@@ -80,8 +80,6 @@ export default function JobProposalFormModal({
   useEffect(() => {
     if (!open) return;
     function onKeyDown(e: KeyboardEvent) {
-  const t = tUi;
-  const formatVnd = formatVndUi;
       if (e.key === "Escape" && !submitting) onClose();
     }
     document.addEventListener("keydown", onKeyDown);
@@ -100,7 +98,7 @@ export default function JobProposalFormModal({
 
   function validateForm(): boolean {
     if (message.trim().length < 20) {
-      setFieldError("Thư đề xuất cần ít nhất 20 ký tự để client hiểu rõ cách bạn làm việc.");
+      setFieldError("Thư đề xuất cần ít nhất 20 ký tự để khách hàng hiểu rõ cách bạn làm việc.");
       return false;
     }
     if (amountInput.trim() !== "" && (parsedAmount == null || !Number.isFinite(parsedAmount) || parsedAmount < 0)) {
@@ -116,16 +114,12 @@ export default function JobProposalFormModal({
   }
 
   function handleContinue() {
-  const t = tUi;
-  const formatVnd = formatVndUi;
     if (!validateForm()) return;
     setSubmitError("");
     setStep("confirm");
   }
 
   async function handleSubmit() {
-  const t = tUi;
-  const formatVnd = formatVndUi;
     if (!validateForm()) {
       setStep("form");
       return;
@@ -198,7 +192,7 @@ export default function JobProposalFormModal({
         {step === "form" ? (
           <div className="job-proposal-modal__body">
             <div className="job-proposal-modal__job-ref">
-              <span>{t("Ngân sách client")}</span>
+              <span>{t("Ngân sách khách hàng")}</span>
               <strong>{clientBudget}</strong>
             </div>
 
@@ -253,8 +247,8 @@ export default function JobProposalFormModal({
                 {hasBudgetRange
                   ? `Nhập trong khoảng ${formatVndUi(minBudget)} - ${formatVndUi(maxBudget)}.`
                   : minBudget != null
-                    ? "Giá được cố định theo ngân sách client."
-                    : "Để trống nếu muốn dùng ngân sách client làm mức báo giá mặc định."}
+                    ? "Giá được cố định theo ngân sách khách hàng."
+                    : "Để trống nếu muốn dùng ngân sách khách hàng làm mức báo giá mặc định."}
               </span>
             </label>
 
@@ -263,7 +257,7 @@ export default function JobProposalFormModal({
               <textarea
                 className="job-proposal-field__textarea"
                 rows={6}
-                placeholder={t("Giới thiệu kinh nghiệm, cách tiếp cận, thời gian hoàn thành và lý do client nên chọn bạn...")}
+                placeholder={t("Giới thiệu kinh nghiệm, cách tiếp cận, thời gian hoàn thành và lý do khách hàng nên chọn bạn...")}
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
               />
@@ -294,7 +288,7 @@ export default function JobProposalFormModal({
                 <dd>{formatQuoteAmount(parsedAmount ?? minBudget, fixedPricingType)}</dd>
               </div>
               <div className="job-proposal-review__row">
-                <dt>{t("Ngân sách client")}</dt>
+                <dt>{t("Ngân sách khách hàng")}</dt>
                 <dd>{clientBudget}</dd>
               </div>
               <div className="job-proposal-review__message">
@@ -305,7 +299,7 @@ export default function JobProposalFormModal({
 
             <p className="job-proposal-modal__confirm-note">
               <FaCheckCircle aria-hidden />
-              Sau khi xác nhận, báo giá sẽ được gửi tới client và hiển thị trong mục quản lý báo
+              Sau khi xác nhận, báo giá sẽ được gửi tới khách hàng và hiển thị trong mục quản lý báo
               giá của họ.
             </p>
 

@@ -32,7 +32,6 @@ export default function IdDocumentVerifyPanel({ data, onSaved }: IdDocumentVerif
   const [message, setMessage] = useState("");
 
   async function saveType(value: string) {
-  const t = tUi;
     setDocType(value);
     await patchIdentityVerification({ idDocType: value });
   }

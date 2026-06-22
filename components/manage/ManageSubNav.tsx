@@ -13,7 +13,7 @@ export default function ManageSubNav() {
   const nav = getManageNav(t);
 
   return (
-    <nav className="hire-subnav manage-subnav" aria-label={t("Quản lý")}>
+    <nav className="hire-subnav manage-subnav" aria-label={t("nav.manage")}>
       <div className="hire-subnav__inner">
         {nav.map((tab) => {
           const active = tab.exact

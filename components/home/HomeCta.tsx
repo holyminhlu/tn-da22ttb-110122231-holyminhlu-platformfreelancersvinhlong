@@ -11,7 +11,7 @@ export default function HomeCta() {
       <div className="mx-auto max-w-7xl px-6">
         <h2 className="mb-6 text-2xl font-bold">{t("homeCta.heading")}</h2>
         <PostJobButton
-          className="rounded bg-[#0066cc] px-10 py-4 font-bold text-white transition hover:bg-blue-700"
+          className="rounded bg-primary px-10 py-4 font-bold text-primary-foreground transition hover:opacity-90"
           ariaLabel={t("auth.postJobNowAria")}
         >
           {t("homeCta.button")}

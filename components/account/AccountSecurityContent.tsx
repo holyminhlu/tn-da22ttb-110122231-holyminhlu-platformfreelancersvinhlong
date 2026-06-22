@@ -41,6 +41,43 @@ import "./account-security.css";
 
 type DangerAction = "deactivate" | "delete" | null;
 
+const LOGIN_HISTORY_PREVIEW = 5;
+const LOGIN_HISTORY_FULL_LIMIT = 100;
+
+function LoginHistoryList({
+  entries,
+  formatDateTime,
+  t,
+}: {
+  entries: LoginHistoryEntry[];
+  formatDateTime: (value: string | null | undefined) => string;
+  t: (key: string) => string;
+}) {
+  return (
+    <ul className="sec-history-list">
+      {entries.map((entry) => (
+        <li key={`${entry.success ? "ok" : "fail"}-${entry.id}-${entry.at}`} className="sec-history-item">
+          <div className="sec-row__main">
+            <div className="sec-row__icon">
+              <FaHistory aria-hidden />
+            </div>
+            <div>
+              <p className="sec-row__label">{entry.deviceLabel}</p>
+              <p className="sec-row__meta">
+                {formatDateTime(entry.at)}
+                {entry.ipAddress ? ` · ${entry.ipAddress}` : ""}
+              </p>
+            </div>
+          </div>
+          <span className={`sec-badge ${entry.success ? "sec-badge--success" : "sec-badge--fail"}`}>
+            {entry.success ? t("Thành công") : t("Thất bại")}
+          </span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 function formatDateTime(value: string | null | undefined): string {
   if (!value) return "—";
   const d = new Date(value);
@@ -81,6 +118,10 @@ export default function AccountSecurityContent() {
   const [dangerConfirm, setDangerConfirm] = useState("");
   const [dangerBusy, setDangerBusy] = useState(false);
   const [dangerError, setDangerError] = useState("");
+  const [historyModalOpen, setHistoryModalOpen] = useState(false);
+  const [fullHistory, setFullHistory] = useState<LoginHistoryEntry[]>([]);
+  const [fullHistoryLoading, setFullHistoryLoading] = useState(false);
+  const [fullHistoryError, setFullHistoryError] = useState("");
 
   const loadAll = useCallback(async () => {
     setLoading(true);
@@ -89,7 +130,7 @@ export default function AccountSecurityContent() {
       const [ov, sess, hist] = await Promise.all([
         getSecurityOverview(),
         listSecuritySessions(),
-        listLoginHistory(25),
+        listLoginHistory(LOGIN_HISTORY_PREVIEW),
       ]);
       setOverview(ov);
       setSessions(sess.items);
@@ -120,7 +161,6 @@ export default function AccountSecurityContent() {
   }, [loadAll, router]);
 
   async function handleSaveRecovery() {
-  const t = tUi;
     setSavingRecovery(true);
     setSuccessMessage("");
     setErrorMessage("");
@@ -152,7 +192,6 @@ export default function AccountSecurityContent() {
   }
 
   async function handleRevokeSession(sessionId: string) {
-  const t = tUi;
     setSessionBusy(sessionId);
     setErrorMessage("");
     try {
@@ -175,7 +214,6 @@ export default function AccountSecurityContent() {
   }
 
   async function handleRevokeOthers() {
-  const t = tUi;
     setSessionBusy("others");
     setErrorMessage("");
     try {
@@ -198,7 +236,6 @@ export default function AccountSecurityContent() {
   }
 
   function openDanger(action: DangerAction) {
-  const t = tUi;
     setDangerAction(action);
     setDangerPassword("");
     setDangerConfirm("");
@@ -206,14 +243,37 @@ export default function AccountSecurityContent() {
   }
 
   function closeDanger() {
-  const t = tUi;
     if (dangerBusy) return;
     setDangerAction(null);
     setDangerError("");
   }
 
+  function closeHistoryModal() {
+    if (fullHistoryLoading) return;
+    setHistoryModalOpen(false);
+    setFullHistoryError("");
+  }
+
+  async function openHistoryModal() {
+    setHistoryModalOpen(true);
+    setFullHistoryLoading(true);
+    setFullHistoryError("");
+    try {
+      const data = await listLoginHistory(LOGIN_HISTORY_FULL_LIMIT);
+      setFullHistory(data.items);
+    } catch (err) {
+      const message =
+        err && typeof err === "object" && "message" in err
+          ? String((err as { message: string }).message)
+          : t("Không thể tải lịch sử đăng nhập.");
+      setFullHistoryError(message);
+      setFullHistory([]);
+    } finally {
+      setFullHistoryLoading(false);
+    }
+  }
+
   async function submitDanger() {
-  const t = tUi;
     if (!dangerAction) return;
     const expected = dangerAction === "deactivate" ? "DEACTIVATE" : "DELETE";
     if (dangerConfirm !== expected) {
@@ -283,7 +343,7 @@ export default function AccountSecurityContent() {
           <h1 className="sec-panel__title">{t("Bảo mật tài khoản")}</h1>
           <p className="sec-panel__subtitle">
             {t(
-              "Quản lý xác thực, phiên đăng nhập, thông tin khôi phục và quyền riêng tư của bạn trên Vĩnh Long Connected.",
+              "Quản lý xác thực, phiên đăng nhập, thông tin khôi phục và quyền riêng tư của bạn trên Vĩnh Long Connect.",
             )}
           </p>
         </div>
@@ -425,29 +485,20 @@ export default function AccountSecurityContent() {
           {history.length === 0 ? (
             <p className="sec-empty">{t("Chưa có lịch sử đăng nhập.")}</p>
           ) : (
-            <ul className="sec-history-list">
-              {history.map((entry) => (
-                <li key={`${entry.success ? "ok" : "fail"}-${entry.id}-${entry.at}`} className="sec-history-item">
-                  <div className="sec-row__main">
-                    <div className="sec-row__icon">
-                      <FaHistory aria-hidden />
-                    </div>
-                    <div>
-                      <p className="sec-row__label">{entry.deviceLabel}</p>
-                      <p className="sec-row__meta">
-                        {formatDateTime(entry.at)}
-                        {entry.ipAddress ? ` · ${entry.ipAddress}` : ""}
-                      </p>
-                    </div>
-                  </div>
-                  <span
-                    className={`sec-badge ${entry.success ? "sec-badge--success" : "sec-badge--fail"}`}
+            <>
+              <LoginHistoryList entries={history} formatDateTime={formatDateTime} t={t} />
+              {history.length >= LOGIN_HISTORY_PREVIEW ? (
+                <div className="sec-card__footer">
+                  <button
+                    type="button"
+                    className="sec-btn sec-btn--ghost"
+                    onClick={() => void openHistoryModal()}
                   >
-                    {entry.success ? t("Thành công") : t("Thất bại")}
-                  </span>
-                </li>
-              ))}
-            </ul>
+                    {t("Xem toàn bộ lịch sử")}
+                  </button>
+                </div>
+              ) : null}
+            </>
           )}
         </div>
       </section>
@@ -639,6 +690,51 @@ export default function AccountSecurityContent() {
           </div>
         </div>
       </section>
+
+      {historyModalOpen ? (
+        <div className="sec-modal-backdrop" role="presentation" onClick={closeHistoryModal}>
+          <div
+            className="sec-modal sec-modal--history"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="sec-history-modal-title"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="sec-modal__header">
+              <h3 id="sec-history-modal-title" className="sec-modal__title">
+                {t("Lịch sử đăng nhập")}
+              </h3>
+              <p className="sec-modal__text">
+                {t("Toàn bộ lần đăng nhập thành công và thất bại gần đây.")}
+              </p>
+            </div>
+            <div className="sec-modal__body sec-modal__body--scroll">
+              {fullHistoryLoading ? (
+                <p className="sec-empty">{t("Đang tải lịch sử đăng nhập...")}</p>
+              ) : fullHistoryError ? (
+                <p className="sec-modal__error" role="alert">
+                  <FaExclamationCircle aria-hidden />
+                  {fullHistoryError}
+                </p>
+              ) : fullHistory.length === 0 ? (
+                <p className="sec-empty">{t("Chưa có lịch sử đăng nhập.")}</p>
+              ) : (
+                <LoginHistoryList entries={fullHistory} formatDateTime={formatDateTime} t={t} />
+              )}
+            </div>
+            <div className="sec-modal__footer">
+              <button
+                type="button"
+                className="sec-btn sec-btn--ghost"
+                onClick={closeHistoryModal}
+                disabled={fullHistoryLoading}
+              >
+                {t("Đóng")}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       {dangerAction ? (
         <div className="sec-modal-backdrop" role="presentation" onClick={closeDanger}>

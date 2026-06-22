@@ -66,7 +66,6 @@ function SectionHeading({ title, subtitle }: { title: string; subtitle?: string 
 }
 
 function HeroSection() {
-  const t = tUi;
   return (
     <section className="why-vlc-hero relative overflow-hidden py-20 text-white md:py-28">
       <div className="absolute inset-0">
@@ -107,7 +106,6 @@ function BenefitCard({
   item: BenefitItem;
   icons: Record<string, React.ComponentType<{ className?: string }>>;
 }) {
-  const t = tUi;
   const Icon = icons[item.icon];
   return (
     <article className="why-vlc-benefit-card border border-gray-100 bg-white p-7 shadow-sm">
@@ -121,7 +119,6 @@ function BenefitCard({
 }
 
 function ClientBenefitsSection() {
-  const t = tUi;
   return (
     <section className="bg-white py-20 md:py-24">
       <div className="mx-auto max-w-7xl px-6">
@@ -140,7 +137,6 @@ function ClientBenefitsSection() {
 }
 
 function FreelancerBenefitsSection() {
-  const t = tUi;
   return (
     <section className="border-y border-gray-100 bg-gray-50 py-20 md:py-24">
       <div className="mx-auto max-w-7xl px-6">
@@ -159,13 +155,12 @@ function FreelancerBenefitsSection() {
 }
 
 function UspSection() {
-  const t = tUi;
   return (
     <section className="bg-white py-20 md:py-24">
       <div className="mx-auto max-w-7xl px-6">
         <SectionHeading
           title={tUi("Điểm khác biệt cốt lõi")}
-          subtitle={tUi("Tại sao chọn Vĩnh Long Connected mà không phải nền tảng khác?")}
+          subtitle={tUi("Tại sao chọn Vĩnh Long Connect mà không phải nền tảng khác?")}
         />
         <div className="grid gap-6 md:grid-cols-3">
           {USPS.map((item) => {
@@ -190,7 +185,6 @@ function UspSection() {
 }
 
 function SocialProofSection() {
-  const t = tUi;
   return (
     <section className="border-t border-gray-100 bg-gray-50 pb-20 pt-8 md:pb-24">
       <div className="mx-auto max-w-6xl px-6">
@@ -227,7 +221,6 @@ function SocialProofSection() {
 }
 
 function TestimonialCarousel() {
-  const t = tUi;
   const [active, setActive] = useState(0);
   const item = TESTIMONIALS[active];
 
@@ -271,7 +264,6 @@ function TestimonialCarousel() {
 }
 
 function CtaSection() {
-  const t = tUi;
   return (
     <section className="why-vlc-cta py-16 text-white md:py-20">
       <div className="mx-auto max-w-3xl px-6 text-center">

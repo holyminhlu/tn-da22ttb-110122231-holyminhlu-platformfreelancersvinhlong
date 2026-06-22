@@ -119,9 +119,6 @@ export default function AdminWithdrawalsPage({
     String(selected?.status || "").toUpperCase() === "PROCESSING";
 
   async function handleResolve(resolution: "approve" | "reject") {
-  const t = tUi;
-  const formatDate = formatDateUi;
-  const formatVnd = formatVndUi;
   if (!selected) return;
 
     if (resolution === "reject") {
@@ -175,7 +172,7 @@ export default function AdminWithdrawalsPage({
     <div className="admin-page admin-refunds-page admin-withdrawals-page">
       <header className="admin-page__head admin-refunds-page__head admin-withdrawals-page__head">
         <h1 className="admin-page__title">
-          Yêu cầu rút tiền từ {audience === "client" ? "Client" : "Freelancer"}
+          Yêu cầu rút tiền từ {audience === "client" ? "Khách hàng" : "Freelancer"}
         </h1>
         <p className="admin-page__lead">
           {t("Theo dõi các lệnh rút tiền đang chờ, thực hiện chuyển khoản thủ công và duyệt khi hoàn tất.")}

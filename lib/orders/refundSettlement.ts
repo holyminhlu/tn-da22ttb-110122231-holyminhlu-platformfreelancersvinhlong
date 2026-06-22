@@ -64,7 +64,7 @@ export function legitimacyLabel(legitimacy: RefundLegitimacy): string {
 export function splitTypeLabel(splitType: RefundSplitType): string {
   switch (splitType) {
     case "full_refund":
-      return "Hoàn 100% cho Client";
+      return "Hoàn 100% cho Khách hàng";
     case "split_50_50":
       return "Chia 50% — 50%";
     case "penalty_refund":
@@ -114,7 +114,7 @@ export function computeRefundSettlement(input: RefundSettlementInput): RefundSet
       freelancerAmount: 0,
       platformFeeAmount: 0,
       platformFeeNote,
-      summary: "Hoàn 100% ký quỹ về ví VLC cho Client.",
+      summary: "Hoàn 100% ký quỹ về ví VLC cho Khách hàng.",
     };
   }
 
@@ -134,7 +134,7 @@ export function computeRefundSettlement(input: RefundSettlementInput): RefundSet
       platformFeeAmount,
       platformFeeNote,
       summary:
-        "Hủy chính đáng ở Giai đoạn 3: Client nhận 50%, Freelancer nhận 50% (chưa trừ hoa hồng nền tảng).",
+        "Hủy chính đáng ở Giai đoạn 3: Khách hàng nhận 50%, Freelancer nhận 50% (chưa trừ hoa hồng nền tảng).",
     };
   }
 

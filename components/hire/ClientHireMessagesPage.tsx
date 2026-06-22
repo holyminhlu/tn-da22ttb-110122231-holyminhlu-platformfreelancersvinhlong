@@ -15,25 +15,25 @@ export default function ClientHireMessagesPage() {
   return (
     <HireShell>
       {loading ? (
-        <p className="fw-messages-inbox__state">{t("Đang kiểm tra tài khoản...")}</p>
+        <p className="fw-messages-inbox__state">{t("hireMessages.checking")}</p>
       ) : !verified ? (
         <ClientIdentityVerifyGate
           user={user}
           idv={idv}
-          title={t("Xác minh danh tính trước khi nhắn tin")}
-          lead={t("Hoàn thành 5 mục thông tin nhận dạng và xác minh thẻ tín dụng (bước 2) tại trang xác minh, sau đó bạn có thể nhắn tin với freelancer.")}
+          title={t("hireMessages.verifyTitle")}
+          lead={t("hireMessages.verifyLead")}
           backHref="/hire/search"
-          backLabel={t("Quay lại tìm kiếm freelancer")}
+          backLabel={t("hireMessages.backToSearch")}
         />
       ) : (
-        <Suspense fallback={<p className="fw-messages-inbox__state">{t("Đang tải tin nhắn...")}</p>}>
+        <Suspense fallback={<p className="fw-messages-inbox__state">{t("hireMessages.loading")}</p>}>
           <MessagesInbox
             viewerRole="client"
             copy={{
-              guestMessage: t("Đăng nhập tài khoản client để xem tin nhắn."),
-              wrongRoleMessage: t("Trang này dành cho client."),
-              emptyListMessage: t("Chưa có tin nhắn với freelancer."),
-              emptyListHint: t("Nhắn tin từ trang báo giá, tìm freelancer hoặc hồ sơ dịch vụ — hội thoại sẽ hiện ở đây."),
+              guestMessage: t("hireMessages.guestMessage"),
+              wrongRoleMessage: t("hireMessages.wrongRole"),
+              emptyListMessage: t("hireMessages.emptyList"),
+              emptyListHint: t("hireMessages.emptyHint"),
             }}
           />
         </Suspense>

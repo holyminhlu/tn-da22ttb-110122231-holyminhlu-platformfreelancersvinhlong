@@ -3,8 +3,8 @@ import { Suspense } from "react";
 import RegisterForm from "@/components/auth/RegisterForm";
 
 export const metadata: Metadata = {
-  title: "Đăng ký | Vĩnh Long Connected",
-  description: "Đăng ký Client hoặc Freelancer và lưu hồ sơ vào hệ thống.",
+  title: "Đăng ký | Vĩnh Long Connect",
+  description: "Đăng ký Khách hàng hoặc Freelancer và lưu hồ sơ vào hệ thống.",
 };
 
 function RegisterFallback() {

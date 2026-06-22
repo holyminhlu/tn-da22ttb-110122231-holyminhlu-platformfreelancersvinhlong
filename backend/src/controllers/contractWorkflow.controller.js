@@ -173,7 +173,7 @@ async function createFromServiceQuote(req, res) {
   const payload = verifyAccessToken(req, res);
   if (!payload) return;
   if (payload.role !== "client") {
-    return res.status(403).json({ message: "Chỉ client mới có thể gửi yêu cầu báo giá." });
+    return res.status(403).json({ message: "Chỉ khách hàng mới có thể gửi yêu cầu báo giá." });
   }
 
   const serviceId = parseUuidParam(req.body?.serviceId);
@@ -502,7 +502,7 @@ async function patchContractWorkflow(req, res) {
       await logWorkflowEvent(db, contractId, "proposal_submitted", {}, payload.sub);
       await db.query("COMMIT");
       fireWorkflowNotification(db, contract, "submit_proposal", payload.sub);
-      return res.json({ message: "Đã gửi đề xuất cho Client." });
+      return res.json({ message: "Đã gửi đề xuất cho Khách hàng." });
     }
 
     if (action === "withdraw_proposal") {
@@ -530,7 +530,7 @@ async function patchContractWorkflow(req, res) {
     if (action === "reject_proposal") {
       if (!isClient) {
         await db.query("ROLLBACK");
-        return res.status(403).json({ message: "Chỉ client từ chối đề xuất." });
+        return res.status(403).json({ message: "Chỉ khách hàng từ chối đề xuất." });
       }
       if (stage !== "selection" || !contract.proposal_text) {
         await db.query("ROLLBACK");
@@ -593,7 +593,7 @@ async function patchContractWorkflow(req, res) {
     if (action === "accept_proposal") {
       if (!isClient) {
         await db.query("ROLLBACK");
-        return res.status(403).json({ message: "Chỉ client chấp nhận đề xuất." });
+        return res.status(403).json({ message: "Chỉ khách hàng chấp nhận đề xuất." });
       }
       if (!contract.proposal_text) {
         await db.query("ROLLBACK");
@@ -615,7 +615,7 @@ async function patchContractWorkflow(req, res) {
     if (action === "fund_escrow") {
       if (!isClient) {
         await db.query("ROLLBACK");
-        return res.status(403).json({ message: "Chỉ client nạp ký quỹ." });
+        return res.status(403).json({ message: "Chỉ khách hàng nạp ký quỹ." });
       }
       if (!(await ensureClientPaymentAllowed(db, isClient, payload.sub, res))) {
         return;
@@ -706,7 +706,7 @@ async function patchContractWorkflow(req, res) {
     if (action === "request_revision") {
       if (!isClient) {
         await db.query("ROLLBACK");
-        return res.status(403).json({ message: "Chỉ client yêu cầu chỉnh sửa." });
+        return res.status(403).json({ message: "Chỉ khách hàng yêu cầu chỉnh sửa." });
       }
       if (await rejectIfPendingCancelRequest(db, contractId, res)) return;
       const used = Number(contract.revisions_used) || 0;
@@ -765,13 +765,13 @@ async function patchContractWorkflow(req, res) {
       await logWorkflowEvent(db, contractId, "marked_delivered", { reviewDeadline }, payload.sub);
       await db.query("COMMIT");
       fireWorkflowNotification(db, contract, "mark_delivered", payload.sub);
-      return res.json({ message: "Đã gửi bàn giao. Client sẽ kiểm tra và nghiệm thu ở giai đoạn 3." });
+      return res.json({ message: "Đã gửi bàn giao. Khách hàng sẽ kiểm tra và nghiệm thu ở giai đoạn 3." });
     }
 
     if (action === "accept_delivery") {
       if (!isClient) {
         await db.query("ROLLBACK");
-        return res.status(403).json({ message: "Chỉ client nghiệm thu." });
+        return res.status(403).json({ message: "Chỉ khách hàng nghiệm thu." });
       }
       if (await rejectIfPendingCancelRequest(db, contractId, res)) return;
       if (!contract.delivered_at) {
@@ -794,7 +794,7 @@ async function patchContractWorkflow(req, res) {
     if (action === "request_cancel_refund") {
       if (!isClient) {
         await db.query("ROLLBACK");
-        return res.status(403).json({ message: "Chỉ client yêu cầu hủy và hoàn tiền." });
+        return res.status(403).json({ message: "Chỉ khách hàng yêu cầu hủy và hoàn tiền." });
       }
       if (!(await ensureClientPaymentAllowed(db, isClient, payload.sub, res))) {
         return;
@@ -951,7 +951,7 @@ async function patchContractWorkflow(req, res) {
       }
       return res.json({
         message: agree
-          ? "Đã đồng ý hủy và hoàn tiền cho Client."
+          ? "Đã đồng ý hủy và hoàn tiền cho Khách hàng."
           : "Đã phản đối — đơn chuyển sang tranh chấp. Admin sẽ phán xử chia tiền.",
       });
     }
@@ -1047,7 +1047,7 @@ async function patchContractWorkflow(req, res) {
     if (action === "release_payment") {
       if (!isClient) {
         await db.query("ROLLBACK");
-        return res.status(403).json({ message: "Chỉ client giải ngân." });
+        return res.status(403).json({ message: "Chỉ khách hàng giải ngân." });
       }
       if (!(await ensureClientPaymentAllowed(db, isClient, payload.sub, res))) {
         return;

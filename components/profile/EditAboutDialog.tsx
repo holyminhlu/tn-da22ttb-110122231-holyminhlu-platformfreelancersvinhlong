@@ -32,7 +32,6 @@ export default function EditAboutDialog({
   const [error, setError] = useState("");
 
   async function handleSubmit(e: React.FormEvent) {
-  const t = tUi;
   e.preventDefault();
     setSaving(true);
     setError("");

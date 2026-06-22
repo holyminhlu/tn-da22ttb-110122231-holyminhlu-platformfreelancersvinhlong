@@ -68,7 +68,6 @@ export default function ClientHireQuoteDetailPage() {
   }, [load]);
 
   async function handleQuoteAction(action: PatchJobQuoteAction) {
-  const t = tUi;
     if (!quote) return;
     setActionError("");
     setBusy(true);

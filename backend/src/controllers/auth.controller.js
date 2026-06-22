@@ -408,7 +408,7 @@ async function register(req, res) {
   }
 
   if (!["client", "freelancer"].includes(normalizedRole)) {
-    return res.status(400).json({ message: "Vai trò phải là client hoặc freelancer." });
+    return res.status(400).json({ message: "Vai trò phải là khách hàng hoặc freelancer." });
   }
 
   if (String(password).length < 8) {

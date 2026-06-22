@@ -44,8 +44,6 @@ export default function RefundRequestForm({
   }, [agreedPrice, workflowStage, hasProgress, reasonCode, eligible]);
 
   function handleSubmit() {
-  const t = tUi;
-  const formatVnd = formatVndUi;
     if (!canSubmit) return;
     onSubmit({ reasonCode, detail: detail.trim() || undefined, refundMethod: "wallet" });
   }

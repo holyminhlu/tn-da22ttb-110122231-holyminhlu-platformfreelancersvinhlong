@@ -12,7 +12,7 @@ export default function ServicesSubNav() {
   const nav = getServicesNav(t);
 
   return (
-    <nav className="hire-subnav svc-subnav" aria-label={t("Dịch vụ")}>
+    <nav className="hire-subnav svc-subnav" aria-label={t("nav.services")}>
       <div className="hire-subnav__inner">
         {nav.map((tab) => {
           const active = tab.exact
@@ -26,7 +26,7 @@ export default function ServicesSubNav() {
               className={`hire-subnav__link${active ? " hire-subnav__link--active" : ""}`}
               aria-current={active ? "page" : undefined}
             >
-              {t(tab.label)}
+              {tab.label}
             </Link>
           );
         })}

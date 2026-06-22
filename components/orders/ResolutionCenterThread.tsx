@@ -31,7 +31,6 @@ function parseAttachments(raw: unknown): string[] {
 }
 
 function fileNameFromUrl(url: string) {
-  const t = tUi;
   return decodeURIComponent(url.split("/").pop() || "minh-chung");
 }
 

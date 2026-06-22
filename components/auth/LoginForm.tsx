@@ -37,7 +37,6 @@ export default function LoginForm() {
   }, [error]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-  const t = tUi;
     event.preventDefault();
     setError("");
     setSuccess("");

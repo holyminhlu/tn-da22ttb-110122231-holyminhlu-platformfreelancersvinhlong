@@ -34,7 +34,7 @@ export function cancelTypeLabel(cancelType: string | null | undefined): string {
     case "withdrawn":
       return "Freelancer hủy";
     case "rejected":
-      return "Client hủy / từ chối";
+      return "Khách hàng hủy / từ chối";
     case "refund":
       return "Đã hoàn tiền";
     case "mutual":
@@ -69,7 +69,7 @@ export function isOrderExpiredOrCancelled(
   return s === "cancelled";
 }
 
-/** Freelancer đã bàn giao, client chưa nghiệm thu — client vẫn ở giai đoạn 3. */
+/** Freelancer đã bàn giao, khách hàng chưa nghiệm thu — khách hàng vẫn ở giai đoạn 3. */
 export function isAwaitingClientAcceptance(order: {
   workflow_stage?: string | null;
   delivered_at?: string | null;

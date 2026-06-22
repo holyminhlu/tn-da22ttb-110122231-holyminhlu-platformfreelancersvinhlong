@@ -4,7 +4,7 @@ import "@/components/account/feedback.css";
 
 export const metadata = freelancerPageMetadata(
   "Phản hồi",
-  "Quản lý nhận xét và lời chứng thực từ khách hàng về công việc đã hoàn thành.",
+  "Quản lý nhận xét từ khách hàng về công việc đã hoàn thành.",
 );
 
 export default function PhanHoiPage() {

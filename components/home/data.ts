@@ -7,7 +7,7 @@ export const HERO_SKILL_TAGS = [
 ] as const;
 
 export const STATS = [
-  { icon: "users" as const, value: "800,000", label: "Khách hàng trên toàn cầu" },
+  { icon: "users" as const, value: "800,000", label: "Khách hàng" },
   { icon: "invoice" as const, value: "1 triệu", label: "Hóa đơn đã thanh toán" },
   { icon: "money" as const, value: "6.250 tỷ ₫", label: "Đã thanh toán cho freelancer" },
   { icon: "thumbs" as const, value: "99%", label: "Tỷ lệ hài lòng khách hàng", highlight: true },

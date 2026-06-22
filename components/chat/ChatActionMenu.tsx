@@ -35,7 +35,6 @@ export default function ChatActionMenu({
     if (!open) return;
 
     function onPointerDown(event: MouseEvent) {
-  const t = tUi;
   const target = event.target as Node;
       if (panelRef.current?.contains(target)) return;
       if (anchorRef?.current?.contains(target)) return;
@@ -43,7 +42,6 @@ export default function ChatActionMenu({
     }
 
     function onKeyDown(event: KeyboardEvent) {
-  const t = tUi;
       if (event.key === "Escape") onClose();
     }
 

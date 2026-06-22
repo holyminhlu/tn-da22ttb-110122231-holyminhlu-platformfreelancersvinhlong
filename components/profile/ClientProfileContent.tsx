@@ -7,7 +7,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  FaArrowLeft,
   FaBriefcase,
   FaCamera,
   FaCheckCircle,
@@ -37,7 +36,6 @@ import EditAboutDialog from "./EditAboutDialog";
 import "./client-profile.css";
 
 function billingCode(userId: string) {
-  const t = tUi;
   const digits = userId.replace(/\D/g, "");
   if (digits.length >= 10) return digits.slice(0, 10);
   return digits.padStart(10, "0").slice(0, 10) || "0000000000";
@@ -80,7 +78,7 @@ export default function ClientProfileContent() {  const { t, formatVnd, formatDa
     try {
       const res = await getMe();
       if (!isClientMeResponse(res)) {
-        setError(t("Trang này dành cho tài khoản Client."));
+        setError(t("Trang này dành cho tài khoản Khách hàng."));
         return;
       }
       setData(res);
@@ -106,9 +104,6 @@ export default function ClientProfileContent() {  const { t, formatVnd, formatDa
   }, [load, router]);
 
   async function handleAvatarChange(event: React.ChangeEvent<HTMLInputElement>) {
-  const t = tUi;
-  const formatDate = formatDateUi;
-  const formatVnd = formatVndUi;
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file || !data?.user) return;
@@ -179,23 +174,6 @@ export default function ClientProfileContent() {  const { t, formatVnd, formatDa
 
   return (
     <>
-      <header className="cp-header">
-        <div className="cp-header__inner">
-          <div className="cp-header__left">
-            <Link href="/dashboard" className="cp-back" aria-label={t("Quay lại dashboard")}>
-              <FaArrowLeft aria-hidden />
-            </Link>
-            <div>
-              <h1 className="cp-header__title">{t("Hồ sơ Client")}</h1>
-              <p className="cp-header__sub">{t("Quản lý thông tin hiển thị với freelancer khi bạn thuê việc")}</p>
-            </div>
-          </div>
-          <div className="cp-header__badge">
-            <span className="cp-role-badge">KHÁCH HÀNG</span>
-          </div>
-        </div>
-      </header>
-
       <div className="ea-main cp-body">
         <div className="ea-content cp-content">
           <div className="cp-profile-card">

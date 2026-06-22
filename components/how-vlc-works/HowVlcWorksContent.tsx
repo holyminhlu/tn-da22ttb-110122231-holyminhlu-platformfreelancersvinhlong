@@ -22,7 +22,6 @@ const ROLE_ICONS = {
 } as const;
 
 function HeroSection() {
-  const t = tUi;
   return (
     <section className="how-vlc-hero py-16 text-white md:py-20">
       <div className="how-vlc-container how-vlc-prose text-center">
@@ -43,7 +42,6 @@ function RoleSwitch({
   role: AudienceRole;
   onChange: (role: AudienceRole) => void;
 }) {
-  const t = tUi;
   return (
     <div
       className="how-vlc-role-switch"
@@ -83,7 +81,6 @@ type StepItem = {
 };
 
 function ProcessSteps({ steps, role }: { steps: readonly StepItem[]; role: AudienceRole }) {
-  const t = tUi;
   return (
     <div
       role="tabpanel"
@@ -108,7 +105,6 @@ function ProcessSteps({ steps, role }: { steps: readonly StepItem[]; role: Audie
 }
 
 function WorkflowSection({ role }: { role: AudienceRole }) {
-  const t = tUi;
   return (
     <section className="border-t border-gray-100 bg-gray-50 py-16 md:py-20">
       <div className="how-vlc-container">
@@ -117,7 +113,7 @@ function WorkflowSection({ role }: { role: AudienceRole }) {
             {tUi("5 giai đoạn hợp đồng trên nền tảng")}
           </h2>
           <p className="how-vlc-prose mx-auto mt-4 text-gray-600">
-            {tUi("Sau khi chốt báo giá, client và freelancer cùng làm việc theo quy trình Escrow an toàn — giống như trên trang Đơn dịch vụ trong hệ thống.")}
+            {tUi("Sau khi chốt báo giá, khách hàng và freelancer cùng làm việc theo quy trình Escrow an toàn — giống như trên trang Đơn dịch vụ trong hệ thống.")}
           </p>
         </div>
 
@@ -140,7 +136,6 @@ function WorkflowSection({ role }: { role: AudienceRole }) {
 }
 
 function CtaSection({ role }: { role: AudienceRole }) {
-  const t = tUi;
   const cta = HOW_VLC_CTA[role];
 
   return (

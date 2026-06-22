@@ -45,7 +45,7 @@ function cardClass(item: JobsListItem): string {
 
 export default function JobContractCard({
   item,
-  counterpartyLabel = "Client",
+  counterpartyLabel = "Khách hàng",
   viewerRole = "freelancer",
 }: JobContractCardProps) {  const { t, formatVnd, formatDate } = useTranslation();
 

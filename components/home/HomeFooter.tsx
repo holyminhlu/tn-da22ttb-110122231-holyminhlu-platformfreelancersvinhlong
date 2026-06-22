@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import { tUi } from "@/lib/i18n/runtime";
 import Link from "next/link";
 import { useTranslation } from "@/hooks/useTranslation";
 import { FaFacebookF, FaLinkedinIn, FaTwitter } from "./icons";
@@ -20,13 +19,11 @@ const FOOTER_LINKS = {
   ],
   resources: [
     { labelKey: "footer.helpFaq", href: "/help" },
-    { labelKey: "aboutNav.blog", href: "/blog" },
-    { labelKey: "footer.contact", href: "#" },
+    { labelKey: "footer.contact", href: "/lien-he" },
   ],
   policies: [
-    { labelKey: "footer.ipPolicy", href: "#" },
-    { labelKey: "footer.privacyPolicy", href: "#" },
-    { labelKey: "footer.termsOfService", href: "#" },
+    { labelKey: "footer.privacyPolicy", href: "/chinh-sach-bao-mat" },
+    { labelKey: "footer.termsOfService", href: "/dieu-khoan-dich-vu" },
   ],
 } as const;
 
@@ -46,7 +43,7 @@ function FooterColumn({
         {links.map((link) => (
           <li key={link.labelKey}>
             <Link href={link.href} className="transition hover:text-white">
-              {tUi(link.labelKey)}
+              {t(link.labelKey)}
             </Link>
           </li>
         ))}
@@ -96,13 +93,13 @@ export default function HomeFooter() {
 
         <div className="flex flex-col items-center justify-between border-t border-gray-700 pt-8 text-xs text-gray-500 md:flex-row">
           <div className="mb-4 flex items-center gap-4 md:mb-0">
-            <span className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full border border-gray-600 bg-white">
+            <span className="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full border border-gray-600 bg-card">
               <Image
-                src="/Logo/Logo.png"
+                src="/Logo/logochinhthuc.png"
                 alt="Vĩnh Long Connect"
                 width={56}
                 height={56}
-                className="h-full w-full object-contain p-1.5"
+                className="h-full w-full scale-[1.45] object-contain"
               />
             </span>
             <span>{t("footer.tagline")}</span>

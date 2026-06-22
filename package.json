@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "predev": "npx kill-port 3000 5000",
+    "predev": "node scripts/kill-dev-ports.mjs",
     "dev": "concurrently -n FE,BE \"npm run dev:fe\" \"npm run dev:be\"",
     "dev:fe": "next dev --port 3000",
     "dev:be": "npm --prefix backend run start:dev",

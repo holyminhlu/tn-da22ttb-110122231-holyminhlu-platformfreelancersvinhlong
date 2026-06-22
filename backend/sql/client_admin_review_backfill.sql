@@ -1,4 +1,4 @@
--- Client đã gửi xem xét trước khi admin hỗ trợ cả client — đặt lại trạng thái chờ duyệt
+-- Khách hàng đã gửi xem xét trước khi admin hỗ trợ cả khách hàng — đặt lại trạng thái chờ duyệt
 BEGIN;
 
 UPDATE public.identity_verifications iv

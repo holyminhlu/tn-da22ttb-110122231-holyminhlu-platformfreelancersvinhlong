@@ -20,7 +20,6 @@ import "./hire.css";
 import "./hire-quote.css";
 
 function defaultMilestones(total: number) {
-  const t = tUi;
   const p1 = Math.round(total * 0.3);
   const p2 = Math.round(total * 0.4);
   const p3 = Math.max(0, total - p1 - p2);
@@ -103,7 +102,6 @@ export default function ClientServiceQuotePage() {
   );
 
   async function handleSubmit(event: React.FormEvent) {
-  const t = tUi;
     event.preventDefault();
     if (!selected || !clientBrief.trim()) return;
     setSubmitting(true);

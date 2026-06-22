@@ -2,7 +2,7 @@
  * Single source of truth for app routes.
  *
  * Conventions:
- * - Client (nhà tuyển dụng): /hire/*, /manage/*
+ * - Khách hàng (nhà tuyển dụng): /hire/*, /manage/*
  * - Freelancer: /findwork/* (tìm việc), /dich-vu/* (dịch vụ & đơn hàng), /jobs (hợp đồng việc)
  * - Hồ sơ xem/sửa: /ho-so/* | Cài đặt tài khoản: /edit-account/*
  */
@@ -16,10 +16,13 @@ export const ROUTES = {
   admin: {
     home: "/admin/duyet-tai-khoan",
     approvals: "/admin/duyet-tai-khoan",
+    accounts: "/admin/quan-ly-tai-khoan",
     refunds: "/admin/hoan-tien",
     withdrawals: "/admin/rut-tien",
     clientWithdrawals: "/admin/rut-tien-client",
     disputes: "/admin/tranh-chap",
+    contact: "/admin/quan-ly-lien-he",
+    reports: "/admin/bao-cao-thong-ke",
   },
 
   profile: {
@@ -43,7 +46,7 @@ export const ROUTES = {
     cancel: "/payments/cancel",
   },
 
-  /** Client — thuê freelancer & quản lý đơn dịch vụ */
+  /** Khách hàng — thuê freelancer & quản lý đơn dịch vụ */
   hire: {
     quotes: "/hire/quotes",
     quoteRequest: "/hire/quote",
@@ -55,7 +58,7 @@ export const ROUTES = {
     postJob: "/hire/post",
   },
 
-  /** Client — phòng làm việc, hoàn tiền, tranh chấp */
+  /** Khách hàng — phòng làm việc, hoàn tiền, tranh chấp */
   manage: {
     workspace: "/manage/phong-lam-viec",
     refunds: "/manage/hoan-tien",

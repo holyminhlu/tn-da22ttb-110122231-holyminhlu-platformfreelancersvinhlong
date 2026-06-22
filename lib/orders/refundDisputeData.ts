@@ -62,7 +62,7 @@ export function disputeResolutionLabel(code: string | null | undefined): string 
 export function adminResolveActionLabel(code: string | null | undefined): string {
   switch (String(code || "").toLowerCase()) {
     case "full_refund":
-      return "Hoàn tiền cho client";
+      return "Hoàn tiền cho khách hàng";
     case "release":
       return "Giải ngân cho freelancer";
     case "dismiss":

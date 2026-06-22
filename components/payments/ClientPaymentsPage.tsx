@@ -1,7 +1,8 @@
 "use client";
 
-import { formatDateUi, tUi, formatVndUi } from "@/lib/i18n/runtime";
 import { useTranslation } from "@/hooks/useTranslation";
+import type { TranslationParams } from "@/lib/i18n/types";
+import { formatDateUi, formatVndUi } from "@/lib/i18n/runtime";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import ClientShell from "@/components/layout/ClientShell";
@@ -52,18 +53,20 @@ import "./freelancer-payments.css";
 const TX_PAGE_SIZE = 8;
 const DEPOSIT_PRESETS = [500_000, 1_000_000, 2_000_000, 5_000_000];
 
-function withdrawalStatusLabel(status?: string) {
+type TFn = (keyOrVi: string, params?: TranslationParams) => string;
+
+function withdrawalStatusLabel(t: TFn, status?: string) {
   switch (status) {
     case "PENDING_AUTH":
-      return "Chờ xác nhận";
+      return t("paymentPage.withdrawPendingAuth");
     case "PROCESSING":
-      return "Đang xử lý";
+      return t("paymentPage.withdrawProcessing");
     case "SUCCEEDED":
-      return "Thành công";
+      return t("paymentPage.withdrawSucceeded");
     case "FAILED":
-      return "Bị từ chối";
+      return t("paymentPage.withdrawFailed");
     case "CANCELLED":
-      return "Đã hủy";
+      return t("paymentPage.withdrawCancelled");
     default:
       return "—";
   }
@@ -85,17 +88,27 @@ function withdrawalStatusClass(status?: string) {
 }
 
 function monthKey(iso: string) {
-  const t = tUi;
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "";
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 }
 
-function exportCsv(rows: BillingTransaction[], formatDate: (value: string | null | undefined) => string) {
-  const header = ["Ngày", "Dự án", "Freelancer", "Loại", "Số tiền", "Mã hóa đơn"];
+function exportCsv(
+  rows: BillingTransaction[],
+  formatDate: (value: string | null | undefined) => string,
+  t: TFn,
+) {
+  const header = [
+    t("paymentPage.csvDate"),
+    t("paymentPage.csvProject"),
+    t("paymentPage.csvFreelancer"),
+    t("paymentPage.csvType"),
+    t("paymentPage.csvAmount"),
+    t("paymentPage.csvInvoice"),
+  ];
   const lines = rows.map((r) =>
     [
-      formatDateUi(r.occurredAt),
+      formatDate(r.occurredAt),
       r.projectTitle,
       r.freelancerName,
       transactionCategoryLabel(r.category),
@@ -116,7 +129,8 @@ function exportCsv(rows: BillingTransaction[], formatDate: (value: string | null
   URL.revokeObjectURL(url);
 }
 
-export default function ClientPaymentsPage() {  const { t, formatVnd, formatDate } = useTranslation();
+export default function ClientPaymentsPage() {
+  const { t, formatVnd, formatDate } = useTranslation();
 
   const { verified: identityVerified, loading: identityLoading } = useClientIdentityVerification({
     refreshOnVisible: false,
@@ -163,7 +177,7 @@ export default function ClientPaymentsPage() {  const { t, formatVnd, formatDate
       const message =
         err && typeof err === "object" && "message" in err
           ? String((err as { message: string }).message)
-          : "Không thể tải dữ liệu thanh toán.";
+          : t("paymentPage.loadError");
       setError(message);
       setData(null);
     } finally {
@@ -198,9 +212,6 @@ export default function ClientPaymentsPage() {  const { t, formatVnd, formatDate
   const canSwitchDefault = (data?.billingMethods.length ?? 0) > 1;
 
   function applyDefaultMethod(methodId: string) {
-  const t = tUi;
-  const formatDate = formatDateUi;
-  const formatVnd = formatVndUi;
     setData((prev) => {
       if (!prev) return prev;
       const billingMethods = prev.billingMethods.map((method) => ({
@@ -213,9 +224,6 @@ export default function ClientPaymentsPage() {  const { t, formatVnd, formatDate
   }
 
   async function handleSetDefaultMethod(methodId: string) {
-  const t = tUi;
-  const formatDate = formatDateUi;
-  const formatVnd = formatVndUi;
     if (methodId === "identity-card") return;
     setDefaultMethodBusyId(methodId);
     try {
@@ -227,7 +235,7 @@ export default function ClientPaymentsPage() {  const { t, formatVnd, formatDate
       const message =
         err && typeof err === "object" && "message" in err
           ? String((err as { message: string }).message)
-          : "Không thể đổi phương thức mặc định.";
+          : t("paymentPage.setDefaultError");
       setToast({ message, variant: "error" });
     } finally {
       setDefaultMethodBusyId(null);
@@ -235,9 +243,6 @@ export default function ClientPaymentsPage() {  const { t, formatVnd, formatDate
   }
 
   async function handleDeleteMethod(methodId: string) {
-  const t = tUi;
-  const formatDate = formatDateUi;
-  const formatVnd = formatVndUi;
     if (methodId === "identity-card") return;
     setDeleteMethodBusyId(methodId);
     try {
@@ -248,7 +253,7 @@ export default function ClientPaymentsPage() {  const { t, formatVnd, formatDate
       const message =
         err && typeof err === "object" && "message" in err
           ? String((err as { message: string }).message)
-          : "Không thể xóa phương thức thanh toán.";
+          : t("paymentPage.deleteMethodError");
       setToast({ message, variant: "error" });
     } finally {
       setDeleteMethodBusyId(null);
@@ -256,12 +261,9 @@ export default function ClientPaymentsPage() {  const { t, formatVnd, formatDate
   }
 
   async function handleDeposit() {
-  const t = tUi;
-  const formatDate = formatDateUi;
-  const formatVnd = formatVndUi;
     const amount = Number(depositAmount);
     if (!Number.isFinite(amount) || amount < 10000) {
-      setToast({ message: "Số tiền nạp tối thiểu 10.000 VND.", variant: "error" });
+      setToast({ message: t("paymentPage.minDepositError"), variant: "error" });
       return;
     }
     setDepositBusy(true);
@@ -269,7 +271,7 @@ export default function ClientPaymentsPage() {  const { t, formatVnd, formatDate
     try {
       const result = await createPaymentLink(amount);
       if (!result.checkoutUrl) {
-        setToast({ message: "Không nhận được link thanh toán.", variant: "error" });
+        setToast({ message: t("paymentPage.noPaymentLinkError"), variant: "error" });
         return;
       }
       window.location.href = result.checkoutUrl;
@@ -278,7 +280,7 @@ export default function ClientPaymentsPage() {  const { t, formatVnd, formatDate
       const message =
         err && typeof err === "object" && "message" in err
           ? String((err as { message: string }).message)
-          : "Không thể tạo link nạp tiền.";
+          : t("paymentPage.createDepositLinkError");
       if (apiErr?.code === "BILLING_METHOD_REQUIRED") {
         setDepositNeedsMethod(true);
       }
@@ -299,15 +301,12 @@ export default function ClientPaymentsPage() {  const { t, formatVnd, formatDate
     : null;
 
   function openWithdrawFlow() {
-  const t = tUi;
-  const formatDate = formatDateUi;
-  const formatVnd = formatVndUi;
     if (!data?.payoutProfile?.isConfigured) {
-      setToast({ message: t("Bạn chưa liên kết tài khoản ngân hàng nhận tiền."), variant: "error" });
+      setToast({ message: t("paymentPage.noBankAccount"), variant: "error" });
       return;
     }
     if (!data.withdrawalPin?.isConfigured) {
-      setToast({ message: "Bạn chưa thiết lập mã PIN rút tiền.", variant: "error" });
+      setToast({ message: t("paymentPage.noPin"), variant: "error" });
       return;
     }
     if (withdrawNumeric < MIN_WITHDRAW_VND) {
@@ -327,9 +326,6 @@ export default function ClientPaymentsPage() {  const { t, formatVnd, formatDate
     pendingBalance?: number;
     totalEarned?: number;
   }) {
-  const t = tUi;
-  const formatDate = formatDateUi;
-  const formatVnd = formatVndUi;
     setData((prev) => {
       if (!prev) return prev;
       return {
@@ -345,9 +341,6 @@ export default function ClientPaymentsPage() {  const { t, formatVnd, formatDate
   }
 
   function updateProfileField(field: BillingProfileField, value: string) {
-  const t = tUi;
-  const formatDate = formatDateUi;
-  const formatVnd = formatVndUi;
     setProfileForm((prev) => ({ ...prev, [field]: value }));
     setProfileErrors((prev) => {
       if (!prev[field]) return prev;
@@ -358,26 +351,23 @@ export default function ClientPaymentsPage() {  const { t, formatVnd, formatDate
   }
 
   async function handleSaveProfile(e: React.FormEvent) {
-  const t = tUi;
-  const formatDate = formatDateUi;
-  const formatVnd = formatVndUi;
     e.preventDefault();
     const errors = validateBillingProfile(profileForm);
     if (Object.keys(errors).length > 0) {
       setProfileErrors(errors);
-      setToast({ message: "Vui lòng kiểm tra lại các trường bắt buộc.", variant: "error" });
+      setToast({ message: t("paymentPage.validateFields"), variant: "error" });
       return;
     }
 
     setSavingProfile(true);
     try {
       const result = await updateBillingProfile(profileForm);
-      setToast({ message: result.message || "Cập nhật thông tin thành công!", variant: "success" });
+      setToast({ message: result.message || t("paymentPage.profileUpdateSuccess"), variant: "success" });
     } catch (err) {
       const message =
         err && typeof err === "object" && "message" in err
           ? String((err as { message: string }).message)
-          : "Không thể lưu thông tin.";
+          : t("paymentPage.saveError");
       setToast({ message, variant: "error" });
     } finally {
       setSavingProfile(false);
@@ -399,7 +389,7 @@ export default function ClientPaymentsPage() {  const { t, formatVnd, formatDate
               type="button"
               className="payments-btn payments-btn--secondary payments-page__head-action"
               disabled={filteredTransactions.length === 0}
-              onClick={() => exportCsv(filteredTransactions, formatDate)}
+              onClick={() => exportCsv(filteredTransactions, formatDate, t)}
             >
               {t("Xuất sao kê (CSV)")}
             </button>
@@ -424,7 +414,7 @@ export default function ClientPaymentsPage() {  const { t, formatVnd, formatDate
 
             <section className="payments-panel">
               <PaymentsSectionTitle icon={<FaChartPie />}>
-                {t("Số dư &amp; ký quỹ")}
+                {t("Số dư & ký quỹ")}
               </PaymentsSectionTitle>
               <div className="payments-balance-layout">
                 <div className="payments-balance-grid">
@@ -496,7 +486,7 @@ export default function ClientPaymentsPage() {  const { t, formatVnd, formatDate
                           {t("Đang xử lý...")}
                         </>
                       ) : (
-                        "Nạp tiền"
+                        t("paymentPage.depositButton")
                       )}
                     </button>
                     {depositNeedsMethod ? (
@@ -600,7 +590,7 @@ export default function ClientPaymentsPage() {  const { t, formatVnd, formatDate
                         <p className="fl-payments__withdraw-item-ref">{item.referenceId}</p>
                       </div>
                       <span className={withdrawalStatusClass(item.status)}>
-                        {withdrawalStatusLabel(item.status)}
+                        {withdrawalStatusLabel(t, item.status)}
                       </span>
                     </li>
                   ))}
@@ -667,7 +657,7 @@ export default function ClientPaymentsPage() {  const { t, formatVnd, formatDate
                                 disabled={defaultMethodBusyId != null || isDeleting}
                                 onClick={() => void handleSetDefaultMethod(method.id)}
                               >
-                                {isSettingDefault ? "Đang đặt..." : "Đặt làm mặc định"}
+                                {isSettingDefault ? t("paymentPage.settingDefault") : t("paymentPage.setAsDefault")}
                               </button>
                             ) : null}
                             {canManage ? (
@@ -676,8 +666,7 @@ export default function ClientPaymentsPage() {  const { t, formatVnd, formatDate
                                 disabled={isDeleting || defaultMethodBusyId === method.id}
                                 onEdit={() => {
                                   setToast({
-                                    message:
-                                      "Để cập nhật thẻ, hãy xóa phương thức cũ rồi thêm lại thông tin mới.",
+                                    message: t("paymentPage.cardUpdateHint"),
                                     variant: "success",
                                   });
                                 }}
@@ -697,8 +686,11 @@ export default function ClientPaymentsPage() {  const { t, formatVnd, formatDate
                   <h3 className="payments-auto__title">{t("Tự động nạp tiền")}</h3>
                   <p className="payments-muted">
                     {autoBillingOn
-                      ? `Khi số dư dưới ${formatVndUi(defaultMethod.autoTopupThreshold)}, hệ thống tự nạp ${formatVndUi(defaultMethod.autoTopupAmount)} từ phương thức mặc định.`
-                      : "Tự động nạp tiền đang tắt."}
+                      ? t("paymentPage.autoTopupOn", {
+                          threshold: formatVnd(defaultMethod.autoTopupThreshold),
+                          amount: formatVnd(defaultMethod.autoTopupAmount),
+                        })
+                      : t("paymentPage.autoTopupOff")}
                   </p>
                 </div>
               ) : null}
@@ -706,7 +698,7 @@ export default function ClientPaymentsPage() {  const { t, formatVnd, formatDate
 
             <section className="payments-panel">
               <PaymentsSectionTitle icon={<FaHistory />}>
-                {t("Lịch sử giao dịch &amp; hóa đơn")}
+                {t("Lịch sử giao dịch & hóa đơn")}
               </PaymentsSectionTitle>
 
               <div className="payments-filters">
@@ -740,8 +732,11 @@ export default function ClientPaymentsPage() {  const { t, formatVnd, formatDate
                   <FaCalendarAlt className="payments-filter-month__icon" aria-hidden />
                   <span className="payments-filter-month__label" aria-hidden>
                     {filterMonth
-                      ? `Tháng ${filterMonth.slice(5, 7)}/${filterMonth.slice(0, 4)}`
-                      : "Lọc theo tháng"}
+                      ? t("paymentPage.monthLabel", {
+                          month: filterMonth.slice(5, 7),
+                          year: filterMonth.slice(0, 4),
+                        })
+                      : t("paymentPage.filterByMonth")}
                   </span>
                   <input
                     type="month"

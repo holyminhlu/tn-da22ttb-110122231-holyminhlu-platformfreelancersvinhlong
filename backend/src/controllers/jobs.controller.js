@@ -34,7 +34,7 @@ function uploadJobImages(req, res) {
   if (!payload) return;
 
   if (payload.role !== "client") {
-    return res.status(403).json({ message: "Chỉ client được tải ảnh đính kèm tin việc làm." });
+    return res.status(403).json({ message: "Chỉ khách hàng được tải ảnh đính kèm tin việc làm." });
   }
 
   const handler = uploadJobImagesMw.array("images", 3);
@@ -57,7 +57,7 @@ async function createMyJob(req, res) {
   if (!payload) return;
 
   if (payload.role !== "client") {
-    return res.status(403).json({ message: "Chỉ client mới có thể đăng công việc." });
+    return res.status(403).json({ message: "Chỉ khách hàng mới có thể đăng công việc." });
   }
 
   const verifyDb = await pool.connect();
@@ -216,7 +216,7 @@ async function updateMyJob(req, res) {
   if (!payload) return;
 
   if (payload.role !== "client") {
-    return res.status(403).json({ message: "Chỉ client được chỉnh sửa công việc của mình." });
+    return res.status(403).json({ message: "Chỉ khách hàng được chỉnh sửa công việc của mình." });
   }
 
   const jobId = parseUuidParam(req.params.jobId);
@@ -467,7 +467,7 @@ async function deleteMyJob(req, res) {
   if (!payload) return;
 
   if (payload.role !== "client") {
-    return res.status(403).json({ message: "Chỉ client được xóa công việc của mình." });
+    return res.status(403).json({ message: "Chỉ khách hàng được xóa công việc của mình." });
   }
 
   const jobId = parseUuidParam(req.params.jobId);
@@ -616,11 +616,11 @@ async function acceptJob(req, res) {
     if (existingQuote.rowCount > 0) {
       await dbClient.query("ROLLBACK");
       const existingStatus = String(existingQuote.rows[0].status || "").toLowerCase();
-      let message = "Bạn đã gửi báo giá cho công việc này và đang chờ client phản hồi.";
+      let message = "Bạn đã gửi báo giá cho công việc này và đang chờ khách hàng phản hồi.";
       if (existingStatus === "offered") {
-        message = "Client đã gửi offer cho bạn — không thể gửi báo giá mới. Chờ client chốt tuyển.";
+        message = "Khách hàng đã gửi offer cho bạn — không thể gửi báo giá mới. Chờ khách hàng chốt tuyển.";
       } else if (existingStatus === "interviewing") {
-        message = "Client đang trao đổi với bạn về công việc này — không thể gửi báo giá mới.";
+        message = "Khách hàng đang trao đổi với bạn về công việc này — không thể gửi báo giá mới.";
       } else if (existingStatus === "accepted") {
         message = "Bạn đã được chọn cho công việc này.";
       }
@@ -809,7 +809,7 @@ async function listMyJobQuotes(req, res) {
   }
 
   if (payload.role !== "client") {
-    return res.status(403).json({ message: "Chỉ client hoặc freelancer được xem báo giá." });
+    return res.status(403).json({ message: "Chỉ khách hàng hoặc freelancer được xem báo giá." });
   }
 
   const jobId = parseUuidParam(req.query.job_id || req.query.jobId);
@@ -969,7 +969,7 @@ async function patchJobQuote(req, res) {
   }
 
   if (payload.role !== "client") {
-    return res.status(403).json({ message: "Chỉ client hoặc freelancer được quản lý báo giá." });
+    return res.status(403).json({ message: "Chỉ khách hàng hoặc freelancer được quản lý báo giá." });
   }
 
   if (!["offer", "accept", "decline"].includes(action)) {
@@ -1536,7 +1536,7 @@ async function listMyJobs(req, res) {
   if (!payload) return;
 
   if (payload.role !== "client") {
-    return res.status(403).json({ message: "Chỉ client được xem danh sách công việc đã đăng." });
+    return res.status(403).json({ message: "Chỉ khách hàng được xem danh sách công việc đã đăng." });
   }
 
   const limit = Math.min(Math.max(Number.parseInt(String(req.query.limit || ""), 10) || 24, 1), 100);
@@ -1846,7 +1846,7 @@ async function compareJobQuoteWithAi(req, res) {
   if (!payload) return;
 
   if (payload.role !== "client") {
-    return res.status(403).json({ message: "Chỉ client được dùng gợi ý AI so sánh báo giá." });
+    return res.status(403).json({ message: "Chỉ khách hàng được dùng gợi ý AI so sánh báo giá." });
   }
 
   const quoteId = parseUuidParam(req.params.quoteId);

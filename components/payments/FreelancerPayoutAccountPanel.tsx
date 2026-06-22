@@ -29,8 +29,6 @@ export default function FreelancerPayoutAccountPanel({
   const [unlinkBusy, setUnlinkBusy] = useState(false);
 
   async function handleUnlink() {
-  const t = tUi;
-  const formatDate = formatDateUi;
   const ok = window.confirm(
       "Hủy liên kết tài khoản ngân hàng? Bạn sẽ không thể rút tiền cho đến khi liên kết lại.",
     );
@@ -153,7 +151,7 @@ export default function FreelancerPayoutAccountPanel({
 
       <p className="fl-payout-card__footnote">
         {audience === "client"
-          ? "Tiền rút từ ví client sẽ được chuyển vào tài khoản này trong vòng 24–48 giờ làm việc sau khi admin duyệt."
+          ? "Tiền rút từ ví khách hàng sẽ được chuyển vào tài khoản này trong vòng 24–48 giờ làm việc sau khi admin duyệt."
           : "Tiền rút sẽ được chuyển vào tài khoản này trong vòng 24–48 giờ làm việc sau khi yêu cầu được xử lý."}
       </p>
 

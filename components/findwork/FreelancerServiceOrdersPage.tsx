@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { listServiceOrders, type ServiceOrderListItem } from "@/lib/api/contracts";
 import { formatPackagePrice } from "@/lib/hire/servicePackages";
+import { serviceOrderHref } from "@/lib/routes/paths";
 import {
   escrowStatusLabel,
   escrowStatusTone,
@@ -85,7 +86,7 @@ export default function FreelancerServiceOrdersPage() {  const { t, formatDate }
         <header className="fw-orders__head">
           <h1 className="fw-orders__title">{t("Việc & đơn đã nhận")}</h1>
           <p className="fw-orders__lead">
-            Gồm đơn dịch vụ (gigs) và công việc client chốt tuyển từ báo giá — cập nhật tiến độ,
+            Gồm đơn dịch vụ (gigs) và công việc khách hàng chốt tuyển từ báo giá — cập nhật tiến độ,
             bàn giao và nghiệm thu theo từng giai đoạn.
             {actionCount > 0 ? ` Bạn có ${actionCount} mục cần xử lý.` : ""}
           </p>
@@ -115,7 +116,7 @@ export default function FreelancerServiceOrdersPage() {  const { t, formatDate }
         ) : filtered.length === 0 ? (
           <div className="fw-orders__empty">
             {filter === "all"
-              ? "Chưa có việc hoặc đơn nào. Hãy nộp báo giá tại Tìm việc làm hoặc chờ client đặt gói dịch vụ của bạn."
+              ? "Chưa có việc hoặc đơn nào. Hãy nộp báo giá tại Tìm việc làm hoặc chờ khách hàng đặt gói dịch vụ của bạn."
               : "Không có mục nào trong bộ lọc này."}
           </div>
         ) : (
@@ -138,7 +139,7 @@ export default function FreelancerServiceOrdersPage() {  const { t, formatDate }
               return (
                 <li key={order.id}>
                   <Link
-                    href={`/findwork/orders/${order.id}`}
+                    href={serviceOrderHref(order.id, "freelancer")}
                     className={`fw-orders__card ${orderCardToneClass(statusTone)}${urgent ? " fw-orders__card--urgent" : ""}`}
                   >
                     <div className="fw-orders__card-top">

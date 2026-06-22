@@ -27,12 +27,12 @@ export function isActiveFreelancerQuote(quote: JobQuoteRow): boolean {
 
 export function freelancerQuoteStatusHint(status: string): string {
   const s = String(status).toLowerCase();
-  if (s === "pending") return "Đang chờ client xem xét";
-  if (s === "shortlisted") return "Đang chờ client xem xét";
-  if (s === "interviewing") return "Client muốn trao đổi thêm";
-  if (s === "offered") return "Client đã gửi offer — chờ client chốt tuyển";
+  if (s === "pending") return "Đang chờ khách hàng xem xét";
+  if (s === "shortlisted") return "Đang chờ khách hàng xem xét";
+  if (s === "interviewing") return "Khách hàng muốn trao đổi thêm";
+  if (s === "offered") return "Khách hàng đã gửi offer — chờ khách hàng chốt tuyển";
   if (s === "accepted") return "Bạn đã được tuyển cho việc này";
-  if (s === "declined") return "Client đã từ chối báo giá";
+  if (s === "declined") return "Khách hàng đã từ chối báo giá";
   if (s === "withdrawn") return "Bạn đã rút báo giá";
   return status;
 }

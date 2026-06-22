@@ -19,7 +19,7 @@ export default function FindWorkSubNav() {
   );
 
   return (
-    <nav className="hire-subnav" aria-label={t("Tìm việc")}>
+    <nav className="hire-subnav" aria-label={t("findworkNav.aria")}>
       <div className="hire-subnav__inner">
         {tabs.map((tab) => {
           if ("disabled" in tab && tab.disabled) {
@@ -29,7 +29,7 @@ export default function FindWorkSubNav() {
                 className="hire-subnav__link hire-subnav__link--disabled"
                 aria-disabled="true"
               >
-                {tab.label}
+                {t(tab.labelKey)}
               </span>
             );
           }
@@ -45,7 +45,7 @@ export default function FindWorkSubNav() {
               className={`hire-subnav__link${active ? " hire-subnav__link--active" : ""}`}
               aria-current={active ? "page" : undefined}
             >
-              {tab.label}
+              {t(tab.labelKey)}
             </Link>
           );
         })}

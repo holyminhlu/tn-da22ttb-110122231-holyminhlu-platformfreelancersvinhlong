@@ -416,6 +416,28 @@
   border-bottom: none;
 }
 
+.edit-account-page .sec-card__footer {
+  display: flex;
+  justify-content: center;
+  padding: 0.75rem 1.125rem 1rem;
+  border-top: 1px solid var(--vlc-border-subtle);
+}
+
+.edit-account-page .sec-modal--history {
+  max-width: 36rem;
+}
+
+.edit-account-page .sec-modal__body--scroll {
+  max-height: min(28rem, 60vh);
+  overflow-y: auto;
+  padding-top: 0;
+}
+
+.edit-account-page .sec-modal__body--scroll .sec-history-item {
+  padding-left: 0;
+  padding-right: 0;
+}
+
 .edit-account-page .sec-empty {
   padding: 2rem 1.125rem;
   text-align: center;

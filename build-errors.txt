@@ -30,15 +30,15 @@ the name `formatVnd` is defined multiple times
 Ecmascript file had an error
 
 Import traces:
-  Client Component Browser:
-    ./components/account/identity-verification/CreditCardVerifyPanel.tsx [Client Component Browser]
-    ./components/account/IdentityVerificationContent.tsx [Client Component Browser]
+  Khách hàng Component Browser:
+    ./components/account/identity-verification/CreditCardVerifyPanel.tsx [Khách hàng Component Browser]
+    ./components/account/IdentityVerificationContent.tsx [Khách hàng Component Browser]
     ./components/account/IdentityVerificationContent.tsx [Server Component]
     ./app/(dashboard)/(account)/edit-account/xac-minh/page.tsx [Server Component]
 
-  Client Component SSR:
-    ./components/account/identity-verification/CreditCardVerifyPanel.tsx [Client Component SSR]
-    ./components/account/IdentityVerificationContent.tsx [Client Component SSR]
+  Khách hàng Component SSR:
+    ./components/account/identity-verification/CreditCardVerifyPanel.tsx [Khách hàng Component SSR]
+    ./components/account/IdentityVerificationContent.tsx [Khách hàng Component SSR]
     ./components/account/IdentityVerificationContent.tsx [Server Component]
     ./app/(dashboard)/(account)/edit-account/xac-minh/page.tsx [Server Component]
 
@@ -57,15 +57,15 @@ the name `formatVnd` is defined multiple times
 Ecmascript file had an error
 
 Import traces:
-  Client Component Browser:
-    ./components/admin/AdminDisputeResolvePanel.tsx [Client Component Browser]
-    ./components/admin/AdminDisputesPage.tsx [Client Component Browser]
+  Khách hàng Component Browser:
+    ./components/admin/AdminDisputeResolvePanel.tsx [Khách hàng Component Browser]
+    ./components/admin/AdminDisputesPage.tsx [Khách hàng Component Browser]
     ./components/admin/AdminDisputesPage.tsx [Server Component]
     ./app/admin/tranh-chap/page.tsx [Server Component]
 
-  Client Component SSR:
-    ./components/admin/AdminDisputeResolvePanel.tsx [Client Component SSR]
-    ./components/admin/AdminDisputesPage.tsx [Client Component SSR]
+  Khách hàng Component SSR:
+    ./components/admin/AdminDisputeResolvePanel.tsx [Khách hàng Component SSR]
+    ./components/admin/AdminDisputesPage.tsx [Khách hàng Component SSR]
     ./components/admin/AdminDisputesPage.tsx [Server Component]
     ./app/admin/tranh-chap/page.tsx [Server Component]
 
@@ -84,15 +84,15 @@ clientJobToListItem>[]...
 Ecmascript file had an error
 
 Import traces:
-  Client Component Browser:
-    ./components/dashboard/ClientDashboard.tsx [Client Component Browser]
-    ./components/dashboard/DashboardRouter.tsx [Client Component Browser]
+  Khách hàng Component Browser:
+    ./components/dashboard/ClientDashboard.tsx [Khách hàng Component Browser]
+    ./components/dashboard/DashboardRouter.tsx [Khách hàng Component Browser]
     ./components/dashboard/DashboardRouter.tsx [Server Component]
     ./app/(dashboard)/dashboard/page.tsx [Server Component]
 
-  Client Component SSR:
-    ./components/dashboard/ClientDashboard.tsx [Client Component SSR]
-    ./components/dashboard/DashboardRouter.tsx [Client Component SSR]
+  Khách hàng Component SSR:
+    ./components/dashboard/ClientDashboard.tsx [Khách hàng Component SSR]
+    ./components/dashboard/DashboardRouter.tsx [Khách hàng Component SSR]
     ./components/dashboard/DashboardRouter.tsx [Server Component]
     ./app/(dashboard)/dashboard/page.tsx [Server Component]
 
@@ -111,15 +111,15 @@ the name `formatVnd` is defined multiple times
 Ecmascript file had an error
 
 Import traces:
-  Client Component Browser:
-    ./components/dashboard/FreelancerDashboard.tsx [Client Component Browser]
-    ./components/dashboard/DashboardRouter.tsx [Client Component Browser]
+  Khách hàng Component Browser:
+    ./components/dashboard/FreelancerDashboard.tsx [Khách hàng Component Browser]
+    ./components/dashboard/DashboardRouter.tsx [Khách hàng Component Browser]
     ./components/dashboard/DashboardRouter.tsx [Server Component]
     ./app/(dashboard)/dashboard/page.tsx [Server Component]
 
-  Client Component SSR:
-    ./components/dashboard/FreelancerDashboard.tsx [Client Component SSR]
-    ./components/dashboard/DashboardRouter.tsx [Client Component SSR]
+  Khách hàng Component SSR:
+    ./components/dashboard/FreelancerDashboard.tsx [Khách hàng Component SSR]
+    ./components/dashboard/DashboardRouter.tsx [Khách hàng Component SSR]
     ./components/dashboard/DashboardRouter.tsx [Server Component]
     ./app/(dashboard)/dashboard/page.tsx [Server Component]
 
@@ -137,17 +137,17 @@ the name `formatVnd` is defined multiple times
 Ecmascript file had an error
 
 Import traces:
-  Client Component Browser:
-    ./components/findwork/JobProposalFormModal.tsx [Client Component Browser]
-    ./components/findwork/JobCard.tsx [Client Component Browser]
-    ./components/findwork/FreelancerSavedJobsPage.tsx [Client Component Browser]
+  Khách hàng Component Browser:
+    ./components/findwork/JobProposalFormModal.tsx [Khách hàng Component Browser]
+    ./components/findwork/JobCard.tsx [Khách hàng Component Browser]
+    ./components/findwork/FreelancerSavedJobsPage.tsx [Khách hàng Component Browser]
     ./components/findwork/FreelancerSavedJobsPage.tsx [Server Component]
     ./app/(dashboard)/findwork/saved/page.tsx [Server Component]
 
-  Client Component SSR:
-    ./components/findwork/JobProposalFormModal.tsx [Client Component SSR]
-    ./components/findwork/JobCard.tsx [Client Component SSR]
-    ./components/findwork/FreelancerSavedJobsPage.tsx [Client Component SSR]
+  Khách hàng Component SSR:
+    ./components/findwork/JobProposalFormModal.tsx [Khách hàng Component SSR]
+    ./components/findwork/JobCard.tsx [Khách hàng Component SSR]
+    ./components/findwork/FreelancerSavedJobsPage.tsx [Khách hàng Component SSR]
     ./components/findwork/FreelancerSavedJobsPage.tsx [Server Component]
     ./app/(dashboard)/findwork/saved/page.tsx [Server Component]
 
@@ -165,21 +165,21 @@ the name `formatVnd` is defined multiple times
 Ecmascript file had an error
 
 Import traces:
-  Client Component Browser:
-    ./components/orders/RefundRequestForm.tsx [Client Component Browser]
-    ./components/orders/ResolutionActionChooser.tsx [Client Component Browser]
-    ./components/orders/ExecutionReviewPanel.tsx [Client Component Browser]
-    ./components/orders/ServiceOrderWorkflow.tsx [Client Component Browser]
-    ./components/hire/ClientOrderWorkflowPage.tsx [Client Component Browser]
+  Khách hàng Component Browser:
+    ./components/orders/RefundRequestForm.tsx [Khách hàng Component Browser]
+    ./components/orders/ResolutionActionChooser.tsx [Khách hàng Component Browser]
+    ./components/orders/ExecutionReviewPanel.tsx [Khách hàng Component Browser]
+    ./components/orders/ServiceOrderWorkflow.tsx [Khách hàng Component Browser]
+    ./components/hire/ClientOrderWorkflowPage.tsx [Khách hàng Component Browser]
     ./components/hire/ClientOrderWorkflowPage.tsx [Server Component]
     ./app/(dashboard)/hire/orders/[contractId]/page.tsx [Server Component]
 
-  Client Component SSR:
-    ./components/orders/RefundRequestForm.tsx [Client Component SSR]
-    ./components/orders/ResolutionActionChooser.tsx [Client Component SSR]
-    ./components/orders/ExecutionReviewPanel.tsx [Client Component SSR]
-    ./components/orders/ServiceOrderWorkflow.tsx [Client Component SSR]
-    ./components/hire/ClientOrderWorkflowPage.tsx [Client Component SSR]
+  Khách hàng Component SSR:
+    ./components/orders/RefundRequestForm.tsx [Khách hàng Component SSR]
+    ./components/orders/ResolutionActionChooser.tsx [Khách hàng Component SSR]
+    ./components/orders/ExecutionReviewPanel.tsx [Khách hàng Component SSR]
+    ./components/orders/ServiceOrderWorkflow.tsx [Khách hàng Component SSR]
+    ./components/hire/ClientOrderWorkflowPage.tsx [Khách hàng Component SSR]
     ./components/hire/ClientOrderWorkflowPage.tsx [Server Component]
     ./app/(dashboard)/hire/orders/[contractId]/page.tsx [Server Component]
 
@@ -198,15 +198,15 @@ the name `formatVnd` is defined multiple times
 Ecmascript file had an error
 
 Import traces:
-  Client Component Browser:
-    ./components/orders/RefundSettlementBreakdown.tsx [Client Component Browser]
-    ./components/admin/AdminRefundsPage.tsx [Client Component Browser]
+  Khách hàng Component Browser:
+    ./components/orders/RefundSettlementBreakdown.tsx [Khách hàng Component Browser]
+    ./components/admin/AdminRefundsPage.tsx [Khách hàng Component Browser]
     ./components/admin/AdminRefundsPage.tsx [Server Component]
     ./app/admin/hoan-tien/page.tsx [Server Component]
 
-  Client Component SSR:
-    ./components/orders/RefundSettlementBreakdown.tsx [Client Component SSR]
-    ./components/admin/AdminRefundsPage.tsx [Client Component SSR]
+  Khách hàng Component SSR:
+    ./components/orders/RefundSettlementBreakdown.tsx [Khách hàng Component SSR]
+    ./components/admin/AdminRefundsPage.tsx [Khách hàng Component SSR]
     ./components/admin/AdminRefundsPage.tsx [Server Component]
     ./app/admin/hoan-tien/page.tsx [Server Component]
 
@@ -225,17 +225,17 @@ useState([33mString[0m([33mWITHDRAW_AMOUNT_PRESETS[0m[[35m1[0m]));
 Ecmascript file had an error
 
 Import traces:
-  Client Component Browser:
-    ./components/payments/FreelancerWithdrawModal.tsx [Client Component Browser]
-    ./components/payments/FreelancerPaymentsPage.tsx [Client Component Browser]
-    ./components/payments/PaymentsRouter.tsx [Client Component Browser]
+  Khách hàng Component Browser:
+    ./components/payments/FreelancerWithdrawModal.tsx [Khách hàng Component Browser]
+    ./components/payments/FreelancerPaymentsPage.tsx [Khách hàng Component Browser]
+    ./components/payments/PaymentsRouter.tsx [Khách hàng Component Browser]
     ./components/payments/PaymentsRouter.tsx [Server Component]
     ./app/(dashboard)/payments/page.tsx [Server Component]
 
-  Client Component SSR:
-    ./components/payments/FreelancerWithdrawModal.tsx [Client Component SSR]
-    ./components/payments/FreelancerPaymentsPage.tsx [Client Component SSR]
-    ./components/payments/PaymentsRouter.tsx [Client Component SSR]
+  Khách hàng Component SSR:
+    ./components/payments/FreelancerWithdrawModal.tsx [Khách hàng Component SSR]
+    ./components/payments/FreelancerPaymentsPage.tsx [Khách hàng Component SSR]
+    ./components/payments/PaymentsRouter.tsx [Khách hàng Component SSR]
     ./components/payments/PaymentsRouter.tsx [Server Component]
     ./app/(dashboard)/payments/page.tsx [Server Component]
 
@@ -253,15 +253,15 @@ the name `formatVnd` is defined multiple times
 Ecmascript file had an error
 
 Import traces:
-  Client Component Browser:
-    ./components/profile/MyProfileContent.tsx [Client Component Browser]
-    ./components/profile/ProfilePageContent.tsx [Client Component Browser]
+  Khách hàng Component Browser:
+    ./components/profile/MyProfileContent.tsx [Khách hàng Component Browser]
+    ./components/profile/ProfilePageContent.tsx [Khách hàng Component Browser]
     ./components/profile/ProfilePageContent.tsx [Server Component]
     ./app/(dashboard)/(account)/ho-so/page.tsx [Server Component]
 
-  Client Component SSR:
-    ./components/profile/MyProfileContent.tsx [Client Component SSR]
-    ./components/profile/ProfilePageContent.tsx [Client Component SSR]
+  Khách hàng Component SSR:
+    ./components/profile/MyProfileContent.tsx [Khách hàng Component SSR]
+    ./components/profile/ProfilePageContent.tsx [Khách hàng Component SSR]
     ./components/profile/ProfilePageContent.tsx [Server Component]
     ./app/(dashboard)/(account)/ho-so/page.tsx [Server Component]
 

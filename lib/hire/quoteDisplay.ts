@@ -1,15 +1,15 @@
 import type { JobQuoteRow } from "@/lib/api/jobQuotes";
-import { formatVnd } from "@/lib/format";
+import { formatVndUi, tUi } from "@/lib/i18n/runtime";
 
 export function quoteStatusLabel(status: string): string {
   const s = String(status).toLowerCase();
-  if (s === "pending") return "Đang chờ";
-  if (s === "shortlisted") return "Đang chờ";
-  if (s === "interviewing") return "Phỏng vấn";
-  if (s === "offered") return "Đã gửi offer";
-  if (s === "accepted") return "Đã tuyển";
-  if (s === "declined") return "Đã từ chối";
-  if (s === "withdrawn") return "Đã rút";
+  if (s === "pending") return tUi("hirePage.quoteStatusPending");
+  if (s === "shortlisted") return tUi("hirePage.quoteStatusPending");
+  if (s === "interviewing") return tUi("hirePage.quoteStatusInterviewing");
+  if (s === "offered") return tUi("hirePage.quoteStatusOffered");
+  if (s === "accepted") return tUi("hirePage.quoteStatusAccepted");
+  if (s === "declined") return tUi("hirePage.quoteStatusDeclined");
+  if (s === "withdrawn") return tUi("hirePage.quoteStatusWithdrawn");
   return status;
 }
 
@@ -91,8 +91,8 @@ export function quoteStatusBadgeClass(status: string): string {
 }
 
 export function formatQuoteAmount(quote: JobQuoteRow): string {
-  const amount = quote.amount != null ? formatVndUi(quote.amount) : "Thỏa thuận";
-  if (quote.pricing_type === "hourly") return `${amount}/giờ`;
+  const amount = quote.amount != null ? formatVndUi(quote.amount) : tUi("hirePage.negotiable");
+  if (quote.pricing_type === "hourly") return `${amount}${tUi("hirePage.hourly")}`;
   return amount;
 }
 
@@ -112,7 +112,7 @@ export type QuoteClientActions = {
   isPending: boolean;
 };
 
-/** Quy tắc hiển thị nút client — khớp PATCH /api/jobs/me/quotes/:id */
+/** Quy tắc hiển thị nút khách hàng — khớp PATCH /api/jobs/me/quotes/:id */
 export function quoteClientActions(status: string): QuoteClientActions {
   const s = String(status).toLowerCase();
   const actionable = ["pending", "shortlisted", "interviewing", "offered"].includes(s);

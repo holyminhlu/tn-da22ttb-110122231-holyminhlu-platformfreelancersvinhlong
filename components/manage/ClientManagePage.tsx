@@ -53,7 +53,7 @@ export default function ClientManagePage() {
     try {
       const data = await getMyWork();
       if (data.role !== "client") {
-        setError("Trang này dành cho tài khoản client.");
+        setError("Trang này dành cho tài khoản khách hàng.");
         setItems([]);
         return;
       }
@@ -115,12 +115,10 @@ export default function ClientManagePage() {
   } = usePagedList(filteredItems, PAGE_SIZE);
 
   function applySearch() {
-  const t = tUi;
     setSearchQuery(searchInput.trim());
   }
 
   function handleSearchKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
-  const t = tUi;
     if (event.key === "Enter") {
       event.preventDefault();
       applySearch();

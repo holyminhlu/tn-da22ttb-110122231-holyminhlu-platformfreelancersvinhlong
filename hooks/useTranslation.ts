@@ -1,1 +1,1 @@
-export { useTranslation, useTranslationSafe, LocaleProvider } from "@/components/providers/LocaleProvider";
+export { useTranslation, LocaleProvider } from "@/components/providers/LocaleProvider";

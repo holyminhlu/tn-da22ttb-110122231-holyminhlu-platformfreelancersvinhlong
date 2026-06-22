@@ -147,7 +147,6 @@ export default function WorkDetailCommutePanel({
   const mapUrl = useMemo(() => osmEmbedBboxUrl(mapPoints), [mapPoints]);
 
   function useMyGps() {
-  const t = tUi;
     setGpsError("");
     if (!navigator.geolocation) {
       setGpsError("Trình duyệt không hỗ trợ GPS.");

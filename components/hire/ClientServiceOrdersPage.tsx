@@ -1,6 +1,5 @@
 "use client";
 
-import { formatDateUi, tUi } from "@/lib/i18n/runtime";
 import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -28,14 +27,18 @@ import HireShell from "./HireShell";
 import "./hire.css";
 import "../findwork/findwork-orders.css";
 
-const FILTERS: { value: OrderListFilter; label: string }[] = [
-  { value: "all", label: tUi("Tất cả") },
-  { value: "action", label: tUi("Cần xử lý") },
-  { value: "active", label: tUi("Đang thực hiện") },
-  { value: "done", label: tUi("Hoàn tất") },
-];
+export default function ClientServiceOrdersPage() {
+  const { t, formatDate } = useTranslation();
 
-export default function ClientServiceOrdersPage() {  const { t, formatDate } = useTranslation();
+  const filters = useMemo(
+    () => [
+      { value: "all" as const, label: t("hireOrders.filterAll") },
+      { value: "action" as const, label: t("hireOrders.filterAction") },
+      { value: "active" as const, label: t("hireOrders.filterActive") },
+      { value: "done" as const, label: t("hireOrders.filterDone") },
+    ],
+    [t],
+  );
 
   const [orders, setOrders] = useState<ServiceOrderListItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,7 +51,7 @@ export default function ClientServiceOrdersPage() {  const { t, formatDate } = u
     try {
       const data = await listServiceOrders();
       if (data.role !== "client") {
-        setError(t("Trang này dành cho tài khoản client."));
+        setError(t("hirePage.clientOnly"));
         setOrders([]);
         return;
       }
@@ -57,7 +60,7 @@ export default function ClientServiceOrdersPage() {  const { t, formatDate } = u
       const message =
         err && typeof err === "object" && "message" in err
           ? String((err as { message: string }).message)
-          : "Không thể tải đơn dịch vụ.";
+          : t("hirePage.loadOrdersError");
       setError(message);
       setOrders([]);
     } finally {
@@ -89,28 +92,25 @@ export default function ClientServiceOrdersPage() {  const { t, formatDate } = u
       <div className="hire-page hire-orders hire-orders--full-width">
         <header className="hire-page__head">
           <div>
-            <h1 className="hire-page__title">{t("Đơn dịch vụ")}</h1>
+            <h1 className="hire-page__title">{t("hireOrders.title")}</h1>
             <p className="hire-page__lead">
-              Theo dõi yêu cầu báo giá, đề xuất từ freelancer, ký quỹ và nghiệm thu từng giai
-              đoạn.
-              {proposalPending > 0
-                ? ` Bạn có ${proposalPending} đề xuất chờ xem xét.`
-                : ""}
+              {t("hireOrders.lead")}
+              {proposalPending > 0 ? t("hireOrders.proposalsPending", { count: proposalPending }) : ""}
             </p>
           </div>
           <Link href="/hire/search" className="hire-page__post-btn">
-            Tìm freelancer
+            {t("hirePage.findFreelancer")}
           </Link>
         </header>
 
         {proposalPending > 0 ? (
           <p className="hire-page__banner hire-page__banner--success" role="status">
-            Freelancer đã gửi đề xuất — mở đơn tương ứng để xem và chấp nhận.
+            {t("hireOrders.proposalBanner")}
           </p>
         ) : null}
 
-        <div className="fw-orders__filters" role="tablist" aria-label={t("Lọc đơn")}>
-          {FILTERS.map((item) => (
+        <div className="fw-orders__filters" role="tablist" aria-label={t("hireOrders.filterAria")}>
+          {filters.map((item) => (
             <button
               key={item.value}
               type="button"
@@ -125,16 +125,14 @@ export default function ClientServiceOrdersPage() {  const { t, formatDate } = u
         </div>
 
         {loading ? (
-          <p className="hire-page__state">{t("Đang tải...")}</p>
+          <p className="hire-page__state">{t("common.loading")}</p>
         ) : error ? (
           <p className="hire-page__state hire-page__state--error" role="alert">
             {error}
           </p>
         ) : filtered.length === 0 ? (
           <div className="fw-orders__empty">
-            {filter === "all"
-              ? "Chưa có đơn đặt dịch vụ. Gửi yêu cầu báo giá từ trang tìm freelancer."
-              : "Không có đơn trong bộ lọc này."}
+            {filter === "all" ? t("hireOrders.emptyAll") : t("hireOrders.emptyFilter")}
           </div>
         ) : (
           <ul className="fw-orders__list">
@@ -163,19 +161,19 @@ export default function ClientServiceOrdersPage() {  const { t, formatDate } = u
                         {orderCardTitle(order.service_title, order.job_title)}
                       </h2>
                       <span className={orderStatusBadgeClass(badgeTone)}>
-                        {urgent ? "Có đề xuất mới" : hint}
+                        {urgent ? t("hirePage.newProposal") : hint}
                       </span>
                     </div>
                     <p className="fw-orders__card-meta">
-                      Freelancer: <strong>{order.counterparty_name || "—"}</strong>
-                      {pkgName ? ` · Gói ${pkgName}` : ""}
+                      {t("hirePage.freelancerLabel", { name: order.counterparty_name || "—" })}
+                      {pkgName ? ` · ${t("hirePage.packageLabel", { name: pkgName })}` : ""}
                       {order.agreed_price != null
                         ? ` · ${formatPackagePrice(Number(order.agreed_price))}`
                         : ""}
                     </p>
                     {proposalPreview ? (
                       <p className="fw-orders__card-preview fw-orders__card-preview--proposal">
-                        <span className="fw-orders__card-preview-label">{t("Đề xuất:")}</span>{" "}
+                        <span className="fw-orders__card-preview-label">{t("hirePage.proposalLabel")}</span>{" "}
                         {proposalPreview}
                       </p>
                     ) : briefPreview ? (
@@ -186,13 +184,15 @@ export default function ClientServiceOrdersPage() {  const { t, formatDate } = u
                         {workflowStageLabel(order.workflow_stage)}
                       </span>
                       <span className={orderStatusChipClass(escrowTone)}>
-                        Ký quỹ: {escrowStatusLabel(order.escrow_status)}
+                        {t("hirePage.escrowLabel", { status: escrowStatusLabel(order.escrow_status) })}
                       </span>
                       {deadlineLine ? (
                         <span className={orderStatusChipClass(deadlineTone)}>{deadlineLine}</span>
                       ) : null}
                       <span className="fw-orders__card-foot-date">
-                        Cập nhật: {formatDateUi(order.updated_at || order.created_at)}
+                        {t("hirePage.updatedAt", {
+                          date: formatDate(order.updated_at || order.created_at),
+                        })}
                       </span>
                     </div>
                   </Link>

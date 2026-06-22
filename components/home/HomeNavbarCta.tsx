@@ -15,7 +15,7 @@ export default function HomeNavbarCta() {
 
   return (
     <PostJobButton
-      className="rounded bg-[#0066cc] px-5 py-2 text-sm font-bold text-white transition hover:bg-blue-700"
+      className="rounded bg-primary px-5 py-2 text-sm font-bold text-primary-foreground transition hover:opacity-90"
       ariaLabel={t("auth.postJobAria")}
     >
       {t("footer.postJob")}

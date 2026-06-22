@@ -5,7 +5,6 @@ import { LocaleProvider } from "@/components/providers/LocaleProvider";
 import UserPreferencesInit from "@/components/providers/UserPreferencesInit";
 import VlcAiSupportWidget from "@/components/support/VlcAiSupportWidget";
 import ScrollNavButtons from "@/components/ui/ScrollNavButtons";
-import { localeInitScript } from "@/lib/i18n/localeInit";
 import { themeInitScript } from "@/lib/theme";
 import "./globals.css";
 /* Turbopack: import trực tiếp để dark override luôn có trong bundle */
@@ -29,7 +28,7 @@ const beVietnam = Be_Vietnam_Pro({
 });
 
 export const metadata: Metadata = {
-  title: "Vĩnh Long Connected — Kết nối dịch vụ địa phương",
+  title: "Vĩnh Long Connect — Kết nối dịch vụ địa phương",
   description:
     "Tìm thợ giỏi, chuyên gia và dịch vụ địa phương tại Vĩnh Long. Nền tảng tối giản, minh bạch đánh giá, kết nối nhanh.",
 };
@@ -47,7 +46,6 @@ export default function RootLayout({
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
-        <script dangerouslySetInnerHTML={{ __html: localeInitScript }} />
       </head>
       <body className={`${beVietnam.className} flex min-h-screen flex-col bg-background text-foreground antialiased`}>
         <LocaleProvider>

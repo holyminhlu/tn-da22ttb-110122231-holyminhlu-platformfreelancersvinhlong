@@ -51,7 +51,7 @@ function computeRefundSettlement(input) {
       clientAmount: total,
       freelancerAmount: 0,
       platformFeeAmount: 0,
-      summary: "Hoàn 100% ký quỹ về ví VLC cho Client.",
+      summary: "Hoàn 100% ký quỹ về ví VLC cho Khách hàng.",
     };
   }
 
@@ -69,7 +69,7 @@ function computeRefundSettlement(input) {
       freelancerAmount,
       platformFeeAmount,
       summary:
-        "Hủy chính đáng Giai đoạn 3: Client 50%, Freelancer 50% (chưa trừ hoa hồng nền tảng).",
+        "Hủy chính đáng Giai đoạn 3: Khách hàng 50%, Freelancer 50% (chưa trừ hoa hồng nền tảng).",
     };
   }
 

@@ -6,7 +6,7 @@ import { sitePageMetadata } from "@/components/layout/SitePage";
 
 export const metadata = sitePageMetadata(
   "Giới thiệu về VLC",
-  "Tìm hiểu sứ mệnh, tầm nhìn và đội ngũ đứng sau Vĩnh Long Connected — nền tảng kết nối freelancer và doanh nghiệp tại Vĩnh Long.",
+  "Tìm hiểu sứ mệnh, tầm nhìn và đội ngũ đứng sau Vĩnh Long Connect — nền tảng kết nối freelancer và doanh nghiệp tại Vĩnh Long.",
 );
 
 export default function AboutPage() {

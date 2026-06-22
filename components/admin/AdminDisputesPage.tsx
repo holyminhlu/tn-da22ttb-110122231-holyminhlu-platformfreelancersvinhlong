@@ -48,12 +48,10 @@ function orderTitle(row: AdminDisputeRow) {
 }
 
 function fileNameFromUrl(url: string) {
-  const t = tUi;
   return decodeURIComponent(url.split("/").pop() || "minh-chung");
 }
 
 function isImageUrl(url: string) {
-  const t = tUi;
   return /\.(png|jpe?g|gif|webp)(\?|$)/i.test(url);
 }
 
@@ -155,9 +153,6 @@ export default function AdminDisputesPage() {  const { t, formatVnd, formatDate 
   const selected = rows.find((r) => r.id === selectedId) ?? rows[0];
 
   async function handleSendMessage(body: string) {
-  const t = tUi;
-  const formatDate = formatDateUi;
-  const formatVnd = formatVndUi;
     if (!selectedId) return;
     setBusy(true);
     setActionError("");
@@ -180,9 +175,6 @@ export default function AdminDisputesPage() {  const { t, formatVnd, formatDate 
     resolution: AdminResolveDisputeAction,
     payload: { adminNote?: string; clientAmount?: number; freelancerAmount?: number },
   ) {
-  const t = tUi;
-  const formatDate = formatDateUi;
-  const formatVnd = formatVndUi;
     if (!selectedId || !detail) return;
     const label = adminResolveActionLabel(resolution);
     if (!window.confirm(`${t("Xác nhận quyết định: ")}${label}?`)) return;
@@ -289,10 +281,10 @@ export default function AdminDisputesPage() {  const { t, formatVnd, formatDate 
             <input
               type="search"
               className="admin-filters__input"
-              placeholder={t("Đơn, client, freelancer...")}
+              placeholder={t("Đơn, khách hàng, freelancer...")}
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              aria-label={t("Tìm theo đơn, client, freelancer")}
+              aria-label={t("Tìm theo đơn, khách hàng, freelancer")}
             />
           </div>
         </label>
@@ -345,7 +337,7 @@ export default function AdminDisputesPage() {  const { t, formatVnd, formatDate 
                 <div className="resolution-card resolution-card--flat">
                   <h3 className="resolution-card__title">{orderTitle(selected)}</h3>
                   <p className="resolution-card__meta">
-                    Client: <strong>{selected.client_name}</strong> · Freelancer:{" "}
+                    Khách hàng: <strong>{selected.client_name}</strong> · Freelancer:{" "}
                     <strong>{selected.freelancer_name}</strong> · {formatVndUi(selected.agreed_price)}
                   </p>
                   <p className="resolution-card__meta">

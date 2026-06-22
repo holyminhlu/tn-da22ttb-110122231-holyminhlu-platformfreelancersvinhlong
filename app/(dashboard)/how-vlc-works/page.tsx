@@ -6,7 +6,7 @@ import { sitePageMetadata } from "@/components/layout/SitePage";
 
 export const metadata = sitePageMetadata(
   "Cách VLC hoạt động",
-  "Hướng dẫn quy trình sử dụng Vĩnh Long Connected cho người thuê và freelancer — từ đăng việc, báo giá đến ký quỹ Escrow.",
+  "Hướng dẫn quy trình sử dụng Vĩnh Long Connect cho người thuê và freelancer — từ đăng việc, báo giá đến ký quỹ Escrow.",
 );
 
 export default function HowVlcWorksPage() {

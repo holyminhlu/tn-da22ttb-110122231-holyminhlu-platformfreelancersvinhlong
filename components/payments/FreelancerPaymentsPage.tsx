@@ -1,7 +1,8 @@
 "use client";
 
-import { formatDateUi, tUi, formatVndUi } from "@/lib/i18n/runtime";
 import { useTranslation } from "@/hooks/useTranslation";
+import type { TranslationParams } from "@/lib/i18n/types";
+import { formatDateUi, formatVndUi } from "@/lib/i18n/runtime";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import FreelancerShell from "@/components/layout/FreelancerShell";
@@ -40,25 +41,28 @@ import {
 
 const TX_PAGE_SIZE = 8;
 
-const TX_FILTERS: { value: FreelancerTxFilter; label: string }[] = [
-  { value: "all", label: "Tất cả" },
-  { value: "income", label: "Thu nhập" },
-  { value: "withdraw", label: "Rút tiền" },
-  { value: "other", label: "Khác" },
+type TFn = (keyOrVi: string, params?: TranslationParams) => string;
+type FreelancerTxFilterItem = { value: FreelancerTxFilter; labelKey: string };
+
+const TX_FILTERS: FreelancerTxFilterItem[] = [
+  { value: "all", labelKey: "paymentPage.txFilterAll" },
+  { value: "income", labelKey: "paymentPage.txFilterIncome" },
+  { value: "withdraw", labelKey: "paymentPage.txFilterWithdraw" },
+  { value: "other", labelKey: "paymentPage.txFilterOther" },
 ];
 
-function withdrawalStatusLabel(status?: FreelancerTransaction["withdrawalStatus"] | string) {
+function withdrawalStatusLabel(t: TFn, status?: FreelancerTransaction["withdrawalStatus"] | string) {
   switch (status) {
     case "PENDING_AUTH":
-      return "Chờ xác nhận";
+      return t("paymentPage.withdrawPendingAuth");
     case "PROCESSING":
-      return "Đang xử lý";
+      return t("paymentPage.withdrawProcessing");
     case "SUCCEEDED":
-      return "Thành công";
+      return t("paymentPage.withdrawSucceeded");
     case "FAILED":
-      return "Bị từ chối";
+      return t("paymentPage.withdrawFailed");
     case "CANCELLED":
-      return "Đã hủy";
+      return t("paymentPage.withdrawCancelled");
     default:
       return "—";
   }
@@ -80,16 +84,27 @@ function withdrawalStatusClass(status?: FreelancerTransaction["withdrawalStatus"
 }
 
 function monthKey(iso: string) {
-  const t = tUi;
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return "";
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 }
 
-function exportFreelancerCsv(rows: FreelancerTransaction[]) {  const header = ["Ngày", "Dự án", "Khách hàng", "Loại", "Số tiền", "Mã tham chiếu"];
+function exportFreelancerCsv(
+  rows: FreelancerTransaction[],
+  formatDate: (value: string | null | undefined) => string,
+  t: TFn,
+) {
+  const header = [
+    t("paymentPage.csvDate"),
+    t("paymentPage.csvProject"),
+    t("paymentPage.csvClient"),
+    t("paymentPage.csvType"),
+    t("paymentPage.csvAmount"),
+    t("paymentPage.csvReference"),
+  ];
   const lines = rows.map((r) =>
     [
-      formatDateUi(r.occurredAt),
+      formatDate(r.occurredAt),
       r.projectTitle,
       r.clientName,
       freelancerTransactionCategoryLabel(r.category),
@@ -110,7 +125,8 @@ function exportFreelancerCsv(rows: FreelancerTransaction[]) {  const header = ["
   URL.revokeObjectURL(url);
 }
 
-export default function FreelancerPaymentsPage() {  const { t, formatVnd, formatDate } = useTranslation();
+export default function FreelancerPaymentsPage() {
+  const { t, formatVnd, formatDate } = useTranslation();
   const { user, ready, isFreelancer } = useStoredUser({ refreshFromApi: false });
   const isGuest = ready && !user;
 
@@ -141,7 +157,7 @@ export default function FreelancerPaymentsPage() {  const { t, formatVnd, format
       const message =
         err && typeof err === "object" && "message" in err
           ? String((err as { message: string }).message)
-          : "Không thể tải dữ liệu thanh toán.";
+          : t("paymentPage.loadError");
       setError(message);
       setData(null);
     } finally {
@@ -195,9 +211,6 @@ export default function FreelancerPaymentsPage() {  const { t, formatVnd, format
   }
 
   function handleWithdrawCompleted(account: FreelancerBillingOverview["account"]) {
-  const t = tUi;
-  const formatDate = formatDateUi;
-  const formatVnd = formatVndUi;
     setData((prev) => (prev ? { ...prev, account } : prev));
     void load();
   }
@@ -242,7 +255,7 @@ export default function FreelancerPaymentsPage() {  const { t, formatVnd, format
           <>
             <section className="payments-panel">
               <PaymentsSectionTitle icon={<FaChartLine />}>
-                {t("Thu nhập &amp; số dư")}
+                {t("Thu nhập & số dư")}
               </PaymentsSectionTitle>
               <div className="payments-balance-grid fl-payments__balance-grid">
                 <PaymentsBalanceCard
@@ -384,7 +397,7 @@ export default function FreelancerPaymentsPage() {  const { t, formatVnd, format
                         <div>
                           <p className="fl-payments__pending-title">{item.projectTitle}</p>
                           <p className="fl-payments__pending-meta">
-                            Client: {item.clientName}
+                            Khách hàng: {item.clientName}
                             {item.fundedAt ? ` · Escrow ${formatDateUi(item.fundedAt)}` : ""}
                           </p>
                         </div>
@@ -421,7 +434,7 @@ export default function FreelancerPaymentsPage() {  const { t, formatVnd, format
                         <p className="fl-payments__withdraw-item-ref">{item.referenceId}</p>
                       </div>
                       <span className={withdrawalStatusClass(item.status)}>
-                        {withdrawalStatusLabel(item.status)}
+                        {withdrawalStatusLabel(t, item.status)}
                       </span>
                     </li>
                   ))}
@@ -438,7 +451,7 @@ export default function FreelancerPaymentsPage() {  const { t, formatVnd, format
                   type="button"
                   className="payments-btn payments-btn--secondary"
                   disabled={filteredTransactions.length === 0}
-                  onClick={() => exportFreelancerCsv(filteredTransactions)}
+                  onClick={() => exportFreelancerCsv(filteredTransactions, formatDate, t)}
                 >
                   {t("Xuất CSV")}
                 </button>
@@ -455,14 +468,14 @@ export default function FreelancerPaymentsPage() {  const { t, formatVnd, format
                       className={`fl-payments__tx-tab${txFilter === item.value ? " fl-payments__tx-tab--active" : ""}`}
                       onClick={() => setTxFilter(item.value)}
                     >
-                      {t(item.label)}
+                      {t(item.labelKey)}
                     </button>
                   ))}
                 </div>
                 <input
                   type="search"
                   className="fl-payments__search"
-                  placeholder={t("Tìm dự án, client...")}
+                  placeholder={t("Tìm dự án, khách hàng...")}
                   value={searchInput}
                   onChange={(e) => setSearchInput(e.target.value)}
                   aria-label={t("Tìm giao dịch")}
@@ -483,11 +496,11 @@ export default function FreelancerPaymentsPage() {  const { t, formatVnd, format
                   ))}
                 </select>
                 <select
-                  aria-label={t("Lọc theo client")}
+                  aria-label={t("Lọc theo khách hàng")}
                   value={filterClientId}
                   onChange={(e) => setFilterClientId(e.target.value)}
                 >
-                  <option value="">{t("Tất cả client")}</option>
+                  <option value="">{t("Tất cả khách hàng")}</option>
                   {data.filterOptions.clients.map((c) => (
                     <option key={c.id} value={c.id}>
                       {t(c.name)}
@@ -504,7 +517,7 @@ export default function FreelancerPaymentsPage() {  const { t, formatVnd, format
 
               {filteredTransactions.length === 0 ? (
                 <p className="payments-muted">
-                  {t("Chưa có giao dịch. Thu nhập sẽ hiển thị khi client giải ngân Escrow sau nghiệm thu.")}
+                  {t("Chưa có giao dịch. Thu nhập sẽ hiển thị khi khách hàng giải ngân Escrow sau nghiệm thu.")}
                 </p>
               ) : (
                 <>
@@ -514,7 +527,7 @@ export default function FreelancerPaymentsPage() {  const { t, formatVnd, format
                         <tr>
                           <th>{t("Ngày")}</th>
                           <th>{t("Dự án")}</th>
-                          <th>Client</th>
+                          <th>Khách hàng</th>
                           <th>{t("Loại")}</th>
                           <th>{t("Ngân hàng")}</th>
                           <th>{t("Trạng thái")}</th>
@@ -552,7 +565,7 @@ export default function FreelancerPaymentsPage() {  const { t, formatVnd, format
                               {item.category === "withdraw" ? (
                                 <div className="fl-payments__tx-status-wrap">
                                   <span className={withdrawalStatusClass(item.withdrawalStatus)}>
-                                    {withdrawalStatusLabel(item.withdrawalStatus)}
+                                    {withdrawalStatusLabel(t, item.withdrawalStatus)}
                                   </span>
                                   {item.withdrawalFailureReason ? (
                                     <span

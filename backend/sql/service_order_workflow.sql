@@ -1,4 +1,4 @@
--- Luồng đặt dịch vụ / escrow / milestone cho Client thuê Gig
+-- Luồng đặt dịch vụ / escrow / milestone cho Khách hàng thuê Gig
 BEGIN;
 
 ALTER TABLE public.contracts

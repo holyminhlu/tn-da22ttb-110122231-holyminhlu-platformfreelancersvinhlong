@@ -1,4 +1,4 @@
--- Billing schema cho Client Payments page (/payments)
+-- Billing schema cho Khách hàng Payments page (/payments)
 -- Bổ sung cấu trúc để lưu: billing methods, auto-billing, billing profile, invoices
 -- và metadata giao dịch phục vụ bộ lọc theo project/freelancer/thời gian.
 
@@ -9,7 +9,7 @@ ALTER TABLE public.accounts
   ADD COLUMN IF NOT EXISTS escrow_balance numeric(18,2) NOT NULL DEFAULT 0,
   ADD COLUMN IF NOT EXISTS updated_at timestamp without time zone DEFAULT now();
 
--- 2) Hồ sơ thông tin xuất hóa đơn của client
+-- 2) Hồ sơ thông tin xuất hóa đơn của khách hàng
 CREATE TABLE IF NOT EXISTS public.client_billing_profiles (
   user_id uuid PRIMARY KEY REFERENCES public.users(id) ON DELETE CASCADE,
   company_name character varying(255),
@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS public.client_billing_profiles (
   updated_at timestamp without time zone NOT NULL DEFAULT now()
 );
 
--- 3) Phương thức thanh toán dùng để trừ tiền của client
+-- 3) Phương thức thanh toán dùng để trừ tiền của khách hàng
 CREATE TABLE IF NOT EXISTS public.client_billing_methods (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
@@ -52,7 +52,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_client_billing_methods_default
 CREATE INDEX IF NOT EXISTS idx_client_billing_methods_user
   ON public.client_billing_methods (user_id, method_type);
 
--- 4) Mở rộng transactions để đủ dữ liệu cho client billing history
+-- 4) Mở rộng transactions để đủ dữ liệu cho khách hàng billing history
 ALTER TABLE public.transactions
   ADD COLUMN IF NOT EXISTS user_id uuid REFERENCES public.users(id) ON DELETE SET NULL,
   ADD COLUMN IF NOT EXISTS amount numeric(18,2),

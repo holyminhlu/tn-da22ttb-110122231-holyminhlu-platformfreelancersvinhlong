@@ -147,14 +147,12 @@ export default function FreelancerChatWidget({
   }, [messages, open, isEmbedded]);
 
   function handleClose() {
-  const t = tUi;
     if (isEmbedded) return;
     setOpen(false);
     onClose?.();
   }
 
   async function handleSubmit(e: FormEvent) {
-  const t = tUi;
   e.preventDefault();
     const text = draft.trim();
     if (!text) return;

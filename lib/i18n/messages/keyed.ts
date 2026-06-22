@@ -1,8 +1,20 @@
-import type { Locale } from "@/lib/i18n/types";
+import { contactUi } from "./contact-ui";
+import { dashboardUi } from "./dashboard-ui";
+import { homeUi } from "./home-ui";
+import { helpUi } from "./help-ui";
+import { navUi } from "./nav-ui";
+import { paymentUi } from "./payment-ui";
+import { hireUi } from "./hire-ui";
 
-/** Structured messages keyed by dot notation — ưu tiên hơn từ điển literal. */
-export const keyedMessages: Record<Locale, Record<string, unknown>> = {
-  vi: {
+/** Structured messages keyed by dot notation. */
+export const keyedMessages: Record<string, unknown> = {
+    ...navUi.vi,
+    ...homeUi.vi,
+    ...helpUi.vi,
+    ...contactUi.vi,
+    ...dashboardUi.vi,
+    ...paymentUi.vi,
+    ...hireUi.vi,
     common: {
       loading: "Đang tải…",
       save: "Lưu",
@@ -59,7 +71,7 @@ export const keyedMessages: Record<Locale, Record<string, unknown>> = {
         "Đăng nhập để quản lý công việc, báo giá và kết nối với cộng đồng freelancer tại Vĩnh Long.",
       joinVlc: "Gia nhập VLC Connect",
       registerLead:
-        "Tạo tài khoản Client hoặc Freelancer — đăng việc, nhận báo giá và làm việc trên nền tảng địa phương.",
+        "Tạo tài khoản Khách hàng hoặc Freelancer — đăng việc, nhận báo giá và làm việc trên nền tảng địa phương.",
       googleCompleting: "Đang hoàn tất đăng nhập Google…",
       googleFailed: "Không thể hoàn tất đăng nhập Google.",
       googleMissingSession: "Thiếu thông tin phiên đăng nhập từ Google. Vui lòng thử lại.",
@@ -105,7 +117,7 @@ export const keyedMessages: Record<Locale, Record<string, unknown>> = {
       privacyPolicy: "Chính sách bảo mật",
       termsOfService: "Điều khoản dịch vụ",
       tagline: "Hoàn thành mọi công việc",
-      copyright: "Bản quyền © {{year}}, Vĩnh Long Connected",
+      copyright: "© {{year}} Hồ Lý Minh Lữ. Đại học Trà Vinh.",
     },
     hero: {
       line1: "Tìm & Thuê Freelancer",
@@ -135,171 +147,17 @@ export const keyedMessages: Record<Locale, Record<string, unknown>> = {
       other: "Khác",
       settings: "Cài đặt",
     },
+    adminSidebar: {
+      reports: "Báo cáo",
+      users: "Tài khoản",
+      finance: "Thanh toán",
+      support: "Hỗ trợ",
+      system: "Hệ thống",
+    },
     layout: {
       skipToContent: "Bỏ qua đến nội dung chính",
-      metaTitle: "Vĩnh Long Connected — Kết nối dịch vụ địa phương",
+      metaTitle: "Vĩnh Long Connect — Kết nối dịch vụ địa phương",
       metaDescription:
         "Tìm thợ giỏi, chuyên gia và dịch vụ địa phương tại Vĩnh Long. Nền tảng tối giản, minh bạch đánh giá, kết nối nhanh.",
     },
-    account: {
-      settings: {
-        languageTitle: "Lựa chọn ngôn ngữ hiển thị",
-        languageDesc:
-          "Ngôn ngữ giao diện ưu tiên. Nội dung từ cơ sở dữ liệu (tên, mô tả, tin nhắn…) giữ nguyên ngôn ngữ gốc.",
-        languageAria: "Ngôn ngữ hiển thị",
-        localeVi: "Tiếng Việt",
-        localeEn: "English",
-      },
-    },
-  },
-  en: {
-    common: {
-      loading: "Loading…",
-      save: "Save",
-      cancel: "Cancel",
-      close: "Close",
-      or: "or",
-      email: "Email",
-      freelancer: "Freelancer",
-      processing: "Processing…",
-      password: "Password",
-      closeNotification: "Close notification",
-    },
-    nav: {
-      admin: "Administration",
-      overview: "Overview",
-      findWork: "Find work",
-      services: "Services",
-      payments: "Payments",
-      hire: "Hire",
-      manage: "Manage",
-      findFreelancer: "Find Freelancer",
-      about: "About",
-    },
-    auth: {
-      register: "Sign up",
-      login: "Log in",
-      googleContinue: "Continue with Google",
-      loginSubtitle: "Sign in with email or continue with Google",
-      loginFailed: "Sign-in failed",
-      loginSuccess: "Login successful. Redirecting…",
-      registerSubtitle: "Choose a role and create a free account",
-      registerFailed: "Registration failed",
-      noAccount: "Don't have an account?",
-      signUpNow: "Sign up now",
-      hasAccount: "Already have an account?",
-      confirmPassword: "Confirm password",
-      fullName: "Full name",
-      role: "Role",
-      client: "Client",
-      clientDesc: "Post jobs & hire freelancers",
-      freelancerDesc: "Find work & receive quotes",
-      createAccount: "Create account",
-      passwordWeak: "Weak",
-      passwordMedium: "Medium",
-      passwordGood: "Good",
-      passwordStrong: "Strong",
-      passwordStrength: "Strength: {{label}}",
-      passwordNotStrong: "Password is not strong enough. Please meet all criteria.",
-      passwordMismatch: "Password confirmation does not match.",
-      serverError: "Unable to connect to the server.",
-      registerSuccessFallback: "Registration successful.",
-      welcomeBack: "Welcome back",
-      loginLead:
-        "Sign in to manage jobs, quotes, and connect with the freelancer community in Vinh Long.",
-      joinVlc: "Join VLC Connect",
-      registerLead:
-        "Create a Client or Freelancer account — post jobs, receive quotes, and work on a local platform.",
-      googleCompleting: "Completing Google sign-in…",
-      googleFailed: "Unable to complete Google sign-in.",
-      googleMissingSession: "Missing sign-in session info from Google. Please try again.",
-      backToLogin: "Back to sign in",
-      reqMinLength: "At least 8 characters",
-      reqUpper: "Uppercase letter (A-Z)",
-      reqLower: "Lowercase letter (a-z)",
-      reqNumber: "Number (0-9)",
-      reqSpecial: "Special character",
-      postJobAria: "Post a job",
-      postJobNowAria: "Post a job now",
-    },
-    userMenu: {
-      editAccount: "Edit my account",
-      editProfile: "Edit profile",
-      help: "Help",
-      logout: "Log out",
-      cashAccountHeader: "CASH ACCOUNT",
-      viewCashAccount: "View cash account",
-      paymentMethods: "Payment methods",
-      adminDashboard: "Admin dashboard",
-      accountAria: "Account: {{label}}",
-      menuAria: "Account menu",
-      loggingOut: "Logging out…",
-    },
-    aboutNav: {
-      aboutVlc: "About VLC",
-      howVlcWorks: "How VLC works",
-      whyVlc: "Why choose VLC",
-      blog: "Blog",
-    },
-    footer: {
-      navigate: "Navigate",
-      company: "Company info",
-      resources: "Resources",
-      policies: "Policies",
-      connect: "Connect with us",
-      home: "Home",
-      postJob: "Post a job",
-      helpFaq: "Help & FAQ",
-      contact: "Contact",
-      ipPolicy: "Intellectual property policy",
-      privacyPolicy: "Privacy policy",
-      termsOfService: "Terms of service",
-      tagline: "Get every job done",
-      copyright: "Copyright © {{year}}, Vinh Long Connected",
-    },
-    hero: {
-      line1: "Find & Hire Freelancer",
-      line2: "In Vinh Long",
-      line1Prefix: "Find & Hire ",
-      line1Highlight: "Freelancer",
-      line2Prefix: "In ",
-      line2Highlight: "Vinh Long",
-    },
-    homeCta: {
-      heading: "Get free quotes from top freelancers!",
-      button: "Post a job now",
-    },
-    accountSidebar: {
-      ariaLabel: "Account settings",
-      profile: "Profile",
-      myProfile: "My profile",
-      feedback: "Feedback",
-      profileStats: "Profile statistics",
-      accountSettings: "Account settings",
-      contactInfo: "Contact information",
-      identityVerification: "Identity verification",
-      credentials: "Username & password",
-      security: "Account security",
-      billing: "Plans & billing",
-      transferMethods: "Transfer methods",
-      other: "Other",
-      settings: "Settings",
-    },
-    layout: {
-      skipToContent: "Skip to main content",
-      metaTitle: "Vinh Long Connected — Local services marketplace",
-      metaDescription:
-        "Find skilled workers, experts and local services in Vinh Long. A minimal platform with transparent reviews and fast connections.",
-    },
-    account: {
-      settings: {
-        languageTitle: "Display language",
-        languageDesc:
-          "Preferred interface language. Database content (names, descriptions, messages…) stays in its original language.",
-        languageAria: "Display language",
-        localeVi: "Vietnamese",
-        localeEn: "English",
-      },
-    },
-  },
 };

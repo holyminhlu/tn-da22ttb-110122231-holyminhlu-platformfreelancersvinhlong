@@ -1,5 +1,4 @@
 import { isAdminRole, isClientRole } from "@/hooks/useStoredUser";
-import { tUi } from "@/lib/i18n/runtime";
 import { ADMIN_HOME } from "@/lib/auth/roleRoutes";
 
 export type UserMenuEntry =
@@ -36,12 +35,12 @@ const ADMIN_MENU: UserMenuTemplate[] = [
 function translateMenu(template: UserMenuTemplate[], t: (text: string) => string): UserMenuEntry[] {
   return template.map((entry) => {
     if (entry.type === "item") {
-      return { type: "item", id: entry.id, label: tUi(entry.labelKey), href: entry.href };
+      return { type: "item", id: entry.id, label: t(entry.labelKey), href: entry.href };
     }
     if (entry.type === "header") {
-      return { type: "header", label: tUi(entry.labelKey) };
+      return { type: "header", label: t(entry.labelKey) };
     }
-    return { type: "logout", id: entry.id, label: tUi(entry.labelKey) };
+    return { type: "logout", id: entry.id, label: t(entry.labelKey) };
   });
 }
 

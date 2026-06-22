@@ -27,6 +27,7 @@ export default function FindFreelancersBody() {
 
   const searchParams = useSearchParams();
   const initialSkill = searchParams.get("skill")?.trim() || ALL;
+  const initialQ = searchParams.get("q")?.trim() || "";
 
   const { user, ready, isClient } = useStoredUser({ refreshFromApi: false });
   const isGuest = ready && !user;
@@ -40,8 +41,8 @@ export default function FindFreelancersBody() {
   const [error, setError] = useState("");
   const [offset, setOffset] = useState(0);
 
-  const [searchInput, setSearchInput] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchInput, setSearchInput] = useState(initialQ);
+  const [searchQuery, setSearchQuery] = useState(initialQ);
   const [skill, setSkill] = useState(initialSkill);
   const [district, setDistrict] = useState(ALL);
   const [category, setCategory] = useState(ALL);
@@ -112,8 +113,16 @@ export default function FindFreelancersBody() {
   }, [load]);
 
   useEffect(() => {
+    const q = searchParams.get("q")?.trim() || "";
+    const skillParam = searchParams.get("skill")?.trim() || ALL;
+    setSearchInput(q);
+    setSearchQuery(q);
+    setSkill(skillParam);
+    setOffset(0);
+  }, [searchParams]);
+
+  useEffect(() => {
     function onPointerDown(event: MouseEvent) {
-  const t = tUi;
       const target = event.target as Node;
       if (!skillRef.current?.contains(target)) setSkillOpen(false);
       if (!districtRef.current?.contains(target)) setDistrictOpen(false);
@@ -135,13 +144,11 @@ export default function FindFreelancersBody() {
   );
 
   function applySearch() {
-  const t = tUi;
     setSearchQuery(searchInput.trim());
     setOffset(0);
   }
 
   function handleSearchKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
-  const t = tUi;
     if (event.key === "Enter") {
       event.preventDefault();
       applySearch();
@@ -152,7 +159,6 @@ export default function FindFreelancersBody() {
     type: "skill" | "district" | "category",
     value: string,
   ) {
-  const t = tUi;
     if (type === "skill") {
       setSkill(value);
       setSkillOpen(false);
@@ -167,7 +173,6 @@ export default function FindFreelancersBody() {
   }
 
   function handleSelect(id: string, checked: boolean) {
-  const t = tUi;
     setSelectedIds((prev) => {
       const next = new Set(prev);
       if (checked) next.add(id);
@@ -177,7 +182,6 @@ export default function FindFreelancersBody() {
   }
 
   function handleSelectAllOnPage(checked: boolean) {
-  const t = tUi;
     setSelectedIds((prev) => {
       const next = new Set(prev);
       for (const row of rows) {
@@ -189,7 +193,6 @@ export default function FindFreelancersBody() {
   }
 
   async function handleToggleFavorite(id: string) {
-  const t = tUi;
     if (!canFavorite) return;
     try {
       const result = await toggleFavorite(id);
@@ -218,7 +221,7 @@ export default function FindFreelancersBody() {
               ? "Khám phá hồ sơ, dịch vụ và portfolio trước khi đăng nhập để thuê hoặc yêu cầu báo giá."
               : isClient
                 ? "Bạn có thể thuê trực tiếp hoặc quản lý đơn trong mục Thuê việc."
-                : "Xem hồ sơ freelancer trên nền tảng Vĩnh Long Connected."}
+                : "Xem hồ sơ freelancer trên nền tảng Vĩnh Long Connect."}
           </p>
         </div>
       </header>
@@ -226,7 +229,7 @@ export default function FindFreelancersBody() {
       {isGuest ? (
         <div className="ff-guest-banner">
           <p className="ff-guest-banner__text">
-            Bạn đang xem danh sách freelancer công khai. Đăng nhập bằng tài khoản Client để yêu
+            Bạn đang xem danh sách freelancer công khai. Đăng nhập bằng tài khoản Khách hàng để yêu
             cầu báo giá, lưu yêu thích và thuê dịch vụ.
           </p>
           <div className="ff-guest-banner__actions">

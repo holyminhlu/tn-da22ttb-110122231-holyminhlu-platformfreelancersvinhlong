@@ -207,7 +207,6 @@ function NotedLine({ variant, text }: { variant: "tip" | "info" | "success"; tex
 }
 
 function WarningCallout({ text }: { text: string }) {
-  const t = tUi;
   return (
     <div className="vlc-ai-support__callout vlc-ai-support__callout--warning" role="note">
       <span className="vlc-ai-support__callout-icon" aria-hidden>

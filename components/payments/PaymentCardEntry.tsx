@@ -1,7 +1,6 @@
 "use client";
 
 import { tUi } from "@/lib/i18n/runtime";
-import { useTranslation } from "@/hooks/useTranslation";
 import {
   forwardRef,
   useCallback,
@@ -39,7 +38,6 @@ type PaymentCardEntryProps = {
 };
 
 function readCardFieldValues(preview: { number: string; expiry: string; cvc: string }) {
-  const t = tUi;
   if (typeof document === "undefined") {
     return {
       cardDigits: parseCardDigits(preview.number),
@@ -68,7 +66,6 @@ const FOCUS_MAP: Record<string, Focused> = {
 
 const PaymentCardEntry = forwardRef<PaymentCardEntryHandle, PaymentCardEntryProps>(
   function PaymentCardEntry({ mode, cardholderName, onCardholderNameChange }, ref) {
-  const t = tUi;
     const [preview, setPreview] = useState({
       number: "",
       expiry: "",
@@ -133,7 +130,7 @@ const PaymentCardEntry = forwardRef<PaymentCardEntryHandle, PaymentCardEntryProp
           return null;
         },
       }),
-      [cardholderName, mode, preview, t],
+      [cardholderName, mode, preview],
     );
 
     const cardNumberProps = getCardNumberProps({

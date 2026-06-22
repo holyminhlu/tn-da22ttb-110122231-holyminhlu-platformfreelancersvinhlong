@@ -1,12 +1,10 @@
 "use client";
 
-import { tUi } from "@/lib/i18n/runtime";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   FaDesktop,
   FaDownload,
-  FaGlobe,
   FaLock,
   FaMoon,
   FaBell,
@@ -28,7 +26,6 @@ import {
   getThemePreference,
   setNotificationPrefs,
   setThemePreference,
-  type LocalePreference,
   type NotificationPrefs,
   type ThemePreference,
 } from "@/lib/userPreferences";
@@ -69,7 +66,6 @@ function ToggleRow({
 }
 
 function parseUserAgent(ua: string) {
-  const t = tUi;
   const browser =
     /Edg\//.test(ua) ? "Microsoft Edge" : /Chrome\//.test(ua) ? "Chrome" : /Firefox\//.test(ua) ? "Firefox" : /Safari\//.test(ua) ? "Safari" : "Trình duyệt";
   const os = /Windows/.test(ua)
@@ -85,7 +81,7 @@ function parseUserAgent(ua: string) {
 }
 
 export default function AccountSettingsContent() {
-  const { t, locale, setLocale } = useTranslation();
+  const { t } = useTranslation();
 
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -143,15 +139,9 @@ export default function AccountSettingsContent() {
   }, [t]);
 
   function handleThemeChange(next: ThemePreference) {
-  const t = tUi;
     setTheme(next);
     setThemePreference(next);
     applyThemePreference(next);
-  }
-
-  function handleLocaleChange(next: LocalePreference) {
-  const t = tUi;
-    setLocale(next);
   }
 
   function updateNotifPref<K extends keyof NotificationPrefs>(key: K, value: boolean) {
@@ -161,7 +151,6 @@ export default function AccountSettingsContent() {
   }
 
   async function handleDownloadData() {
-  const t = tUi;
     setDownloading(true);
     setDownloadFeedback("");
     try {
@@ -183,7 +172,6 @@ export default function AccountSettingsContent() {
   }
 
   function handleDeleteAccount() {
-  const t = tUi;
     const ok = window.confirm(
       t(
         "Xóa tài khoản là thao tác không thể hoàn tác. Bạn sẽ cần liên hệ bộ phận hỗ trợ để hoàn tất yêu cầu. Tiếp tục?",
@@ -225,7 +213,7 @@ export default function AccountSettingsContent() {
             />
             <ToggleRow
               label={t("Tin nhắn mới")}
-              hint={t("Thông báo khi có tin nhắn từ client hoặc freelancer.")}
+              hint={t("Thông báo khi có tin nhắn từ khách hàng hoặc freelancer.")}
               checked={notifPrefs.messages}
               onChange={(v) => updateNotifPref("messages", v)}
             />
@@ -289,27 +277,10 @@ export default function AccountSettingsContent() {
             ) : (
               <p className="as-section-desc">
                 {t(
-                  "Danh hiệu và khung avatar theo cấp bậc áp dụng cho tài khoản Freelancer khi hoàn thành đơn hàng trên nền tảng. Tài khoản Client không có danh hiệu hiển thị công khai.",
+                  "Danh hiệu và khung avatar theo cấp bậc áp dụng cho tài khoản Freelancer khi hoàn thành đơn hàng trên nền tảng. Tài khoản Khách hàng không có danh hiệu hiển thị công khai.",
                 )}
               </p>
             )}
-          </section>
-
-          <section className="ea-card as-card">
-            <h2 className="as-section-title">
-              <FaGlobe className="mr-2 inline text-[#2563eb]" aria-hidden />
-              {t("account.settings.languageTitle")}
-            </h2>
-            <p className="as-section-desc">{t("account.settings.languageDesc")}</p>
-            <select
-              className="as-select"
-              value={locale}
-              onChange={(e) => handleLocaleChange(e.target.value as LocalePreference)}
-              aria-label={t("account.settings.languageAria")}
-            >
-              <option value="vi">{t("account.settings.localeVi")}</option>
-              <option value="en">{t("account.settings.localeEn")}</option>
-            </select>
           </section>
 
           <section className="ea-card as-card">

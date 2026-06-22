@@ -151,7 +151,7 @@ async function getMyWork(req, res) {
       return res.json({ role: "freelancer", assignments: result.rows });
     }
 
-    return res.status(403).json({ message: "Chỉ client hoặc freelancer có thể xem trang này." });
+    return res.status(403).json({ message: "Chỉ khách hàng hoặc freelancer có thể xem trang này." });
   } catch (error) {
     console.error("My work failed:", error.message);
     if (error.code === "42703") {
@@ -272,7 +272,7 @@ async function reviewContract(req, res) {
   if (!payload) return;
 
   if (payload.role !== "client") {
-    return res.status(403).json({ message: "Chỉ client mới có thể đánh giá freelancer." });
+    return res.status(403).json({ message: "Chỉ khách hàng mới có thể đánh giá freelancer." });
   }
 
   const contractId = parseUuidParam(req.params.contractId);

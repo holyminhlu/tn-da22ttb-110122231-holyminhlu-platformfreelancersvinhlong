@@ -39,8 +39,6 @@ export default function ServiceReviewsPage() {  const { t, formatDate } = useTra
   }, [load]);
 
   async function submitReply(reviewId: string) {
-  const t = tUi;
-  const formatDate = formatDateUi;
     const reply = replyDraft[reviewId]?.trim();
     if (!reply) return;
     setBusyId(reviewId);
@@ -63,7 +61,7 @@ export default function ServiceReviewsPage() {  const { t, formatDate } = useTra
     <ServicesShell>
       <header className="svc-hub__head">
         <div>
-          <h1 className="svc-hub__title">{t("Đánh giá &amp; Phản hồi")}</h1>
+          <h1 className="svc-hub__title">{t("Đánh giá & Phản hồi")}</h1>
           <p className="svc-hub__lead">
             {t("Xem đánh giá khách hàng sau khi hoàn thành đơn dịch vụ và phản hồi để tăng uy tín trên nền tảng.")}
           </p>

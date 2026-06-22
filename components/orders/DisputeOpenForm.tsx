@@ -25,7 +25,6 @@ type DisputeOpenFormProps = {
 };
 
 function evidenceIcon(name: string) {
-  const t = tUi;
   const lower = name.toLowerCase();
   if (lower.endsWith(".pdf")) return <FaFilePdf aria-hidden />;
   if (/\.(mp4|webm|mov)$/.test(lower)) return <FaVideo aria-hidden />;
@@ -78,7 +77,6 @@ export default function DisputeOpenForm({
   const [uploadError, setUploadError] = useState("");
 
   async function handleFiles(files: FileList | null) {
-  const t = tUi;
     if (!files?.length) return;
     const { valid, errors } = validateEvidenceFiles(Array.from(files), evidenceItems.length);
     if (errors.length) setUploadError(errors.join(" "));
@@ -109,13 +107,11 @@ export default function DisputeOpenForm({
   }
 
   function removeEvidence(url: string) {
-  const t = tUi;
     setEvidenceItems((prev) => prev.filter((item) => item.url !== url));
     setUploadError("");
   }
 
   function handleSubmit() {
-  const t = tUi;
     const evidenceUrls = evidenceItems.map((item) => item.url);
     if (!issueCategory || !desiredResolution || !detail.trim() || !evidenceUrls.length) return;
     onSubmit({

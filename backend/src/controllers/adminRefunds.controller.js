@@ -334,7 +334,7 @@ async function resolveAdminRefund(req, res) {
       );
       await db.query("COMMIT");
       return res.json({
-        message: `Đã duyệt phân bổ: Client ${settlement.clientAmount.toLocaleString("vi-VN")}đ, Freelancer ${settlement.freelancerAmount.toLocaleString("vi-VN")}đ.`,
+        message: `Đã duyệt phân bổ: Khách hàng ${settlement.clientAmount.toLocaleString("vi-VN")}đ, Freelancer ${settlement.freelancerAmount.toLocaleString("vi-VN")}đ.`,
         resolution: "approve",
         settlement,
       });

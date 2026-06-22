@@ -294,7 +294,7 @@ async function approveFreelancer(req, res) {
     return res.json({
       message:
         role === "client"
-          ? "Đã duyệt hồ sơ xác minh client."
+          ? "Đã duyệt hồ sơ xác minh khách hàng."
           : "Đã duyệt tài khoản freelancer.",
       userId,
       status: "approved",
@@ -364,7 +364,7 @@ async function rejectFreelancer(req, res) {
     return res.json({
       message:
         role === "client"
-          ? "Đã từ chối hồ sơ xác minh client."
+          ? "Đã từ chối hồ sơ xác minh khách hàng."
           : "Đã từ chối hồ sơ freelancer.",
       userId,
       status: "rejected",

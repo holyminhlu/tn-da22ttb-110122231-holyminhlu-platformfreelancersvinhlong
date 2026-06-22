@@ -42,7 +42,6 @@ export default function JobsFilterPanel({
 
   useEffect(() => {
     function onDocClick(e: MouseEvent) {
-  const t = tUi;
   if (filterRef.current && !filterRef.current.contains(e.target as Node)) {
         setOpen(false);
       }

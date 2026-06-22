@@ -687,7 +687,7 @@ async function saveFreelancerPayoutAccount(req, res) {
   const userId = payload.sub;
   const role = String(payload.role || "").toLowerCase();
   if (role !== "freelancer" && role !== "client") {
-    return res.status(403).json({ message: "Chỉ client hoặc freelancer được liên kết tài khoản nhận tiền." });
+    return res.status(403).json({ message: "Chỉ khách hàng hoặc freelancer được liên kết tài khoản nhận tiền." });
   }
 
   const bankName = String(req.body?.bankName || "").trim().slice(0, 120);
@@ -754,7 +754,7 @@ async function unlinkFreelancerPayoutAccount(req, res) {
 
   const role = String(payload.role || "").toLowerCase();
   if (role !== "freelancer" && role !== "client") {
-    return res.status(403).json({ message: "Chỉ client hoặc freelancer được thao tác tài khoản nhận tiền." });
+    return res.status(403).json({ message: "Chỉ khách hàng hoặc freelancer được thao tác tài khoản nhận tiền." });
   }
 
   const db = await pool.connect();
@@ -893,7 +893,7 @@ async function getBilling(req, res) {
   }
 
   if (role !== "client") {
-    return res.status(403).json({ message: "Chỉ client hoặc freelancer được truy cập trang thanh toán." });
+    return res.status(403).json({ message: "Chỉ khách hàng hoặc freelancer được truy cập trang thanh toán." });
   }
 
   return getClientBilling(req, res, userId);
@@ -1365,7 +1365,7 @@ async function getDepositOrderStatus(req, res) {
 
   const role = String(payload.role || "").toLowerCase();
   if (role !== "client") {
-    return res.status(403).json({ message: "Chỉ client được xem trạng thái nạp tiền." });
+    return res.status(403).json({ message: "Chỉ khách hàng được xem trạng thái nạp tiền." });
   }
 
   const orderCode = Number(req.params.orderCode);
@@ -1414,7 +1414,7 @@ async function cancelDepositOrder(req, res) {
 
   const role = String(payload.role || "").toLowerCase();
   if (role !== "client") {
-    return res.status(403).json({ message: "Chỉ client được hủy đơn nạp tiền." });
+    return res.status(403).json({ message: "Chỉ khách hàng được hủy đơn nạp tiền." });
   }
 
   const orderCode = Number(req.params.orderCode);
@@ -1435,7 +1435,7 @@ async function cancelDepositOrder(req, res) {
     if (order.status === "SUCCESS") {
       return res.status(409).json({ message: "Đơn đã thanh toán thành công, không thể hủy." });
     }
-    await cancelWalletDepositOrder(db, orderCode, "Client hủy tại trang thanh toán");
+    await cancelWalletDepositOrder(db, orderCode, "Khách hàng hủy tại trang thanh toán");
     return res.json({ message: "Đã hủy yêu cầu nạp tiền.", orderCode, status: "CANCELLED" });
   } catch (error) {
     console.error("cancelDepositOrder failed:", error.message);
@@ -1451,7 +1451,7 @@ async function requestWithdrawal(req, res) {
 
   const role = String(payload.role || "").toLowerCase();
   if (role !== "freelancer" && role !== "client") {
-    return res.status(403).json({ message: "Chỉ client hoặc freelancer được rút tiền về tài khoản." });
+    return res.status(403).json({ message: "Chỉ khách hàng hoặc freelancer được rút tiền về tài khoản." });
   }
 
   const amount = Number(req.body?.amount);
@@ -1484,7 +1484,7 @@ async function getWithdrawalPinSettings(req, res) {
 
   const role = String(payload.role || "").toLowerCase();
   if (role !== "freelancer" && role !== "client") {
-    return res.status(403).json({ message: "Chỉ client hoặc freelancer được quản lý PIN rút tiền." });
+    return res.status(403).json({ message: "Chỉ khách hàng hoặc freelancer được quản lý PIN rút tiền." });
   }
 
   const db = await pool.connect();
@@ -1510,7 +1510,7 @@ async function saveWithdrawalPinSettings(req, res) {
 
   const role = String(payload.role || "").toLowerCase();
   if (role !== "freelancer" && role !== "client") {
-    return res.status(403).json({ message: "Chỉ client hoặc freelancer được thiết lập PIN rút tiền." });
+    return res.status(403).json({ message: "Chỉ khách hàng hoặc freelancer được thiết lập PIN rút tiền." });
   }
 
   const db = await pool.connect();
@@ -1545,7 +1545,7 @@ async function confirmWithdrawalOrder(req, res) {
 
   const role = String(payload.role || "").toLowerCase();
   if (role !== "freelancer" && role !== "client") {
-    return res.status(403).json({ message: "Chỉ client hoặc freelancer được rút tiền về tài khoản." });
+    return res.status(403).json({ message: "Chỉ khách hàng hoặc freelancer được rút tiền về tài khoản." });
   }
 
   const orderId = String(req.params.orderId || "").trim();
@@ -1603,7 +1603,7 @@ async function getWithdrawalOrderStatus(req, res) {
 
   const role = String(payload.role || "").toLowerCase();
   if (role !== "freelancer" && role !== "client") {
-    return res.status(403).json({ message: "Chỉ client hoặc freelancer được xem lệnh rút tiền." });
+    return res.status(403).json({ message: "Chỉ khách hàng hoặc freelancer được xem lệnh rút tiền." });
   }
 
   const orderId = String(req.params.orderId || "").trim();

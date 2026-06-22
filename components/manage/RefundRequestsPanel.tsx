@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { patchContractWorkflow } from "@/lib/api/contracts";
 import { listRefundRequests, type RefundRequestRow } from "@/lib/api/resolution";
-import { formatDate, formatVnd } from "@/lib/format";
+import { serviceOrderHref } from "@/lib/routes/paths";
 import { formatDeadlineCountdown } from "@/lib/orders/workflowSlaDisplay";
 import {
   REFUND_PROGRESS_STEPS,
@@ -28,9 +28,7 @@ function orderTitle(row: RefundRequestRow) {
 }
 
 function orderHref(contractId: string, audience: ResolutionAudience) {
-  return audience === "freelancer"
-    ? `/findwork/orders/${contractId}`
-    : `/hire/orders/${contractId}`;
+  return serviceOrderHref(contractId, audience === "freelancer" ? "freelancer" : "client");
 }
 
 function statusLabel(status: string, audience: ResolutionAudience) {
@@ -48,7 +46,7 @@ function RefundPolicyCard({ audience }: { audience: ResolutionAudience }) {
   if (audience === "client") {
     return (
       <div className="refund-policy-card">
-        <h3 className="refund-policy-card__title">Chính sách hoàn tiền (Client)</h3>
+        <h3 className="refund-policy-card__title">Chính sách hoàn tiền (Khách hàng)</h3>
         <ul className="refund-policy-card__list">
           <li>
             <strong>Chính đáng</strong> (chưa làm / FL không phản hồi / sai gói): hoàn 100% về ví
@@ -68,7 +66,7 @@ function RefundPolicyCard({ audience }: { audience: ResolutionAudience }) {
 
   return (
     <div className="refund-policy-card refund-policy-card--fl">
-      <h3 className="refund-policy-card__title">Yêu cầu hoàn tiền từ Client</h3>
+      <h3 className="refund-policy-card__title">Yêu cầu hoàn tiền từ Khách hàng</h3>
       <ul className="refund-policy-card__list">
         <li>
           Bạn có <strong>3 ngày</strong> để đồng ý hoặc phản đối. Không phản hồi → hệ thống tự xử
@@ -120,8 +118,6 @@ export default function RefundRequestsPanel({ audience = "client" }: RefundReque
   );
 
   async function handleRespond(contractId: string, agree: boolean) {
-  const formatDate = formatDateUi;
-  const formatVnd = formatVndUi;
     setBusyId(contractId);
     setActionError("");
     try {
@@ -169,7 +165,7 @@ export default function RefundRequestsPanel({ audience = "client" }: RefundReque
           <h2 className="manage-page__empty-title">Chưa có yêu cầu hoàn tiền</h2>
           <p className="manage-page__empty-text">
             {audience === "freelancer"
-              ? "Khi client yêu cầu hủy & hoàn tiền trên đơn của bạn, thông tin phân bổ sẽ hiển thị tại đây."
+              ? "Khi khách hàng yêu cầu hủy & hoàn tiền trên đơn của bạn, thông tin phân bổ sẽ hiển thị tại đây."
               : "Gửi yêu cầu từ workspace đơn hàng (Giai đoạn 3) hoặc theo dõi trạng thái tại đây."}
           </p>
           <Link href={ordersListHref} className="manage-page__empty-link">
@@ -217,7 +213,7 @@ export default function RefundRequestsPanel({ audience = "client" }: RefundReque
 
                 <dl className="resolution-card__details">
                   <div>
-                    <dt>Lý do từ client</dt>
+                    <dt>Lý do từ khách hàng</dt>
                     <dd>
                       {row.reason_code ? refundReasonLabel(row.reason_code) : row.reason}
                       {row.detail ? ` — ${row.detail}` : ""}

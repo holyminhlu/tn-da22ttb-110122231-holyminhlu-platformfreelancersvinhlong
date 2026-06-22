@@ -69,9 +69,6 @@ export default function ManageServicesPage() {  const { t, formatVnd, formatDate
   }, [services, tab]);
 
   async function changeStatus(serviceId: string, status: ServiceListingStatus) {
-  const t = tUi;
-  const formatDate = formatDateUi;
-  const formatVnd = formatVndUi;
     setBusyId(serviceId);
     try {
       const result = await patchMyServiceStatus(serviceId, status);

@@ -3,7 +3,7 @@ import ClientHireFreelancerDetailPage from "@/components/hire/ClientHireFreelanc
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Hồ sơ Freelancer — Vĩnh Long Connected",
+  title: "Hồ sơ Freelancer — Vĩnh Long Connect",
   description:
     "Xem hồ sơ, dịch vụ, portfolio và đánh giá freelancer trước khi đăng nhập để thuê.",
 };

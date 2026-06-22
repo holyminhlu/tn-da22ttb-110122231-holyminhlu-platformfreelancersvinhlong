@@ -30,7 +30,7 @@ export function jobContractStageLabel(item: JobsListItem): string {
 export function jobContractStatusHint(item: JobsListItem): string {
   const stage = String(item.workflowStage || "").toLowerCase();
   if (stage === "execution") return "Đang thực hiện công việc theo hợp đồng";
-  if (stage === "delivery") return "Chờ client nghiệm thu bàn giao";
+  if (stage === "delivery") return "Chờ khách hàng nghiệm thu bàn giao";
   if (stage === "completion") return "Hoàn tất — có thể đã có đánh giá";
   if (isCompletedJobContract(item)) return "Hợp đồng đã hoàn thành";
   if (isWorkspaceArchived(item.contractStatus, item.jobStatus)) {

@@ -10,7 +10,6 @@ import {
   FaShieldAlt,
   FaThumbsUp,
   FaUser,
-  FaWallet,
 } from "react-icons/fa";
 import { useStoredUser } from "@/hooks/useStoredUser";
 import { useTranslation } from "@/hooks/useTranslation";
@@ -117,9 +116,6 @@ export default function EditAccountSidebar({
         href="/edit-account/bao-mat"
         active={active === "security"}
       />
-
-      <SidebarGroup label={t("accountSidebar.billing")} />
-      <SidebarItem icon={<FaWallet />} label={t("accountSidebar.transferMethods")} href="/payments" />
 
       <SidebarGroup label={t("accountSidebar.other")} />
       <SidebarItem

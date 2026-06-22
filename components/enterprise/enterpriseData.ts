@@ -2,7 +2,7 @@ export const ENTERPRISE_HERO = {
   badge: "VLC Enterprise",
   title: "Giải pháp nhân sự toàn diện, linh hoạt và tối ưu cho quy mô doanh nghiệp của bạn.",
   description:
-    "Vĩnh Long Connected Enterprise cung cấp nguồn lực chất lượng cao — giúp doanh nghiệp mở rộng quy mô dự án nhanh chóng mà không bị ràng buộc bởi các rào cản tuyển dụng truyền thống.",
+    "Vĩnh Long Connect Enterprise cung cấp nguồn lực chất lượng cao — giúp doanh nghiệp mở rộng quy mô dự án nhanh chóng mà không bị ràng buộc bởi các rào cản tuyển dụng truyền thống.",
 } as const;
 
 export const CORE_BENEFITS = [
@@ -43,7 +43,7 @@ export const ADVANCED_FEATURES = [
     icon: "api" as const,
     title: "Tích hợp API",
     description:
-      "Kết nối hệ thống quản lý nội bộ (ERP, HRIS) với nền tảng Vĩnh Long Connected — đồng bộ đơn hàng, hợp đồng và thanh toán tự động.",
+      "Kết nối hệ thống quản lý nội bộ (ERP, HRIS) với nền tảng Vĩnh Long Connect — đồng bộ đơn hàng, hợp đồng và thanh toán tự động.",
     linkHref: "#enterprise-contact",
     linkLabel: "Liên hệ tích hợp API",
   },

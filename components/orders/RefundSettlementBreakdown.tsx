@@ -86,7 +86,7 @@ export default function RefundSettlementBreakdown(props: RefundSettlementBreakdo
           <dd>{formatVndUi(settlement.total)}</dd>
         </div>
         <div className="refund-settlement__row--client">
-          <dt>{audience === "freelancer" ? "Client nhận lại" : "Bạn nhận lại (ước tính)"}</dt>
+          <dt>{audience === "freelancer" ? "Khách hàng nhận lại" : "Bạn nhận lại (ước tính)"}</dt>
           <dd>{formatVndUi(settlement.clientAmount)}</dd>
         </div>
         {settlement.freelancerAmount > 0 ? (

@@ -1,4 +1,4 @@
--- Hợp đồng từ job (client đăng việc): không giới hạn lượt chỉnh sửa
+-- Hợp đồng từ job (khách hàng đăng việc): không giới hạn lượt chỉnh sửa
 BEGIN;
 
 UPDATE public.contracts

@@ -15,7 +15,6 @@ export default function JobsSearchBar({
   const { t } = useTranslation();
 
   function handleSubmit(e: React.FormEvent) {
-  const t = tUi;
   e.preventDefault();
     onSubmit();
   }

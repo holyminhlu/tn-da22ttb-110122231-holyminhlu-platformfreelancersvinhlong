@@ -76,7 +76,6 @@ export default function RegisterForm() {
   }, [router, success, nextPath]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-  const t = tUi;
     event.preventDefault();
     setError("");
     setSuccess("");

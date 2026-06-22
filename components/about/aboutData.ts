@@ -1,5 +1,5 @@
 export const ABOUT_INTRO = {
-  title: "Giới thiệu về Vĩnh Long Connected",
+  title: "Giới thiệu về Vĩnh Long Connect",
   subtitle:
     "Nền tảng kết nối trực tuyến hàng đầu giúp doanh nghiệp tìm kiếm nhân tài và freelancer tìm kiếm cơ hội làm việc tự do — bắt nguồn từ Vĩnh Long, phục vụ cộng đồng địa phương và vươn ra toàn quốc.",
   mission: {
@@ -40,7 +40,7 @@ export const WHY_CHOOSE = [
 export const STORY = {
   title: "Câu chuyện hình thành",
   intro:
-    "Vĩnh Long Connected ra đời từ một quan sát đơn giản: tại Vĩnh Long và Đồng bằng sông Cửu Long, có rất nhiều người làm nghề tự do tài năng nhưng thiếu kênh kết nối uy tín với doanh nghiệp và hộ kinh doanh địa phương.",
+    "Vĩnh Long Connect ra đời từ một quan sát đơn giản: tại Vĩnh Long và Đồng bằng sông Cửu Long, có rất nhiều người làm nghề tự do tài năng nhưng thiếu kênh kết nối uy tín với doanh nghiệp và hộ kinh doanh địa phương.",
   body:
     "Đội ngũ sáng lập — những người con quê Vĩnh Long, am hiểu cả thị trường lao động tự do lẫn nhu cầu số hóa của doanh nghiệp vùng — quyết định xây dựng một nền tảng vừa dễ dùng, vừa đảm bảo minh bạch trong mọi giao dịch. Từ ý tưởng ban đầu trên giấy, qua nhiều vòng phỏng vấn người dùng và thử nghiệm, VLC dần hình thành với sứ mệnh phục vụ cộng đồng địa phương trước, mở rộng sau.",
   milestones: [
@@ -57,7 +57,7 @@ export const STORY = {
     {
       year: "2025",
       title: "Ra mắt chính thức",
-      description: "Công bố nền tảng Vĩnh Long Connected, mở rộng dịch vụ và cộng đồng người dùng.",
+      description: "Công bố nền tảng Vĩnh Long Connect, mở rộng dịch vụ và cộng đồng người dùng.",
     },
   ],
 } as const;
@@ -117,7 +117,7 @@ export const TEAM_MEMBERS = [
 ] as const;
 
 export const ABOUT_CTA = {
-  title: "Sẵn sàng bắt đầu với Vĩnh Long Connected?",
+  title: "Sẵn sàng bắt đầu với Vĩnh Long Connect?",
   subtitle: "Dù bạn là nhà tuyển dụng hay freelancer — chúng tôi có giải pháp phù hợp cho bạn.",
   actions: [
     { label: "Tìm Freelancer", href: "/freelancers", variant: "primary" as const },

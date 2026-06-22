@@ -1,9 +1,11 @@
 export type AudienceRole = "client" | "freelancer";
 
+import { ROUTES } from "@/lib/routes/paths";
+
 export const HOW_VLC_HERO = {
   title: "Cách VLC hoạt động",
   subtitle:
-    "Vĩnh Long Connected kết nối hai chiều giữa người thuê và freelancer. Chọn vai trò của bạn để xem hướng dẫn quy trình phù hợp.",
+    "Vĩnh Long Connect kết nối hai chiều giữa người thuê và freelancer. Chọn vai trò của bạn để xem hướng dẫn quy trình phù hợp.",
 } as const;
 
 export const ROLE_OPTIONS = [
@@ -26,9 +28,9 @@ export const CLIENT_STEPS = [
     step: 1,
     title: "Đăng ký & xác minh danh tính",
     description:
-      "Tạo tài khoản Client tại trang đăng ký. Trước khi đăng tin tuyển dụng, hoàn thành xác minh danh tính (thông tin nhận dạng và thẻ) tại trang xác minh — hệ thống sẽ mở khóa tính năng đăng việc.",
+      "Tạo tài khoản Khách hàng tại trang đăng ký. Trước khi đăng tin tuyển dụng, hoàn thành xác minh danh tính (thông tin nhận dạng và thẻ) tại trang xác minh — hệ thống sẽ mở khóa tính năng đăng việc.",
     route: "/dang-ky",
-    routeLabel: "Đăng ký Client",
+    routeLabel: "Đăng ký Khách hàng",
   },
   {
     step: 2,
@@ -69,15 +71,15 @@ export const FREELANCER_STEPS = [
     step: 1,
     title: "Đăng ký & xây dựng hồ sơ dịch vụ",
     description:
-      "Tạo tài khoản Freelancer, hoàn thiện hồ sơ công khai và đăng gói dịch vụ (tiêu đề, mô tả, gói giá) tại Dịch vụ → Quản lý — giúp client tìm thấy và đặt hàng trực tiếp.",
+      "Tạo tài khoản Freelancer, hoàn thiện hồ sơ công khai và đăng gói dịch vụ (tiêu đề, mô tả, gói giá) tại Dịch vụ → Quản lý — giúp khách hàng tìm thấy và đặt hàng trực tiếp.",
     route: "/dang-ky",
     routeLabel: "Đăng ký Freelancer",
   },
   {
     step: 2,
-    title: "Tìm việc hoặc nhận đơn từ client",
+    title: "Tìm việc hoặc nhận đơn từ khách hàng",
     description:
-      "Duyệt tin tuyển dụng tại Tìm việc — lọc theo danh mục, ngân sách, địa điểm. Đồng thời theo dõi Khách hàng tiềm năng tại Tìm việc → Leads khi client đặt gói dịch vụ và chờ bạn gửi đề xuất.",
+      "Duyệt tin tuyển dụng tại Tìm việc — lọc theo danh mục, ngân sách, địa điểm. Đồng thời theo dõi Khách hàng tiềm năng tại Tìm việc → Leads khi khách hàng đặt gói dịch vụ và chờ bạn gửi đề xuất.",
     route: "/findwork",
     routeLabel: "Tìm việc làm",
   },
@@ -85,23 +87,23 @@ export const FREELANCER_STEPS = [
     step: 3,
     title: "Gửi báo giá / đề xuất",
     description:
-      "Với tin tuyển dụng: mở chi tiết công việc, soạn thư đề xuất (proposal), nhập ngân sách và xác nhận gửi báo giá. Với đơn dịch vụ: soạn đề xuất kỹ thuật, tiến độ và ngân sách cho client xem xét.",
+      "Với tin tuyển dụng: mở chi tiết công việc, soạn thư đề xuất (proposal), nhập ngân sách và xác nhận gửi báo giá. Với đơn dịch vụ: soạn đề xuất kỹ thuật, tiến độ và ngân sách cho khách hàng xem xét.",
     route: "/findwork/quotes",
     routeLabel: "Theo dõi báo giá",
   },
   {
     step: 4,
-    title: "Thực hiện sau khi client nạp ký quỹ",
+    title: "Thực hiện sau khi khách hàng nạp ký quỹ",
     description:
       "Khi hợp đồng Funded, bắt đầu làm việc theo 5 giai đoạn: chốt thỏa thuận → ký quỹ → thực hiện & kiểm tra → bàn giao → kết thúc. Cập nhật tiến độ, gửi link demo và đóng gói bàn giao tại Tìm việc → Đơn hàng.",
-    route: "/findwork/orders",
+    route: ROUTES.services.orders,
     routeLabel: "Xem đơn hàng",
   },
   {
     step: 5,
     title: "Nhận thanh toán & xây dựng uy tín",
     description:
-      "Sau khi client nghiệm thu, tiền Escrow được giải ngân vào ví của bạn tại Thanh toán. Đánh giá công khai từ client giúp hồ sơ uy tín hơn cho các dự án tiếp theo.",
+      "Sau khi khách hàng nghiệm thu, tiền Escrow được giải ngân vào ví của bạn tại Thanh toán. Đánh giá công khai từ khách hàng giúp hồ sơ uy tín hơn cho các dự án tiếp theo.",
     route: "/payments",
     routeLabel: "Xem thanh toán",
   },
@@ -113,35 +115,35 @@ export const WORKFLOW_STAGES = [
     label: "Giai đoạn 1",
     title: "Tiếp cận & Chốt thỏa thuận",
     clientHint: "Chờ freelancer gửi đề xuất, trao đổi làm rõ yêu cầu rồi chấp nhận báo giá.",
-    freelancerHint: "Gửi đề xuất kỹ thuật, tiến độ và ngân sách cho client.",
+    freelancerHint: "Gửi đề xuất kỹ thuật, tiến độ và ngân sách cho khách hàng.",
   },
   {
     id: "escrow",
     label: "Giai đoạn 2",
     title: "Khởi tạo hợp đồng & Ký quỹ",
     clientHint: "Nạp tiền Escrow vào sàn. Freelancer chỉ bắt đầu khi trạng thái Funded.",
-    freelancerHint: "Chờ client nạp ký quỹ. Khi Funded bạn có thể bắt đầu làm việc.",
+    freelancerHint: "Chờ khách hàng nạp ký quỹ. Khi Funded bạn có thể bắt đầu làm việc.",
   },
   {
     id: "execution",
     label: "Giai đoạn 3",
     title: "Thực hiện & Kiểm tra",
     clientHint: "Theo dõi tiến độ, xem demo staging, yêu cầu chỉnh sửa trong giới hạn gói.",
-    freelancerHint: "Cập nhật tiến độ, gửi link demo. Điều chỉnh theo phản hồi client.",
+    freelancerHint: "Cập nhật tiến độ, gửi link demo. Điều chỉnh theo phản hồi khách hàng.",
   },
   {
     id: "delivery",
     label: "Giai đoạn 4",
     title: "Bàn giao & Nghiệm thu",
     clientHint: "Kiểm tra sản phẩm cuối, báo lỗi nếu có, sau đó nghiệm thu.",
-    freelancerHint: "Đóng gói bàn giao (mã nguồn, tài liệu, triển khai) và gửi cho client.",
+    freelancerHint: "Đóng gói bàn giao (mã nguồn, tài liệu, triển khai) và gửi cho khách hàng.",
   },
   {
     id: "completion",
     label: "Giai đoạn 5",
     title: "Kết thúc & Đánh giá",
     clientHint: "Giải ngân cho freelancer và để lại đánh giá công khai.",
-    freelancerHint: "Chờ client giải ngân và đánh giá.",
+    freelancerHint: "Chờ khách hàng giải ngân và đánh giá.",
   },
 ] as const;
 

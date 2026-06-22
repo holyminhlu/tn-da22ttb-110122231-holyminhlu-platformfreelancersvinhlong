@@ -125,11 +125,8 @@ export default function AdminRefundsPage() {  const { t, formatVnd, formatDate }
   }, [selectedId, loadDetail]);
 
   async function handleResolve(resolution: "approve" | "reject") {
-  const t = tUi;
-  const formatDate = formatDateUi;
-  const formatVnd = formatVndUi;
     if (!selectedId) return;
-    const label = resolution === "approve" ? "Duyệt hoàn tiền cho client" : "Từ chối yêu cầu";
+    const label = resolution === "approve" ? "Duyệt hoàn tiền cho khách hàng" : "Từ chối yêu cầu";
     if (!window.confirm(`${t("Xác nhận: ")}${label}?`)) return;
 
     setResolveBusy(true);
@@ -182,7 +179,7 @@ export default function AdminRefundsPage() {  const { t, formatVnd, formatDate }
       <header className="admin-page__head admin-refunds-page__head">
         <h1 className="admin-page__title">{t("Quản lý hoàn tiền")}</h1>
         <p className="admin-page__lead">
-          {t("Xem xét yêu cầu hủy & hoàn tiền, phân loại chính đáng / hủy ngang và duyệt phân bổ Client — Freelancer (hoàn về ví VLC).")}
+          {t("Xem xét yêu cầu hủy & hoàn tiền, phân loại chính đáng / hủy ngang và duyệt phân bổ Khách hàng — Freelancer (hoàn về ví VLC).")}
         </p>
       </header>
 
@@ -226,10 +223,10 @@ export default function AdminRefundsPage() {  const { t, formatVnd, formatDate }
             <input
               type="search"
               className="admin-filters__input"
-              placeholder={t("Đơn, client, freelancer...")}
+              placeholder={t("Đơn, khách hàng, freelancer...")}
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              aria-label={t("Tìm theo đơn, client, freelancer")}
+              aria-label={t("Tìm theo đơn, khách hàng, freelancer")}
             />
           </div>
         </label>
@@ -281,7 +278,7 @@ export default function AdminRefundsPage() {  const { t, formatVnd, formatDate }
                 <div className="resolution-card resolution-card--flat">
                   <h3 className="resolution-card__title">{orderTitle(selected)}</h3>
                   <p className="resolution-card__meta">
-                    Client: <strong>{selected.client_name}</strong> ({selected.client_email}) ·
+                    Khách hàng: <strong>{selected.client_name}</strong> ({selected.client_email}) ·
                     Freelancer: <strong>{selected.freelancer_name}</strong> ({selected.freelancer_email})
                   </p>
                   <p className="resolution-card__meta">
@@ -298,7 +295,7 @@ export default function AdminRefundsPage() {  const { t, formatVnd, formatDate }
 
                   <dl className="resolution-card__details admin-refund-case__details">
                     <div>
-                      <dt>{t("Lý do từ client")}</dt>
+                      <dt>{t("Lý do từ khách hàng")}</dt>
                       <dd>
                         {selected.reason_code
                           ? refundReasonLabel(selected.reason_code)

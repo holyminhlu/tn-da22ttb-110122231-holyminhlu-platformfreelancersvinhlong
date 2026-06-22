@@ -1,6 +1,5 @@
 "use client";
 
-import { tUi } from "@/lib/i18n/runtime";
 import { useTranslation } from "@/hooks/useTranslation";
 import { useRouter } from "next/navigation";
 import type { ReactNode } from "react";
@@ -19,7 +18,6 @@ export default function PostJobButton({ className, children, ariaLabel }: PostJo
   const { user, ready, isClient } = useStoredUser({ refreshFromApi: false });
 
   function handleClick() {
-  const t = tUi;
     if (!ready) return;
 
     if (!user) {
@@ -32,7 +30,7 @@ export default function PostJobButton({ className, children, ariaLabel }: PostJo
       return;
     }
 
-    window.alert("Chức năng Đăng việc dành cho tài khoản Client. Vui lòng đăng nhập bằng tài khoản Client để tiếp tục.");
+    window.alert(t("homePage.postJobClientOnly"));
   }
 
   return (

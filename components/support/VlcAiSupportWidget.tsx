@@ -42,7 +42,6 @@ export default function VlcAiSupportWidget() {
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
-  const t = tUi;
       if (event.key === "Escape" && open) setOpen(false);
     }
     document.addEventListener("keydown", onKeyDown);
@@ -50,7 +49,6 @@ export default function VlcAiSupportWidget() {
   }, [open]);
 
   async function sendMessage(text: string) {
-  const t = tUi;
     const trimmed = text.trim();
     if (!trimmed || sending) return;
 
@@ -78,13 +76,11 @@ export default function VlcAiSupportWidget() {
   }
 
   async function handleSubmit(event: FormEvent) {
-  const t = tUi;
     event.preventDefault();
     await sendMessage(draft);
   }
 
   function handleReset() {
-  const t = tUi;
     setMessages([createWelcomeMessage()]);
     setError("");
     setDraft("");

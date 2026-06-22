@@ -34,7 +34,6 @@ function ProjectCell({ title, jobId }: { title: string; jobId: string | null }) 
 }
 
 function AmountCell({ amount }: { amount: number }) {
-  const formatVnd = formatVndUi;
   return (
     <td className={`payments-table__col--amount ${amount < 0 ? "payments-neg" : "payments-pos"}`}>
       {formatVndUi(amount)}
@@ -43,7 +42,6 @@ function AmountCell({ amount }: { amount: number }) {
 }
 
 function InvoiceCell({ invoiceNumber, tx }: { invoiceNumber: string | null; tx: ClientBillingRow["tx"] }) {
-  const t = tUi;
   if (!invoiceNumber) {
     return <td className="payments-table__col--invoice">—</td>;
   }
@@ -64,9 +62,6 @@ function InvoiceCell({ invoiceNumber, tx }: { invoiceNumber: string | null; tx: 
 }
 
 function GroupRow({ row }: { row: Extract<ClientBillingRow, { type: "group" }> }) {
-  const t = tUi;
-  const formatDate = formatDateUi;
-  const formatVnd = formatVndUi;
   const [open, setOpen] = useState(false);
   const { tx, children, combinedCategory } = row;
 
@@ -121,8 +116,8 @@ function GroupRow({ row }: { row: Extract<ClientBillingRow, { type: "group" }> }
 
 export default function ClientTransactionTable({
   rows }: ClientTransactionTableProps) {
-  const t = tUi;
-  const formatDate = formatDateUi;
+  const { t } = useTranslation();
+
   return (
     <div className="payments-table-wrap">
       <table className="payments-table payments-table--client">

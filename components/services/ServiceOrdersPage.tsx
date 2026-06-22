@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { listServiceOrders, type ServiceOrderListItem } from "@/lib/api/contracts";
 import { formatPackagePrice } from "@/lib/hire/servicePackages";
+import { serviceOrderHref } from "@/lib/routes/paths";
 import {
   ORDER_BUCKET_LABELS,
   classifyServiceOrder,
@@ -83,7 +84,7 @@ export default function ServiceOrdersPage() {  const { t, formatDate } = useTran
         <header className="fw-orders__head">
           <h1 className="fw-orders__title">{t("Đơn hàng dịch vụ")}</h1>
           <p className="fw-orders__lead">
-            {t("Quản lý đơn Client đặt từ gig của bạn — tiếp nhận, thực hiện, giao bài và nghiệm thu.")}
+            {t("Quản lý đơn Khách hàng đặt từ gig của bạn — tiếp nhận, thực hiện, giao bài và nghiệm thu.")}
           </p>
         </header>
 
@@ -111,7 +112,7 @@ export default function ServiceOrdersPage() {  const { t, formatDate } = useTran
         ) : filtered.length === 0 ? (
           <div className="fw-orders__empty">
             {orders.length === 0
-              ? "Chưa có đơn dịch vụ. Kích hoạt gig và chờ Client đặt mua."
+              ? "Chưa có đơn dịch vụ. Kích hoạt gig và chờ Khách hàng đặt mua."
               : "Không có đơn trong tab này."}
           </div>
         ) : (
@@ -129,7 +130,7 @@ export default function ServiceOrdersPage() {  const { t, formatDate } = useTran
               return (
                 <li key={order.id}>
                   <Link
-                    href={`/findwork/orders/${order.id}`}
+                    href={serviceOrderHref(order.id, "freelancer")}
                     className={`fw-orders__card ${orderCardToneClass(statusTone)}${urgent ? " fw-orders__card--urgent" : ""}`}
                   >
                     <div className="fw-orders__card-top">
@@ -141,7 +142,7 @@ export default function ServiceOrdersPage() {  const { t, formatDate } = useTran
                       </span>
                     </div>
                     <p className="fw-orders__card-meta">
-                      Client: <strong>{order.counterparty_name || "—"}</strong>
+                      Khách hàng: <strong>{order.counterparty_name || "—"}</strong>
                       {order.agreed_price != null
                         ? ` · ${formatPackagePrice(Number(order.agreed_price))}`
                         : ""}

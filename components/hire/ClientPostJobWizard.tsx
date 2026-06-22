@@ -228,19 +228,16 @@ export default function ClientPostJobWizard({
   }
 
   function goNext() {
-  const t = tUi;
     if (!validateStep(step)) return;
     setStep((s) => Math.min(5, s + 1));
   }
 
   function goBack() {
-  const t = tUi;
     setStepError("");
     setStep((s) => Math.max(1, s - 1));
   }
 
   function onPickImages(event: React.ChangeEvent<HTMLInputElement>) {
-  const t = tUi;
     const picked = Array.from(event.target.files ?? []);
     if (!picked.length) return;
     setImageFiles((prev) => [...prev, ...picked].slice(0, 3));
@@ -248,12 +245,10 @@ export default function ClientPostJobWizard({
   }
 
   function removeImage(index: number) {
-  const t = tUi;
     setImageFiles((prev) => prev.filter((_, i) => i !== index));
   }
 
   async function handleSubmit() {
-  const t = tUi;
     if (!validateStep(1) || !validateStep(2) || !validateStep(3) || !validateStep(4)) {
       setSubmitError(t("Vui lòng kiểm tra lại các bước trước khi đăng."));
       return;

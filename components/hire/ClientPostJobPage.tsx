@@ -32,7 +32,7 @@ export default function ClientPostJobPage() {
     try {
       const [me, identity] = await Promise.all([getMe(), getIdentityVerification()]);
       if (!isClientRole(me.user?.role)) {
-        setError(t("Chỉ tài khoản client mới được đăng tin tuyển dụng."));
+        setError(t("Chỉ tài khoản khách hàng mới được đăng tin tuyển dụng."));
         setUser(null);
         return;
       }

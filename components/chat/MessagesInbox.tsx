@@ -34,30 +34,29 @@ function formatRelativeTime(iso: string | null) {
     const date = new Date(iso);
     const diffMs = Date.now() - date.getTime();
     const mins = Math.floor(diffMs / 60000);
-    if (mins < 1) return "Vừa xong";
-    if (mins < 60) return `${mins} phút`;
+    if (mins < 1) return tUi("hirePage.inboxJustNow");
+    if (mins < 60) return tUi("hirePage.inboxMinutes", { count: mins });
     const hours = Math.floor(mins / 60);
-    if (hours < 24) return `${hours} giờ`;
+    if (hours < 24) return tUi("hirePage.inboxHours", { count: hours });
     const days = Math.floor(hours / 24);
-    if (days < 7) return `${days} ngày`;
-    return date.toLocaleDateString("vi-VN", { day: "2-digit", month: "2-digit" });
+    if (days < 7) return tUi("hirePage.inboxDays", { count: days });
+    return date.toLocaleDateString(undefined, { day: "2-digit", month: "2-digit" });
   } catch {
     return "";
   }
 }
 
 function conversationPreview(conv: ChatConversation, currentUserId?: string) {
-  const body = conv.lastMessageBody?.trim() || "Chưa có tin nhắn";
+  const body = conv.lastMessageBody?.trim() || tUi("hirePage.inboxNoMessage");
   const fromMe =
     conv.lastMessageSenderId &&
     currentUserId &&
     String(conv.lastMessageSenderId) === String(currentUserId);
-  if (fromMe) return `Bạn: ${body}`;
+  if (fromMe) return `${tUi("hirePage.inboxYou")}: ${body}`;
   return body;
 }
 
 function hasJobContext(conv: ChatConversation) {
-  const t = tUi;
   return Boolean(conv.contextTitle || conv.jobTitle || conv.jobQuoteId || conv.serviceId);
 }
 
@@ -113,7 +112,7 @@ export default function MessagesInbox({
       const message =
         err && typeof err === "object" && "message" in err
           ? String((err as { message: string }).message)
-          : "Không thể tải tin nhắn.";
+          : tUi("hirePage.inboxLoadError");
       setError(message);
       setConversations([]);
       setSelectedId(null);
@@ -206,7 +205,6 @@ export default function MessagesInbox({
   const selected = conversations.find((c) => c.id === selectedId) ?? null;
 
   function selectConversation(id: string) {
-  const t = tUi;
     setSelectedId(id);
     setMobileShowThread(true);
     setConversations((prev) =>
@@ -215,14 +213,12 @@ export default function MessagesInbox({
   }
 
   function handleConversationRead(conversationId: string) {
-  const t = tUi;
     setConversations((prev) =>
       prev.map((c) => (c.id === conversationId ? { ...c, hasUnread: false } : c)),
     );
   }
 
   function handleConversationDeleted(conversationId: string) {
-  const t = tUi;
     setConversations((prev) => {
       const remaining = prev.filter((c) => c.id !== conversationId);
       setSelectedId((current) => {
@@ -235,27 +231,29 @@ export default function MessagesInbox({
   }
 
   function handleConversationUpdated(updated: ChatConversation) {
-  const t = tUi;
     setConversations((prev) => prev.map((c) => (c.id === updated.id ? { ...c, ...updated } : c)));
   }
 
-  const sidebarMenuItems = [
-    {
-      id: "refresh",
-      label: "Làm mới danh sách",
-      onClick: () => void load(),
-    },
-    {
-      id: "all-tab",
-      label: "Hiển thị: Tất cả",
-      onClick: () => setActiveTab("all"),
-    },
-    {
-      id: "jobs-tab",
-      label: "Hiển thị: Có việc",
-      onClick: () => setActiveTab("jobs"),
-    },
-  ];
+  const sidebarMenuItems = useMemo(
+    () => [
+      {
+        id: "refresh",
+        label: t("hirePage.inboxRefresh"),
+        onClick: () => void load(),
+      },
+      {
+        id: "all-tab",
+        label: t("hirePage.inboxShowAll"),
+        onClick: () => setActiveTab("all"),
+      },
+      {
+        id: "jobs-tab",
+        label: t("hirePage.inboxShowJobs"),
+        onClick: () => setActiveTab("jobs"),
+      },
+    ],
+    [load, t],
+  );
 
   return (
     <div className="fw-messages-inbox">
@@ -333,7 +331,7 @@ export default function MessagesInbox({
               ) : filteredConversations.length === 0 ? (
                 <div className="fw-inbox-sidebar__empty">
                   <FaComments aria-hidden />
-                  <p>{search || activeTab === "jobs" ? "Không tìm thấy hội thoại." : copy.emptyListMessage}</p>
+                  <p>{search || activeTab === "jobs" ? t("hirePage.inboxNoConv") : copy.emptyListMessage}</p>
                   {!search && activeTab === "all" ? (
                     <p className="fw-inbox-sidebar__empty-hint">{copy.emptyListHint}</p>
                   ) : null}
@@ -382,7 +380,7 @@ export default function MessagesInbox({
                             </div>
                             {topic ? (
                               <p className="fw-inbox-sidebar__item-topic" title={topic}>
-                                {conv.contextType === "service" ? "Dịch vụ" : "Công việc"}: {topic}
+                                {conv.contextType === "service" ? t("hirePage.contextService") : t("hirePage.contextJob")}: {topic}
                               </p>
                             ) : null}
                             <p className="fw-inbox-sidebar__item-preview">

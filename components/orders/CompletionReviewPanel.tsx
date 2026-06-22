@@ -82,7 +82,7 @@ export default function CompletionReviewPanel({
           <p className="hire-completion__lead">
             {isClient
               ? "Giải ngân Escrow cho freelancer và để lại đánh giá công khai để hoàn tất hợp đồng."
-              : "Chờ client giải ngân và (nếu có) đánh giá. Cảm ơn bạn đã hoàn thành dự án!"}
+              : "Chờ khách hàng giải ngân và (nếu có) đánh giá. Cảm ơn bạn đã hoàn thành dự án!"}
           </p>
         </div>
         <ul className="hire-completion__steps" aria-label={t("Tiến trình kết thúc")}>
@@ -306,9 +306,9 @@ export default function CompletionReviewPanel({
           {!isClient && !isReleased ? (
             <div className="hire-completion__state-card hire-completion__state-card--wait">
               <FaUserClock className="hire-completion__state-icon" aria-hidden />
-              <h3 className="hire-completion__state-title">{t("Chờ Client giải ngân")}</h3>
+              <h3 className="hire-completion__state-title">{t("Chờ Khách hàng giải ngân")}</h3>
               <p className="hire-completion__state-desc">
-                Client sẽ chuyển <strong>{agreedDisplay}</strong> từ Escrow sang ví của bạn. Sau đó
+                Khách hàng sẽ chuyển <strong>{agreedDisplay}</strong> từ Escrow sang ví của bạn. Sau đó
                 họ có thể để lại đánh giá công khai.
               </p>
             </div>
@@ -319,7 +319,7 @@ export default function CompletionReviewPanel({
               <FaMoneyCheckAlt className="hire-completion__state-icon" aria-hidden />
               <h3 className="hire-completion__state-title">{t("Đã nhận giải ngân")}</h3>
               <p className="hire-completion__state-desc">
-                Client đã giải ngân thành công. Cảm ơn bạn đã hoàn thành dự án — đánh giá từ client
+                Khách hàng đã giải ngân thành công. Cảm ơn bạn đã hoàn thành dự án — đánh giá từ khách hàng
                 có thể xuất hiện trên hồ sơ của bạn.
               </p>
               {contract.released_at ? (
@@ -333,7 +333,7 @@ export default function CompletionReviewPanel({
           {!isClient && isReleased && hasReview && review ? (
             <div className="hire-completion__state-card hire-completion__state-card--success">
               <FaStar className="hire-completion__state-icon hire-completion__state-icon--star" aria-hidden />
-              <h3 className="hire-completion__state-title">{t("Client đã đánh giá bạn")}</h3>
+              <h3 className="hire-completion__state-title">{t("Khách hàng đã đánh giá bạn")}</h3>
               <div className="hire-completion__review-display">
                 <div className="hire-completion__review-stars" aria-label={`${review.rating} trên 5 sao`}>
                   {[1, 2, 3, 4, 5].map((n) => (

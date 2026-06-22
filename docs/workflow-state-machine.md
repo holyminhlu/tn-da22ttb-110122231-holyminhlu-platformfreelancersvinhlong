@@ -4,14 +4,14 @@
 stateDiagram-v2
   [*] --> selection: Tạo đơn / quote
   selection --> selection: FL gửi đề xuất
-  selection --> escrow: Client chấp nhận
+  selection --> escrow: Khách hàng chấp nhận
   selection --> cancelled: Hủy / hết hạn / từ chối
-  escrow --> execution: Client nạp Escrow
+  escrow --> execution: Khách hàng nạp Escrow
   escrow --> cancelled: Hủy / hết hạn (chưa nạp)
   execution --> delivery: FL bàn giao
   execution --> cancelled: Hoàn tiền (yêu cầu hủy)
   execution --> disputed: Mở tranh chấp
-  delivery --> completion: Client nghiệm thu / auto-accept
+  delivery --> completion: Khách hàng nghiệm thu / auto-accept
   delivery --> disputed: Tranh chấp
   completion --> [*]: Giải ngân + (tùy chọn) đánh giá
   disputed --> cancelled: Admin hoàn tiền
@@ -26,7 +26,7 @@ stateDiagram-v2
 | selection (chờ đề xuất) | 7 ngày | `cancel_type=expired` |
 | selection (chờ accept) | 7 ngày từ `proposal_submitted_at` | `expired` |
 | escrow | 5 ngày | `expired` |
-| execution | Client `request_cancel_refund`, FL im lặng 3 ngày | Hoàn 100% |
+| execution | Khách hàng `request_cancel_refund`, FL im lặng 3 ngày | Hoàn 100% |
 | delivery | 7 ngày sau `delivered_at` | Auto-accept + release |
 
 ## API actions mới

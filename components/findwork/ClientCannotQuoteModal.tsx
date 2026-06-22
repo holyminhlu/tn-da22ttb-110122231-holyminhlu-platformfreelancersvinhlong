@@ -11,7 +11,7 @@ type ClientCannotQuoteModalProps = {
   open: boolean;
   onClose: () => void;
   jobTitle?: string;
-  /** Client đang xem chính tin tuyển dụng của mình */
+  /** Khách hàng đang xem chính tin tuyển dụng của mình */
   isOwnJob?: boolean;
   jobId?: string;
 };
@@ -30,7 +30,6 @@ export default function ClientCannotQuoteModal({
   useEffect(() => {
     if (!open) return;
     function onKeyDown(e: KeyboardEvent) {
-  const t = tUi;
       if (e.key === "Escape") onClose();
     }
     document.addEventListener("keydown", onKeyDown);
@@ -86,7 +85,7 @@ export default function ClientCannotQuoteModal({
             </p>
           ) : (
             <p>
-              Bạn đang đăng nhập bằng tài khoản <strong>{t("khách hàng")}</strong>. Chỉ{" "}
+              Bạn đang đăng nhập bằng tài khoản <strong>{t("auth.client")}</strong>. Chỉ{" "}
               <strong>freelancer</strong> mới gửi báo giá cho công việc của người khác.
             </p>
           )}

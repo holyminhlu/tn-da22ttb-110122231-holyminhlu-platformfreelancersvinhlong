@@ -31,13 +31,11 @@ function normalizeStatus(s: string) {
 }
 
 function hasActiveContract(contractStatus: string | null | undefined) {
-  const t = tUi;
   const s = normalizeStatus(contractStatus || "");
   return s === "pending" || s === "active";
 }
 
 function counterpartyInitials(name: string | null) {
-  const t = tUi;
   if (!name?.trim()) return "?";
   const parts = name.trim().split(/\s+/);
   if (parts.length >= 2) {
@@ -68,8 +66,6 @@ export default function ManageWorkspaceCard({ item, onChanged }: ManageWorkspace
   useEffect(() => {
     if (!menuOpen) return;
     function onDocClick(e: MouseEvent) {
-  const t = tUi;
-  const formatDate = formatDateUi;
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         setMenuOpen(false);
       }
@@ -100,8 +96,6 @@ export default function ManageWorkspaceCard({ item, onChanged }: ManageWorkspace
   );
 
   async function handleCloseRecruiting() {
-  const t = tUi;
-  const formatDate = formatDateUi;
     if (!canClose) return;
     const ok = window.confirm(
       "Gỡ tin khỏi tuyển dụng? Tin sẽ không nhận thêm báo giá mới nhưng vẫn lưu trong lịch sử.",
@@ -111,8 +105,6 @@ export default function ManageWorkspaceCard({ item, onChanged }: ManageWorkspace
   }
 
   async function handleDelete() {
-  const t = tUi;
-  const formatDate = formatDateUi;
     if (!canDelete) return;
     const ok = window.confirm(
       "Xóa công việc này? Hành động ẩn tin khỏi danh sách quản lý (xóa mềm) và không thể hoàn tác từ menu này.",

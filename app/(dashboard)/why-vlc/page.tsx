@@ -6,7 +6,7 @@ import { sitePageMetadata } from "@/components/layout/SitePage";
 
 export const metadata = sitePageMetadata(
   "Tại sao chọn VLC",
-  "Lý do doanh nghiệp và freelancer chọn Vĩnh Long Connected — minh bạch, SafePay, hỗ trợ địa phương và phí cạnh tranh.",
+  "Lý do doanh nghiệp và freelancer chọn Vĩnh Long Connect — minh bạch, SafePay, hỗ trợ địa phương và phí cạnh tranh.",
 );
 
 export default function WhyVlcPage() {

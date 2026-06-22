@@ -27,7 +27,6 @@ export default function AddExclusiveResourceDialog({
   const [error, setError] = useState("");
 
   async function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
-  const t = tUi;
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file) return;
@@ -48,7 +47,6 @@ export default function AddExclusiveResourceDialog({
   }
 
   async function handleSubmit(e: React.FormEvent) {
-  const t = tUi;
   e.preventDefault();
     const trimmedTitle = title.trim();
     if (!trimmedTitle) {
@@ -111,7 +109,7 @@ export default function AddExclusiveResourceDialog({
           <span className="mp-dialog__label">{t("Tiêu đề *")}</span>
           <input
             className="mp-dialog__input"
-            placeholder={t("VD: Bộ template Figma cho client VIP")}
+            placeholder={t("VD: Bộ template Figma cho khách hàng VIP")}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             required

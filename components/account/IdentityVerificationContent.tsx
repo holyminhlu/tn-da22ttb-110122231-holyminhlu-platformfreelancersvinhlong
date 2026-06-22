@@ -204,7 +204,6 @@ export default function IdentityVerificationContent() {
   const isRejected = reviewStatus === "rejected";
 
   async function handleSubmitReview() {
-  const t = tUi;
     setSubmitting(true);
     try {
       await patchIdentityVerification({ submitForReview: true });

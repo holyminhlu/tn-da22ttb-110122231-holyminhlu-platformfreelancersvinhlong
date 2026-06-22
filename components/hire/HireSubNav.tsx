@@ -12,7 +12,7 @@ export default function HireSubNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="hire-subnav" aria-label={t("Thuê freelancer")}>
+    <nav className="hire-subnav" aria-label={t("hireNav.aria")}>
       <div className="hire-subnav__inner">
         {HIRE_NAV.map((tab) => {
           const active = pathname === tab.href || pathname.startsWith(`${tab.href}/`);
@@ -23,7 +23,7 @@ export default function HireSubNav() {
               className={`hire-subnav__link${active ? " hire-subnav__link--active" : ""}`}
               aria-current={active ? "page" : undefined}
             >
-              {tab.label}
+              {t(tab.labelKey)}
             </Link>
           );
         })}

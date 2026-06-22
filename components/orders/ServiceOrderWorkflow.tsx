@@ -37,35 +37,35 @@ const STAGES = [
     label: tUi("Giai đoạn 1"),
     title: tUi("Tiếp cận & Chốt thỏa thuận"),
     clientHint: tUi("Chờ freelancer gửi đề xuất (proposal). Trao đổi qua chat/call để làm rõ yêu cầu, sau đó chấp nhận đề xuất."),
-    freelancerHint: tUi("Gửi đề xuất kỹ thuật, tiến độ và ngân sách cho Client."),
+    freelancerHint: tUi("Gửi đề xuất kỹ thuật, tiến độ và ngân sách cho Khách hàng."),
   },
   {
     id: "escrow",
     label: tUi("Giai đoạn 2"),
     title: tUi("Khởi tạo hợp đồng & Ký quỹ"),
     clientHint: tUi("Nạp tiền Escrow vào sàn. Freelancer chỉ bắt đầu khi trạng thái Funded."),
-    freelancerHint: tUi("Chờ Client nạp ký quỹ. Khi Funded bạn có thể bắt đầu làm việc."),
+    freelancerHint: tUi("Chờ Khách hàng nạp ký quỹ. Khi Funded bạn có thể bắt đầu làm việc."),
   },
   {
     id: "execution",
     label: tUi("Giai đoạn 3"),
     title: tUi("Thực hiện & Kiểm tra"),
     clientHint: tUi("Theo dõi tiến độ, xem demo staging, yêu cầu chỉnh sửa trong giới hạn gói."),
-    freelancerHint: tUi("Cập nhật tiến độ, gửi link demo. Điều chỉnh theo phản hồi Client."),
+    freelancerHint: tUi("Cập nhật tiến độ, gửi link demo. Điều chỉnh theo phản hồi Khách hàng."),
   },
   {
     id: "delivery",
     label: tUi("Giai đoạn 4"),
     title: tUi("Bàn giao & Nghiệm thu"),
     clientHint: tUi("Kiểm tra sản phẩm cuối, báo lỗi nếu có, sau đó nghiệm thu."),
-    freelancerHint: tUi("Đóng gói bàn giao (mã nguồn, tài liệu, triển khai) và gửi cho Client."),
+    freelancerHint: tUi("Đóng gói bàn giao (mã nguồn, tài liệu, triển khai) và gửi cho Khách hàng."),
   },
   {
     id: "completion",
     label: tUi("Giai đoạn 5"),
     title: tUi("Kết thúc & Đánh giá"),
     clientHint: tUi("Giải ngân cho Freelancer và để lại đánh giá công khai."),
-    freelancerHint: tUi("Chờ Client giải ngân và đánh giá."),
+    freelancerHint: tUi("Chờ Khách hàng giải ngân và đánh giá."),
   },
 ] as const;
 
@@ -200,8 +200,6 @@ export default function ServiceOrderWorkflow({
   });
 
   function confirmCancelOrder() {
-  const t = tUi;
-  const formatDate = formatDateUi;
     const reason = window.prompt("Lý do hủy đơn (tùy chọn):", "") ?? "";
     void runAction({ action: "cancel_order", reason });
   }
@@ -444,7 +442,7 @@ export default function ServiceOrderWorkflow({
 
           {contract.client_brief ? (
             <>
-              <h3 className="hire-quote__section-title">{t("Yêu cầu ban đầu của Client")}</h3>
+              <h3 className="hire-quote__section-title">{t("Yêu cầu ban đầu của Khách hàng")}</h3>
               <div className="hire-order__info-box">{contract.client_brief}</div>
             </>
           ) : null}

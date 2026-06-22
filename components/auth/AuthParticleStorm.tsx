@@ -54,7 +54,6 @@ function getPhase(cycleTime: number): Phase {
 }
 
 function fadeInOut(localTime: number, duration: number, fadeMs = FADE_MS) {
-  const t = tUi;
   if (localTime < fadeMs) return localTime / fadeMs;
   if (localTime > duration - fadeMs) return (duration - localTime) / fadeMs;
   return 1;
@@ -217,7 +216,6 @@ function getParticleOpacity(time: number): number {
 }
 
 async function ensureTitleFont(fontSize: number) {
-  const t = tUi;
   if (typeof document === "undefined") return;
   const spec = `700 ${fontSize}px "Be Vietnam Pro"`;
   try {
@@ -243,7 +241,6 @@ function drawTitleText(
   fontSize: number,
   opacity: number,
 ) {
-  const t = tUi;
   if (opacity <= 0) return;
 
   ctx.save();

@@ -1,16 +1,17 @@
 import { apiUrl, getApiBaseUrl } from "@/config/api.config";
+import { tUi } from "@/lib/i18n/runtime";
 import { formatCompactVnd, parseJsonArray } from "@/lib/format";
 
 export function relativePosted(iso: string): string {
   const d = new Date(iso);
   const diff = Date.now() - d.getTime();
-  if (Number.isNaN(diff) || diff < 0) return "vừa xong";
+  if (Number.isNaN(diff) || diff < 0) return tUi("hirePage.relativeJustNow");
   const mins = Math.floor(diff / 60000);
-  if (mins < 60) return `${mins || 1} phút trước`;
+  if (mins < 60) return tUi("hirePage.relativeMins", { count: mins || 1 });
   const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours} giờ trước`;
+  if (hours < 24) return tUi("hirePage.relativeHours", { count: hours });
   const days = Math.floor(hours / 24);
-  return `${days} ngày trước`;
+  return tUi("hirePage.relativeDays", { count: days });
 }
 
 export function resolveJobImageSrc(url?: string | null): string | undefined {
@@ -41,10 +42,10 @@ export type JobStatusTone = "open" | "progress" | "closed" | "cancelled" | "defa
 
 export function jobStatusLabel(status: string): string {
   const s = String(status || "").toLowerCase();
-  if (s === "open") return "Đang tuyển";
-  if (s === "in_progress") return "Đang thực hiện";
-  if (s === "closed") return "Đã đóng";
-  if (s === "cancelled") return "Đã hủy";
+  if (s === "open") return tUi("hirePage.jobStatusOpen");
+  if (s === "in_progress") return tUi("hirePage.jobStatusInProgress");
+  if (s === "closed") return tUi("hirePage.jobStatusClosed");
+  if (s === "cancelled") return tUi("hirePage.jobStatusCancelled");
   return status || "—";
 }
 
@@ -71,8 +72,9 @@ export function relativePostedEn(iso: string): string {
 }
 
 export function quotesCountLabel(count: number): string {
-  if (count <= 0) return "Chưa có báo giá";
-  return count === 1 ? "1 báo giá" : `${count} báo giá`;
+  if (count <= 0) return tUi("hirePage.noQuotesYet");
+  if (count === 1) return tUi("hirePage.quoteOne");
+  return tUi("hirePage.quotesCount", { count });
 }
 
 export { formatCompactVnd } from "@/lib/format";

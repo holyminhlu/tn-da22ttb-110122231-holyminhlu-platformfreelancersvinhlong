@@ -11,14 +11,14 @@ type ProgressHistoryTimelineProps = {
 
 function entryLabel(entry: ProgressHistoryEntry, progressRound: number) {
   if (entry.entry_type === "revision") {
-    return "Client yêu cầu chỉnh sửa";
+    return "Khách hàng yêu cầu chỉnh sửa";
   }
   return `Freelancer cập nhật tiến độ · Lần ${progressRound}`;
 }
 
 function actorDisplay(entry: ProgressHistoryEntry) {
   if (entry.actor_name?.trim()) return entry.actor_name.trim();
-  if (entry.entry_type === "revision") return "Client";
+  if (entry.entry_type === "revision") return "Khách hàng";
   return "Freelancer";
 }
 
@@ -33,7 +33,7 @@ export default function ProgressHistoryTimeline({
 
   return (
     <section className="hire-execution__history" aria-label={t("Lịch sử tiến độ và phản hồi")}>
-      <h4 className="hire-execution__history-title">{t("Lịch sử tiến độ &amp; phản hồi")}</h4>
+      <h4 className="hire-execution__history-title">{t("Lịch sử tiến độ & phản hồi")}</h4>
       <ol className="hire-execution__history-list">
         {entries.map((entry, idx) => {
           const isProgress = entry.entry_type === "progress";

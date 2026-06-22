@@ -24,7 +24,7 @@ const TABS: { id: AdminReviewStatus; label: string }[] = [
 
 const ROLE_OPTIONS: { id: AdminRoleFilter; label: string }[] = [
   { id: "all", label: "Tất cả vai trò" },
-  { id: "client", label: "Client" },
+  { id: "client", label: "Khách hàng" },
   { id: "freelancer", label: "Freelancer" },
 ];
 
@@ -37,7 +37,6 @@ function stepBadge(done: boolean) {
 }
 
 function reviewBadge(status: string) {
-  const t = tUi;
   const s = status.toLowerCase();
   if (s === "approved") return <span className="admin-badge admin-badge--ok">{tUi("Đã duyệt")}</span>;
   if (s === "rejected") return <span className="admin-badge admin-badge--bad">{tUi("Từ chối")}</span>;
@@ -95,8 +94,6 @@ export default function FreelancerApprovalPage() {  const { t, formatDate } = us
   }, [load]);
 
   function resetFilters() {
-  const t = tUi;
-  const formatDate = formatDateUi;
     setRoleFilter("all");
     setSearchInput("");
     setSearchQuery("");
@@ -108,8 +105,6 @@ export default function FreelancerApprovalPage() {  const { t, formatDate } = us
     roleFilter !== "all" || searchQuery !== "" || readyOnly || incompleteOnly;
 
   async function toggleDetail(userId: string) {
-  const t = tUi;
-  const formatDate = formatDateUi;
     if (expandedId === userId) {
       setExpandedId(null);
       setDetailItem(null);
@@ -134,8 +129,6 @@ export default function FreelancerApprovalPage() {  const { t, formatDate } = us
   }
 
   async function handleApprove(userId: string, role: string) {
-  const t = tUi;
-  const formatDate = formatDateUi;
     const label = role === "client" ? "client" : "freelancer";
     if (
       !window.confirm(
@@ -162,8 +155,6 @@ export default function FreelancerApprovalPage() {  const { t, formatDate } = us
   }
 
   async function handleReject(userId: string) {
-  const t = tUi;
-  const formatDate = formatDateUi;
     const note = window.prompt(t("Lý do từ chối (tuỳ chọn):"));
     if (note === null) return;
     setBusyId(userId);
@@ -323,7 +314,7 @@ export default function FreelancerApprovalPage() {  const { t, formatDate } = us
                     </td>
                     <td>
                       <span className="admin-badge admin-badge--role">
-                        {item.role === "client" ? "Client" : "Freelancer"}
+                        {item.role === "client" ? "Khách hàng" : "Freelancer"}
                       </span>
                     </td>
                     <td>{stepBadge(item.step1Complete)}</td>

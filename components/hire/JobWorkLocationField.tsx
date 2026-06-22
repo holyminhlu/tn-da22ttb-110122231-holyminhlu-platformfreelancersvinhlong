@@ -56,7 +56,6 @@ export default function JobWorkLocationField({
   }, [mode, locationLabel, address.addressSearch]);
 
   function selectOnsite() {
-  const t = tUi;
     onModeChange("onsite");
     if (!locationLabel.trim() || locationLabel === REMOTE_WORK_LOCATION_LABEL) {
       onLocationLabelChange(address.addressSearch.trim());
@@ -64,14 +63,12 @@ export default function JobWorkLocationField({
   }
 
   function selectRemote() {
-  const t = tUi;
     onModeChange("remote");
     onLocationLabelChange(REMOTE_WORK_LOCATION_LABEL);
     onCoordsChange(null, null);
   }
 
   function handleAddressChange(next: AddressFormSlice) {
-  const t = tUi;
     setAddress(next);
     onLocationLabelChange(next.addressSearch.trim());
   }

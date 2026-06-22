@@ -125,7 +125,6 @@ export default function HireQuoteAiCompareModal({
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
-  const t = tUi;
       if (event.key === "Escape") onClose();
     }
     document.addEventListener("keydown", onKeyDown);

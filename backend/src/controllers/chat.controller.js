@@ -341,12 +341,12 @@ async function openConversation(req, res) {
     freelancerIdFinal = freelancerId;
   } else if (role === "freelancer") {
     if (!clientIdParam) {
-      return res.status(400).json({ message: "Thiếu mã client." });
+      return res.status(400).json({ message: "Thiếu mã khách hàng." });
     }
     clientId = clientIdParam;
     freelancerIdFinal = userId;
   } else {
-    return res.status(403).json({ message: "Chỉ client hoặc freelancer được sử dụng chat." });
+    return res.status(403).json({ message: "Chỉ khách hàng hoặc freelancer được sử dụng chat." });
   }
 
   const dbClient = await pool.connect();
@@ -363,7 +363,7 @@ async function openConversation(req, res) {
       [clientId],
     );
     if (clientCheck.rowCount === 0) {
-      return res.status(404).json({ message: "Không tìm thấy client." });
+      return res.status(404).json({ message: "Không tìm thấy khách hàng." });
     }
 
     if (!(await assertClientCanMessage(dbClient, role, userId, res))) {

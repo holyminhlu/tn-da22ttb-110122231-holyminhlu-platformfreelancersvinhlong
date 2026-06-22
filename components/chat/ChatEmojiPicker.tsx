@@ -22,7 +22,6 @@ export default function ChatEmojiPicker({
     if (!open) return;
 
     function onPointerDown(event: MouseEvent) {
-  const t = tUi;
   const target = event.target as Node;
       if (panelRef.current?.contains(target)) return;
       if (anchorRef?.current?.contains(target)) return;

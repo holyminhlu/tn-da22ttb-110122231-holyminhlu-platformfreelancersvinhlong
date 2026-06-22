@@ -117,14 +117,14 @@ function buildComparePrompt({ job, focusedQuote, allQuotes }) {
     .map((q) => buildQuoteSnapshot(q));
 
   return `Bạn là cố vấn tuyển dụng cho nền tảng freelance tại Vĩnh Long, Việt Nam.
-Nhiệm vụ: so sánh freelancer đang được client xem xét với TẤT CẢ freelancer khác đã báo giá cho cùng một công việc, giúp client chọn ứng viên phù hợp nhất.
+Nhiệm vụ: so sánh freelancer đang được khách hàng xem xét với TẤT CẢ freelancer khác đã báo giá cho cùng một công việc, giúp khách hàng chọn ứng viên phù hợp nhất.
 
 Trả lời hoàn toàn bằng tiếng Việt, khách quan, thực tế. Không bịa thông tin không có trong dữ liệu.
 Nếu thiếu dữ liệu (ví dụ chưa có đánh giá), hãy nêu rõ và điều chỉnh trọng số phù hợp.
 
 ## Công việc
 - Tiêu đề: ${job.title || "Không rõ"}
-- Ngân sách client: ${job.budget != null ? `${Number(job.budget).toLocaleString("vi-VN")} VND` : "Chưa đặt"}
+- Ngân sách khách hàng: ${job.budget != null ? `${Number(job.budget).toLocaleString("vi-VN")} VND` : "Chưa đặt"}
 - Loại ngân sách: ${job.budget_type || "fixed"}
 - Mô tả: ${job.description || "Không có mô tả chi tiết"}
 
@@ -141,7 +141,7 @@ ${JSON.stringify(others, null, 2)}
 4. Đưa ra 4-6 tiêu chí trong criteria (Giá, Kinh nghiệm, Uy tín, Nội dung đề xuất, v.v.).
 5. verdict: "leading" nếu freelancer focus dẫn đầu tiêu chí đó, "competitive" nếu ngang cơ, "trailing" nếu yếu hơn.
 6. Gợi ý cuối cùng có thể chọn freelancer focus HOẶC một freelancer khác nếu hợp lý hơn — luôn ghi rõ suggestedQuoteId.
-7. actionTips: 2-4 gợi ý hành động cụ thể cho client (ví dụ nhắn tin hỏi thêm, đặt lịch phỏng vấn).`;
+7. actionTips: 2-4 gợi ý hành động cụ thể cho khách hàng (ví dụ nhắn tin hỏi thêm, đặt lịch phỏng vấn).`;
 }
 
 async function callGeminiJson(prompt) {

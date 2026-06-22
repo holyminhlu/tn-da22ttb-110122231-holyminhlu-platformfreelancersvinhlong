@@ -314,7 +314,7 @@ async function resolveAdminDispute(req, res) {
       const total = Number(row.agreed_price) || 0;
       if (!Number.isFinite(clientAmount) || !Number.isFinite(freelancerAmount)) {
         await db.query("ROLLBACK");
-        return res.status(400).json({ message: "Vui lòng nhập số tiền hoàn cho Client và thanh toán cho Freelancer." });
+        return res.status(400).json({ message: "Vui lòng nhập số tiền hoàn cho Khách hàng và thanh toán cho Freelancer." });
       }
       if (clientAmount < 0 || freelancerAmount < 0) {
         await db.query("ROLLBACK");
@@ -348,7 +348,7 @@ async function resolveAdminDispute(req, res) {
         await db.query("ROLLBACK");
         return res.status(409).json({
           message:
-            "Không thể bác tranh chấp hủy đơn — hãy phân chia tiền, hoàn cho Client hoặc giải ngân cho Freelancer.",
+            "Không thể bác tranh chấp hủy đơn — hãy phân chia tiền, hoàn cho Khách hàng hoặc giải ngân cho Freelancer.",
         });
       }
       await db.query(

@@ -38,7 +38,6 @@ export default function FreelancerLikeButton({
   const safeCount = Math.max(0, displayCount);
 
   async function handleToggle() {
-  const t = tUi;
     if (disabled || busy) return;
     setBusy(true);
     setPrevCount(displayCount);

@@ -1,7 +1,7 @@
 import PaymentsRouter from "@/components/payments/PaymentsRouter";
 
 export const metadata = {
-  title: "Thanh toán — Vĩnh Long Connected",
+  title: "Thanh toán — Vĩnh Long Connect",
   description: "Số dư, thu nhập, rút tiền và lịch sử giao dịch.",
 };
 

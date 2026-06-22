@@ -11,9 +11,9 @@
 | Chờ đề xuất (GĐ1) | `created_at` / vào `selection` | 7 ngày | `expired` |
 | Chờ chấp nhận đề xuất (GĐ1) | `proposal_submitted_at` | 7 ngày | `expired` |
 | Chờ nạp Escrow (GĐ2) | chuyển sang `escrow` | 5 ngày | `expired` |
-| Yêu cầu hủy & hoàn tiền (GĐ3) | Client mở request | 3 ngày FL phản hồi | auto-refund 100% |
+| Yêu cầu hủy & hoàn tiền (GĐ3) | Khách hàng mở request | 3 ngày FL phản hồi | auto-refund 100% |
 | Chờ nghiệm thu (GĐ4) | `delivered_at` | 7 ngày | auto-accept + auto-release |
-| Yêu cầu chỉnh sửa (GĐ4) | `revision_requested_at` | 3 ngày FL phản hồi | Client mở dispute |
+| Yêu cầu chỉnh sửa (GĐ4) | `revision_requested_at` | 3 ngày FL phản hồi | Khách hàng mở dispute |
 
 Nhắc trước hết hạn: **48h** và **24h** (log + cờ `sla_reminder_*` trên `contracts`; email/notifications v2).
 
@@ -21,7 +21,7 @@ Nhắc trước hết hạn: **48h** và **24h** (log + cờ `sla_reminder_*` tr
 
 ## Phase 0 — Chuẩn bị (bắt buộc trước code)
 
-- [x] **Chốt spec** với giảng viên / nhóm: bảng SLA trên, ma trận quyền (Client / Freelancer / Admin).
+- [x] **Chốt spec** với giảng viên / nhóm: bảng SLA trên, ma trận quyền (Khách hàng / Freelancer / Admin).
 - [x] **Vẽ state machine** — `docs/workflow-state-machine.md`.
 - [x] **Cập nhật điều khoản / trang Help**: auto-hủy, auto-accept, auto-refund, dispute (`components/help/help-data.ts`).
 - [x] **Chạy migration** `backend/sql/workflow_sla.sql` (đã chạy trên DB local).
@@ -54,9 +54,9 @@ Nhắc trước hết hạn: **48h** và **24h** (log + cờ `sla_reminder_*` tr
 
 ### Kiểm thử Phase A *(bạn tick sau khi verify)*
 
-- [ ] FL gửi proposal → Client không phản hồi 7 ngày → auto `expired`.
-- [ ] Client accept → không nạp 5 ngày → auto `expired`, tiền chưa trừ.
-- [ ] FL rút proposal / Client hủy thủ công → đúng trạng thái, không refund.
+- [ ] FL gửi proposal → Khách hàng không phản hồi 7 ngày → auto `expired`.
+- [ ] Khách hàng accept → không nạp 5 ngày → auto `expired`, tiền chưa trừ.
+- [ ] FL rút proposal / Khách hàng hủy thủ công → đúng trạng thái, không refund.
 
 **Gợi ý test nhanh (PowerShell — thay `UUID-THAT` bằng id đơn thật, không dùng `<>`):**
 
@@ -79,7 +79,7 @@ npm run workflow:sla
 - [x] `mark_delivered` set deadline +7 ngày
 - [x] `request_revision` tạm dừng deadline auto-accept
 - [x] Cron: auto-accept + auto-release + `auto_accepted_at` + transaction
-- [ ] Thông báo Client khi FL bàn giao *(chờ notifications v2)*
+- [ ] Thông báo Khách hàng khi FL bàn giao *(chờ notifications v2)*
 
 ### Frontend
 
@@ -88,9 +88,9 @@ npm run workflow:sla
 
 ### Kiểm thử Phase B *(bạn tick)*
 
-- [ ] FL bàn giao → Client im lặng 7 ngày → auto accept + release tiền.
-- [ ] Client yêu cầu sửa → đồng hồ dừng / gia hạn đúng.
-- [ ] Client nghiệm thu thủ công trước deadline → không auto-accept.
+- [ ] FL bàn giao → Khách hàng im lặng 7 ngày → auto accept + release tiền.
+- [ ] Khách hàng yêu cầu sửa → đồng hồ dừng / gia hạn đúng.
+- [ ] Khách hàng nghiệm thu thủ công trước deadline → không auto-accept.
 
 ---
 
@@ -104,7 +104,7 @@ npm run workflow:sla
 
 - [x] `request_cancel_refund`, `respond_cancel_request`
 - [x] Cron auto-refund 100% sau 3 ngày không phản hồi
-- [x] Không auto-refund nếu chưa có request từ Client
+- [x] Không auto-refund nếu chưa có request từ Khách hàng
 
 ### Frontend
 
@@ -114,7 +114,7 @@ npm run workflow:sla
 
 ### Kiểm thử Phase C *(bạn tick)*
 
-- [ ] Client request → FL im lặng 3 ngày → refund 100%.
+- [ ] Khách hàng request → FL im lặng 3 ngày → refund 100%.
 - [ ] FL phản đối → chuyển dispute hoặc chờ admin.
 
 ---

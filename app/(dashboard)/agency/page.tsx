@@ -2,7 +2,7 @@ import SitePage, { sitePageMetadata } from "@/components/layout/SitePage";
 
 export const metadata = sitePageMetadata(
   "Agency",
-  "Giải pháp cho agency trên Vĩnh Long Connected.",
+  "Giải pháp cho agency trên Vĩnh Long Connect.",
 );
 
 export default function AgencyPage() {

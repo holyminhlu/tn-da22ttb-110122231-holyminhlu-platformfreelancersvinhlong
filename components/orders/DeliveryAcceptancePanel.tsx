@@ -32,7 +32,7 @@ type DeliveryAcceptancePanelProps = {
   actionError?: string;
   paymentBlocked?: boolean;
   counterpartyName: string;
-  /** Client vẫn ở giai đoạn 3 khi freelancer đã bàn giao, chưa nghiệm thu. */
+  /** Khách hàng vẫn ở giai đoạn 3 khi freelancer đã bàn giao, chưa nghiệm thu. */
   clientPendingInStage3?: boolean;
   cancelRequest?: CancelRequest | null;
   onMarkDelivered: () => void;
@@ -88,12 +88,12 @@ export default function DeliveryAcceptancePanel({
   const stageLead = workFrozen
     ? isClient
       ? "Đơn đang tạm dừng trong lúc chờ xử lý hoàn tiền. Bạn có thể xem bàn giao đã gửi nhưng chưa thể nghiệm thu."
-      : "Đơn đang tạm dừng. Vui lòng phản hồi yêu cầu hoàn tiền của Client trước khi tiếp tục."
+      : "Đơn đang tạm dừng. Vui lòng phản hồi yêu cầu hoàn tiền của Khách hàng trước khi tiếp tục."
     : clientPendingInStage3
       ? "Freelancer đã gửi sản phẩm cuối. Kiểm tra kỹ và nghiệm thu để chuyển sang giai đoạn tiếp theo."
       : isClient
         ? "Kiểm tra sản phẩm bàn giao, xác nhận đạt yêu cầu để chuyển sang hoàn tất và giải ngân."
-        : "Client đang rà soát bàn giao. Chờ nghiệm thu để kết thúc hợp đồng.";
+        : "Khách hàng đang rà soát bàn giao. Chờ nghiệm thu để kết thúc hợp đồng.";
 
   return (
     <div className="hire-delivery">
@@ -105,7 +105,7 @@ export default function DeliveryAcceptancePanel({
           <strong>
             {isClient
               ? "Đơn tạm dừng — chờ Freelancer phản hồi hoàn tiền"
-              : "Đơn tạm dừng — Client yêu cầu hủy & hoàn tiền"}
+              : "Đơn tạm dừng — Khách hàng yêu cầu hủy & hoàn tiền"}
           </strong>
           <span>
             Bàn giao, nghiệm thu và tranh chấp bị khóa cho đến khi có quyết định.{" "}
@@ -139,7 +139,7 @@ export default function DeliveryAcceptancePanel({
           label={
             isClient
               ? "Hạn nghiệm thu — sau đó hệ thống tự nghiệm thu & giải ngân"
-              : "Client cần nghiệm thu trước hạn"
+              : "Khách hàng cần nghiệm thu trước hạn"
           }
           variant="warn"
         />
@@ -175,7 +175,7 @@ export default function DeliveryAcceptancePanel({
             className={`hire-delivery__step${isDelivered && isClient ? " hire-delivery__step--current" : ""}${!isDelivered ? " hire-delivery__step--muted" : ""}`}
           >
             <span className="hire-delivery__step-icon" aria-hidden>3</span>
-            <span>{t("Client nghiệm thu")}</span>
+            <span>{t("Khách hàng nghiệm thu")}</span>
           </li>
         </ul>
       </div>
@@ -266,7 +266,7 @@ export default function DeliveryAcceptancePanel({
               <FaUserClock className="hire-delivery__state-icon" aria-hidden />
               <h3 className="hire-delivery__state-title">{t("Đã gửi bàn giao")}</h3>
               <p className="hire-delivery__state-desc">
-                Client đang kiểm tra sản phẩm và tài liệu bàn giao. Bạn sẽ được thông báo khi họ
+                Khách hàng đang kiểm tra sản phẩm và tài liệu bàn giao. Bạn sẽ được thông báo khi họ
                 nghiệm thu.
               </p>
               {contract.delivered_at ? (
@@ -282,7 +282,7 @@ export default function DeliveryAcceptancePanel({
               <FaPauseCircle className="hire-execution__frozen-icon" aria-hidden />
               <h3 className="hire-execution__frozen-title">{t("Công việc tạm dừng")}</h3>
               <p className="hire-execution__frozen-desc">
-                Client đã gửi yêu cầu hoàn tiền. Bạn không thể xác nhận bàn giao cho đến khi phản
+                Khách hàng đã gửi yêu cầu hoàn tiền. Bạn không thể xác nhận bàn giao cho đến khi phản
                 hồi ở banner phía trên.
               </p>
             </div>

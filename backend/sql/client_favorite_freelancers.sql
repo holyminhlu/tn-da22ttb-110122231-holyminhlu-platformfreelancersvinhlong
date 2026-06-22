@@ -1,4 +1,4 @@
--- Client lưu freelancer yêu thích (hire/search)
+-- Khách hàng lưu freelancer yêu thích (hire/search)
 CREATE TABLE IF NOT EXISTS public.client_favorite_freelancers (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   client_id uuid NOT NULL REFERENCES public.users (id) ON DELETE CASCADE,
@@ -13,4 +13,4 @@ CREATE INDEX IF NOT EXISTS idx_client_favorite_freelancers_client_saved_at
 CREATE INDEX IF NOT EXISTS idx_client_favorite_freelancers_freelancer
   ON public.client_favorite_freelancers (freelancer_id);
 
-COMMENT ON TABLE public.client_favorite_freelancers IS 'Freelancer client đã thêm vào danh sách yêu thích';
+COMMENT ON TABLE public.client_favorite_freelancers IS 'Freelancer khách hàng đã thêm vào danh sách yêu thích';

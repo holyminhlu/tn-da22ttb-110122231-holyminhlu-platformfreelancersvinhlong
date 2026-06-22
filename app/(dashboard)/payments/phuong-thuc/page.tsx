@@ -2,7 +2,7 @@ import ClientPlaceholderPage, { clientPageMetadata } from "@/components/layout/C
 
 export const metadata = clientPageMetadata(
   "Phương thức thanh toán",
-  "Quản lý phương thức thanh toán của client.",
+  "Quản lý phương thức thanh toán của khách hàng.",
 );
 
 export default function PaymentMethodsPage() {

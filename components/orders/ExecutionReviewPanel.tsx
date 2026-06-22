@@ -131,7 +131,7 @@ export default function ExecutionReviewPanel({
           <strong>
             {isClient
               ? "Đơn tạm dừng — chờ Freelancer phản hồi hoàn tiền"
-              : "Đơn tạm dừng — Client yêu cầu hủy & hoàn tiền"}
+              : "Đơn tạm dừng — Khách hàng yêu cầu hủy & hoàn tiền"}
           </strong>
           <span>
             Công việc (cập nhật tiến độ, chỉnh sửa, bàn giao) bị khóa cho đến khi có quyết định.{" "}
@@ -167,12 +167,12 @@ export default function ExecutionReviewPanel({
             {workFrozen
               ? isClient
                 ? "Đơn đang tạm dừng trong lúc chờ xử lý hoàn tiền. Bạn có thể xem tiến độ đã gửi trước đó."
-                : "Đơn đang tạm dừng. Vui lòng phản hồi yêu cầu hoàn tiền của Client trước khi tiếp tục làm việc."
+                : "Đơn đang tạm dừng. Vui lòng phản hồi yêu cầu hoàn tiền của Khách hàng trước khi tiếp tục làm việc."
               : isClient
                 ? unlimitedRevisions
                   ? "Theo dõi tiến độ, mở link demo và gửi phản hồi chỉnh sửa không giới hạn cho đến khi hoàn thành công việc."
                   : "Theo dõi tiến độ, mở link demo staging và gửi phản hồi chỉnh sửa trong giới hạn gói."
-                : "Cập nhật tiến độ thường xuyên, gửi link demo để client kiểm tra trước khi bàn giao."}
+                : "Cập nhật tiến độ thường xuyên, gửi link demo để khách hàng kiểm tra trước khi bàn giao."}
           </p>
         </div>
         <ul className="hire-execution__steps" aria-label={t("Tiến trình thực hiện")}>
@@ -299,7 +299,7 @@ export default function ExecutionReviewPanel({
               <FaPauseCircle className="hire-execution__frozen-icon" aria-hidden />
               <h3 className="hire-execution__frozen-title">{t("Công việc tạm dừng")}</h3>
               <p className="hire-execution__frozen-desc">
-                Client đã gửi yêu cầu hoàn tiền. Bạn không thể cập nhật tiến độ hoặc bàn giao cho
+                Khách hàng đã gửi yêu cầu hoàn tiền. Bạn không thể cập nhật tiến độ hoặc bàn giao cho
                 đến khi phản hồi <strong>{t("Đồng ý hủy")}</strong> hoặc{" "}
                 <strong>{t("Từ chối → Tranh chấp")}</strong> ở banner phía trên. Nếu từ chối, đơn chuyển
                 sang tranh chấp và Admin phán xử — không tiếp tục làm việc.
@@ -316,7 +316,7 @@ export default function ExecutionReviewPanel({
                   <p className="hire-execution__work-sub">
                     {progressHistory.length > 0
                       ? "Gửi bản cập nhật mới — lịch sử các lần trước vẫn được giữ bên trên."
-                      : "Ghi chú những gì đã làm và gửi link demo (staging) để client kiểm tra."}
+                      : "Ghi chú những gì đã làm và gửi link demo (staging) để khách hàng kiểm tra."}
                   </p>
                 </div>
               </header>
@@ -345,7 +345,7 @@ export default function ExecutionReviewPanel({
                     <FaLink aria-hidden />
                     Link demo (staging)
                   </label>
-                  <span className="hire-execution__hint">{t("URL bản xem trước — client mở trực tiếp.")}</span>
+                  <span className="hire-execution__hint">{t("URL bản xem trước — khách hàng mở trực tiếp.")}</span>
                   <input
                     id="exec-demo"
                     type="url"
@@ -378,7 +378,7 @@ export default function ExecutionReviewPanel({
               <div className="hire-execution__delivery-block">
                 <h4 className="hire-execution__delivery-title">{t("Sẵn sàng bàn giao?")}</h4>
                 <p className="hire-execution__delivery-desc">
-                  Chỉ gửi bàn giao khi client đã duyệt qua demo và không còn chỉnh sửa lớn. Bước tiếp
+                  Chỉ gửi bàn giao khi khách hàng đã duyệt qua demo và không còn chỉnh sửa lớn. Bước tiếp
                   theo là giai đoạn Nghiệm thu.
                 </p>
                 <label className="hire-execution__confirm">
@@ -387,7 +387,7 @@ export default function ExecutionReviewPanel({
                     checked={deliveryConfirmed}
                     onChange={(e) => setDeliveryConfirmed(e.target.checked)}
                   />
-                  <span>{t("Tôi xác nhận sản phẩm đã sẵn sàng bàn giao cho Client.")}</span>
+                  <span>{t("Tôi xác nhận sản phẩm đã sẵn sàng bàn giao cho Khách hàng.")}</span>
                 </label>
                 <button
                   type="button"

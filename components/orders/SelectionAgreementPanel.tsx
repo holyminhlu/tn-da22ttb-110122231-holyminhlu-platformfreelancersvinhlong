@@ -51,7 +51,6 @@ function formatTimelineLabel(days: number) {
 }
 
 function buildProposalText(scope: string, deliveryDays: number) {
-  const t = tUi;
   const blocks: string[] = [];
   const s = scope.trim();
   if (s) blocks.push(`${SECTION_MARKERS.scope}\n${s}`);
@@ -118,8 +117,6 @@ export default function SelectionAgreementPanel({
   const canSubmit = scope.trim().length >= 20 && deliveryDays != null;
 
   function handleSubmit() {
-  const t = tUi;
-  const formatDate = formatDateUi;
     if (deliveryDays == null) return;
     onSubmitProposal({ proposalText: buildProposalText(scope, deliveryDays) });
   }
@@ -130,7 +127,7 @@ export default function SelectionAgreementPanel({
         deadlineAt={contract.stage_deadline_at}
         label={
           hasProposal
-            ? "Hạn Client chấp nhận đề xuất"
+            ? "Hạn Khách hàng chấp nhận đề xuất"
             : "Hạn Freelancer gửi đề xuất"
         }
       />
@@ -142,7 +139,7 @@ export default function SelectionAgreementPanel({
             {isClient
               ? "Xem đề xuất từ freelancer, trao đổi làm rõ yêu cầu, sau đó chấp nhận để chuyển sang ký quỹ (Escrow)."
               : hasRejection
-                ? "Client đã từ chối đề xuất trước. Xem lý do và nội dung cũ, sau đó gửi đề xuất mới."
+                ? "Khách hàng đã từ chối đề xuất trước. Xem lý do và nội dung cũ, sau đó gửi đề xuất mới."
                 : "Trình bày phạm vi công việc và chọn thời gian hoàn thành dự kiến."}
           </p>
         </div>
@@ -155,7 +152,7 @@ export default function SelectionAgreementPanel({
           </li>
           <li className={`hire-selection__step${hasProposal && isClient ? " hire-selection__step--current" : ""}${!hasProposal ? " hire-selection__step--muted" : ""}`}>
             <span className="hire-selection__step-icon" aria-hidden>2</span>
-            <span>{t("Client xem & chấp nhận")}</span>
+            <span>{t("Khách hàng xem & chấp nhận")}</span>
           </li>
           <li className="hire-selection__step hire-selection__step--muted">
             <span className="hire-selection__step-icon" aria-hidden>3</span>
@@ -193,7 +190,7 @@ export default function SelectionAgreementPanel({
             <div className="hire-selection__context-card">
               <h3 className="hire-selection__context-title">
                 <FaClipboardList aria-hidden />
-                Yêu cầu từ Client
+                Yêu cầu từ Khách hàng
               </h3>
               <p className="hire-selection__brief">{contract.client_brief}</p>
             </div>
@@ -221,7 +218,7 @@ export default function SelectionAgreementPanel({
           {!isClient && !hasProposal && hasRejection ? (
             <div className="hire-selection__state-card hire-selection__state-card--rejected">
               <FaTimesCircle className="hire-selection__state-icon" aria-hidden />
-              <h3 className="hire-selection__state-title">{t("Đề xuất trước bị Client từ chối")}</h3>
+              <h3 className="hire-selection__state-title">{t("Đề xuất trước bị Khách hàng từ chối")}</h3>
               {contract.last_rejected_proposal_at ? (
                 <p className="hire-selection__state-meta">
                   Từ chối lúc {formatDateUi(contract.last_rejected_proposal_at)}
@@ -232,7 +229,7 @@ export default function SelectionAgreementPanel({
                 <p className="hire-selection__rejection-reason-body">
                   {contract.proposal_rejection_note?.trim()
                     ? contract.proposal_rejection_note
-                    : "Client không ghi lý do cụ thể. Bạn có thể trao đổi thêm qua tin nhắn trước khi gửi đề xuất mới."}
+                    : "Khách hàng không ghi lý do cụ thể. Bạn có thể trao đổi thêm qua tin nhắn trước khi gửi đề xuất mới."}
                 </p>
               </div>
               <div className="hire-selection__proposal-preview">
@@ -263,11 +260,11 @@ export default function SelectionAgreementPanel({
                 <FaPaperPlane className="hire-selection__form-head-icon" aria-hidden />
                 <div>
                   <h3 className="hire-selection__form-title">
-                    {hasRejection ? "Gửi đề xuất mới" : "Gửi đề xuất cho Client"}
+                    {hasRejection ? "Gửi đề xuất mới" : "Gửi đề xuất cho Khách hàng"}
                   </h3>
                   <p className="hire-selection__form-sub">
                     {hasRejection
-                      ? "Điều chỉnh phạm vi hoặc tiến độ theo phản hồi của Client, rồi gửi lại."
+                      ? "Điều chỉnh phạm vi hoặc tiến độ theo phản hồi của Khách hàng, rồi gửi lại."
                       : "Mô tả phạm vi công việc và chọn số ngày bàn giao dự kiến."}
                   </p>
                 </div>
@@ -326,10 +323,10 @@ export default function SelectionAgreementPanel({
                   className="hire-selection__btn hire-selection__btn--primary"
                   disabled={busy || !canSubmit}
                 >
-                  {busy ? "Đang gửi..." : hasRejection ? "Gửi đề xuất mới" : "Gửi đề xuất cho Client"}
+                  {busy ? "Đang gửi..." : hasRejection ? "Gửi đề xuất mới" : "Gửi đề xuất cho Khách hàng"}
                 </button>
                 <p className="hire-selection__form-note">
-                  Sau khi gửi, bạn có thể trao đổi thêm trước khi client chấp nhận.
+                  Sau khi gửi, bạn có thể trao đổi thêm trước khi khách hàng chấp nhận.
                 </p>
               </footer>
             </form>
@@ -340,7 +337,7 @@ export default function SelectionAgreementPanel({
               <FaUserClock className="hire-selection__state-icon" aria-hidden />
               <h3 className="hire-selection__state-title">{t("Đề xuất đã gửi")}</h3>
               <p className="hire-selection__state-desc">
-                Client đang xem xét. Bạn có thể trao đổi thêm qua tin nhắn hoặc cuộc gọi trong lúc chờ phản hồi.
+                Khách hàng đang xem xét. Bạn có thể trao đổi thêm qua tin nhắn hoặc cuộc gọi trong lúc chờ phản hồi.
               </p>
               {contract.proposal_submitted_at ? (
                 <p className="hire-selection__state-meta">

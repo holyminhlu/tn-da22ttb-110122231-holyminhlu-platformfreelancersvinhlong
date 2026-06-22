@@ -21,6 +21,7 @@ import {
   FaVideo,
 } from "react-icons/fa";
 import { getJob, type JobListing } from "@/lib/api/jobs";
+import { serviceOrderHref } from "@/lib/routes/paths";
 import UserAvatar from "@/components/ui/UserAvatar";
 import { useStoredUser } from "@/hooks/useStoredUser";
 import {
@@ -47,7 +48,6 @@ import WorkDetailGallery from "./WorkDetailGallery";
 import JobProposalFormModal from "./JobProposalFormModal";
 
 function WorkDetailSkeleton() {
-  const t = tUi;
   return (
     <div className="wd-skeleton" aria-busy="true" aria-label={tUi("Đang tải")}>
       <div className="wd-skeleton__back" />
@@ -172,9 +172,6 @@ export default function WorkDetailContent() {  const { t, formatVnd, formatDate 
   const isOwnJob = Boolean(user?.id && job.client_id && String(user.id) === String(job.client_id));
 
   function openQuoteFlow() {
-  const t = tUi;
-  const formatDate = formatDateUi;
-  const formatVnd = formatVndUi;
     if (isClient) {
       setClientNoticeOpen(true);
       return;
@@ -262,7 +259,7 @@ export default function WorkDetailContent() {  const { t, formatVnd, formatDate 
         <div className="wd-main-col">
           {images.length > 0 ? (
             <section className="wd-card wd-card--flush">
-              <WorkDetailGallery images={images} title={job.title} />
+              <WorkDetailGallery images={images} title={job.title} compact />
             </section>
           ) : null}
 
@@ -306,7 +303,7 @@ export default function WorkDetailContent() {  const { t, formatVnd, formatDate 
             </h2>
             {quotePhase === "none" || quotePhase === "declined" ? (
               <p className="wd-help-text">
-                Nhấn <strong>{t("Gửi yêu cầu báo giá")}</strong> để client nhận hồ sơ của bạn. Chỉ gửi được khi việc
+                Nhấn <strong>{t("Gửi yêu cầu báo giá")}</strong> để khách hàng nhận hồ sơ của bạn. Chỉ gửi được khi việc
                 đang <em>{t("Đang tuyển")}</em> và bạn chưa có báo giá đang xử lý.
               </p>
             ) : (
@@ -384,10 +381,10 @@ export default function WorkDetailContent() {  const { t, formatVnd, formatDate 
                 <>
                   <div className="wd-cta-success" role="status">
                     <FaCheckCircle aria-hidden />
-                    Bạn đã được client chọn cho công việc này.
+                    Bạn đã được khách hàng chọn cho công việc này.
                   </div>
                   <Link
-                    href={`/findwork/orders/${myContractId}`}
+                    href={serviceOrderHref(myContractId, "freelancer")}
                     className="wd-cta__btn wd-cta__btn--primary"
                   >
                     Mở không gian làm việc
@@ -407,7 +404,7 @@ export default function WorkDetailContent() {  const { t, formatVnd, formatDate 
                   </Link>
                   <Link href="/findwork/messages" className="wd-cta__btn wd-cta__btn--ghost">
                     <FaCommentDots aria-hidden />
-                    Nhắn tin client
+                    Nhắn tin khách hàng
                   </Link>
                 </>
               ) : quotePhase === "interviewing" ? (
@@ -421,7 +418,7 @@ export default function WorkDetailContent() {  const { t, formatVnd, formatDate 
                   </div>
                   <Link href="/findwork/messages" className="wd-cta__btn wd-cta__btn--primary">
                     <FaCommentDots aria-hidden />
-                    Trả lời client
+                    Trả lời khách hàng
                   </Link>
                   <Link href="/findwork/quotes" className="wd-cta__btn wd-cta__btn--ghost">
                     Xem báo giá của tôi

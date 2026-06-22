@@ -1,5 +1,5 @@
-import type { Locale, TranslationParams } from "@/lib/i18n/types";
-import { enDictionary } from "@/lib/i18n/messages/en-dictionary";
+import type { TranslationParams } from "@/lib/i18n/types";
+import { isStructuredTranslationKey } from "@/lib/i18n/config";
 import { keyedMessages } from "@/lib/i18n/messages/keyed";
 
 function getNested(obj: Record<string, unknown>, path: string): string | undefined {
@@ -20,18 +20,14 @@ function interpolate(text: string, params?: TranslationParams): string {
   );
 }
 
-export function translate(
-  locale: Locale,
-  keyOrVi: string,
-  params?: TranslationParams,
-): string {
-  const keyed = getNested(keyedMessages[locale], keyOrVi) ?? getNested(keyedMessages.vi, keyOrVi);
+/** Tra cứu chuỗi UI tiếng Việt theo key có cấu trúc hoặc literal. */
+export function translate(keyOrVi: string, params?: TranslationParams): string {
+  const keyed = getNested(keyedMessages, keyOrVi);
   if (keyed) return interpolate(keyed, params);
 
-  if (locale === "vi") return interpolate(keyOrVi, params);
-
-  const fromDict = enDictionary[keyOrVi];
-  if (fromDict) return interpolate(fromDict, params);
+  if (process.env.NODE_ENV === "development" && isStructuredTranslationKey(keyOrVi)) {
+    console.warn(`[i18n] Missing translation key: "${keyOrVi}"`);
+  }
 
   return interpolate(keyOrVi, params);
 }

@@ -100,8 +100,6 @@ export default function ManageServiceDetailPage() {  const { t, formatDate } = u
   const singlePrice = isSinglePackagePricing(packages);
 
   async function changeStatus(status: ServiceListingStatus) {
-  const t = tUi;
-  const formatDate = formatDateUi;
     if (!service) return;
     setBusy(true);
     try {
@@ -201,7 +199,7 @@ export default function ManageServiceDetailPage() {  const { t, formatDate } = u
                 ) : null}
                 {clientPreviewHref ? (
                   <Link href={clientPreviewHref} className="svc-btn svc-btn--secondary" target="_blank">
-                    <FaExternalLinkAlt aria-hidden /> {t("Xem như Client")}
+                    <FaExternalLinkAlt aria-hidden /> {t("Xem như Khách hàng")}
                   </Link>
                 ) : null}
                 <Link href={`/dich-vu/quan-ly/${service.id}/chinh-sua`} className="svc-btn svc-btn--primary">
@@ -344,9 +342,9 @@ export default function ManageServiceDetailPage() {  const { t, formatDate } = u
                 </section>
 
                 <section className="svc-detail__section">
-                  <h2 className="svc-detail__section-title">{t("Yêu cầu từ Client")}</h2>
+                  <h2 className="svc-detail__section-title">{t("Yêu cầu từ Khách hàng")}</h2>
                   <p className="svc-detail__hint">
-                    {t("Client sẽ thấy danh sách này sau khi thanh toán và bạn tiếp nhận đơn.")}
+                    {t("Khách hàng sẽ thấy danh sách này sau khi thanh toán và bạn tiếp nhận đơn.")}
                   </p>
                   {reqLines.length > 0 ? (
                     <ol className="svc-detail__req-list">
@@ -383,7 +381,7 @@ export default function ManageServiceDetailPage() {  const { t, formatDate } = u
                 </section>
 
                 <section className="svc-detail__section">
-                  <h2 className="svc-detail__section-title">Gallery &amp; Demo</h2>
+                  <h2 className="svc-detail__section-title">Gallery & Demo</h2>
                   {gallery.length > 0 ? (
                     <ul className="svc-detail__gallery">
                       {gallery.map((url) => {

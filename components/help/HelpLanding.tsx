@@ -40,39 +40,39 @@ export default function HelpLanding() {
     <>
       <section className="help-hero" aria-labelledby="help-hero-title">
         <h1 id="help-hero-title" className="help-hero__title">
-          {t("Chúng tôi có thể giúp gì cho bạn?")}
+          {t("helpPage.heroTitle")}
         </h1>
-        <p className="help-hero__subtitle">{t("Chọn loại tài khoản")}</p>
+        <p className="help-hero__subtitle">{t("helpPage.heroSubtitle")}</p>
       </section>
 
-      <section className="help-cards" aria-label={t("Loại tài khoản")}>
+      <section className="help-cards" aria-label={t("helpPage.accountTypeAria")}>
         <div className="help-cards__inner">
           <AccountTypeCard
             href="/help/employer"
-            label={t("Tôi là Nhà tuyển dụng")}
+            label={t("helpPage.iAmClient")}
             icon={<FaUser />}
             bordered
           />
           <AccountTypeCard
             href="/help/freelancer"
-            label={t("Tôi là Freelancer")}
+            label={t("helpPage.iAmFreelancer")}
             icon={<FaLaptop />}
           />
         </div>
       </section>
 
-      <section className="help-quick" aria-label={t("Liên kết nhanh")}>
+      <section className="help-quick" aria-label={t("footer.navigate")}>
         <div className="help-quick__block">
-          <h2 className="help-quick__title">{t("Tìm chuyên gia có kỹ năng cụ thể?")}</h2>
+          <h2 className="help-quick__title">{t("helpPage.quickFindExpert")}</h2>
           <Link href="/freelancers" className="help-quick__btn">
-            {t("Tìm Freelancer ngay")}
+            {t("helpPage.quickFindFreelancer")}
           </Link>
         </div>
         <div className="help-quick__divider" aria-hidden />
         <div className="help-quick__block">
-          <h2 className="help-quick__title">{t("Tìm việc phù hợp với kỹ năng của bạn?")}</h2>
+          <h2 className="help-quick__title">{t("helpPage.quickFindJob")}</h2>
           <Link href="/findwork" className="help-quick__btn">
-            {t("Tìm việc ngay")}
+            {t("helpPage.quickFindJobBtn")}
           </Link>
         </div>
       </section>

@@ -20,7 +20,7 @@ export default function FreelancerDisputesPage() {
         <header className="svc-resolution-page__head">
           <h1 className="svc-resolution-page__title">{t("Xử lý tranh chấp")}</h1>
           <p className="svc-resolution-page__lead">
-            {t("Theo dõi tranh chấp liên quan đơn dịch vụ, trao đổi với client và Admin trong Trung tâm giải quyết. Phản hồi đúng hạn để tránh quyết định bất lợi.")}
+            {t("Theo dõi tranh chấp liên quan đơn dịch vụ, trao đổi với khách hàng và Admin trong Trung tâm giải quyết. Phản hồi đúng hạn để tránh quyết định bất lợi.")}
           </p>
         </header>
         <DisputesPanel

@@ -3,7 +3,6 @@ import HomeBrowseLists from "./HomeBrowseLists";
 import HomeCategories from "./HomeCategories";
 import HomeFooter from "./HomeFooter";
 import HomeHero from "./HomeHero";
-import HomeInsights from "./HomeInsights";
 import HomeNavbar from "./HomeNavbar";
 import HomeStats from "./HomeStats";
 import HomeSteps from "./HomeSteps";
@@ -12,7 +11,7 @@ import HomeWorkYourWay from "./HomeWorkYourWay";
 
 export default function HomePage() {
   return (
-    <div className="home-landing min-h-screen bg-white text-gray-900">
+    <div className="home-landing min-h-screen bg-background text-foreground">
       <HomeNavbar />
       <HomeHero />
       <HomeStats />
@@ -20,7 +19,6 @@ export default function HomePage() {
       <HomeWhyChoose />
       <HomeSteps />
       <HomeWorkYourWay />
-      <HomeInsights />
       <HomeBrowseLists />
       <HomeFooter />
     </div>

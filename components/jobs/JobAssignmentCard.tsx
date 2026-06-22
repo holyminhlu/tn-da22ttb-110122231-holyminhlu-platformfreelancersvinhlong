@@ -2,6 +2,7 @@ import { formatDateUi, formatVndUi, tUi } from "@/lib/i18n/runtime";
 import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { FaChevronRight } from "react-icons/fa";
+import { jobContractHref } from "@/lib/routes/paths";
 import {
   contractStatusClass,
   contractStatusLabel,
@@ -20,10 +21,10 @@ export default function JobAssignmentCard({
     item.agreedPrice != null ? formatVndUi(item.agreedPrice) : formatVndUi(item.budget);
   const counterpartyLabel = role === "client" ? "Freelancer" : t("Khách hàng");
 
-  const href =
-    role === "freelancer" && item.id && item.id !== item.jobId
-      ? `/findwork/orders/${item.id}`
-      : `/work/detail/${item.jobId}`;
+  const href = jobContractHref(
+    { id: item.id, jobId: item.jobId },
+    role === "client" ? "client" : "freelancer",
+  );
 
   return (
     <article className="jobs-card jobs-card--interactive">

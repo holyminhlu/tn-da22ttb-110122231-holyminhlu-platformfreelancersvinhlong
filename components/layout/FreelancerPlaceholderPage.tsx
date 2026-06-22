@@ -10,7 +10,7 @@ type FreelancerPlaceholderPageProps = {
 
 export function freelancerPageMetadata(title: string, description?: string): Metadata {
   return {
-    title: `${title} — Vĩnh Long Connected`,
+    title: `${title} — Vĩnh Long Connect`,
     description: description ?? title,
   };
 }

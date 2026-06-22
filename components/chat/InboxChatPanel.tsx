@@ -91,7 +91,6 @@ function groupMessagesByDate(messages: ChatMessage[]) {
 
 function highlightText(text: string, query: string) {
 
-  const t = tUi;
   if (!query.trim()) return text;
   const parts = text.split(new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "gi"));
   return parts.map((part, index) =>
@@ -106,7 +105,6 @@ function highlightText(text: string, query: string) {
 }
 
 function InboxMessage({ msg, searchQuery }: { msg: ChatMessage; searchQuery: string }) {
-  const t = tUi;
   if (msg.kind === "context") {
     const isService = msg.contextType === "service";
     return (
@@ -232,7 +230,6 @@ export default function InboxChatPanel({
   }, [filteredMessages, convState.id, searchOpen]);
 
   async function handleSubmit(e: FormEvent) {
-  const t = tUi;
   e.preventDefault();
     if (isBlocked) return;
     const text = draft.trim();
@@ -243,7 +240,6 @@ export default function InboxChatPanel({
 
   async function handleUpload(file: File, preferImage: boolean) {
 
-  const t = tUi;
     if (isBlocked || !convState.id) return;
     setUploading(true);
     try {
@@ -269,7 +265,6 @@ export default function InboxChatPanel({
 
   async function handleDeleteConversation() {
 
-  const t = tUi;
     if (!window.confirm(t("Xóa hội thoại này khỏi danh sách? Tin nhắn vẫn được lưu nếu đối phương gửi lại."))) {
       return;
     }
@@ -289,7 +284,6 @@ export default function InboxChatPanel({
   }
 
   async function handleToggleBlock() {
-  const t = tUi;
   const nextBlock = !convState.blockedByMe;
     const confirmMsg = nextBlock
       ? `Chặn tin nhắn từ ${convState.peerName}? Bạn sẽ không nhận tin nhắn mới từ người này.`

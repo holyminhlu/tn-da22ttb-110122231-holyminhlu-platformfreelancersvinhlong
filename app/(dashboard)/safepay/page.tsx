@@ -2,7 +2,7 @@ import SitePage, { sitePageMetadata } from "@/components/layout/SitePage";
 
 export const metadata = sitePageMetadata(
   "SafePay",
-  "Thanh toán an toàn trên Vĩnh Long Connected.",
+  "Thanh toán an toàn trên Vĩnh Long Connect.",
 );
 
 export default function SafePayPage() {

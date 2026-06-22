@@ -764,7 +764,7 @@ async function getMe(req, res) {
       if (paymentsErr.code !== "42703") throw paymentsErr;
     }
 
-    // Đánh giá client gửi cho freelancer nằm ở contract_reviews (không phải bảng reviews cũ).
+    // Đánh giá khách hàng gửi cho freelancer nằm ở contract_reviews (không phải bảng reviews cũ).
     const clientReviewsResult = await client.query(
       `SELECT
          cr.id,
@@ -900,7 +900,7 @@ async function listMyFeedback(req, res) {
       return res.json({ role: "client", reviews: result.rows });
     }
 
-    return res.status(403).json({ message: "Chỉ client hoặc freelancer có thể xem phản hồi." });
+    return res.status(403).json({ message: "Chỉ khách hàng hoặc freelancer có thể xem phản hồi." });
   } catch (error) {
     console.error("List my feedback failed:", error.message);
     if (error.code === "42703") {

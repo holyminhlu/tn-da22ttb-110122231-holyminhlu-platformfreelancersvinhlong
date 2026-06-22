@@ -50,7 +50,6 @@ export default function WithdrawalPinSettings() {
   }, [load]);
 
   async function handleSubmit(event: FormEvent) {
-  const t = tUi;
     event.preventDefault();
     setError("");
     setMessage("");

@@ -90,7 +90,7 @@ export default function EscrowFundPanel({
           <p className="hire-escrow__lead">
             {isClient
               ? "Nạp tiền vào ký quỹ (Escrow) để khóa ngân sách — freelancer chỉ bắt đầu khi trạng thái Funded."
-              : "Client sẽ nạp ký quỹ theo giá đã thỏa thuận. Bạn chỉ bắt đầu làm việc sau khi Escrow được xác nhận."}
+              : "Khách hàng sẽ nạp ký quỹ theo giá đã thỏa thuận. Bạn chỉ bắt đầu làm việc sau khi Escrow được xác nhận."}
           </p>
         </div>
         <ul className="hire-escrow__steps" aria-label={t("Tiến trình ký quỹ")}>
@@ -286,9 +286,9 @@ export default function EscrowFundPanel({
           {!isClient && !isFunded ? (
             <div className="hire-escrow__state-card hire-escrow__state-card--wait">
               <FaUserClock className="hire-escrow__state-icon" aria-hidden />
-              <h3 className="hire-escrow__state-title">{t("Chờ Client nạp ký quỹ")}</h3>
+              <h3 className="hire-escrow__state-title">{t("Chờ Khách hàng nạp ký quỹ")}</h3>
               <p className="hire-escrow__state-desc">
-                Client cần nạp <strong>{agreedDisplay}</strong> vào Escrow. Sau khi Funded, hệ thống
+                Khách hàng cần nạp <strong>{agreedDisplay}</strong> vào Escrow. Sau khi Funded, hệ thống
                 chuyển sang giai đoạn thực hiện — bạn có thể cập nhật tiến độ và gửi demo.
               </p>
               <div className="hire-escrow__wait-amount">
@@ -297,7 +297,7 @@ export default function EscrowFundPanel({
               </div>
               <ul className="hire-escrow__wait-tips">
                 <li>{t("Chuẩn bị sẵn kế hoạch làm việc theo thời gian đã thỏa thuận")}</li>
-                <li>{t("Trao đổi thêm với Client nếu cần làm rõ trước khi bắt đầu")}</li>
+                <li>{t("Trao đổi thêm với Khách hàng nếu cần làm rõ trước khi bắt đầu")}</li>
               </ul>
             </div>
           ) : null}
@@ -307,7 +307,7 @@ export default function EscrowFundPanel({
               <FaCheckCircle className="hire-escrow__state-icon" aria-hidden />
               <h3 className="hire-escrow__state-title">{t("Escrow đã được nạp")}</h3>
               <p className="hire-escrow__state-desc">
-                Client đã nạp ký quỹ. Bạn có thể bắt đầu làm việc — chuyển sang tab tiến trình
+                Khách hàng đã nạp ký quỹ. Bạn có thể bắt đầu làm việc — chuyển sang tab tiến trình
                 Thực hiện để cập nhật tiến độ.
               </p>
             </div>

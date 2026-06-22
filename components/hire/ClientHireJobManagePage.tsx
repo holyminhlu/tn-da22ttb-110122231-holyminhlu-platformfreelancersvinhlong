@@ -111,9 +111,6 @@ export default function ClientHireJobManagePage() {  const { t, formatVnd, forma
   const jobCategory = job?.category?.trim() || null;
 
   async function handleQuoteAction(quoteId: string, action: PatchJobQuoteAction) {
-  const t = tUi;
-  const formatDate = formatDateUi;
-  const formatVnd = formatVndUi;
     setActionError("");
     setBusyQuoteId(quoteId);
     try {
@@ -414,7 +411,7 @@ export default function ClientHireJobManagePage() {  const { t, formatVnd, forma
                   <section className="hire-manage__job-section hire-manage__job-section--gallery">
                     <h3 className="hire-manage__job-section-title">{t("Ảnh minh họa")}</h3>
                     <div className="hire-manage__job-gallery">
-                      <WorkDetailGallery images={jobImages} title={job.title} />
+                      <WorkDetailGallery images={jobImages} title={job.title} compact />
                     </div>
                   </section>
                 ) : null}

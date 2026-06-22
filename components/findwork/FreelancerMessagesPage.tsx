@@ -16,8 +16,8 @@ export default function FreelancerMessagesPage() {
         copy={{
           guestMessage: t("Đăng nhập tài khoản freelancer để xem tin nhắn."),
           wrongRoleMessage: t("Trang này dành cho freelancer."),
-          emptyListMessage: t("Chưa có tin nhắn từ client."),
-          emptyListHint: t("Khi client nhắn từ báo giá hoặc hồ sơ của bạn, hội thoại sẽ hiện ở đây."),
+          emptyListMessage: t("Chưa có tin nhắn từ khách hàng."),
+          emptyListHint: t("Khi khách hàng nhắn từ báo giá hoặc hồ sơ của bạn, hội thoại sẽ hiện ở đây."),
         }}
       />
       </Suspense>

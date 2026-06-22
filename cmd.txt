@@ -4,7 +4,7 @@ BAK-Script: pg_dump -U postgres -s -d vl_freelancer > D:/schema_only2.sql
 ACC Test
 Password@123.
 
-Client: client.vip@example.com
+Khách hàng: khách hàng.vip@example.com
 
 Freelancer: freelancer.pro@example.com
 

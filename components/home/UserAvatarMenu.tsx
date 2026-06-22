@@ -1,6 +1,5 @@
 "use client";
 
-import { tUi } from "@/lib/i18n/runtime";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import FreelancerAvatarFrame from "@/components/freelancer/FreelancerAvatarFrame";
@@ -36,14 +35,12 @@ export default function UserAvatarMenu({
     if (!open) return;
 
     function onPointerDown(event: MouseEvent) {
-  const t = tUi;
       if (!rootRef.current?.contains(event.target as Node)) {
         closeMenu();
       }
     }
 
     function onKeyDown(event: KeyboardEvent) {
-  const t = tUi;
       if (event.key === "Escape") closeMenu();
     }
 
@@ -56,7 +53,6 @@ export default function UserAvatarMenu({
   }, [open, closeMenu]);
 
   async function handleLogout() {
-  const t = tUi;
     if (loggingOut) return;
     setLoggingOut(true);
     closeMenu();
@@ -79,7 +75,6 @@ export default function UserAvatarMenu({
   }
 
   function onMenuItemClick(item: UserMenuEntry) {
-  const t = tUi;
     if (item.type === "logout") {
       void handleLogout();
       return;

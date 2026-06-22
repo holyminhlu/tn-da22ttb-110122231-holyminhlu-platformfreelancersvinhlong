@@ -47,7 +47,6 @@ export default function LinkPayoutAccountModal({
   useEffect(() => {
     if (!open) return;
     function onKeyDown(event: KeyboardEvent) {
-  const t = tUi;
       if (event.key === "Escape" && !saving) onClose();
     }
     window.addEventListener("keydown", onKeyDown);
@@ -69,7 +68,6 @@ export default function LinkPayoutAccountModal({
   if (!open) return null;
 
   async function handleSubmit(event: FormEvent) {
-  const t = tUi;
   event.preventDefault();
     setError("");
     const holder = accountHolderName.trim();

@@ -1,0 +1,8 @@
+/*
+ * Trang chủ — đồng bộ dark mode (chỉ màu / nền / viền).
+ */
+
+.home-landing {
+  background-color: var(--vlc-layer-base);
+  color: var(--vlc-text);
+}

@@ -7,7 +7,7 @@ type PageProps = {
 export async function generateMetadata({ params }: PageProps) {
   const { serviceId } = await params;
   return {
-    title: `Chi tiết dịch vụ — Vĩnh Long Connected`,
+    title: `Chi tiết dịch vụ — Vĩnh Long Connect`,
     description: `Quản lý gig ${serviceId}`,
   };
 }

@@ -51,7 +51,6 @@ function formatPriceVndStyle(amount: string | number | null | undefined): string
 }
 
 function ServiceDescriptionBlock({ description }: { description: string }) {
-  const t = tUi;
   const [expanded, setExpanded] = useState(false);
   const { preview, needsExpand } = useMemo(
     () => serviceDescriptionPreview(description),
@@ -157,8 +156,6 @@ export default function ClientHireFreelancerDetailPage({
   const backHref = publicBrowse ? "/freelancers" : "/hire/search";
 
   function serviceQuoteHref(serviceId: string) {
-  const t = tUi;
-  const formatDate = formatDateUi;
     const target = `/hire/quote?serviceId=${encodeURIComponent(serviceId)}&freelancerId=${encodeURIComponent(freelancerId)}`;
     if (isGuest) return `/dang-nhap?next=${encodeURIComponent(target)}`;
     if (canHire && !identityLoading && !identityVerified) return CLIENT_VERIFY_PAGE;
@@ -175,8 +172,6 @@ export default function ClientHireFreelancerDetailPage({
   const PageShell = publicBrowse ? PublicDetailShell : HireShell;
 
   async function handleToggleFavorite(id: string) {
-  const t = tUi;
-  const formatDate = formatDateUi;
     try {
       const result = await toggleFavorite(id);
       setFavoriteCount(result.favoriteCount);
@@ -225,8 +220,6 @@ export default function ClientHireFreelancerDetailPage({
       : `/hire/search/${freelancerId}`;
 
   function handleSelectService(serviceId: string) {
-  const t = tUi;
-  const formatDate = formatDateUi;
     setSelectedServiceId(serviceId);
     document.getElementById("fl-featured-heading")?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
@@ -241,7 +234,7 @@ export default function ClientHireFreelancerDetailPage({
         {isGuest ? (
           <div className="ff-guest-banner hire-fl-detail__guest-banner">
             <p className="ff-guest-banner__text">
-              Bạn đang xem hồ sơ công khai. Đăng nhập bằng tài khoản Client để yêu cầu báo giá và
+              Bạn đang xem hồ sơ công khai. Đăng nhập bằng tài khoản Khách hàng để yêu cầu báo giá và
               thuê dịch vụ.
             </p>
             <div className="ff-guest-banner__actions">
@@ -598,7 +591,7 @@ export default function ClientHireFreelancerDetailPage({
 
             <section className="hire-fl-detail__section" aria-labelledby="fl-reviews-heading">
               <h2 id="fl-reviews-heading" className="hire-fl-detail__section-title">
-                Đánh giá từ Client ({data.reviews.length})
+                Đánh giá từ Khách hàng ({data.reviews.length})
               </h2>
               {data.reviews.length === 0 ? (
                 <p className="hire-fl-detail__empty">
@@ -691,7 +684,7 @@ export default function ClientHireFreelancerDetailPage({
                     href="/dang-ky"
                     className="hire-fl-detail__btn hire-fl-detail__btn--outline"
                   >
-                    Tạo tài khoản Client
+                    Tạo tài khoản Khách hàng
                   </Link>
                 ) : null}
               </div>

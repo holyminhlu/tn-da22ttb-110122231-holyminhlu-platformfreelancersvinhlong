@@ -143,7 +143,6 @@ export default function NotificationPanel({
   }, [page, totalPages]);
 
   async function handleItemClick(notification: AppNotification) {
-  const t = tUi;
     if (!notification.readAt) {
       await onMarkRead(notification.id);
     }
@@ -155,7 +154,6 @@ export default function NotificationPanel({
   }
 
   async function handleDelete(notificationId: string) {
-  const t = tUi;
   await onDelete(notificationId);
     if (notifications.length <= 1 && page > 1) {
       setPage((p) => p - 1);

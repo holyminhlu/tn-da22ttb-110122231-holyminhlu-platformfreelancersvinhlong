@@ -2,7 +2,7 @@ import SitePage, { sitePageMetadata } from "@/components/layout/SitePage";
 
 export const metadata = sitePageMetadata(
   "Purchase Orders",
-  "Quản lý đơn mua hàng (PO) trên Vĩnh Long Connected.",
+  "Quản lý đơn mua hàng (PO) trên Vĩnh Long Connect.",
 );
 
 export default function PurchaseOrdersPage() {

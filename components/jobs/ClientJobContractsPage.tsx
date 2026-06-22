@@ -47,7 +47,7 @@ export default function ClientJobContractsPage() {
     try {
       const data = await getMyWork();
       if (data.role !== "client") {
-        setError(t("Trang này dành cho tài khoản client."));
+        setError(t("Trang này dành cho tài khoản khách hàng."));
         setItems([]);
         return;
       }
@@ -93,14 +93,14 @@ export default function ClientJobContractsPage() {
 
         {isGuest ? (
           <div className="fw-contracts__guest">
-            <p>{t("Đăng nhập client để xem hợp đồng việc.")}</p>
+            <p>{t("Đăng nhập khách hàng để xem hợp đồng việc.")}</p>
             <Link href="/dang-nhap" className="fw-contracts__cta">
               {t("Đăng nhập")}
             </Link>
           </div>
         ) : ready && user && !isClient ? (
           <p className="fw-contracts__error" role="alert">
-            {t("Client đăng nhập để xem hợp đồng. Freelancer xem tại cùng trang với tài khoản FL.")}
+            {t("Khách hàng đăng nhập để xem hợp đồng. Freelancer xem tại cùng trang với tài khoản FL.")}
           </p>
         ) : (
           <>

@@ -12,28 +12,8 @@ const FALLBACK_STATS: HomeStatsPayload = {
   satisfactionRate: 99,
 };
 
-function formatCount(value: number): string {
-  return new Intl.NumberFormat("vi-VN").format(value);
-}
-
-function formatInvoiceCount(value: number): string {
-  if (value >= 1_000_000) {
-    const mil = value / 1_000_000;
-    return `${Number.isInteger(mil) ? mil : mil.toFixed(1)} triệu`;
-  }
-  return formatCount(value);
-}
-
-function formatPayoutVnd(value: number): string {
-  if (value >= 1_000_000_000) {
-    const bil = value / 1_000_000_000;
-    return `${new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 2 }).format(bil)} tỷ ₫`;
-  }
-  return `${formatCount(value)} ₫`;
-}
-
 export default function HomeStats() {
-  const { t } = useTranslation();
+  const { t, formatNum } = useTranslation();
 
   const [stats, setStats] = useState<HomeStatsPayload>(FALLBACK_STATS);
 
@@ -55,47 +35,68 @@ export default function HomeStats() {
     };
   }, []);
 
+  const formatCount = (value: number) => formatNum(value);
+
+  const formatInvoiceCount = (value: number) => {
+    if (value >= 1_000_000) {
+      const mil = value / 1_000_000;
+      const unit = t("homePage.million");
+      return `${Number.isInteger(mil) ? mil : mil.toFixed(1)} ${unit}`;
+    }
+    return formatCount(value);
+  };
+
+  const formatPayoutVnd = (value: number) => {
+    const localeTag = "vi-VN";
+    if (value >= 1_000_000_000) {
+      const bil = value / 1_000_000_000;
+      const unit = t("homePage.billion");
+      return `${new Intl.NumberFormat(localeTag, { maximumFractionDigits: 2 }).format(bil)} ${unit} ₫`;
+    }
+    return `${formatCount(value)} ₫`;
+  };
+
   const displayStats = useMemo(
     () => [
-      { icon: "users" as const, value: formatCount(stats.totalClients), label: "Khách hàng trên toàn cầu" },
-      { icon: "invoice" as const, value: formatInvoiceCount(stats.paidInvoices), label: "Hóa đơn đã thanh toán" },
+      { icon: "users" as const, value: formatCount(stats.totalClients), label: t("homePage.statClients") },
+      { icon: "invoice" as const, value: formatInvoiceCount(stats.paidInvoices), label: t("homePage.statInvoices") },
       {
         icon: "money" as const,
         value: formatPayoutVnd(stats.paidToFreelancers),
-        label: "Đã thanh toán cho freelancer",
+        label: t("homePage.statPayouts"),
       },
       {
         icon: "thumbs" as const,
         value: `${stats.satisfactionRate}%`,
-        label: "Tỷ lệ hài lòng khách hàng",
+        label: t("homePage.statSatisfaction"),
         highlight: true,
       },
     ],
-    [stats],
+    [stats, t, formatNum],
   );
 
   return (
     <div className="relative z-20 mx-auto -mt-12 max-w-6xl px-6">
-      <div className="flex flex-col items-stretch justify-between gap-6 rounded bg-white px-8 py-8 shadow-xl md:flex-row md:items-center">
+      <div className="flex flex-col items-stretch justify-between gap-6 rounded bg-card px-8 py-8 text-card-foreground shadow-xl md:flex-row md:items-center">
         {displayStats.map((stat, index) => {
           const highlight = "highlight" in stat && stat.highlight;
           return (
-          <div
-            key={stat.label}
-            className={`flex flex-1 items-center justify-center space-x-4 ${
-              highlight
-                ? "scale-105 rounded-lg bg-white p-6 shadow-2xl md:scale-110"
-                : index < displayStats.length - 1
-                  ? "border-b border-gray-100 pb-6 md:border-b-0 md:border-r md:pb-0 md:pr-4"
-                  : ""
-            }`}
-          >
-            <StatIcon name={stat.icon} className="text-3xl text-blue-500" />
-            <div>
-              <div className="text-xl font-bold">{stat.value}</div>
-              <div className="text-sm text-gray-500">{stat.label}</div>
+            <div
+              key={stat.label}
+              className={`flex flex-1 items-center justify-center space-x-4 ${
+                highlight
+                  ? "scale-105 rounded-lg bg-card p-6 shadow-2xl ring-1 ring-primary/20 md:scale-110"
+                  : index < displayStats.length - 1
+                    ? "border-b border-border pb-6 md:border-b-0 md:border-r md:pb-0 md:pr-4"
+                    : ""
+              }`}
+            >
+              <StatIcon name={stat.icon} className="text-3xl text-primary" />
+              <div>
+                <div className="text-xl font-bold">{stat.value}</div>
+                <div className="text-sm text-muted-foreground">{stat.label}</div>
+              </div>
             </div>
-          </div>
           );
         })}
       </div>

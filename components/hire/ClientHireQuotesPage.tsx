@@ -1,6 +1,5 @@
 "use client";
 
-import { tUi } from "@/lib/i18n/runtime";
 import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -28,21 +27,6 @@ import "./hire.css";
 const PAGE_SIZE = 18;
 
 type QuoteFilter = "all" | JobQuoteStatus;
-
-const QUOTE_FILTER_OPTIONS: { value: QuoteFilter; label: string }[] = [
-  { value: "all", label: tUi("Tất cả báo giá") },
-  { value: "pending", label: tUi("Đang chờ") },
-  { value: "offered", label: tUi("Đã gửi đề xuất") },
-  { value: "accepted", label: tUi("Đã tuyển") },
-  { value: "declined", label: tUi("Đã từ chối") },
-];
-
-const QUOTE_SORT_OPTIONS: { value: QuoteSort; label: string }[] = [
-  { value: "priority", label: tUi("Ưu tiên xử lý") },
-  { value: "newest", label: tUi("Mới nhất") },
-  { value: "price_asc", label: tUi("Giá thấp → cao") },
-  { value: "rating_desc", label: tUi("Đánh giá cao nhất") },
-];
 
 const ACTIVE_JOB_STATUSES = new Set(["open", "in_progress"]);
 
@@ -82,6 +66,27 @@ function pickDefaultJobId(
 export default function ClientHireQuotesPage() {
   const { t } = useTranslation();
 
+  const quoteFilterOptions = useMemo(
+    () => [
+      { value: "all" as const, label: t("hireQuotes.filterAllQuotes") },
+      { value: "pending" as const, label: t("hireQuotes.filterPending") },
+      { value: "offered" as const, label: t("hireQuotes.filterOffered") },
+      { value: "accepted" as const, label: t("hireQuotes.filterAccepted") },
+      { value: "declined" as const, label: t("hireQuotes.filterDeclined") },
+    ],
+    [t],
+  );
+
+  const quoteSortOptions = useMemo(
+    () => [
+      { value: "priority" as const, label: t("hireQuotes.sortPriority") },
+      { value: "newest" as const, label: t("hireQuotes.sortNewest") },
+      { value: "price_asc" as const, label: t("hireQuotes.sortPriceAsc") },
+      { value: "rating_desc" as const, label: t("hireQuotes.sortRatingDesc") },
+    ],
+    [t],
+  );
+
   const router = useRouter();
   const searchParams = useSearchParams();
   const { verified: clientIdentityVerified, loading: clientIdentityLoading } =
@@ -117,7 +122,7 @@ export default function ClientHireQuotesPage() {
       const message =
         err && typeof err === "object" && "message" in err
           ? String((err as { message: string }).message)
-          : "Không thể tải danh sách báo giá.";
+          : t("hirePage.loadQuotesError");
       setQuotesError(message);
     } finally {
       setQuotesLoading(false);
@@ -130,7 +135,7 @@ export default function ClientHireQuotesPage() {
     try {
       const data = await getMyWork();
       if (data.role !== "client") {
-        setError(t("Trang này dành cho tài khoản client."));
+        setError(t("hirePage.clientOnly"));
         setClientJobs([]);
         return;
       }
@@ -140,7 +145,7 @@ export default function ClientHireQuotesPage() {
       const message =
         err && typeof err === "object" && "message" in err
           ? String((err as { message: string }).message)
-          : "Không thể tải danh sách công việc.";
+          : t("hirePage.loadJobsError");
       setError(message);
       setClientJobs([]);
     } finally {
@@ -205,7 +210,6 @@ export default function ClientHireQuotesPage() {
     if (!quoteFilterOpen && !quoteSortOpen) return;
 
     function onPointerDown(event: MouseEvent) {
-  const t = tUi;
       const target = event.target as Node;
       if (!quoteFilterRef.current?.contains(target)) {
         setQuoteFilterOpen(false);
@@ -253,14 +257,13 @@ export default function ClientHireQuotesPage() {
 
   const quoteFilterLabel =
     quoteFilter === "all"
-      ? "Lọc báo giá"
-      : (QUOTE_FILTER_OPTIONS.find((o) => o.value === quoteFilter)?.label ?? "Lọc báo giá");
+      ? t("hireQuotes.filterQuotes")
+      : (quoteFilterOptions.find((o) => o.value === quoteFilter)?.label ?? t("hireQuotes.filterQuotes"));
 
   const quoteSortLabel =
-    QUOTE_SORT_OPTIONS.find((o) => o.value === quoteSort)?.label ?? "Sắp xếp";
+    quoteSortOptions.find((o) => o.value === quoteSort)?.label ?? t("hireQuotes.sort");
 
   function selectJob(jobId: string) {
-  const t = tUi;
     setSelectedJobId(jobId);
     const params = new URLSearchParams(searchParams.toString());
     params.set("job", jobId);
@@ -268,12 +271,10 @@ export default function ClientHireQuotesPage() {
   }
 
   function applySearch() {
-  const t = tUi;
     setSearchQuery(searchInput.trim());
   }
 
   function handleSearchKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
-  const t = tUi;
     if (event.key === "Enter") {
       event.preventDefault();
       applySearch();
@@ -281,7 +282,6 @@ export default function ClientHireQuotesPage() {
   }
 
   async function handleQuoteAction(quoteId: string, action: PatchJobQuoteAction) {
-  const t = tUi;
     setQuotesError("");
     setActionBusyId(quoteId);
     try {
@@ -292,7 +292,7 @@ export default function ClientHireQuotesPage() {
       const message =
         err && typeof err === "object" && "message" in err
           ? String((err as { message: string }).message)
-          : "Không thể cập nhật trạng thái báo giá.";
+          : t("hirePage.updateQuoteError");
       setQuotesError(message);
     } finally {
       setActionBusyId("");
@@ -300,11 +300,10 @@ export default function ClientHireQuotesPage() {
   }
 
   function renderJobNavItem(job: MyWorkClientJob, compact = false) {
-  const t = tUi;
     const active = job.job_id === selectedJobId;
     const quoteCount = quoteCountByJob.get(job.job_id) ?? 0;
     const pendingCount = pendingByJob.get(job.job_id) ?? 0;
-    const title = job.title?.trim() || t("Công việc");
+    const title = job.title?.trim() || t("hirePage.job");
 
     if (compact) {
       return (
@@ -343,11 +342,13 @@ export default function ClientHireQuotesPage() {
         <p className="hire-quotes__job-meta">
           {jobStatusLabel(job.job_status)}
           {" · "}
-          {quoteCount} báo giá
+          {quoteCount} {t("hirePage.quotes")}
           {pendingCount > 0 ? (
             <>
               {" · "}
-              <span className="hire-quotes__job-pending">{pendingCount} chờ</span>
+              <span className="hire-quotes__job-pending">
+                {t("hirePage.pendingCount", { count: pendingCount })}
+              </span>
             </>
           ) : null}
         </p>
@@ -363,41 +364,34 @@ export default function ClientHireQuotesPage() {
       <div className="hire-page hire-quotes hire-quotes--full-width">
         <header className="hire-page__head">
           <div>
-            <h1 className="hire-page__title">{t("Báo giá")}</h1>
-            <p className="hire-page__lead">
-              Chọn công việc bên trái để xem và so sánh báo giá từ freelancer.
-            </p>
+            <h1 className="hire-page__title">{t("hireQuotes.title")}</h1>
+            <p className="hire-page__lead">{t("hireQuotes.lead")}</p>
           </div>
           <Link href="/hire/post" className="hire-page__post-btn">
-            Đăng tuyển dụng
+            {t("hirePage.postJob")}
           </Link>
         </header>
 
         {loading ? (
-          <p className="hire-page__state">{t("Đang tải...")}</p>
+          <p className="hire-page__state">{t("common.loading")}</p>
         ) : error ? (
           <p className="hire-page__state hire-page__state--error" role="alert">
             {error}
           </p>
         ) : hasNoJobs ? (
           <div className="hire-page__empty hire-quotes__empty">
-            <h2 className="hire-quotes__empty-title">{t("Bạn chưa đăng công việc nào")}</h2>
-            <p className="hire-page__empty-text">
-              Đăng tin tuyển dụng để nhận báo giá và đề xuất từ freelancer tại Vĩnh Long.
-            </p>
+            <h2 className="hire-quotes__empty-title">{t("hireQuotes.noJobs")}</h2>
+            <p className="hire-page__empty-text">{t("hireQuotes.noJobsHint")}</p>
             <Link href="/hire/post" className="hire-page__post-btn">
-              Đăng tuyển dụng
+              {t("hirePage.postJob")}
             </Link>
           </div>
         ) : hasNoActiveJobs ? (
           <div className="hire-quotes__no-active">
-            <h2 className="hire-quotes__no-active-title">{t("Không có công việc đang hoạt động")}</h2>
-            <p className="hire-page__empty-text">
-              Các công việc đã đóng hoặc hủy không hiển thị tại đây. Mở tin tuyển dụng mới hoặc xem
-              danh sách việc làm.
-            </p>
+            <h2 className="hire-quotes__no-active-title">{t("hireQuotes.noActiveJobs")}</h2>
+            <p className="hire-page__empty-text">{t("hireQuotes.noActiveJobsHint")}</p>
             <Link href="/hire/joblist" className="hire-page__post-btn" style={{ marginTop: "1rem" }}>
-              Xem danh sách việc làm
+              {t("hireQuotes.viewJobList")}
             </Link>
           </div>
         ) : (
@@ -406,7 +400,7 @@ export default function ClientHireQuotesPage() {
               <div
                 className="hire-quotes__job-strip hire-quotes__job-strip--responsive"
                 role="tablist"
-                aria-label={t("Chọn công việc")}
+                aria-label={t("hireQuotes.selectJobAria")}
               >
                 {activeJobs.map((job) => renderJobNavItem(job, true))}
               </div>
@@ -414,8 +408,8 @@ export default function ClientHireQuotesPage() {
 
             <div className="hire-quotes__layout">
               {activeJobs.length > 1 ? (
-                <nav className="hire-quotes__jobs hire-quotes__jobs--responsive" aria-label={t("Công việc đang hoạt động")}>
-                  <p className="hire-quotes__jobs-heading">{t("Công việc đang hoạt động")}</p>
+                <nav className="hire-quotes__jobs hire-quotes__jobs--responsive" aria-label={t("hireQuotes.activeJobs")}>
+                  <p className="hire-quotes__jobs-heading">{t("hireQuotes.activeJobs")}</p>
                   {activeJobs.map((job) => renderJobNavItem(job))}
                 </nav>
               ) : null}
@@ -428,12 +422,14 @@ export default function ClientHireQuotesPage() {
                       <p className="hire-quotes__job-summary-meta">
                         {jobStatusLabel(selectedJob.job_status)}
                         {" · "}
-                        {jobQuotes.length} báo giá
-                        {pendingForSelectedJob > 0 ? ` · ${pendingForSelectedJob} chờ xử lý` : ""}
+                        {jobQuotes.length} {t("hirePage.quotes")}
+                        {pendingForSelectedJob > 0
+                          ? ` · ${t("hirePage.pendingReview", { count: pendingForSelectedJob })}`
+                          : ""}
                       </p>
                     </div>
                     <Link href={`/hire/joblist/${selectedJob.job_id}`} className="hire-quotes__job-link">
-                      Quản lý công việc
+                      {t("hireQuotes.manageJob")}
                     </Link>
                   </div>
                 ) : null}
@@ -443,7 +439,7 @@ export default function ClientHireQuotesPage() {
                     <input
                       type="search"
                       className="hire-page__search-input"
-                      placeholder={t("Tìm freelancer trong công việc này")}
+                      placeholder={t("hireQuotes.searchInJob")}
                       value={searchInput}
                       onChange={(e) => {
                         const value = e.target.value;
@@ -451,12 +447,12 @@ export default function ClientHireQuotesPage() {
                         if (!value.trim()) setSearchQuery("");
                       }}
                       onKeyDown={handleSearchKeyDown}
-                      aria-label={t("Tìm freelancer")}
+                      aria-label={t("hireQuotes.searchFreelancer")}
                     />
                     <button
                       type="button"
                       className="hire-page__search-btn"
-                      aria-label={t("Tìm kiếm")}
+                      aria-label={t("hirePage.search")}
                       onClick={applySearch}
                     >
                       <FaSearch aria-hidden />
@@ -478,8 +474,8 @@ export default function ClientHireQuotesPage() {
                       <FaChevronDown className="text-xs text-gray-400" aria-hidden />
                     </button>
                     {quoteFilterOpen ? (
-                      <div className="hire-page__filter-panel" role="listbox" aria-label={t("Lọc báo giá")}>
-                        {QUOTE_FILTER_OPTIONS.map((opt) => (
+                      <div className="hire-page__filter-panel" role="listbox" aria-label={t("hireQuotes.filterQuotes")}>
+                        {quoteFilterOptions.map((opt) => (
                           <button
                             key={opt.value}
                             type="button"
@@ -515,8 +511,8 @@ export default function ClientHireQuotesPage() {
                       <FaChevronDown className="text-xs text-gray-400" aria-hidden />
                     </button>
                     {quoteSortOpen ? (
-                      <div className="hire-page__filter-panel" role="listbox" aria-label={t("Sắp xếp báo giá")}>
-                        {QUOTE_SORT_OPTIONS.map((opt) => (
+                      <div className="hire-page__filter-panel" role="listbox" aria-label={t("hireQuotes.sortQuotes")}>
+                        {quoteSortOptions.map((opt) => (
                           <button
                             key={opt.value}
                             type="button"
@@ -540,8 +536,10 @@ export default function ClientHireQuotesPage() {
 
                 {visibleQuotes.length > 0 ? (
                   <p className="hire-quotes__summary-inline">
-                    {visibleQuotes.length} báo giá
-                    {pendingForSelectedJob > 0 ? ` · ${pendingForSelectedJob} chờ xử lý` : ""}
+                    {t("hireQuotes.summary", { count: visibleQuotes.length })}
+                    {pendingForSelectedJob > 0
+                      ? ` · ${t("hirePage.pendingReview", { count: pendingForSelectedJob })}`
+                      : ""}
                   </p>
                 ) : null}
 
@@ -552,15 +550,12 @@ export default function ClientHireQuotesPage() {
                 ) : null}
 
                 {quotesLoading ? (
-                  <p className="hire-page__state">{t("Đang tải báo giá...")}</p>
+                  <p className="hire-page__state">{t("hireQuotes.loadingQuotes")}</p>
                 ) : visibleQuotes.length === 0 ? (
                   <div className="hire-quotes__no-quotes">
-                    <p className="hire-quotes__panel-empty">
-                      Chưa có báo giá cho công việc này. Mời freelancer hoặc chờ ứng viên gửi đề xuất từ
-                      trang Tìm việc.
-                    </p>
+                    <p className="hire-quotes__panel-empty">{t("hireQuotes.noQuotesHint")}</p>
                     <Link href="/hire/search" className="hire-quotes__invite-link">
-                      Mời freelancer từ danh sách
+                      {t("hireQuotes.inviteFreelancers")}
                     </Link>
                   </div>
                 ) : (

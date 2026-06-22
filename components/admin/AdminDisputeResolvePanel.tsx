@@ -78,13 +78,13 @@ export default function AdminDisputeResolvePanel({
       {
         id: "split",
         title: "Phân chia ký quỹ",
-        description: "Tự nhập tỷ lệ hoàn cho Client và thanh toán cho Freelancer.",
+        description: "Tự nhập tỷ lệ hoàn cho Khách hàng và thanh toán cho Freelancer.",
         icon: <FaBalanceScale aria-hidden />,
       },
       {
         id: "full_refund",
-        title: "Hoàn 100% cho Client",
-        description: "Toàn bộ số tiền trong escrow về ví VLC của Client.",
+        title: "Hoàn 100% cho Khách hàng",
+        description: "Toàn bộ số tiền trong escrow về ví VLC của Khách hàng.",
         icon: <FaUndo aria-hidden />,
       },
       {
@@ -113,21 +113,15 @@ export default function AdminDisputeResolvePanel({
   }, [mode, isCancelRejectedDispute]);
 
   function applyClientAmount(next: number) {
-  const t = tUi;
-  const formatVnd = formatVndUi;
   const clamped = roundVnd(Math.min(total, Math.max(0, next)));
     setClientAmount(clamped);
   }
 
   function applyPreset(clientPctValue: number) {
-  const t = tUi;
-  const formatVnd = formatVndUi;
   applyClientAmount(roundVnd(total * clientPctValue));
   }
 
   function handleSlider(value: number) {
-  const t = tUi;
-  const formatVnd = formatVndUi;
   applyClientAmount(roundVnd((value / 100) * total));
   }
 
@@ -143,7 +137,7 @@ export default function AdminDisputeResolvePanel({
       case "split":
         return `Xác nhận phân chia — C ${formatVndUi(clientAmount)} · F ${formatVndUi(freelancerAmount)}`;
       case "full_refund":
-        return `Xác nhận hoàn ${formatVndUi(total)} cho Client`;
+        return `Xác nhận hoàn ${formatVndUi(total)} cho Khách hàng`;
       case "release":
         return `Xác nhận giải ngân ${formatVndUi(total)} cho Freelancer`;
       case "dismiss":
@@ -154,8 +148,6 @@ export default function AdminDisputeResolvePanel({
   }, [mode, clientAmount, freelancerAmount, total]);
 
   function handleSubmit() {
-  const t = tUi;
-  const formatVnd = formatVndUi;
     if (!canSubmit) return;
     void onResolve(mode, {
       adminNote: adminNote.trim() || undefined,
@@ -252,7 +244,7 @@ export default function AdminDisputeResolvePanel({
             value={Math.round(clientPct)}
             disabled={busy || !escrowFunded}
             onChange={(e) => handleSlider(Number(e.target.value))}
-            aria-label={t("Tỷ lệ hoàn cho Client")}
+            aria-label={t("Tỷ lệ hoàn cho Khách hàng")}
           />
 
           <div className="admin-dispute-resolve__split-bar" aria-hidden>
@@ -268,7 +260,7 @@ export default function AdminDisputeResolvePanel({
 
           <div className="admin-dispute-resolve__amount-row">
             <label className="admin-dispute-resolve__amount-field admin-dispute-resolve__amount-field--client">
-              <span>{t("Client được hoàn")}</span>
+              <span>{t("Khách hàng được hoàn")}</span>
               <input
                 type="number"
                 min={0}
@@ -306,7 +298,7 @@ export default function AdminDisputeResolvePanel({
       {mode !== "split" && total > 0 ? (
         <div className="admin-dispute-resolve__preview">
           <div className="admin-dispute-resolve__preview-row">
-            <span>Client</span>
+            <span>Khách hàng</span>
             <strong>
               {mode === "full_refund" ? formatVndUi(total) : mode === "release" ? formatVndUi(0) : "—"}
             </strong>

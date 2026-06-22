@@ -28,7 +28,6 @@ export default function AddProfileFileDialog({
   const [error, setError] = useState("");
 
   async function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
-  const t = tUi;
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file) return;
@@ -57,7 +56,6 @@ export default function AddProfileFileDialog({
   }
 
   async function handleSubmit(e: React.FormEvent) {
-  const t = tUi;
   e.preventDefault();
     const trimmedTitle = title.trim();
     if (!trimmedTitle) {

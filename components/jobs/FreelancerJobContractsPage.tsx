@@ -84,7 +84,7 @@ export default function FreelancerJobContractsPage() {
           <div>
             <h1 className="fw-contracts__title">{t("Hợp đồng việc")}</h1>
             <p className="fw-contracts__lead">
-              {t("Các hợp đồng từ báo giá job được client chốt tuyển — theo dõi tiến độ, bàn giao và nghiệm thu. Đơn đặt gói dịch vụ (gig) nằm ở mục Đơn hàng dịch vụ.")}
+              {t("Các hợp đồng từ báo giá job được khách hàng chốt tuyển — theo dõi tiến độ, bàn giao và nghiệm thu. Đơn đặt gói dịch vụ (gig) nằm ở mục Đơn hàng dịch vụ.")}
             </p>
           </div>
           <Link href="/findwork/quotes" className="fw-contracts__cta">
@@ -101,7 +101,7 @@ export default function FreelancerJobContractsPage() {
           </div>
         ) : ready && user && !isFreelancer ? (
           <p className="fw-contracts__error" role="alert">
-            Trang này dành cho tài khoản freelancer. Client quản lý việc tại{" "}
+            Trang này dành cho tài khoản freelancer. Khách hàng quản lý việc tại{" "}
             <Link href="/hire/joblist">{t("Danh sách việc làm")}</Link>.
           </p>
         ) : (
@@ -129,7 +129,7 @@ export default function FreelancerJobContractsPage() {
               <input
                 type="search"
                 className="fw-contracts__search"
-                placeholder={t("Tìm theo việc, client, mã...")}
+                placeholder={t("Tìm theo việc, khách hàng, mã...")}
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 aria-label={t("Tìm hợp đồng")}
@@ -160,7 +160,7 @@ export default function FreelancerJobContractsPage() {
             ) : visibleItems.length === 0 ? (
               <div className="fw-contracts__empty">
                 {items.length === 0
-                  ? "Chưa có hợp đồng việc nào. Gửi báo giá tại Tìm việc làm và chờ client chốt tuyển."
+                  ? "Chưa có hợp đồng việc nào. Gửi báo giá tại Tìm việc làm và chờ khách hàng chốt tuyển."
                   : "Không có hợp đồng trong bộ lọc này."}
                 <br />
                 <Link href="/findwork" style={{ marginTop: "0.75rem", display: "inline-block" }}>

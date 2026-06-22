@@ -25,7 +25,6 @@ export default function AddSkillDialog({
   const [error, setError] = useState("");
 
   async function handleSubmit(e: React.FormEvent) {
-  const t = tUi;
   e.preventDefault();
     const trimmed = name.trim();
     if (!trimmed) {

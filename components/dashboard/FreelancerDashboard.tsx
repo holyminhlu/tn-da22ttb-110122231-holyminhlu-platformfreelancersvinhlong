@@ -1,7 +1,7 @@
 "use client";
 
-import { formatDateUi, tUi, formatVndUi } from "@/lib/i18n/runtime";
 import { useTranslation } from "@/hooks/useTranslation";
+import type { TranslationParams } from "@/lib/i18n/types";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
@@ -22,7 +22,6 @@ import { isFreelancerRole } from "@/hooks/useStoredUser";
 import { usePagedList } from "@/hooks/usePagedList";
 import { getMyWork } from "@/lib/api/contracts";
 import {
-  freelancerTransactionCategoryLabel,
   getFreelancerBillingOverview,
   type FreelancerBillingOverview,
   type FreelancerTransaction,
@@ -43,18 +42,18 @@ import {
   toStoredUser,
   VLC_USER_UPDATED_EVENT,
 } from "@/lib/authSession";
-import { formatDate, formatVnd } from "@/lib/format";
 import {
   isActiveJobContract,
   isJobOnlyContract,
   jobContractHref,
-  jobContractStageLabel,
 } from "@/lib/findwork/jobContractsDisplay";
 import DashboardPagination from "./DashboardPagination";
 import "./dashboard.css";
 import "./dashboardPagination.css";
 
 const WIDGET_PAGE_SIZE = 5;
+
+type TFn = (keyOrVi: string, params?: TranslationParams) => string;
 
 function apiErrorMessage(err: unknown, fallback: string) {
   if (err && typeof err === "object" && "message" in err) {
@@ -69,6 +68,53 @@ function isUnauthorized(err: unknown) {
   );
 }
 
+function contractStatusLabel(t: TFn, status: string) {
+  const s = status.toLowerCase().trim();
+  if (s === "active") return t("dashboardPage.contractActive");
+  if (s === "pending") return t("dashboardPage.contractPending");
+  if (s === "completed") return t("dashboardPage.contractCompleted");
+  if (s === "cancelled") return t("dashboardPage.contractCancelled");
+  if (s === "in_progress") return t("dashboardPage.contractInProgress");
+  if (s === "open") return t("dashboardPage.contractOpen");
+  if (s === "closed") return t("dashboardPage.contractClosed");
+  return status || "—";
+}
+
+function workflowStageLabel(t: TFn, stage: string) {
+  const s = String(stage).toLowerCase();
+  if (s === "selection") return t("dashboardPage.stageSelection");
+  if (s === "escrow") return t("dashboardPage.stageEscrow");
+  if (s === "execution") return t("dashboardPage.stageExecution");
+  if (s === "delivery") return t("dashboardPage.stageDelivery");
+  if (s === "completion") return t("dashboardPage.stageCompletion");
+  return stage;
+}
+
+function jobContractStageLabel(t: TFn, item: JobsListItem): string {
+  if (item.workflowStage) {
+    return workflowStageLabel(t, item.workflowStage);
+  }
+  return contractStatusLabel(t, item.contractStatus);
+}
+
+function freelancerTransactionCategoryLabel(t: TFn, category: string) {
+  switch (category) {
+    case "escrow_release":
+    case "milestone":
+      return t("dashboardPage.txEscrowRelease");
+    case "withdraw":
+      return t("dashboardPage.txWithdraw");
+    case "processing_fee":
+      return t("dashboardPage.txProcessingFee");
+    case "refund":
+      return t("dashboardPage.txRefund");
+    case "deposit":
+      return t("dashboardPage.txDeposit");
+    default:
+      return category || "—";
+  }
+}
+
 function DashboardWidget({
   title,
   headLinks,
@@ -80,7 +126,6 @@ function DashboardWidget({
   children: ReactNode;
   alignLeft?: boolean;
 }) {
-  const t = tUi;
   return (
     <section className="client-widget">
       <header className="client-widget__head">
@@ -95,8 +140,7 @@ function DashboardWidget({
 }
 
 function WidgetWorkList({ items }: { items: JobsListItem[] }) {
-  const t = tUi;
-  const formatVnd = formatVndUi;
+  const { t, formatVnd } = useTranslation();
   const { items: pageItems, page, totalPages, total, setPage } = usePagedList(items, WIDGET_PAGE_SIZE);
 
   return (
@@ -109,8 +153,8 @@ function WidgetWorkList({ items }: { items: JobsListItem[] }) {
             </Link>
             <p className="client-widget__list-meta">
               {item.counterparty ? `${item.counterparty} · ` : ""}
-              {jobContractStageLabel(item)}
-              {item.agreedPrice != null ? ` · ${formatVndUi(item.agreedPrice)}` : ""}
+              {jobContractStageLabel(t, item)}
+              {item.agreedPrice != null ? ` · ${formatVnd(item.agreedPrice)}` : ""}
             </p>
           </li>
         ))}
@@ -121,8 +165,7 @@ function WidgetWorkList({ items }: { items: JobsListItem[] }) {
 }
 
 function WidgetServiceList({ services }: { services: FreelancerService[] }) {
-  const t = tUi;
-  const formatVnd = formatVndUi;
+  const { t, formatVnd } = useTranslation();
   const { items, page, totalPages, total, setPage } = usePagedList(services, WIDGET_PAGE_SIZE);
 
   return (
@@ -134,8 +177,10 @@ function WidgetServiceList({ services }: { services: FreelancerService[] }) {
               {service.title}
             </Link>
             <p className="client-widget__list-meta">
-              {formatVndUi(service.price)}
-              {service.delivery_days != null ? ` · Giao ${service.delivery_days} ngày` : ""}
+              {formatVnd(service.price)}
+              {service.delivery_days != null
+                ? ` · ${t("dashboardPage.deliveryDays", { days: service.delivery_days })}`
+                : ""}
             </p>
           </li>
         ))}
@@ -146,9 +191,7 @@ function WidgetServiceList({ services }: { services: FreelancerService[] }) {
 }
 
 function WidgetPaymentsList({ transactions }: { transactions: FreelancerTransaction[] }) {
-  const t = tUi;
-  const formatDate = formatDateUi;
-  const formatVnd = formatVndUi;
+  const { t, formatDate, formatVnd } = useTranslation();
   const { items, page, totalPages, total, setPage } = usePagedList(transactions, WIDGET_PAGE_SIZE);
 
   return (
@@ -156,14 +199,16 @@ function WidgetPaymentsList({ transactions }: { transactions: FreelancerTransact
       <ul className="client-widget__list">
         {items.map((tx) => (
           <li key={tx.id} className="client-widget__list-item">
-            <span className="client-widget__list-title">{tx.projectTitle || "Giao dịch"}</span>
+            <span className="client-widget__list-title">
+              {tx.projectTitle || t("dashboardPage.transactionDefault")}
+            </span>
             <p className="client-widget__list-meta">
-              {formatVndUi(tx.amount)}
+              {formatVnd(tx.amount)}
               {tx.clientName ? ` · ${tx.clientName}` : ""}
               {" · "}
-              {freelancerTransactionCategoryLabel(tx.category)}
+              {freelancerTransactionCategoryLabel(t, tx.category)}
               {" · "}
-              {formatDateUi(tx.occurredAt)}
+              {formatDate(tx.occurredAt)}
             </p>
           </li>
         ))}
@@ -174,11 +219,12 @@ function WidgetPaymentsList({ transactions }: { transactions: FreelancerTransact
 }
 
 function StarRating({ rating, size = "md" }: { rating: number; size?: "md" | "sm" }) {
+  const { t } = useTranslation();
   const filled = Math.round(Math.min(5, Math.max(0, rating)));
   return (
     <span
       className={`fd-stars fd-stars--${size}`}
-      aria-label={`${rating.toFixed(1)} trên 5 sao`}
+      aria-label={t("dashboardPage.starRatingAria", { rating: rating.toFixed(1) })}
       role="img"
     >
       {Array.from({ length: 5 }, (_, index) => (
@@ -199,7 +245,7 @@ function ReviewsHighlightPanel({
   profile: FreelancerProfile | null;
   reviews: ContractReview[];
 }) {
-  const formatDate = formatDateUi;
+  const { t, formatDate } = useTranslation();
   const avg = profile ? Number(profile.rating_avg) : 0;
   const totalReviews = profile?.total_reviews ?? reviews.length;
   const successScore = profile?.job_success_score;
@@ -208,9 +254,9 @@ function ReviewsHighlightPanel({
 
   return (
     <DashboardWidget
-      title="Đánh giá"
+      title={t("dashboardPage.reviews")}
       alignLeft
-      headLinks={<Link href="/ho-so/phan-hoi">Tất cả phản hồi</Link>}
+      headLinks={<Link href="/ho-so/phan-hoi">{t("dashboardPage.allFeedback")}</Link>}
     >
       <div className="fd-widget-block">
         <div className="fd-reviews-hero">
@@ -218,13 +264,15 @@ function ReviewsHighlightPanel({
             <p className="fd-reviews-score__value">{avg > 0 ? avg.toFixed(1) : "—"}</p>
             <StarRating rating={avg > 0 ? avg : 0} />
             <p className="fd-reviews-score__caption">
-              {totalReviews > 0 ? `${totalReviews} lượt đánh giá` : "Chưa có đánh giá"}
+              {totalReviews > 0
+                ? t("dashboardPage.reviewCount", { count: totalReviews })
+                : t("dashboardPage.noReviews")}
             </p>
           </div>
           {successScore != null ? (
             <div className="fd-reviews-metric">
               <p className="fd-reviews-metric__value">{successScore}%</p>
-              <p className="fd-reviews-metric__label">Tỷ lệ thành công</p>
+              <p className="fd-reviews-metric__label">{t("dashboardPage.successRate")}</p>
             </div>
           ) : null}
         </div>
@@ -233,23 +281,21 @@ function ReviewsHighlightPanel({
           <blockquote className="fd-review-featured">
             <FaQuoteLeft className="fd-review-featured__icon" aria-hidden />
             <p className="fd-review-featured__text">
-              {featured.comment?.trim() || "Khách hàng đã để lại điểm đánh giá."}
+              {featured.comment?.trim() || t("dashboardPage.clientLeftRating")}
             </p>
             <footer className="fd-review-featured__foot">
               <StarRating rating={featured.rating} size="sm" />
               <span>
-                {featured.reviewer_name || "Khách hàng"} · {formatDateUi(featured.created_at)}
+                {featured.reviewer_name || t("dashboardPage.client")} · {formatDate(featured.created_at)}
               </span>
             </footer>
           </blockquote>
         ) : (
           <div className="fd-review-empty">
-            <h3 className="client-widget__title">Chưa có phản hồi nào</h3>
-            <p className="client-widget__muted">
-              Hoàn thành đơn hàng và nhận đánh giá từ client để xây dựng uy tín trên nền tảng.
-            </p>
+            <h3 className="client-widget__title">{t("dashboardPage.noFeedbackYet")}</h3>
+            <p className="client-widget__muted">{t("dashboardPage.noFeedbackHint")}</p>
             <Link href="/findwork" className="client-widget__link">
-              Tìm việc ngay
+              {t("dashboardPage.findWorkNow")}
             </Link>
           </div>
         )}
@@ -259,7 +305,7 @@ function ReviewsHighlightPanel({
             {recent.slice(featured ? 1 : 0).map((review) => (
               <li key={review.id} className="client-widget__list-item">
                 <p className="client-widget__list-title">
-                  {review.reviewer_name || "Khách hàng"}
+                  {review.reviewer_name || t("dashboardPage.client")}
                 </p>
                 <p className="client-widget__list-meta">
                   <StarRating rating={review.rating} size="sm" />
@@ -287,18 +333,19 @@ function ProfileQuickPanel({
   skillsCount: number;
   portfolioCount: number;
 }) {
+  const { t } = useTranslation();
   const emailOk = Boolean(user.isEmailVerified);
   const phoneOk = Boolean(user.isPhoneVerified);
   const availability = String(profile?.availability_status || "").toLowerCase();
 
   const availabilityLabel =
     availability === "available"
-      ? "Sẵn sàng nhận việc"
+      ? t("dashboardPage.available")
       : availability === "busy"
-        ? "Đang bận"
+        ? t("dashboardPage.busy")
         : availability === "unavailable"
-          ? "Không nhận việc"
-          : "Chưa cập nhật";
+          ? t("dashboardPage.unavailable")
+          : t("dashboardPage.notUpdated");
 
   const availabilityClass =
     availability === "available"
@@ -311,9 +358,9 @@ function ProfileQuickPanel({
 
   return (
     <DashboardWidget
-      title="Hồ sơ nhanh"
+      title={t("dashboardPage.profileQuick")}
       alignLeft
-      headLinks={<Link href="/ho-so">Chỉnh sửa hồ sơ</Link>}
+      headLinks={<Link href="/ho-so">{t("dashboardPage.editProfile")}</Link>}
     >
       <div className="fd-widget-block">
         <div className="fd-profile-top">
@@ -325,15 +372,15 @@ function ProfileQuickPanel({
           >
             <div className="fd-profile-ring__inner">
               <strong>{completionScore}%</strong>
-              <span>Hoàn thiện</span>
+              <span>{t("dashboardPage.complete")}</span>
             </div>
           </div>
           <div className="fd-profile-top__meta">
             <span className={`fd-pill ${availabilityClass}`}>{availabilityLabel}</span>
             <p className="fd-profile-top__hint">
               {completionScore >= 100
-                ? "Hồ sơ của bạn đã đầy đủ — tiếp tục cập nhật để nổi bật hơn."
-                : `Còn ${100 - completionScore}% để hoàn thiện hồ sơ công khai.`}
+                ? t("dashboardPage.profileComplete")
+                : t("dashboardPage.profileIncomplete", { percent: 100 - completionScore })}
             </p>
           </div>
         </div>
@@ -344,36 +391,36 @@ function ProfileQuickPanel({
               <FaTools />
             </span>
             <strong className="fd-stat-card__value">{skillsCount}</strong>
-            <span className="fd-stat-card__label">Kỹ năng</span>
+            <span className="fd-stat-card__label">{t("dashboardPage.skills")}</span>
           </Link>
           <Link href="/ho-so?add=portfolio" className="fd-stat-card fd-stat-card--portfolio">
             <span className="fd-stat-card__icon" aria-hidden>
               <FaFolderOpen />
             </span>
             <strong className="fd-stat-card__value">{portfolioCount}</strong>
-            <span className="fd-stat-card__label">Dự án</span>
+            <span className="fd-stat-card__label">{t("dashboardPage.projects")}</span>
           </Link>
         </div>
 
         <div className="fd-verify-row">
           <span className={`fd-verify-badge${emailOk ? " fd-verify-badge--ok" : ""}`}>
             {emailOk ? <FaCheckCircle aria-hidden /> : null}
-            E-mail {emailOk ? "đã xác thực" : "chưa xác thực"}
+            {emailOk ? t("dashboardPage.emailVerified") : t("dashboardPage.emailUnverified")}
           </span>
           <span className={`fd-verify-badge${phoneOk ? " fd-verify-badge--ok" : ""}`}>
             {phoneOk ? <FaCheckCircle aria-hidden /> : null}
-            Số điện thoại {phoneOk ? "đã xác thực" : "chưa xác thực"}
+            {phoneOk ? t("dashboardPage.phoneVerified") : t("dashboardPage.phoneUnverified")}
           </span>
         </div>
 
         {completionScore < 100 ? (
           <Link href="/ho-so" className="client-widget__link fd-widget-action">
             <FaUserEdit className="mr-1 inline" aria-hidden />
-            Hoàn thiện hồ sơ ngay
+            {t("dashboardPage.completeProfileNow")}
           </Link>
         ) : (
           <Link href="/ho-so/thong-ke" className="client-widget__link fd-widget-action">
-            Xem thống kê hồ sơ
+            {t("dashboardPage.viewProfileStats")}
           </Link>
         )}
       </div>
@@ -381,7 +428,8 @@ function ProfileQuickPanel({
   );
 }
 
-export default function FreelancerDashboard() {  const { t, formatVnd, formatDate } = useTranslation();
+export default function FreelancerDashboard() {
+  const { t, formatVnd } = useTranslation();
 
   const router = useRouter();
   const [data, setData] = useState<FreelancerMeResponse | null>(null);
@@ -401,7 +449,7 @@ export default function FreelancerDashboard() {  const { t, formatVnd, formatDat
       ]);
 
       if (!isFreelancerMeResponse(me) || !isFreelancerRole(me.user?.role)) {
-        setError("Tài khoản này không phải tài khoản chuyên gia.");
+        setError(t("dashboardPage.notFreelancerAccount"));
         setData(null);
         setWorkItems([]);
         setBilling(null);
@@ -435,14 +483,14 @@ export default function FreelancerDashboard() {  const { t, formatVnd, formatDat
         router.replace("/dang-nhap");
         return;
       }
-      setError(apiErrorMessage(err, "Không thể tải bảng tổng quan."));
+      setError(apiErrorMessage(err, t("dashboardPage.loadError")));
       setData(null);
       setWorkItems([]);
       setBilling(null);
     } finally {
       setLoading(false);
     }
-  }, [router]);
+  }, [router, t]);
 
   useEffect(() => {
     void load();
@@ -468,17 +516,21 @@ export default function FreelancerDashboard() {  const { t, formatVnd, formatDat
 
   const profileSummary = useMemo(() => {
     const parts: string[] = [];
-    if (data?.completionScore != null) parts.push(`Hồ sơ ${data.completionScore}%`);
-    if (completedJobs > 0) parts.push(`${completedJobs} đơn hoàn thành`);
+    if (data?.completionScore != null) {
+      parts.push(t("dashboardPage.profilePercent", { percent: data.completionScore }));
+    }
+    if (completedJobs > 0) {
+      parts.push(t("dashboardPage.completedOrders", { count: completedJobs }));
+    }
     const avg = profile ? Number(profile.rating_avg) : 0;
     if (avg > 0) parts.push(`★ ${avg.toFixed(1)}`);
     return parts.join(" · ") || null;
-  }, [completedJobs, data?.completionScore, profile]);
+  }, [completedJobs, data?.completionScore, profile, t]);
 
   return (
     <FreelancerShell wide>
       {loading ? (
-        <p className="client-page__desc">Đang tải dữ liệu...</p>
+        <p className="client-page__desc">{t("dashboardPage.loading")}</p>
       ) : error ? (
         <p className="rounded border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700" role="alert">
           {error}
@@ -501,13 +553,15 @@ export default function FreelancerDashboard() {  const { t, formatVnd, formatDat
                   <span className="client-dashboard__meta">
                     {" "}
                     (
-                    <Link href="/ho-so/thong-ke">Thống kê của tôi</Link>
+                    <Link href="/ho-so/thong-ke">{t("dashboardPage.myStats")}</Link>
                     <span className="client-widget__sep">|</span>
                     <Link href="/ho-so/phan-hoi">
-                      {reviewCount > 0 ? `${reviewCount} phản hồi` : "Chưa có phản hồi"}
+                      {reviewCount > 0
+                        ? t("dashboardPage.feedbackCount", { count: reviewCount })
+                        : t("dashboardPage.noFeedback")}
                     </Link>
                     <span className="client-widget__sep">|</span>
-                    <Link href="/ho-so">Sửa hồ sơ</Link> )
+                    <Link href="/ho-so">{t("dashboardPage.editProfileShort")}</Link> )
                   </span>
                 </div>
                 {user.tagline ? (
@@ -517,7 +571,9 @@ export default function FreelancerDashboard() {  const { t, formatVnd, formatDat
                 {profile?.title ? (
                   <p className="client-dashboard__billing">
                     {profile.title}
-                    {profile.hourly_rate != null ? ` · ${formatVndUi(profile.hourly_rate)}/giờ` : ""}
+                    {profile.hourly_rate != null
+                      ? ` · ${t("dashboardPage.hourlyRate", { rate: formatVnd(profile.hourly_rate) })}`
+                      : ""}
                   </p>
                 ) : null}
               </div>
@@ -526,38 +582,38 @@ export default function FreelancerDashboard() {  const { t, formatVnd, formatDat
               <div className="client-dashboard__cash-row">
                 <FaWallet className="client-dashboard__cash-icon" aria-hidden />
                 <span>
-                  <strong>Số dư khả dụng:</strong>{" "}
-                  <span className="client-dashboard__cash-amount">{formatVndUi(balance)}</span>
+                  <strong>{t("dashboardPage.availableBalance")}</strong>{" "}
+                  <span className="client-dashboard__cash-amount">{formatVnd(balance)}</span>
                 </span>
               </div>
               {pendingBalance > 0 ? (
                 <div className="client-dashboard__cash-row">
                   <span>
-                    <strong>Đang chờ giải ngân:</strong>{" "}
+                    <strong>{t("dashboardPage.pendingPayout")}</strong>{" "}
                     <span className="client-dashboard__cash-amount client-dashboard__cash-amount--secondary">
-                      {formatVndUi(pendingBalance)}
+                      {formatVnd(pendingBalance)}
                     </span>
                   </span>
                 </div>
               ) : null}
               <Link href="/payments" className="client-dashboard__cash-deposit">
                 <FaPlusCircle aria-hidden />
-                Xem thanh toán & rút tiền
+                {t("dashboardPage.viewPaymentsWithdraw")}
               </Link>
             </div>
           </header>
 
           <div className="client-dashboard__grid">
             <DashboardWidget
-              title="Công việc đang làm"
+              title={t("dashboardPage.activeWorkWidget")}
               alignLeft
               headLinks={
                 <>
-                  <Link href="/findwork">Tìm việc</Link>
+                  <Link href="/findwork">{t("dashboardPage.findWork")}</Link>
                   <span className="client-widget__sep">|</span>
-                  <Link href="/jobs">Hợp đồng việc</Link>
+                  <Link href="/jobs">{t("dashboardPage.jobContracts")}</Link>
                   <span className="client-widget__sep">|</span>
-                  <Link href="/dich-vu/don-hang">Đơn dịch vụ</Link>
+                  <Link href="/dich-vu/don-hang">{t("dashboardPage.serviceOrders")}</Link>
                 </>
               }
             >
@@ -565,28 +621,28 @@ export default function FreelancerDashboard() {  const { t, formatVnd, formatDat
                 <WidgetWorkList items={workItems} />
               ) : (
                 <>
-                  <h3 className="client-widget__title">Sẵn sàng nhận việc?</h3>
+                  <h3 className="client-widget__title">{t("dashboardPage.readyForWork")}</h3>
                   <Link href="/findwork" className="client-widget__link">
-                    Duyệt việc đang mở trên marketplace
+                    {t("dashboardPage.browseOpenJobs")}
                   </Link>
                   <Link href="/findwork/leads" className="client-widget__link">
-                    Xem lời mời & cơ hội từ client
+                    {t("dashboardPage.viewLeads")}
                   </Link>
                   <Link href="/findwork/quotes" className="client-widget__link">
-                    Quản lý báo giá đã gửi
+                    {t("dashboardPage.manageQuotes")}
                   </Link>
                 </>
               )}
             </DashboardWidget>
 
             <DashboardWidget
-              title="Dịch vụ"
+              title={t("dashboardPage.servicesWidget")}
               alignLeft
               headLinks={
                 <>
-                  <Link href="/dich-vu/tao-moi">Tạo mới</Link>
+                  <Link href="/dich-vu/tao-moi">{t("dashboardPage.createNew")}</Link>
                   <span className="client-widget__sep">|</span>
-                  <Link href="/dich-vu/quan-ly">Quản lý</Link>
+                  <Link href="/dich-vu/quan-ly">{t("dashboardPage.manageLink")}</Link>
                 </>
               }
             >
@@ -594,29 +650,29 @@ export default function FreelancerDashboard() {  const { t, formatVnd, formatDat
                 <WidgetServiceList services={services} />
               ) : (
                 <>
-                  <h3 className="client-widget__title">Chưa có dịch vụ nào</h3>
+                  <h3 className="client-widget__title">{t("dashboardPage.noServices")}</h3>
                   <Link href="/dich-vu/tao-moi" className="client-widget__link">
-                    Tạo gói dịch vụ đầu tiên
+                    {t("dashboardPage.createFirstService")}
                   </Link>
                   <Link href="/ho-so" className="client-widget__link">
-                    Hoàn thiện hồ sơ để thu hút khách hàng
+                    {t("dashboardPage.completeProfileAttract")}
                   </Link>
                 </>
               )}
             </DashboardWidget>
 
             <DashboardWidget
-              title="Thanh toán"
+              title={t("dashboardPage.paymentsWidget")}
               alignLeft
-              headLinks={<Link href="/payments">Thanh toán</Link>}
+              headLinks={<Link href="/payments">{t("dashboardPage.paymentsWidget")}</Link>}
             >
               {recentTransactions.length > 0 ? (
                 <WidgetPaymentsList transactions={recentTransactions} />
               ) : (
                 <>
-                  <p className="client-widget__muted">Chưa có giao dịch thu nhập hoặc rút tiền.</p>
+                  <p className="client-widget__muted">{t("dashboardPage.noIncomeTransactions")}</p>
                   <Link href="/payments" className="client-widget__link">
-                    Thiết lập tài khoản nhận tiền
+                    {t("dashboardPage.setupPayoutAccount")}
                   </Link>
                 </>
               )}

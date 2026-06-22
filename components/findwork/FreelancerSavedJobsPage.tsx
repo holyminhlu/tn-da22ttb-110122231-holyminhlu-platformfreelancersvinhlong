@@ -60,7 +60,6 @@ export default function FreelancerSavedJobsPage() {
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   function handleUnsaved(jobId: string) {
-  const t = tUi;
     setJobs((prev) => prev.filter((job) => job.id !== jobId));
     setTotal((prev) => Math.max(0, prev - 1));
   }

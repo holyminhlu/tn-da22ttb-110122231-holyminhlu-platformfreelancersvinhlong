@@ -1,33 +1,33 @@
 import type { ServiceOrderListItem } from "@/lib/api/contracts";
+import { tUi } from "@/lib/i18n/runtime";
 import { formatDisplayTitle, markdownToPlainText } from "@/lib/text/displayText";
 import { cancelTypeLabel, isAwaitingClientAcceptance, isContractDisputed, isOrderExpiredOrCancelled } from "./workflowSlaDisplay";
 
-const STAGE_LABELS: Record<string, string> = {  selection: "Chốt thỏa thuận",
-  escrow: "Ký quỹ",
-  execution: "Thực hiện",
-  delivery: "Bàn giao",
-  completion: "Hoàn tất",
-};
-
 export function workflowStageLabel(stage: string): string {
-  return STAGE_LABELS[String(stage).toLowerCase()] || stage;
+  const s = String(stage).toLowerCase();
+  if (s === "selection") return tUi("dashboardPage.stageSelection");
+  if (s === "escrow") return tUi("dashboardPage.stageEscrow");
+  if (s === "execution") return tUi("dashboardPage.stageExecution");
+  if (s === "delivery") return tUi("dashboardPage.stageDelivery");
+  if (s === "completion") return tUi("dashboardPage.stageCompletion");
+  return stage;
 }
 
 export function escrowStatusLabel(status: string | null | undefined): string {
   const s = String(status || "none").toLowerCase();
-  if (s === "funded") return "Đã nạp";
-  if (s === "released") return "Đã giải ngân";
-  if (s === "pending") return "Chưa nạp";
-  if (s === "held") return "Đang giữ";
-  if (s === "refunded") return "Đã hoàn";
-  if (s === "none" || !s) return "Chưa có";
+  if (s === "funded") return tUi("hireOrders.escrowFunded");
+  if (s === "released") return tUi("hireOrders.escrowReleased");
+  if (s === "pending") return tUi("hireOrders.escrowPending");
+  if (s === "held") return tUi("hireOrders.escrowHeld");
+  if (s === "refunded") return tUi("hireOrders.escrowRefunded");
+  if (s === "none" || !s) return tUi("hireOrders.escrowNone");
   return status || "—";
 }
 
 export function orderCardTitle(
   serviceTitle: string | null | undefined,
   jobTitle: string | null | undefined,
-  fallback = "Đơn dịch vụ",
+  fallback = tUi("hireOrders.orderFallback"),
 ): string {
   const raw = serviceTitle?.trim() || jobTitle?.trim() || fallback;
   return formatDisplayTitle(raw);
@@ -59,10 +59,10 @@ export function orderStatusHint(order: ServiceOrderListItem, asFreelancer: boole
       return "Cần gửi đề xuất";
     }
     if (stage === "selection" && order.proposal_text) {
-      return "Chờ Client chấp nhận";
+      return "Chờ Khách hàng chấp nhận";
     }
     if (stage === "escrow" && escrow !== "funded") {
-      return "Chờ Client nạp Escrow";
+      return "Chờ Khách hàng nạp Escrow";
     }
     if (stage === "execution") {
       if (order.delivered_at && !order.accepted_at) {
@@ -71,7 +71,7 @@ export function orderStatusHint(order: ServiceOrderListItem, asFreelancer: boole
       return "Đang thực hiện";
     }
     if (stage === "delivery" && order.delivered_at) {
-      return "Chờ Client nghiệm thu";
+      return "Chờ Khách hàng nghiệm thu";
     }
     if (stage === "delivery") {
       return "Cần bàn giao";

@@ -19,48 +19,110 @@
   line-height: 1.5;
 }
 
-.edit-account-page .fb-tabs {
+.edit-account-page .fb-toolbar {
   display: flex;
-  gap: 0;
-  margin-bottom: 1.5rem;
-  border-bottom: 1px solid var(--vlc-border);
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin-bottom: 1.25rem;
 }
 
-.edit-account-page .fb-tab {
-  position: relative;
+.edit-account-page .fb-search {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex: 0 1 13.5rem;
+  width: 13.5rem;
+  max-width: 100%;
+  border: 1px solid var(--vlc-border);
+  border-radius: 0.5rem;
+  background: var(--vlc-layer-element);
+  padding: 0.3rem 0.4rem 0.3rem 0.6rem;
+}
+
+.edit-account-page .fb-search__icon {
+  flex-shrink: 0;
+  color: var(--vlc-text-faint);
+  font-size: 0.8125rem;
+}
+
+.edit-account-page .fb-search__input {
+  flex: 1;
+  min-width: 0;
+  width: 0;
   border: none;
   background: transparent;
-  padding: 0.65rem 1rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: var(--vlc-text-muted);
-  cursor: pointer;
-  transition: color 0.15s;
+  font-size: 0.8125rem;
+  color: var(--vlc-text);
+  outline: none;
 }
 
-.edit-account-page .fb-tab:hover {
-  color: var(--vlc-link);
-}
-
-.edit-account-page .fb-tab--active {
-  color: var(--vlc-link);
-}
-
-.edit-account-page .fb-tab--active::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -1px;
-  height: 2px;
-  background: var(--vlc-link);
-}
-
-.edit-account-page .fb-tab-sep {
-  align-self: center;
+.edit-account-page .fb-search__input::placeholder {
   color: var(--vlc-text-faint);
+}
+
+.edit-account-page .fb-search__btn {
+  flex-shrink: 0;
+  border: none;
+  border-radius: 0.375rem;
+  padding: 0.3rem 0.55rem;
   font-size: 0.75rem;
-  user-select: none;
+  font-weight: 600;
+  color: var(--vlc-on-accent);
+  background: var(--vlc-link);
+  cursor: pointer;
+}
+
+.edit-account-page .fb-search__btn:hover {
+  background: var(--vlc-link-hover);
+}
+
+.edit-account-page .fb-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.65rem;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.edit-account-page .fb-filter {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.edit-account-page .fb-filter__label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--vlc-text-muted);
+  white-space: nowrap;
+}
+
+.edit-account-page .fb-filter__select {
+  border: 1px solid var(--vlc-border);
+  border-radius: 0.375rem;
+  padding: 0.3rem 0.45rem;
+  font-size: 0.75rem;
+  color: var(--vlc-text);
+  background: var(--vlc-layer-element);
+  max-width: 9.5rem;
+}
+
+.edit-account-page .fb-summary {
+  margin: 0 0 0.75rem;
+  font-size: 0.8125rem;
+  color: var(--vlc-text-muted);
+}
+
+.edit-account-page .fb-pagination {
+  margin-top: 1rem;
+}
+
+.edit-account-page .fb-card__job--plain {
+  color: var(--vlc-text-secondary);
 }
 
 .edit-account-page .fb-empty {

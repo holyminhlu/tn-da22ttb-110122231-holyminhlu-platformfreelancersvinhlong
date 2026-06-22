@@ -1,6 +1,5 @@
 "use client";
 
-import { formatDateUi, tUi } from "@/lib/i18n/runtime";
 import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { FaStar } from "react-icons/fa";
@@ -41,7 +40,8 @@ export default function HireQuoteGridCard({
   aiCompareBusy = false,
   clientIdentityVerified = true,
   clientIdentityLoading = false,
-}: HireQuoteGridCardProps) {  const { t, formatDate } = useTranslation();
+}: HireQuoteGridCardProps) {
+  const { t, formatDate } = useTranslation();
 
   const needsVerify = !clientIdentityLoading && !clientIdentityVerified;
   const avatarSrc = resolveAvatarSrc(quote.freelancer_avatar_url);
@@ -66,9 +66,7 @@ export default function HireQuoteGridCard({
               disabled={!canAiCompare}
               loading={aiCompareBusy}
               title={
-                canAiCompare
-                  ? "Gợi ý AI so sánh với các báo giá khác"
-                  : "Cần ít nhất 2 báo giá để so sánh"
+                canAiCompare ? t("hirePage.aiCompareTitle") : t("hirePage.aiCompareNeedTwo")
               }
             />
           </div>
@@ -108,13 +106,15 @@ export default function HireQuoteGridCard({
           </p>
         ) : null}
 
-        <p className="hire-quote-product-card__meta-time">Gửi lúc {formatDateUi(quote.created_at)}</p>
+        <p className="hire-quote-product-card__meta-time">
+          {t("hirePage.sentAt", { date: formatDate(quote.created_at) })}
+        </p>
 
         <p className="hire-quote-product-card__price">
           {formatQuoteAmount(quote)}
           <span className="hire-quote-product-card__price-type">
             {" · "}
-            {quote.pricing_type === "hourly" ? "Theo giờ" : "Trọn gói"}
+            {quote.pricing_type === "hourly" ? t("hirePage.hourlyPricing") : t("hirePage.fixedPricing")}
           </span>
         </p>
 
@@ -127,7 +127,7 @@ export default function HireQuoteGridCard({
 
         <div className="hire-quote-product-card__actions">
           <Link href={href} className="hire-quote-product-card__action">
-            Xem chi tiết
+            {t("hirePage.viewDetail")}
           </Link>
 
           {canDecline ? (
@@ -137,7 +137,7 @@ export default function HireQuoteGridCard({
               disabled={busy}
               onClick={() => onAction?.(quote.id, "decline")}
             >
-              Từ chối
+              {t("hirePage.decline")}
             </button>
           ) : (
             <span className="hire-quote-product-card__action hire-quote-product-card__action--placeholder" aria-hidden>
@@ -148,7 +148,7 @@ export default function HireQuoteGridCard({
 
         {needsVerify ? (
           <Link href={CLIENT_VERIFY_PAGE} className="hire-quote-product-card__chat-link">
-            Xác minh để nhắn tin
+            {t("hirePage.verifyToMessage")}
           </Link>
         ) : onChat ? (
           <button
@@ -156,7 +156,7 @@ export default function HireQuoteGridCard({
             className="hire-quote-product-card__chat-link"
             onClick={() => onChat(quote)}
           >
-            Nhắn tin freelancer
+            {t("hirePage.messageFreelancer")}
           </button>
         ) : null}
       </div>

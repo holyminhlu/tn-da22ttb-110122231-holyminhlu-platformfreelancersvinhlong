@@ -168,8 +168,6 @@ export default function MyProfileContent() {  const { t, formatVnd } = useTransl
   }, [searchParams]);
 
   async function handleAvatarChange(event: React.ChangeEvent<HTMLInputElement>) {
-  const t = tUi;
-  const formatVnd = formatVndUi;
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file || !data?.user) return;
@@ -237,8 +235,6 @@ export default function MyProfileContent() {  const { t, formatVnd } = useTransl
   const completedJobs = user.completedJobs ?? data.freelancerProfile?.completed_jobs ?? 0;
 
   async function handleShareProfile() {
-  const t = tUi;
-  const formatVnd = formatVndUi;
     const url =
       typeof window !== "undefined"
         ? `${window.location.origin}${publicProfilePath}`

@@ -32,7 +32,6 @@ function formatCardNumber(value: string) {
 }
 
 function splitName(fullName: string | null | undefined) {
-  const t = tUi;
   const parts = String(fullName || "").trim().split(/\s+/).filter(Boolean);
   if (parts.length === 0) return "";
   if (parts.length === 1) return parts[0];
@@ -113,16 +112,12 @@ export default function CreditCardVerifyPanel({
   }, [data]);
 
   function startWizard(step: WizardStep) {
-  const t = tUi;
-  const formatVnd = formatVndUi;
     setMessage("");
     setWizardStep(step);
     setView("wizard");
   }
 
   async function handleAddCard() {
-  const t = tUi;
-  const formatVnd = formatVndUi;
     const digits = cardNumber.replace(/\D/g, "");
     if (!digits || !expiry.trim() || !cvv.trim() || !cardholderName.trim()) {
       setMessage("Vui lòng điền đầy đủ thông tin thẻ.");
@@ -165,8 +160,6 @@ export default function CreditCardVerifyPanel({
   }
 
   async function handlePayWithPayos() {
-  const t = tUi;
-  const formatVnd = formatVndUi;
     setSaving(true);
     setMessage("");
     try {
@@ -281,7 +274,7 @@ export default function CreditCardVerifyPanel({
         <p className="idv-cc-privacy">
           Chúng tôi cam kết bảo vệ quyền riêng tư của người dùng. Mọi thông tin được chia sẻ sẽ
           không được thêm vào hồ sơ cá nhân của bạn và chỉ được sử dụng nội bộ. Vui lòng xem{" "}
-          <Link href="/help">Chính sách bảo mật</Link> của chúng tôi để biết thêm thông tin.
+          <Link href="/chinh-sach-bao-mat">Chính sách bảo mật</Link> của chúng tôi để biết thêm thông tin.
         </p>
 
         <div className="idv-footer" style={{ marginTop: "1.5rem", paddingTop: 0, borderTop: "none" }}>

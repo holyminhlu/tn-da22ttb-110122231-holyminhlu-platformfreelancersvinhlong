@@ -431,7 +431,7 @@ async function openCancelRejectionDispute(db, contract, cancelRequest, freelance
      VALUES ($1, NULL, 'system', $2, '[]'::jsonb)`,
     [
       disputeId,
-      `Client yêu cầu hủy & hoàn tiền (${cancelRequest.reason || "—"}). Freelancer phản đối. ` +
+      `Khách hàng yêu cầu hủy & hoàn tiền (${cancelRequest.reason || "—"}). Freelancer phản đối. ` +
         `Cả hai bên có ${SLA_DAYS.DISPUTE_EVIDENCE} ngày để bổ sung bằng chứng. Sau đó Admin phán xử chia tiền.`,
     ],
   );

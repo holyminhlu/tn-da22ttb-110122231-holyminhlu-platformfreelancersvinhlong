@@ -1,6 +1,5 @@
 "use client";
 
-import { formatDateUi, tUi, formatVndUi } from "@/lib/i18n/runtime";
 import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import {
@@ -26,8 +25,6 @@ type HireFavoriteCardProps = {
 };
 
 function requestQuoteHref(entry: HireFavoriteEntry) {
-
-  const t = tUi;
   if (entry.featuredServiceId) {
     return `/hire/quote?serviceId=${encodeURIComponent(entry.featuredServiceId)}&freelancerId=${encodeURIComponent(entry.id)}`;
   }
@@ -41,7 +38,8 @@ export default function HireFavoriteCard({
   onMessage,
   clientIdentityVerified = true,
   clientIdentityLoading = false,
-}: HireFavoriteCardProps) {  const { t, formatVnd, formatDate } = useTranslation();
+}: HireFavoriteCardProps) {
+  const { t, formatVnd, formatDate } = useTranslation();
 
   const avatarSrc = resolveAvatarSrc(entry.avatarUrl);
   const initials = getUserInitials(entry.name, entry.email);
@@ -50,7 +48,7 @@ export default function HireFavoriteCard({
 
   const needsVerify = !clientIdentityLoading && !clientIdentityVerified;
   const quoteHref = needsVerify ? CLIENT_VERIFY_PAGE : requestQuoteHref(entry);
-  const quoteLabel = needsVerify ? "Xác minh để báo giá" : "Yêu cầu báo giá";
+  const quoteLabel = needsVerify ? t("hirePage.verifyToQuote") : t("hirePage.requestQuote");
 
   return (
     <article className="hire-favorites__card">
@@ -76,10 +74,10 @@ export default function HireFavoriteCard({
               {entry.title ? <p className="hire-favorites__title">{entry.title}</p> : null}
               <div className="hire-favorites__badges">
                 {entry.sources.includes("worked") ? (
-                  <span className="hire-favorites__badge hire-favorites__badge--worked">{t("Đã làm việc cùng")}</span>
+                  <span className="hire-favorites__badge hire-favorites__badge--worked">{t("hirePage.workedTogether")}</span>
                 ) : null}
                 {entry.sources.includes("favorite") ? (
-                  <span className="hire-favorites__badge hire-favorites__badge--saved">{t("Yêu thích")}</span>
+                  <span className="hire-favorites__badge hire-favorites__badge--saved">{t("hirePage.favorite")}</span>
                 ) : null}
               </div>
             </div>
@@ -87,7 +85,7 @@ export default function HireFavoriteCard({
               type="button"
               className={`hire-favorites__heart${isFavorite ? " hire-favorites__heart--active" : ""}`}
               aria-pressed={isFavorite}
-              aria-label={isFavorite ? "Bỏ khỏi danh sách yêu thích" : "Thêm vào danh sách yêu thích"}
+              aria-label={isFavorite ? t("hirePage.removeFavorite") : t("hirePage.addFavorite")}
               onClick={() => onToggleFavorite(entry.id)}
             >
               <FaHeart aria-hidden />
@@ -111,7 +109,7 @@ export default function HireFavoriteCard({
                   <FaStar className="hire-favorites__meta-icon hire-favorites__meta-icon--star" aria-hidden />
                   {rating}
                   {entry.totalReviews != null && entry.totalReviews > 0
-                    ? ` (${entry.totalReviews} đánh giá)`
+                    ? ` ${t("hirePage.reviewsCount", { count: entry.totalReviews })}`
                     : ""}
                 </dd>
               </div>
@@ -119,7 +117,7 @@ export default function HireFavoriteCard({
             {entry.hourlyRate != null ? (
               <div>
                 <dt className="hire-favorites__sr-only">{t("Giá giờ")}</dt>
-                <dd>{formatVndUi(entry.hourlyRate)}/giờ</dd>
+                <dd>{formatVnd(entry.hourlyRate)}{t("hirePage.hourly")}</dd>
               </div>
             ) : null}
             {entry.lastJobTitle ? (
@@ -127,7 +125,7 @@ export default function HireFavoriteCard({
                 <dt>{t("Gần nhất")}</dt>
                 <dd>
                   {entry.lastJobTitle}
-                  {entry.lastWorkedAt ? ` · ${formatDateUi(entry.lastWorkedAt)}` : ""}
+                  {entry.lastWorkedAt ? ` · ${formatDate(entry.lastWorkedAt)}` : ""}
                 </dd>
               </div>
             ) : null}
@@ -146,12 +144,12 @@ export default function HireFavoriteCard({
       <div className="hire-favorites__actions">
         <Link href="/hire/post" className="hire-favorites__action hire-favorites__action--primary">
           <FaUserTie aria-hidden />
-          Thuê
+          {t("hirePage.hire")}
         </Link>
         {needsVerify ? (
           <Link href={CLIENT_VERIFY_PAGE} className="hire-favorites__action">
             <FaComment aria-hidden />
-            Xác minh để nhắn tin
+            {t("hirePage.verifyToMessage")}
           </Link>
         ) : (
           <button
@@ -160,7 +158,7 @@ export default function HireFavoriteCard({
             onClick={() => onMessage(entry)}
           >
             <FaComment aria-hidden />
-            Nhắn tin
+            {t("hirePage.message")}
           </button>
         )}
         <Link href={quoteHref} className="hire-favorites__action">

@@ -1,87 +1,95 @@
-import { tUi } from "@/lib/i18n/runtime";
+"use client";
+
+import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { getTopLocations, getTopSkills } from "@/lib/api/freelancers";
 
-export default async function HomeBrowseLists() {
-  const t = tUi;
-  let skills: { name: string; freelancerCount: number }[] = [];
-  let locations: { name: string; freelancerCount: number }[] = [];
+export default function HomeBrowseLists() {
+  const { t } = useTranslation();
+  const [skills, setSkills] = useState<{ name: string; freelancerCount: number }[]>([]);
+  const [locations, setLocations] = useState<{ name: string; freelancerCount: number }[]>([]);
 
-  try {
-    const [skillsData, locationsData] = await Promise.all([getTopSkills(48), getTopLocations(16)]);
-    skills = skillsData.skills ?? [];
-    locations = locationsData.locations ?? [];
-  } catch {
-    skills = [];
-    locations = [];
-  }
+  useEffect(() => {
+    let mounted = true;
+    void Promise.all([getTopSkills(48), getTopLocations(16)])
+      .then(([skillsData, locationsData]) => {
+        if (!mounted) return;
+        setSkills(skillsData.skills ?? []);
+        setLocations(locationsData.locations ?? []);
+      })
+      .catch(() => {
+        if (!mounted) return;
+        setSkills([]);
+        setLocations([]);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   return (
-    <section className="border-b border-gray-100 bg-white py-24">
+    <section className="border-b border-border bg-background py-24">
       <div className="mx-auto max-w-7xl px-6">
         <div className="mb-16 text-center">
-          <h2 className="mb-2 text-3xl font-bold">Duyệt freelancer</h2>
-          <div className="mx-auto h-1 w-12 bg-blue-500" />
+          <h2 className="mb-2 text-3xl font-bold">{t("homePage.browseTitle")}</h2>
+          <div className="mx-auto h-1 w-12 bg-primary" />
         </div>
 
         <div className="mb-20">
-          <h3 className="mb-10 text-center font-bold">Kỹ năng hàng đầu</h3>
+          <h3 className="mb-10 text-center font-bold">{t("homePage.topSkills")}</h3>
           {skills.length > 0 ? (
-            <div className="grid grid-cols-2 gap-x-8 gap-y-3 text-xs text-gray-500 md:grid-cols-4">
+            <div className="grid grid-cols-2 gap-x-8 gap-y-3 text-xs text-muted-foreground md:grid-cols-4">
               {skills.map((skill) => (
                 <Link
                   key={skill.name}
                   href={`/freelancers?skill=${encodeURIComponent(skill.name)}`}
-                  className="transition hover:text-blue-600"
-                  title={`${skill.freelancerCount} freelancer`}
+                  className="transition hover:text-primary"
+                  title={t("homePage.freelancerCount", { count: skill.freelancerCount })}
                 >
                   {skill.name}
-                  <span className="ml-1 text-gray-400">({skill.freelancerCount})</span>
+                  <span className="ml-1 text-muted-foreground/70">({skill.freelancerCount})</span>
                 </Link>
               ))}
             </div>
           ) : (
-            <p className="text-center text-sm text-gray-500">
-              Chưa có dữ liệu kỹ năng từ freelancer trên nền tảng.
-            </p>
+            <p className="text-center text-sm text-muted-foreground">{t("homePage.noSkills")}</p>
           )}
           <div className="mt-12 text-center">
             <Link
               href="/freelancers"
-              className="inline-block rounded border border-blue-500 px-8 py-2 text-sm font-bold text-blue-500 transition hover:bg-blue-50"
+              className="inline-block rounded border border-primary px-8 py-2 text-sm font-bold text-primary transition hover:bg-accent"
             >
-              Xem tất cả kỹ năng
+              {t("homePage.viewAllSkills")}
             </Link>
           </div>
         </div>
 
         <div>
-          <h3 className="mb-10 text-center font-bold">Địa điểm hàng đầu</h3>
+          <h3 className="mb-10 text-center font-bold">{t("homePage.topLocations")}</h3>
           {locations.length > 0 ? (
-            <div className="grid grid-cols-2 gap-x-8 gap-y-3 text-xs text-gray-500 md:grid-cols-4">
-              {locations.map((location) => (
+            <div className="grid grid-cols-2 gap-x-8 gap-y-3 text-xs text-muted-foreground md:grid-cols-4">
+              {locations.map((loc) => (
                 <Link
-                  key={location.name}
-                  href={`/freelancers?district=${encodeURIComponent(location.name)}`}
-                  className="transition hover:text-blue-600"
-                  title={`${location.freelancerCount} freelancer`}
+                  key={loc.name}
+                  href={`/freelancers?location=${encodeURIComponent(loc.name)}`}
+                  className="transition hover:text-primary"
+                  title={t("homePage.freelancerCount", { count: loc.freelancerCount })}
                 >
-                  Freelancer tại {location.name}
-                  <span className="ml-1 text-gray-400">({location.freelancerCount})</span>
+                  {loc.name}
+                  <span className="ml-1 text-muted-foreground/70">({loc.freelancerCount})</span>
                 </Link>
               ))}
             </div>
           ) : (
-            <p className="text-center text-sm text-gray-500">
-              Chưa có dữ liệu địa điểm từ freelancer trên nền tảng.
-            </p>
+            <p className="text-center text-sm text-muted-foreground">{t("homePage.noLocations")}</p>
           )}
           <div className="mt-12 text-center">
             <Link
               href="/freelancers"
-              className="inline-block rounded border border-blue-500 px-8 py-2 text-sm font-bold text-blue-500 transition hover:bg-blue-50"
+              className="inline-block rounded border border-primary px-8 py-2 text-sm font-bold text-primary transition hover:bg-accent"
             >
-              Xem tất cả địa điểm
+              {t("homePage.viewAllLocations")}
             </Link>
           </div>
         </div>

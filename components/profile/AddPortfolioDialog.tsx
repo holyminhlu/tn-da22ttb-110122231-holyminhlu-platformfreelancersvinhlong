@@ -28,7 +28,6 @@ export default function AddPortfolioDialog({
   const [error, setError] = useState("");
 
   async function handleImagesChange(event: React.ChangeEvent<HTMLInputElement>) {
-  const t = tUi;
     const files = Array.from(event.target.files ?? []);
     event.target.value = "";
     if (!files.length) return;
@@ -49,12 +48,10 @@ export default function AddPortfolioDialog({
   }
 
   function removeImage(url: string) {
-  const t = tUi;
     setImageUrls((prev) => prev.filter((item) => item !== url));
   }
 
   async function handleSubmit(e: React.FormEvent) {
-  const t = tUi;
   e.preventDefault();
     const trimmedTitle = title.trim();
     if (!trimmedTitle) {

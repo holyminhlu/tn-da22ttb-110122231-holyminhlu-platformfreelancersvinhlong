@@ -103,7 +103,6 @@ export default function FreelancerJobQuotesPage() {
   }, [visibleQuotes, safePage]);
 
   async function handleWithdraw(quoteId: string) {
-  const t = tUi;
     if (!window.confirm(t("Rút báo giá này? Bạn có thể gửi lại sau nếu việc vẫn đang mở."))) {
       return;
     }
@@ -176,7 +175,7 @@ export default function FreelancerJobQuotesPage() {
               <input
                 type="search"
                 className="fw-quotes__search"
-                placeholder={t("Tìm theo việc, client, nội dung...")}
+                placeholder={t("Tìm theo việc, khách hàng, nội dung...")}
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 aria-label={t("Tìm báo giá")}
@@ -236,7 +235,7 @@ export default function FreelancerJobQuotesPage() {
             ) : visibleQuotes.length === 0 ? (
               <div className="fw-quotes__empty">
                 {filter === "all" || filter === "active"
-                  ? "Chưa có báo giá job nào. Duyệt Tìm việc làm và gửi đề xuất cho client đang tuyển."
+                  ? "Chưa có báo giá job nào. Duyệt Tìm việc làm và gửi đề xuất cho khách hàng đang tuyển."
                   : "Không có báo giá trong bộ lọc này."}
                 <br />
                 <Link href="/findwork" className="fw-quotes__action" style={{ marginTop: "0.75rem" }}>

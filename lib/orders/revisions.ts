@@ -1,4 +1,4 @@
-/** Hợp đồng từ job do client đăng — không giới hạn lượt chỉnh sửa cho đến khi hoàn thành. */
+/** Hợp đồng từ job do khách hàng đăng — không giới hạn lượt chỉnh sửa cho đến khi hoàn thành. */
 export function isJobBasedContract(contract: {
   job_id?: string | null;
   service_id?: string | null;

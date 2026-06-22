@@ -24,7 +24,6 @@ export default function JobCardMedia({
     if (!lightboxOpen) return;
 
     function onKeyDown(e: KeyboardEvent) {
-  const t = tUi;
       if (e.key === "Escape") closeLightbox();
       if (e.key === "ArrowRight" && images.length > 1) {
         setActiveIndex((i) => (i + 1) % images.length);

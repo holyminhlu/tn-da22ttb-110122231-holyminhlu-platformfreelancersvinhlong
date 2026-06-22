@@ -160,7 +160,6 @@ export default function EditAccountContent() {
   }, []);
 
   function onWhatsappToggle(checked: boolean) {
-  const t = tUi;
     setWhatsappOn(checked);
     if (typeof window !== "undefined") {
       window.localStorage.setItem(WHATSAPP_PREF_KEY, checked ? "1" : "0");
@@ -174,7 +173,6 @@ export default function EditAccountContent() {
     bio?: string | null;
     districtCity?: string | null;
   }) {
-  const t = tUi;
     if (!user) return;
     setSaving(true);
     try {
@@ -211,7 +209,6 @@ export default function EditAccountContent() {
   }
 
   function openEdit(field: EditFieldKey) {
-  const t = tUi;
     if (!user) return;
     if (field === "fullName") {
       setDialog({ field, title: "Họ và tên", value: user.fullName || "" });
@@ -231,7 +228,6 @@ export default function EditAccountContent() {
   }
 
   async function handleDialogSave() {
-  const t = tUi;
     if (!dialog || !user) return;
     const fullName = (user.fullName || "").trim();
     if (!fullName) {
@@ -291,7 +287,7 @@ export default function EditAccountContent() {
 
   return (
     <div className="ea-main">
-      <h1 className="ea-title">Cài đặt hồ sơ &amp; tài khoản</h1>
+      <h1 className="ea-title">Cài đặt hồ sơ & tài khoản</h1>
 
       {loading ? (
         <p className="ea-loading">Đang tải thông tin tài khoản...</p>
@@ -313,7 +309,7 @@ export default function EditAccountContent() {
             </section>
 
             <section className="ea-card">
-              <h2 className="ea-section-title">Email &amp; Số điện thoại</h2>
+              <h2 className="ea-section-title">Email & Số điện thoại</h2>
               <div className="max-w-sm">
                 <InfoField
                   label="Địa chỉ email"

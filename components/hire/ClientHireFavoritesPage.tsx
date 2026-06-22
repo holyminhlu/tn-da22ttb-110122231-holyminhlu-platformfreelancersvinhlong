@@ -1,6 +1,5 @@
 "use client";
 
-import { tUi } from "@/lib/i18n/runtime";
 import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -23,14 +22,17 @@ import "./hire.css";
 
 type TabFilter = "all" | "worked" | "favorites";
 
-const TABS: { value: TabFilter; label: string }[] = [
-  { value: "all", label: tUi("Tất cả") },
-  { value: "worked", label: tUi("Đã làm việc cùng") },
-  { value: "favorites", label: tUi("Yêu thích") },
-];
-
 export default function ClientHireFavoritesPage() {
   const { t } = useTranslation();
+
+  const tabs = useMemo(
+    () => [
+      { value: "all" as const, label: t("hireFavorites.tabAll") },
+      { value: "worked" as const, label: t("hireFavorites.tabWorked") },
+      { value: "favorites" as const, label: t("hireFavorites.tabFavorites") },
+    ],
+    [t],
+  );
 
   const { verified: clientIdentityVerified, loading: clientIdentityLoading } =
     useClientIdentityVerification({ refreshOnVisible: false });
@@ -53,7 +55,7 @@ export default function ClientHireFavoritesPage() {
 
       const data = await getMyWork();
       if (data.role !== "client") {
-        setError(t("Trang này dành cho tài khoản client."));
+        setError(t("hirePage.clientOnly"));
         setEntries([]);
         return;
       }
@@ -84,7 +86,7 @@ export default function ClientHireFavoritesPage() {
       const message =
         err && typeof err === "object" && "message" in err
           ? String((err as { message: string }).message)
-          : "Không thể tải danh sách freelancer.";
+          : t("hirePage.loadFreelancersError");
       setError(message);
       setEntries([]);
     } finally {
@@ -112,12 +114,10 @@ export default function ClientHireFavoritesPage() {
   );
 
   function applySearch() {
-  const t = tUi;
     setSearchQuery(searchInput.trim());
   }
 
   function handleSearchKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
-  const t = tUi;
     if (event.key === "Enter") {
       event.preventDefault();
       applySearch();
@@ -125,7 +125,6 @@ export default function ClientHireFavoritesPage() {
   }
 
   async function handleToggleFavorite(id: string) {
-  const t = tUi;
     try {
       const result = await toggleFavorite(id);
       const nowFavorite = result.isFavorite;
@@ -183,7 +182,7 @@ export default function ClientHireFavoritesPage() {
       const message =
         err && typeof err === "object" && "message" in err
           ? String((err as { message: string }).message)
-          : "Không thể cập nhật yêu thích.";
+          : t("hirePage.updateFavoriteError");
       window.alert(message);
     }
   }
@@ -196,14 +195,11 @@ export default function ClientHireFavoritesPage() {
       <div className="hire-page hire-favorites hire-favorites--full-width">
         <header className="hire-page__head">
           <div>
-            <h1 className="hire-page__title">{t("Freelancer yêu thích")}</h1>
-            <p className="hire-page__lead hire-favorites__lead">
-              Thuê, nhắn tin hoặc yêu cầu báo giá từ freelancer bạn đã từng hợp tác hoặc đã lưu vào
-              danh sách yêu thích.
-            </p>
+            <h1 className="hire-page__title">{t("hireFavorites.title")}</h1>
+            <p className="hire-page__lead hire-favorites__lead">{t("hireFavorites.lead")}</p>
           </div>
           <Link href="/hire/search" className="hire-page__post-btn">
-            Tìm freelancer
+            {t("hirePage.findFreelancer")}
           </Link>
         </header>
 
@@ -212,7 +208,7 @@ export default function ClientHireFavoritesPage() {
             <input
               type="search"
               className="hire-page__search-input"
-              placeholder={t("Tìm theo tên, kỹ năng, công việc...")}
+              placeholder={t("hireFavorites.searchPlaceholder")}
               value={searchInput}
               onChange={(e) => {
                 const value = e.target.value;
@@ -220,20 +216,20 @@ export default function ClientHireFavoritesPage() {
                 if (!value.trim()) setSearchQuery("");
               }}
               onKeyDown={handleSearchKeyDown}
-              aria-label={t("Tìm freelancer")}
+              aria-label={t("hireQuotes.searchFreelancer")}
             />
             <button
               type="button"
               className="hire-page__search-btn"
-              aria-label={t("Tìm kiếm")}
+              aria-label={t("hirePage.search")}
               onClick={applySearch}
             >
               <FaSearch aria-hidden />
             </button>
           </div>
 
-          <div className="hire-favorites__tabs" role="tablist" aria-label={t("Lọc freelancer")}>
-            {TABS.map((item) => (
+          <div className="hire-favorites__tabs" role="tablist" aria-label={t("hireFavorites.filterAria")}>
+            {tabs.map((item) => (
               <button
                 key={item.value}
                 type="button"
@@ -250,7 +246,7 @@ export default function ClientHireFavoritesPage() {
         </div>
 
         {loading ? (
-          <p className="hire-page__state">{t("Đang tải...")}</p>
+          <p className="hire-page__state">{t("common.loading")}</p>
         ) : error ? (
           <p className="hire-page__state hire-page__state--error" role="alert">
             {error}
@@ -260,23 +256,20 @@ export default function ClientHireFavoritesPage() {
             <div className="hire-favorites__empty-icon" aria-hidden>
               <FaHeart />
             </div>
-            <h2 className="hire-favorites__empty-title">{t("Chưa có freelancer yêu thích")}</h2>
-            <p className="hire-favorites__empty-text">
-              Khi bạn hoàn thành hợp đồng với freelancer hoặc thêm họ vào danh sách yêu thích, họ sẽ hiện
-              ở đây để bạn thuê lại, nhắn tin hoặc gửi yêu cầu báo giá.
-            </p>
+            <h2 className="hire-favorites__empty-title">{t("hireFavorites.emptyTitle")}</h2>
+            <p className="hire-favorites__empty-text">{t("hireFavorites.emptyHint")}</p>
             <div className="hire-favorites__empty-actions">
               <Link href="/hire/search" className="hire-page__post-btn">
-                Tìm freelancer
+                {t("hirePage.findFreelancer")}
               </Link>
               <Link href="/freelancers" className="hire-favorites__empty-link">
-                Duyệt danh sách freelancer
+                {t("hirePage.browseFreelancers")}
               </Link>
             </div>
           </div>
         ) : noMatches ? (
           <div className="hire-page__empty">
-            <p className="hire-page__empty-text">{t("Không tìm thấy freelancer phù hợp.")}</p>
+            <p className="hire-page__empty-text">{t("hireFavorites.noMatch")}</p>
           </div>
         ) : (
           <ul className="hire-favorites__list">

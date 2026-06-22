@@ -100,19 +100,16 @@ export default function FindWorkToolbar({
     JOB_SORT_OPTIONS.find((o) => o.value === query.sort)?.label ?? "Mới nhất";
 
   function selectCategory(name: string | null) {
-  const t = tUi;
     onQueryChange({ category: name });
     setCategoryOpen(false);
   }
 
   function selectCriteria(value: ClientCriteria) {
-  const t = tUi;
     onQueryChange({ clientCriteria: value });
     setCriteriaOpen(false);
   }
 
   function selectSort(value: JobSort) {
-  const t = tUi;
     onQueryChange({ sort: value });
     setSortOpen(false);
   }
@@ -305,7 +302,6 @@ export function FindWorkActiveChips({
   onQueryChange: (patch: Partial<FindWorkQueryState>) => void;
   onClearAll: () => void;
 }) {
-  const t = tUi;
   const chips: { key: string; label: string; clear: () => void }[] = [];
 
   if (query.category) {

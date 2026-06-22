@@ -91,7 +91,7 @@ export const apiPaths = {
     topSkills: "/api/freelancers/top-skills",
     topLocations: "/api/freelancers/top-locations",
     detail: (id: string) => `/api/freelancers/${id}`,
-    /** Legacy — tương thích client cũ */
+    /** Legacy — tương thích khách hàng cũ */
     listLegacy: "/api/auth/freelancers",
     detailLegacy: (id: string) => `/api/auth/freelancers/${id}`,
   },
@@ -159,6 +159,12 @@ export const apiPaths = {
     payoutAccount: "/api/payments/payout-account",
   },
   admin: {
+    users: "/api/admin/users",
+    user: (userId: string) => `/api/admin/users/${encodeURIComponent(userId)}`,
+    userFull: (userId: string) => `/api/admin/users/${encodeURIComponent(userId)}/full`,
+    updateUser: (userId: string) => `/api/admin/users/${encodeURIComponent(userId)}`,
+    updateUserStatus: (userId: string) =>
+      `/api/admin/users/${encodeURIComponent(userId)}/status`,
     freelancerApprovals: "/api/admin/freelancer-approvals",
     freelancerApproval: (userId: string) => `/api/admin/freelancer-approvals/${encodeURIComponent(userId)}`,
     approveFreelancer: (userId: string) =>
@@ -180,6 +186,11 @@ export const apiPaths = {
       `/api/admin/withdrawals/${encodeURIComponent(withdrawalId)}`,
     resolveWithdrawal: (withdrawalId: string) =>
       `/api/admin/withdrawals/${encodeURIComponent(withdrawalId)}/resolve`,
+    contact: "/api/admin/contact",
+    contactSocialLinks: "/api/admin/contact/social-links",
+    contactSocialLink: (linkId: string) =>
+      `/api/admin/contact/social-links/${encodeURIComponent(linkId)}`,
+    statsOverview: "/api/admin/stats/overview",
   },
   chat: {
     listConversations: "/api/chat/conversations",
@@ -201,5 +212,8 @@ export const apiPaths = {
   },
   support: {
     aiChat: "/api/support/ai-chat",
+  },
+  contact: {
+    public: "/api/contact",
   },
 } as const;

@@ -37,14 +37,12 @@ export default function NotificationBell() {
     if (!open) return;
 
     function onPointerDown(event: MouseEvent) {
-  const t = tUi;
       if (!rootRef.current?.contains(event.target as Node)) {
         closePanel();
       }
     }
 
     function onKeyDown(event: KeyboardEvent) {
-  const t = tUi;
       if (event.key === "Escape") closePanel();
     }
 

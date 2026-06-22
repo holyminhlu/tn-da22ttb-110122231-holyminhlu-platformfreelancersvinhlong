@@ -55,7 +55,6 @@ function SectionHeading({ title, subtitle, light }: { title: string; subtitle?: 
 }
 
 function HeroSection() {
-  const t = tUi;
   return (
     <section className="enterprise-hero py-20 text-white md:py-28">
       <div className="mx-auto max-w-4xl px-6 text-center">
@@ -76,13 +75,12 @@ function HeroSection() {
 }
 
 function CoreBenefitsSection() {
-  const t = tUi;
   return (
     <section className="bg-white py-20 md:py-24">
       <div className="mx-auto max-w-7xl px-6">
         <SectionHeading
           title={tUi("Lợi ích cốt lõi")}
-          subtitle={tUi("Tại sao tập đoàn và doanh nghiệp lớn nên chọn Vĩnh Long Connected Enterprise?")}
+          subtitle={tUi("Tại sao tập đoàn và doanh nghiệp lớn nên chọn Vĩnh Long Connect Enterprise?")}
         />
         <div className="grid gap-6 md:grid-cols-3">
           {CORE_BENEFITS.map((item) => {
@@ -107,7 +105,6 @@ function CoreBenefitsSection() {
 }
 
 function AdvancedFeaturesSection() {
-  const t = tUi;
   return (
     <section id="enterprise-api" className="border-y border-gray-100 bg-gray-50 py-20 md:py-24">
       <div className="mx-auto max-w-7xl px-6">
@@ -140,7 +137,6 @@ function AdvancedFeaturesSection() {
 }
 
 function DedicatedSupportSection() {
-  const t = tUi;
   return (
     <section className="enterprise-support-panel py-20 text-white md:py-24">
       <div className="mx-auto max-w-7xl px-6">
@@ -165,13 +161,12 @@ function DedicatedSupportSection() {
 }
 
 function TrustSection() {
-  const t = tUi;
   return (
     <section className="bg-white py-20 md:py-24">
       <div className="mx-auto max-w-7xl px-6">
         <SectionHeading
           title={tUi("Bằng chứng năng lực")}
-          subtitle={tUi("Các đối tác doanh nghiệp đã tin tưởng giải pháp Enterprise của Vĩnh Long Connected.")}
+          subtitle={tUi("Các đối tác doanh nghiệp đã tin tưởng giải pháp Enterprise của Vĩnh Long Connect.")}
         />
 
         <div className="mb-16 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
@@ -209,7 +204,6 @@ function TrustSection() {
 }
 
 function ContactFormSection() {
-  const t = tUi;
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 

@@ -1,6 +1,5 @@
 "use client";
 
-import { tUi } from "@/lib/i18n/runtime";
 import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -24,7 +23,7 @@ const PAGE_SIZE = 12;
 const ALL = "Tất cả";
 
 export default function ClientHireSearchPage() {
-  const { t } = useTranslation();
+  const { t, formatNum } = useTranslation();
 
   const { verified: clientIdentityVerified, loading: clientIdentityLoading } =
     useClientIdentityVerification({ refreshOnVisible: false });
@@ -83,7 +82,7 @@ export default function ClientHireSearchPage() {
       const message =
         err && typeof err === "object" && "message" in err
           ? String((err as { message: string }).message)
-          : "Không thể tải danh sách freelancer.";
+          : t("hirePage.loadFreelancersError");
       setError(message);
       setRows([]);
     } finally {
@@ -109,7 +108,6 @@ export default function ClientHireSearchPage() {
 
   useEffect(() => {
     function onPointerDown(event: MouseEvent) {
-  const t = tUi;
       const target = event.target as Node;
       if (!skillRef.current?.contains(target)) setSkillOpen(false);
       if (!districtRef.current?.contains(target)) setDistrictOpen(false);
@@ -131,13 +129,11 @@ export default function ClientHireSearchPage() {
   );
 
   function applySearch() {
-  const t = tUi;
     setSearchQuery(searchInput.trim());
     setOffset(0);
   }
 
   function handleSearchKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
-  const t = tUi;
     if (event.key === "Enter") {
       event.preventDefault();
       applySearch();
@@ -148,7 +144,6 @@ export default function ClientHireSearchPage() {
     type: "skill" | "district" | "category",
     value: string,
   ) {
-  const t = tUi;
     if (type === "skill") {
       setSkill(value);
       setSkillOpen(false);
@@ -163,7 +158,6 @@ export default function ClientHireSearchPage() {
   }
 
   function handleSelect(id: string, checked: boolean) {
-  const t = tUi;
     setSelectedIds((prev) => {
       const next = new Set(prev);
       if (checked) next.add(id);
@@ -173,7 +167,6 @@ export default function ClientHireSearchPage() {
   }
 
   function handleSelectAllOnPage(checked: boolean) {
-  const t = tUi;
     setSelectedIds((prev) => {
       const next = new Set(prev);
       for (const row of rows) {
@@ -185,7 +178,6 @@ export default function ClientHireSearchPage() {
   }
 
   async function handleToggleFavorite(id: string) {
-  const t = tUi;
     try {
       const result = await toggleFavorite(id);
       setFavoriteCounts((prev) => ({ ...prev, [id]: result.favoriteCount }));
@@ -193,7 +185,7 @@ export default function ClientHireSearchPage() {
       const message =
         err && typeof err === "object" && "message" in err
           ? String((err as { message: string }).message)
-          : "Không thể cập nhật yêu thích.";
+          : t("hirePage.updateFavoriteError");
       window.alert(message);
     }
   }
@@ -203,17 +195,19 @@ export default function ClientHireSearchPage() {
       <div className="hire-page hire-search hire-search--full-width">
         <header className="hire-search__intro">
           <div>
-            <h1 className="hire-page__title">{t("Tìm và thuê freelancer")}</h1>
+            <h1 className="hire-page__title">{t("hireSearch.title")}</h1>
             <p className="hire-search__summary">
               {loading
-                ? "Đang tải..."
-                : `Có ${total.toLocaleString("vi-VN")} freelancer cung cấp ${servicesTotal.toLocaleString("vi-VN")} dịch vụ trực tuyến.`}
+                ? t("common.loading")
+                : t("hireSearch.summary", {
+                    freelancers: formatNum(total),
+                    services: formatNum(servicesTotal),
+                  })}
             </p>
             <p className="hire-favorites__lead-sub">
-              Thuê, nhắn tin hoặc yêu cầu báo giá từ freelancer bạn đã từng hợp tác hoặc đã lưu vào
-              danh sách yêu thích.{" "}
+              {t("hireSearch.lead")}{" "}
               <Link href="/hire/favorites" className="hire-search__inline-link">
-                Xem danh sách yêu thích
+                {t("hirePage.browseFavorites")}
               </Link>
             </p>
           </div>
@@ -231,7 +225,7 @@ export default function ClientHireSearchPage() {
                 >
                   <FaListUl aria-hidden />
                   <span className="hire-search__category-label">
-                    {category === ALL ? "Tất cả danh mục" : category}
+                    {category === ALL ? t("hirePage.filterAllCategories") : category}
                   </span>
                   <FaChevronDown className="hire-search__chevron" aria-hidden />
                 </button>
@@ -242,7 +236,7 @@ export default function ClientHireSearchPage() {
                       className={`hire-page__filter-option${category === ALL ? " hire-page__filter-option--active" : ""}`}
                       onClick={() => handleFilterChange("category", ALL)}
                     >
-                      Tất cả danh mục
+                      {t("hirePage.filterAllCategories")}
                     </button>
                     {categoryOptions.map((opt) => (
                       <button
@@ -260,7 +254,7 @@ export default function ClientHireSearchPage() {
               <input
                 type="search"
                 className="hire-search__search-input"
-                placeholder={t("Tìm freelancer")}
+                placeholder={t("hireSearch.searchPlaceholder")}
                 value={searchInput}
                 onChange={(e) => {
                   const value = e.target.value;
@@ -271,12 +265,12 @@ export default function ClientHireSearchPage() {
                   }
                 }}
                 onKeyDown={handleSearchKeyDown}
-                aria-label={t("Tìm freelancer")}
+                aria-label={t("hireSearch.searchPlaceholder")}
               />
               <button
                 type="button"
                 className="hire-search__search-btn"
-                aria-label={t("Tìm kiếm")}
+                aria-label={t("hirePage.search")}
                 onClick={applySearch}
               >
                 <FaSearch aria-hidden />
@@ -292,7 +286,7 @@ export default function ClientHireSearchPage() {
                   onClick={() => setDistrictOpen((v) => !v)}
                 >
                   <FaMapMarkerAlt aria-hidden />
-                  {district === ALL ? "Địa điểm" : district}
+                  {district === ALL ? t("hirePage.location") : district}
                   <FaChevronDown className="hire-search__chevron" aria-hidden />
                 </button>
                 {districtOpen ? (
@@ -302,7 +296,7 @@ export default function ClientHireSearchPage() {
                       className={`hire-page__filter-option${district === ALL ? " hire-page__filter-option--active" : ""}`}
                       onClick={() => handleFilterChange("district", ALL)}
                     >
-                      Tất cả địa điểm
+                      {t("hirePage.filterAllLocations")}
                     </button>
                     {districtOptions.map((opt) => (
                       <button
@@ -326,18 +320,18 @@ export default function ClientHireSearchPage() {
                   onClick={() => setFiltersOpen((v) => !v)}
                 >
                   <FaFilter aria-hidden />
-                  Bộ lọc
+                  {t("hirePage.filters")}
                   <FaChevronDown className="hire-search__chevron" aria-hidden />
                 </button>
                 {filtersOpen ? (
                   <div className="hire-page__filter-panel hire-search__dropdown hire-search__dropdown--wide">
-                    <p className="hire-search__dropdown-title">{t("Kỹ năng")}</p>
+                    <p className="hire-search__dropdown-title">{t("hirePage.skills")}</p>
                     <button
                       type="button"
                       className={`hire-page__filter-option${skill === ALL ? " hire-page__filter-option--active" : ""}`}
                       onClick={() => handleFilterChange("skill", ALL)}
                     >
-                      Tất cả kỹ năng
+                      {t("hirePage.filterAllSkills")}
                     </button>
                     {skillOptions.map((opt) => (
                       <button
@@ -361,7 +355,7 @@ export default function ClientHireSearchPage() {
                   onClick={() => setSkillOpen((v) => !v)}
                 >
                   <FaFilter aria-hidden />
-                  {skill === ALL ? "Kỹ năng" : skill}
+                  {skill === ALL ? t("hirePage.skill") : skill}
                   <FaChevronDown className="hire-search__chevron" aria-hidden />
                 </button>
                 {skillOpen ? (
@@ -371,7 +365,7 @@ export default function ClientHireSearchPage() {
                       className={`hire-page__filter-option${skill === ALL ? " hire-page__filter-option--active" : ""}`}
                       onClick={() => handleFilterChange("skill", ALL)}
                     >
-                      Tất cả kỹ năng
+                      {t("hirePage.filterAllSkills")}
                     </button>
                     {skillOptions.map((opt) => (
                       <button
@@ -398,28 +392,25 @@ export default function ClientHireSearchPage() {
               onChange={(e) => handleSelectAllOnPage(e.target.checked)}
             />
             <span>
-              {total.toLocaleString("vi-VN")} kết quả
-              {selectedIds.size > 0 ? ` · ${selectedIds.size} đã chọn` : ""}
+              {t("hirePage.results", { count: formatNum(total) })}
+              {selectedIds.size > 0 ? ` · ${t("hirePage.selected", { count: selectedIds.size })}` : ""}
             </span>
           </label>
           <p className="hire-search__sort">
-            Sắp xếp: <strong>{t("Phù hợp nhất")}</strong>
+            {t("hirePage.sortLabel", { value: t("hirePage.sortBestMatch") })}
           </p>
         </div>
 
         {loading ? (
-          <p className="hire-page__state">{t("Đang tải freelancer...")}</p>
+          <p className="hire-page__state">{t("hireSearch.loadingFreelancers")}</p>
         ) : error ? (
           <p className="hire-page__state hire-page__state--error" role="alert">
             {error}
           </p>
         ) : rows.length === 0 ? (
           <div className="hire-page__empty">
-            <p className="hire-page__empty-text">{t("Không tìm thấy freelancer phù hợp.")}</p>
-            <p className="hire-favorites__lead-sub">
-              Thử đổi từ khóa hoặc bộ lọc. Nếu thiếu cột địa điểm, chạy{" "}
-              <code>backend/sql/freelancer_search_listing.sql</code> trên PostgreSQL.
-            </p>
+            <p className="hire-page__empty-text">{t("hireSearch.noMatch")}</p>
+            <p className="hire-favorites__lead-sub">{t("hireSearch.sqlHint")}</p>
           </div>
         ) : (
           <>
@@ -440,7 +431,7 @@ export default function ClientHireSearchPage() {
             </div>
 
             {totalPages > 1 ? (
-              <nav className="hire-search__pagination" aria-label={t("Phân trang")}>
+              <nav className="hire-search__pagination" aria-label={t("hirePage.pagination")}>
                 <button
                   type="button"
                   className="hire-search__page-btn"
@@ -448,10 +439,10 @@ export default function ClientHireSearchPage() {
                   onClick={() => setOffset((o) => Math.max(0, o - PAGE_SIZE))}
                 >
                   <FaChevronLeft aria-hidden />
-                  Trước
+                  {t("hirePage.prev")}
                 </button>
                 <span className="hire-search__page-label">
-                  Trang {page} / {totalPages}
+                  {t("hirePage.pageOf", { page, totalPages })}
                 </span>
                 <button
                   type="button"
@@ -459,7 +450,7 @@ export default function ClientHireSearchPage() {
                   disabled={!canNext}
                   onClick={() => setOffset((o) => o + PAGE_SIZE)}
                 >
-                  Sau
+                  {t("hirePage.next")}
                   <FaChevronRight aria-hidden />
                 </button>
               </nav>

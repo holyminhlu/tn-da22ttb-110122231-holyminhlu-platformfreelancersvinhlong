@@ -20,7 +20,7 @@ export function jobLeadStatusLabel(job: JobListing): string {
   const kind = jobLeadKind(job);
   if (kind === "new") return "Việc mới";
   if (kind === "hot") return quoteStatusLabel(job.my_quote_status || "");
-  if (kind === "pending") return "Đang chờ client";
+  if (kind === "pending") return "Đang chờ khách hàng";
   return "—";
 }
 

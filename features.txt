@@ -1,1 +1,1 @@
- thêm timeline activity log cho từng quote (ai bấm shortlist/interview/offer lúc nào) để Client audit rõ toàn bộ quá trình tuyển.
+ thêm timeline activity log cho từng quote (ai bấm shortlist/interview/offer lúc nào) để Khách hàng audit rõ toàn bộ quá trình tuyển.

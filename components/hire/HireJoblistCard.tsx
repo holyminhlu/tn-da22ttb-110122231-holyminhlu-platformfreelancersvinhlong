@@ -46,7 +46,7 @@ export default function HireJoblistCard({
             className="hire-joblist__checkbox"
             checked={selected}
             onChange={(e) => onSelect(job.id, e.target.checked)}
-            aria-label={`Chọn ${job.title}`}
+            aria-label={t("hirePage.selectJob", { title: job.title })}
           />
           <span>
             {relativePosted(job.created_at)} · {quotesCountLabel(quoteCount)}
@@ -106,7 +106,7 @@ export default function HireJoblistCard({
           {spent ? (
             <span className="hire-joblist__spent">
               <FaMoneyBillWave aria-hidden />
-              Đã chi {spent}
+              {t("hirePage.spent", { amount: spent })}
             </span>
           ) : null}
           {satisfaction != null && satisfaction > 0 ? (
@@ -120,16 +120,16 @@ export default function HireJoblistCard({
 
       <div className="hire-joblist__card-actions">
         <Link href={`/hire/joblist/${job.id}`} className="hire-joblist__link-btn">
-          Quản lý tuyển dụng
+          {t("hirePage.manageHiring")}
         </Link>
         <Link href="/hire/quotes" className="hire-joblist__link-btn">
-          Tất cả báo giá
+          {t("hirePage.allQuotes")}
         </Link>
         <Link
           href={`/work/detail/${job.id}?preview=1`}
           className="hire-joblist__link-btn hire-joblist__link-btn--muted"
         >
-          Xem tin công khai
+          {t("hirePage.viewPublicPost")}
         </Link>
       </div>
     </article>

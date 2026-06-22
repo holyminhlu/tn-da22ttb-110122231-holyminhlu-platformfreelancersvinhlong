@@ -2,7 +2,7 @@ import SitePage, { sitePageMetadata } from "@/components/layout/SitePage";
 
 export const metadata = sitePageMetadata(
   "Pricing",
-  "Bảng giá và phí dịch vụ Vĩnh Long Connected.",
+  "Bảng giá và phí dịch vụ Vĩnh Long Connect.",
 );
 
 export default function PricingPage() {

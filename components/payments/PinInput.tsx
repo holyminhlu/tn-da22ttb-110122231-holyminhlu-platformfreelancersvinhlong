@@ -27,7 +27,6 @@ export default function PinInput({
   while (digits.length < 6) digits.push("");
 
   function handleChange(index: number, char: string) {
-  const t = tUi;
   const next = char.replace(/\D/g, "").slice(-1);
     const arr = value.replace(/\D/g, "").slice(0, 6).split("");
     while (arr.length < 6) arr.push("");
@@ -36,7 +35,6 @@ export default function PinInput({
   }
 
   function handleKeyDown(index: number, key: string) {
-  const t = tUi;
     if (key === "Backspace" && !digits[index] && index > 0) {
       const el = document.getElementById(`${id}-${index - 1}`);
       el?.focus();
@@ -44,7 +42,6 @@ export default function PinInput({
   }
 
   function handlePaste(text: string) {
-  const t = tUi;
     const pasted = text.replace(/\D/g, "").slice(0, 6);
     if (pasted) onChange(pasted);
   }

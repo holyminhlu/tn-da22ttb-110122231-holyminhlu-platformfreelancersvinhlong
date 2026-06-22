@@ -280,14 +280,14 @@ export default function ServiceCreateWizard({
     }
     if (target === 3) {
       if (description.trim().length < 30) {
-        setStepError("Mô tả chi tiết nên có ít nhất 30 ký tự để Client hiểu rõ dịch vụ.");
+        setStepError("Mô tả chi tiết nên có ít nhất 30 ký tự để Khách hàng hiểu rõ dịch vụ.");
         return false;
       }
     }
     if (target === 4) {
       const hasItem = requirementItems.some((r) => r.trim().length > 0);
       if (!hasItem && !requirementNotes.trim()) {
-        setStepError("Thêm ít nhất một mục yêu cầu Client phải cung cấp sau khi mua.");
+        setStepError("Thêm ít nhất một mục yêu cầu Khách hàng phải cung cấp sau khi mua.");
         return false;
       }
     }
@@ -295,26 +295,22 @@ export default function ServiceCreateWizard({
   }
 
   function goNext() {
-  const t = tUi;
     if (!validateStep(step)) return;
     setStep((s) => Math.min(5, s + 1));
   }
 
   function goBack() {
-  const t = tUi;
     setStepError("");
     setStep((s) => Math.max(1, s - 1));
   }
 
   function goToStep(id: number) {
-  const t = tUi;
     if (id > step) return;
     setStepError("");
     setStep(id);
   }
 
   async function submit(mode: SubmitMode) {
-  const t = tUi;
   setError("");
     if (mode === "pending" || mode === "save") {
       for (let s = 1; s <= 4; s += 1) {
@@ -353,7 +349,6 @@ export default function ServiceCreateWizard({
   }
 
   async function handleThumbnail(file: File | null) {
-  const t = tUi;
   if (!file) return;
     try {
       const url = await uploadServiceThumbnail(file);
@@ -364,7 +359,6 @@ export default function ServiceCreateWizard({
   }
 
   async function handleGallery(files: FileList | null) {
-  const t = tUi;
   if (!files?.length) return;
     try {
       const urls = await uploadServiceImages(Array.from(files));
@@ -375,7 +369,6 @@ export default function ServiceCreateWizard({
   }
 
   async function handleDemo(file: File | null) {
-  const t = tUi;
   if (!file) return;
     try {
       const data = await uploadServiceDemo(file);
@@ -472,7 +465,7 @@ export default function ServiceCreateWizard({
             <div className="post-job-wizard__fields">
               <h2 className="post-job-wizard__heading">{t("Tổng quan dịch vụ")}</h2>
               <p className="post-job-wizard__hint">
-                {t("Thông tin hiển thị trên thẻ tìm kiếm và trang chi tiết gig — tiêu đề và danh mục giúp Client tìm thấy bạn.")}
+                {t("Thông tin hiển thị trên thẻ tìm kiếm và trang chi tiết gig — tiêu đề và danh mục giúp Khách hàng tìm thấy bạn.")}
               </p>
               <label className="post-job-field">
                 <span>{t("Tiêu đề dịch vụ *")}</span>
@@ -539,9 +532,9 @@ export default function ServiceCreateWizard({
 
           {step === 2 ? (
             <div className="post-job-wizard__fields">
-              <h2 className="post-job-wizard__heading">{t("Giá cả &amp; Gói thầu")}</h2>
+              <h2 className="post-job-wizard__heading">{t("Giá cả & Gói thầu")}</h2>
               <p className="post-job-wizard__hint">
-                {t("Chọn một mức giá cố định cho toàn bộ dịch vụ, hoặc chia thành nhiều gói (Basic / Standard / Premium) để Client lựa chọn mức phù hợp.")}
+                {t("Chọn một mức giá cố định cho toàn bộ dịch vụ, hoặc chia thành nhiều gói (Basic / Standard / Premium) để Khách hàng lựa chọn mức phù hợp.")}
               </p>
 
               <fieldset className="post-job-wizard__radio-group svc-pricing-mode">
@@ -597,7 +590,7 @@ export default function ServiceCreateWizard({
                     onChange={setSingleRevisions}
                   />
                   <p className="post-job-wizard__hint">
-                    {t("Client chỉ thấy")} <strong>{t("một nút &quot;Mua ngay&quot;")}</strong> với giá {pricePreview} ·{" "}
+                    {t("Khách hàng chỉ thấy")} <strong>{t("một nút &quot;Mua ngay&quot;")}</strong> với giá {pricePreview} ·{" "}
                     {deliveryDays} ngày.
                   </p>
                 </div>
@@ -685,7 +678,7 @@ export default function ServiceCreateWizard({
 
           {step === 3 ? (
             <div className="post-job-wizard__fields">
-              <h2 className="post-job-wizard__heading">{t("Mô tả chi tiết &amp; FAQ")}</h2>
+              <h2 className="post-job-wizard__heading">{t("Mô tả chi tiết & FAQ")}</h2>
               <p className="post-job-wizard__hint">
                 {t("Giải thích rõ phạm vi công việc, sản phẩm bàn giao và câu hỏi thường gặp — giúp giảm trao đổi lặp lại trước khi mua.")}
               </p>
@@ -702,7 +695,7 @@ export default function ServiceCreateWizard({
               <div className="svc-faq-block">
                 <h3 className="svc-faq-block__title">{t("Câu hỏi thường gặp (FAQ)")}</h3>
                 <p className="post-job-wizard__hint" style={{ marginTop: 0 }}>
-                  {t("Thêm câu hỏi Client hay hỏi — có thể xóa từng mục khi không cần nữa.")}
+                  {t("Thêm câu hỏi Khách hàng hay hỏi — có thể xóa từng mục khi không cần nữa.")}
                 </p>
                 <div className="svc-faq-list">
                   {faqs.map((faq, idx) => (
@@ -761,12 +754,12 @@ export default function ServiceCreateWizard({
 
           {step === 4 ? (
             <div className="post-job-wizard__fields">
-              <h2 className="post-job-wizard__heading">{t("Yêu cầu từ Client")}</h2>
+              <h2 className="post-job-wizard__heading">{t("Yêu cầu từ Khách hàng")}</h2>
 
               <div className="svc-req-callout" role="note">
                 <p className="svc-req-callout__title">{t("Mục này dùng để làm gì?")}</p>
                 <p>
-                  {t("Sau khi Client")} <strong>{t("thanh toán / đặt cọc")}</strong> {t("và bạn")} <strong>{t("tiếp nhận đơn")}</strong>{t(", họ sẽ thấy danh sách thông tin và file cần gửi trước khi bạn bắt đầu làm. Ghi càng cụ thể càng giảm trễ deadline do thiếu brief.")}
+                  {t("Sau khi Khách hàng")} <strong>{t("thanh toán / đặt cọc")}</strong> {t("và bạn")} <strong>{t("tiếp nhận đơn")}</strong>{t(", họ sẽ thấy danh sách thông tin và file cần gửi trước khi bạn bắt đầu làm. Ghi càng cụ thể càng giảm trễ deadline do thiếu brief.")}
                 </p>
                 <ul className="svc-req-callout__list">
                   <li>{t("Mỗi dòng = một yêu cầu bắt buộc hoặc khuyến nghị")}</li>
@@ -776,7 +769,7 @@ export default function ServiceCreateWizard({
               </div>
 
               <div className="svc-req-items">
-                <p className="svc-req-items__label">{t("Danh sách yêu cầu Client cần cung cấp *")}</p>
+                <p className="svc-req-items__label">{t("Danh sách yêu cầu Khách hàng cần cung cấp *")}</p>
                 {requirementItems.map((item, idx) => (
                   <div key={idx} className="svc-req-row">
                     <span className="svc-req-row__num" aria-hidden>
@@ -848,7 +841,7 @@ export default function ServiceCreateWizard({
                   value={requirementNotes}
                   onChange={(e) => setRequirementNotes(e.target.value)}
                   rows={3}
-                  placeholder={t("VD: Nếu chưa có logo, Client có thể gửi tên thương hiệu và phong cách mong muốn...")}
+                  placeholder={t("VD: Nếu chưa có logo, Khách hàng có thể gửi tên thương hiệu và phong cách mong muốn...")}
                 />
               </label>
             </div>
@@ -856,7 +849,7 @@ export default function ServiceCreateWizard({
 
           {step === 5 ? (
             <div className="post-job-wizard__fields">
-              <h2 className="post-job-wizard__heading">{t("Hình ảnh &amp; Sản phẩm mẫu")}</h2>
+              <h2 className="post-job-wizard__heading">{t("Hình ảnh & Sản phẩm mẫu")}</h2>
               <p className="post-job-wizard__hint">
                 {t("Ảnh cover và gallery giúp tăng tỷ lệ chuyển đổi — video/PDF demo thể hiện chất lượng thực tế.")}
               </p>

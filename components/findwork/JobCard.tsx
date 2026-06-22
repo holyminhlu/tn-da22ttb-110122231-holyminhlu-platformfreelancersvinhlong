@@ -51,14 +51,10 @@ export default function JobCard({
   const categoryLabel = job.category?.trim() || null;
 
   function handleProposalSuccess() {
-  const t = tUi;
-  const formatDate = formatDateUi;
     onAccepted?.(job.id);
   }
 
   function quoteStatusChip() {
-  const t = tUi;
-  const formatDate = formatDateUi;
     if (quotePhase === "offered") {
       return (
         <span className="rounded border border-amber-300 bg-amber-50 px-4 py-1.5 text-sm font-semibold text-amber-800">
@@ -93,8 +89,6 @@ export default function JobCard({
   const quoteChip = quoteStatusChip();
 
   function openQuoteFlow() {
-  const t = tUi;
-  const formatDate = formatDateUi;
     if (isClient) {
       setClientNoticeOpen(true);
       return;
