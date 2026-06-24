@@ -96,6 +96,25 @@ async function updateAvatar(req, res) {
   }
 }
 
+async function uploadAvatarAsset(req, res) {
+  const payload = verifyAccessToken(req, res);
+  if (!payload) return;
+
+  const { uploadAvatar: uploadMw } = require("../middleware/avatarUpload");
+  const handler = uploadMw.single("file");
+  handler(req, res, (err) => {
+    if (err) {
+      return res.status(400).json({ message: err.message || "Tải ảnh thất bại." });
+    }
+    const file = req.file;
+    if (!file) {
+      return res.status(400).json({ message: "Chọn một ảnh làm đại diện." });
+    }
+    const url = `/uploads/avatars/${file.filename}`;
+    return res.status(201).json({ url });
+  });
+}
+
 async function updateProfile(req, res) {
 
   const payload = verifyAccessToken(req, res);
@@ -1156,6 +1175,7 @@ async function getPublicHomeStats(_req, res) {
 
 module.exports = {
   updateAvatar,
+  uploadAvatarAsset,
   updateProfile,
   updateSkills,
   createPortfolio,

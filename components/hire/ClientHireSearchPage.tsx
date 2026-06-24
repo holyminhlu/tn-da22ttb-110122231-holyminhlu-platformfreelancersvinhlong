@@ -410,7 +410,6 @@ export default function ClientHireSearchPage() {
         ) : rows.length === 0 ? (
           <div className="hire-page__empty">
             <p className="hire-page__empty-text">{t("hireSearch.noMatch")}</p>
-            <p className="hire-favorites__lead-sub">{t("hireSearch.sqlHint")}</p>
           </div>
         ) : (
           <>

@@ -83,11 +83,11 @@ export function downloadInvoiceReceipt(tx: BillingTransaction) {
     "VĨNH LONG CONNECTED — BIÊN NHẬN / HÓA ĐƠN",
     "========================================",
     `Mã hóa đơn: ${tx.invoiceNumber}`,
-    `Ngày: ${formatDateUi(tx.occurredAt)}`,
+    `Ngày: ${formatDate(tx.occurredAt)}`,
     `Dự án: ${tx.projectTitle}`,
     `Freelancer: ${tx.freelancerName}`,
     `Loại: ${transactionCategoryLabel(tx.category)}`,
-    `Số tiền: ${formatVndUi(tx.amount)}`,
+    `Số tiền: ${formatVnd(tx.amount)}`,
     "",
     "Tài liệu tham chiếu từ hệ thống VLC. Liên hệ hỗ trợ nếu cần bản PDF chính thức.",
   ].join("\n");

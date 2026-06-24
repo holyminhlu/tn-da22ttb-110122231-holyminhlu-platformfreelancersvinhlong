@@ -32,7 +32,7 @@ export default function FindFreelancersBody() {
   const { user, ready, isClient } = useStoredUser({ refreshFromApi: false });
   const isGuest = ready && !user;
   const canFavorite = ready && user && isClient;
-  const { isFavorite, toggleFavorite } = useClientFavoriteFreelancers({ enabled: canFavorite });
+  const { isFavorite, toggleFavorite } = useClientFavoriteFreelancers({ enabled: Boolean(canFavorite) });
 
   const [rows, setRows] = useState<FreelancerSearchRow[]>([]);
   const [total, setTotal] = useState(0);

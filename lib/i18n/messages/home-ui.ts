@@ -106,5 +106,6 @@ export const homeUi = {
       logoAria: "Vĩnh Long Connect — về trang chủ",
       logoAlt: "Vĩnh Long Connect",
     },
-  },
+  },
+
 } as const;

@@ -101,7 +101,7 @@ export default function ClientHireFreelancerDetailPage({
   const [error, setError] = useState("");
   const [favoriteCount, setFavoriteCount] = useState(0);
   const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
-  const { isFavorite, toggleFavorite } = useClientFavoriteFreelancers({ enabled: canHire });
+  const { isFavorite, toggleFavorite } = useClientFavoriteFreelancers({ enabled: Boolean(canHire) });
 
   const load = useCallback(async () => {
     if (!freelancerId) {

@@ -1,15 +1,40 @@
 BAK-Script: pg_dump -U postgres -s -d vl_freelancer > D:/schema_only2.sql
+Lần sau export trên PowerShell, dùng:
 
+pg_dump -U postgres -s -d vl_freelancer -f Database.sql --encoding=UTF8
+Hoặc trong CMD (không phải PowerShell):
 
-ACC Test
-Password@123.
+pg_dump -U postgres -s -d vl_freelancer > Database.sql
 
-Khách hàng: khách hàng.vip@example.com
-
-Freelancer: freelancer.pro@example.com
-
-Nếu bạn muốn, bước tiếp theo mình có thể chuẩn hóa thêm tầng API:
+===============================================================
 
 tạo apiGet/apiPost wrapper chung (retry, error mapping),
 tách endpoint theo domain (AUTH_ENDPOINTS, USER_ENDPOINTS, ...),
 thêm typing chặt hơn cho response/error theo từng module.
+
+================================================================
+Có thể loại bỏ an toàn (sau backup):
+
+reviews
+oauth_accounts
+user_payout_methods
+ledger_entries
+email_verification_tokens
+password_reset_tokens
+schema_migrations (nếu không có kế hoạch dùng migration runner)
+Không xóa:
+
+spatial_ref_sys — bắt buộc nếu dùng PostGIS
+Nếu muốn giữ tính năng trong tương lai:
+
+password_reset_tokens → implement API quên mật khẩu
+email_verification_tokens → implement xác minh email qua link
+================================================================
+Lệnh đăng nhập PostgreSQL trong container dự án vl-connected:
+
+Cách 1 — Từ thư mục dự án (khuyên dùng)
+cd D:\DA_TN\DATN\DATN\vl-connected
+docker compose exec db psql -U vl_user -d vl_connected
+Cách 2 — Vào shell psql tương tác
+
+docker compose exec -it db psql -U vl_user -d vl_connected

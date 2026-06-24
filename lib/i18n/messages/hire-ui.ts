@@ -140,8 +140,6 @@ export const hireUi = {
       searchPlaceholder: "Tìm công việc đã đăng",
       searchAria: "Tìm công việc",
       emptyFilter: "Bạn chưa đăng công việc nào phù hợp bộ lọc.",
-      emptySqlHint:
-        "Chạy backend/sql/hire_joblist_columns.sql nếu API báo thiếu cột hoặc bảng job_quotes.",
     },
     hireFavorites: {
       title: "Freelancer yêu thích",
@@ -163,8 +161,6 @@ export const hireUi = {
       searchPlaceholder: "Tìm freelancer",
       loadingFreelancers: "Đang tải freelancer...",
       noMatch: "Không tìm thấy freelancer phù hợp.",
-      sqlHint:
-        "Thử đổi từ khóa hoặc bộ lọc. Nếu thiếu cột địa điểm, chạy backend/sql/freelancer_search_listing.sql trên PostgreSQL.",
     },
     hireOrders: {
       title: "Đơn dịch vụ",
@@ -199,5 +195,6 @@ export const hireUi = {
       emptyHint:
         "Nhắn tin từ trang báo giá, tìm freelancer hoặc hồ sơ dịch vụ — hội thoại sẽ hiện ở đây.",
     },
-  },
+  },
+
 } as const;

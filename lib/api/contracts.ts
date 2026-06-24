@@ -196,6 +196,7 @@ export type ServiceOrderListItem = {
   progress_note: string | null;
   demo_url: string | null;
   delivered_at: string | null;
+  accepted_at?: string | null;
   funded_at: string | null;
   released_at: string | null;
   created_at: string;

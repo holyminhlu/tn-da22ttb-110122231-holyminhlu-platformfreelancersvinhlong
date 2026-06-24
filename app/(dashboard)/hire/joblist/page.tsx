@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import ClientHireJoblistPage from "@/components/hire/ClientHireJoblistPage";
 import { clientPageMetadata } from "@/components/layout/ClientPlaceholderPage";
 
@@ -7,5 +8,9 @@ export const metadata = clientPageMetadata(
 );
 
 export default function HireJoblistPage() {
-  return <ClientHireJoblistPage />;
+  return (
+    <Suspense fallback={<p className="hire-page__state">Đang tải danh sách việc...</p>}>
+      <ClientHireJoblistPage />
+    </Suspense>
+  );
 }

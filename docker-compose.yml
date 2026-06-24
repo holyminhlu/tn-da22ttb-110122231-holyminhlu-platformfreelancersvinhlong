@@ -12,7 +12,7 @@ services:
       - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./DB.sql:/schema/DB.sql:ro
+      - ./Database.sql:/schema/DB.sql:ro
       - ./backend/sql:/schema/migrations:ro
       - ./docker/db/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
@@ -20,7 +20,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
-      start_period: 30s
+      start_period: 120s
 
   backend:
     build:
@@ -31,6 +31,10 @@ services:
       - .env
     environment:
       DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: ${POSTGRES_DB:-vl_connected}
+      DB_USER: ${POSTGRES_USER:-vl_user}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-${DB_PASSWORD:-vl_connected_dev}}
       NODE_ENV: production
     ports:
       - "${BACKEND_PORT:-5000}:5000"

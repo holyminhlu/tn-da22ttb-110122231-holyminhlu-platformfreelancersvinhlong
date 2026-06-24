@@ -18,7 +18,7 @@ type LinkPayoutAccountModalProps = {
     bankName: string;
     accountNumber: string;
     accountHolderName: string;
-  }) => Promise<void>;
+  }) => Promise<unknown>;
 };
 
 export default function LinkPayoutAccountModal({

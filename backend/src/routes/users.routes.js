@@ -33,6 +33,7 @@ router.post("/me/identity-verification/card/verify-charge", identityVerification
 router.post("/me/identity-verification/card/payment-link", identityVerification.createCardVerifyPaymentLink);
 router.get("/me/identity-verification/card/payment-status/:orderCode", identityVerification.getCardVerifyPaymentStatus);
 router.post("/me/identity-verification/card/payment-status/:orderCode/cancel", identityVerification.cancelCardVerifyPayment);
+router.post("/me/avatar-upload", users.uploadAvatarAsset);
 router.patch("/me/avatar", users.updateAvatar);
 router.post("/me/avatar", users.updateAvatar);
 router.patch("/me/profile", users.updateProfile);

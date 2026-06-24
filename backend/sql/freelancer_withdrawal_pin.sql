@@ -1,9 +1,6 @@
 -- Mã PIN rút tiền (6 chữ số) cho freelancer
 BEGIN;
 
-ALTER TABLE public.users
-  ADD COLUMN IF NOT EXISTS password_user_set_at timestamp without time zone;
-
 UPDATE public.users
 SET password_user_set_at = COALESCE(password_user_set_at, created_at)
 WHERE google_id IS NULL AND password_user_set_at IS NULL;

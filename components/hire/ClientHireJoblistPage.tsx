@@ -219,7 +219,6 @@ export default function ClientHireJoblistPage() {
         ) : jobs.length === 0 ? (
           <div className="hire-page__empty">
             <p className="hire-page__empty-text">{t("hireJoblist.emptyFilter")}</p>
-            <p className="hire-favorites__lead-sub">{t("hireJoblist.emptySqlHint")}</p>
             <Link href="/hire/post" className="hire-page__post-btn" style={{ marginTop: "1rem" }}>
               {t("hirePage.postJobNew")}
             </Link>

@@ -7,12 +7,14 @@ export type ApiError = {
   code?: string;
 };
 
-export type FetchApiOptions = RequestInit & {
+export type FetchApiOptions = Omit<RequestInit, "body"> & {
   /** Gửi kèm Bearer token từ localStorage (client-only). */
   auth?: boolean;
   baseUrl?: string;
   /** @internal — tránh lặp khi retry sau refresh */
   _retry?: boolean;
+  /** Object sẽ được JSON.stringify; FormData / string / Blob giữ nguyên. */
+  body?: unknown;
 };
 
 function getStoredAccessToken(): string | null {
@@ -79,13 +81,15 @@ export async function fetchApi<T = unknown>(
     if (token) mergedHeaders.set("Authorization", `Bearer ${token}`);
   }
 
+  const serializedBody: BodyInit | null | undefined =
+    body !== undefined && body !== null && typeof body === "object" && !(body instanceof FormData)
+      ? JSON.stringify(body)
+      : (body as BodyInit | null | undefined);
+
   const response = await fetch(apiUrl(path, baseUrl), {
     ...rest,
     headers: mergedHeaders,
-    body:
-      body !== undefined && body !== null && typeof body === "object" && !(body instanceof FormData)
-        ? JSON.stringify(body)
-        : body,
+    body: serializedBody,
   });
 
   let data: T;

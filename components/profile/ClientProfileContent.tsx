@@ -23,11 +23,11 @@ import {
   FaWallet,
 } from "react-icons/fa";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { uploadServiceThumbnail } from "@/lib/api/services";
 import {
   getMe,
   isClientMeResponse,
   updateAvatar,
+  uploadAvatar,
   type ClientMeResponse,
   type MeUser,
 } from "@/lib/api/users";
@@ -116,7 +116,7 @@ export default function ClientProfileContent() {  const { t, formatVnd, formatDa
     setAvatarUploading(true);
     setAvatarError("");
     try {
-      const url = await uploadServiceThumbnail(file);
+      const url = await uploadAvatar(file);
       const result = await updateAvatar(url);
       const nextAvatar = result.avatarUrl || url;
       persistStoredUser(

@@ -7,13 +7,12 @@ import { ROUTES } from "@/lib/routes/paths";
 export const CLIENT_VERIFY_PAGE = ROUTES.account.verify;
 
 export const CLIENT_VERIFY_LEAD =
-  "Hoàn thành 5 mục thông tin nhận dạng và xác minh thẻ tín dụng (bước 2) tại trang xác minh.";
+  "Hoàn thành 5 mục thông tin nhận dạng, xác minh thẻ tín dụng (bước 2) và được admin duyệt hồ sơ (bước 3).";
 
 export const CLIENT_VERIFY_PAYMENT_LEAD =
   `${CLIENT_VERIFY_LEAD} Sau đó bạn có thể nạp tiền, quản lý phương thức thanh toán và thực hiện giao dịch ký quỹ.`;
 
-/** Các bước bắt buộc trước khi đăng tin tuyển dụng. */
-export function getClientVerificationBlockers(
+function getClientIdvBlockers(
   user: MeUser | null,
   idv: IdentityVerificationResponse | null,
 ): string[] {
@@ -39,7 +38,44 @@ export function getClientVerificationBlockers(
   return blockers;
 }
 
-/** Đủ 5 mục nhận dạng + thẻ tín dụng đã xác minh. */
+function appendClientAdminReviewBlockers(
+  idv: IdentityVerificationResponse["verification"] | null | undefined,
+  blockers: string[],
+): string[] {
+  if (!idv?.submitted_for_review_at) {
+    blockers.push("Chưa gửi hồ sơ xác minh để xem xét (bước 3).");
+  }
+
+  const review = String(idv?.admin_review_status || "").toLowerCase();
+  if (review === "approved") return blockers;
+  if (review === "pending") {
+    blockers.push("Hồ sơ đang chờ admin duyệt tài khoản.");
+    return blockers;
+  }
+  if (review === "rejected") {
+    const note = idv?.admin_review_note?.trim();
+    blockers.push(
+      note
+        ? `Hồ sơ xác minh bị từ chối: ${note}`
+        : "Hồ sơ xác minh bị từ chối. Vui lòng cập nhật và gửi lại.",
+    );
+    return blockers;
+  }
+
+  blockers.push("Chưa được admin duyệt tài khoản.");
+  return blockers;
+}
+
+/** Các bước bắt buộc trước khi thuê / thanh toán / nhắn tin. */
+export function getClientVerificationBlockers(
+  user: MeUser | null,
+  idv: IdentityVerificationResponse | null,
+): string[] {
+  const base = getClientIdvBlockers(user, idv);
+  return appendClientAdminReviewBlockers(idv?.verification, base);
+}
+
+/** Đủ 5 mục nhận dạng + thẻ tín dụng + admin duyệt. */
 export function isClientIdentityVerified(
   user: MeUser | null,
   idv: IdentityVerificationResponse | null,

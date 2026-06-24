@@ -42,7 +42,7 @@ export default function HireFavoriteCard({
   const { t, formatVnd, formatDate } = useTranslation();
 
   const avatarSrc = resolveAvatarSrc(entry.avatarUrl);
-  const initials = getUserInitials(entry.name, entry.email);
+  const initials = getUserInitials(entry.name, entry.email ?? undefined);
   const rating =
     entry.ratingAvg != null && entry.ratingAvg > 0 ? Number(entry.ratingAvg).toFixed(1) : null;
 

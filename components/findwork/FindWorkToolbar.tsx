@@ -302,6 +302,7 @@ export function FindWorkActiveChips({
   onQueryChange: (patch: Partial<FindWorkQueryState>) => void;
   onClearAll: () => void;
 }) {
+  const { t } = useTranslation();
   const chips: { key: string; label: string; clear: () => void }[] = [];
 
   if (query.category) {

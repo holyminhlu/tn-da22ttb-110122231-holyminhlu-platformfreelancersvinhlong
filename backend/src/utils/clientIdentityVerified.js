@@ -36,8 +36,39 @@ function getBlockers(row, profile) {
   return blockers;
 }
 
+function appendClientAdminReviewBlockers(row, blockers) {
+  if (!row?.submitted_for_review_at) {
+    blockers.push("Chưa gửi hồ sơ xác minh để xem xét (bước 3).");
+  }
+
+  const review = String(row?.admin_review_status || "").toLowerCase();
+  if (review === "approved") {
+    return blockers;
+  }
+  if (review === "pending") {
+    blockers.push("Hồ sơ đang chờ admin duyệt tài khoản.");
+    return blockers;
+  }
+  if (review === "rejected") {
+    const note = String(row?.admin_review_note || "").trim();
+    blockers.push(
+      note
+        ? `Hồ sơ xác minh bị từ chối: ${note}`
+        : "Hồ sơ xác minh bị từ chối. Vui lòng cập nhật và gửi lại.",
+    );
+    return blockers;
+  }
+
+  blockers.push("Chưa được admin duyệt tài khoản.");
+  return blockers;
+}
+
+function getClientWorkBlockers(row, profile) {
+  return appendClientAdminReviewBlockers(row, getBlockers(row, profile));
+}
+
 function isClientIdentityVerified(row, profile) {
-  return getBlockers(row, profile).length === 0;
+  return getClientWorkBlockers(row, profile).length === 0;
 }
 
 async function queryClientIdentityVerified(db, userId) {
@@ -89,6 +120,9 @@ const IDV_VERIFY_SELECT = `
   iv.address_proof_url,
   iv.phone_submitted_at,
   iv.card_verified_at,
+  iv.submitted_for_review_at,
+  iv.admin_review_status,
+  iv.admin_review_note,
   up.phone AS profile_phone,
   up.avatar_url AS profile_avatar_url,
   u.is_phone_verified`;
@@ -96,6 +130,8 @@ const IDV_VERIFY_SELECT = `
 module.exports = {
   buildVerifyFlags,
   getBlockers,
+  getClientWorkBlockers,
+  appendClientAdminReviewBlockers,
   isClientIdentityVerified,
   queryClientIdentityVerified,
   IDENTITY_NOT_VERIFIED_MESSAGE,

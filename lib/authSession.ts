@@ -74,7 +74,7 @@ export function resolveAvatarSrc(url?: string | null): string | undefined {
   return apiUrl(path, getApiBaseUrl());
 }
 
-export function getUserInitials(fullName?: string, email?: string): string {
+export function getUserInitials(fullName?: string | null, email?: string | null): string {
   const name = String(fullName || "").trim();
   if (name) {
     const parts = name.split(/\s+/).filter(Boolean);

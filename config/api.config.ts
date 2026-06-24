@@ -51,6 +51,7 @@ export const apiPaths = {
     changeEmail: "/api/users/me/email",
     changePassword: "/api/users/me/password",
     avatar: "/api/users/me/avatar",
+    avatarUpload: "/api/users/me/avatar-upload",
     security: "/api/users/me/security",
     securitySessions: "/api/users/me/security/sessions",
     securitySession: (sessionId: string) =>

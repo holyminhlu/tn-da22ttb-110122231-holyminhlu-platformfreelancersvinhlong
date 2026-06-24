@@ -26,11 +26,11 @@ import {
 } from "react-icons/fa";
 import FreelancerAvatarFrame from "@/components/freelancer/FreelancerAvatarFrame";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { uploadServiceThumbnail } from "@/lib/api/services";
 import {
   getMe,
   isFreelancerMeResponse,
   updateAvatar,
+  uploadAvatar,
   type FreelancerMeResponse,
   type MeUser,
 } from "@/lib/api/users";
@@ -180,7 +180,7 @@ export default function MyProfileContent() {  const { t, formatVnd } = useTransl
     setAvatarUploading(true);
     setAvatarError("");
     try {
-      const url = await uploadServiceThumbnail(file);
+      const url = await uploadAvatar(file);
       const result = await updateAvatar(url);
       const nextAvatar = result.avatarUrl || url;
       persistStoredUser(

@@ -299,6 +299,17 @@ export async function updateProfile(payload: UpdateProfilePayload) {
   return data;
 }
 
+export async function uploadAvatar(file: File) {
+  const form = new FormData();
+  form.append("file", file);
+  const { data } = await fetchApi<{ url: string }>(apiPaths.users.avatarUpload, {
+    method: "POST",
+    auth: true,
+    body: form,
+  });
+  return data.url;
+}
+
 export async function updateAvatar(avatarUrl: string) {
   const { data } = await fetchApi<{ message?: string; avatarUrl?: string }>(apiPaths.users.avatar, {
     method: "PATCH",

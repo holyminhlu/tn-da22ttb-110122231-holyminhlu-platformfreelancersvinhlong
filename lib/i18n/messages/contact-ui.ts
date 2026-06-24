@@ -16,5 +16,6 @@ export const contactUi = {
       helpNote: "Cần hỗ trợ về đơn hàng, thanh toán hoặc tài khoản? Xem thêm tại",
       helpLink: "Trung tâm trợ giúp",
     },
-  },
+  },
+
 } as const;

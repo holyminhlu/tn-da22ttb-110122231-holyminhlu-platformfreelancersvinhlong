@@ -45,10 +45,10 @@ export function canWithdrawFreelancerQuote(quote: JobQuoteRow): boolean {
 
 export function formatFreelancerQuoteAmount(quote: JobQuoteRow): string {
   if (quote.amount != null) {
-    const amount = formatVndUi(quote.amount);
+    const amount = formatVnd(quote.amount);
     return quote.pricing_type === "hourly" ? `${amount}/giờ` : amount;
   }
-  if (quote.job_budget != null) return formatVndUi(quote.job_budget);
+  if (quote.job_budget != null) return formatVnd(quote.job_budget);
   return "Thỏa thuận";
 }
 

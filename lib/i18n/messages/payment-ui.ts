@@ -39,5 +39,6 @@ export const paymentUi = {
       txFilterWithdraw: "Rút tiền",
       txFilterOther: "Khác",
     },
-  },
+  },
+
 } as const;
