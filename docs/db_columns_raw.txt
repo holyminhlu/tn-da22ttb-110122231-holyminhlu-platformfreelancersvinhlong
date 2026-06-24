@@ -1,0 +1,545 @@
+accounts|1|id|uuid|NO|gen_random_uuid()|
+accounts|2|user_id|uuid|NO||
+accounts|3|balance|numeric(18,2)|NO|0|
+accounts|4|currency|char(3)|NO|'VND'::bpchar|
+accounts|5|created_at|timestamp|YES|now()|
+accounts|6|updated_at|timestamp|YES|now()|
+accounts|7|escrow_balance|numeric(18,2)|NO|0|
+billing_invoices|1|id|uuid|NO|gen_random_uuid()|
+billing_invoices|2|transaction_id|uuid|NO||
+billing_invoices|3|user_id|uuid|NO||
+billing_invoices|4|invoice_number|varchar(80)|NO||
+billing_invoices|5|issued_at|timestamp|NO|now()|
+billing_invoices|6|currency|char(3)|NO|'VND'::bpchar|
+billing_invoices|7|subtotal|numeric(18,2)|NO|0|
+billing_invoices|8|fee_amount|numeric(18,2)|NO|0|
+billing_invoices|9|total_amount|numeric(18,2)|NO|0|
+billing_invoices|10|status|varchar(20)|NO|'issued'::character varying|
+billing_invoices|11|pdf_url|text|YES||
+billing_invoices|12|created_at|timestamp|NO|now()|
+chat_blocks|1|blocker_id|uuid|NO||
+chat_blocks|2|blocked_id|uuid|NO||
+chat_blocks|3|created_at|timestamptz|NO|now()|
+chat_conversation_user_state|1|conversation_id|uuid|NO||
+chat_conversation_user_state|2|user_id|uuid|NO||
+chat_conversation_user_state|3|hidden_at|timestamptz|YES||
+chat_conversation_user_state|4|last_read_at|timestamptz|YES||
+chat_conversations|1|id|uuid|NO|gen_random_uuid()|
+chat_conversations|2|client_id|uuid|NO||
+chat_conversations|3|freelancer_id|uuid|NO||
+chat_conversations|4|job_quote_id|uuid|YES||
+chat_conversations|5|created_at|timestamptz|NO|now()|
+chat_conversations|6|updated_at|timestamptz|NO|now()|
+chat_conversations|7|service_id|uuid|YES||
+chat_conversations|8|context_title|text|YES||
+chat_messages|1|id|uuid|NO|gen_random_uuid()|
+chat_messages|2|conversation_id|uuid|NO||
+chat_messages|3|sender_id|uuid|NO||
+chat_messages|4|body|text|NO||
+chat_messages|5|created_at|timestamptz|NO|now()|
+chat_messages|6|kind|varchar(20)|NO|'text'::character varying|
+chat_messages|7|context_type|varchar(20)|YES||
+chat_messages|8|attachment_url|text|YES||
+chat_messages|9|attachment_name|text|YES||
+chat_messages|10|attachment_mime|text|YES||
+client_billing_methods|1|id|uuid|NO|gen_random_uuid()|
+client_billing_methods|2|user_id|uuid|NO||
+client_billing_methods|3|method_type|varchar(20)|NO||
+client_billing_methods|4|provider|varchar(80)|YES||
+client_billing_methods|5|card_brand|varchar(40)|YES||
+client_billing_methods|6|card_last4|varchar(4)|YES||
+client_billing_methods|7|card_exp_month|smallint|YES||
+client_billing_methods|8|card_exp_year|smallint|YES||
+client_billing_methods|9|paypal_email|varchar(255)|YES||
+client_billing_methods|10|bank_name|varchar(120)|YES||
+client_billing_methods|11|bank_account_last4|varchar(4)|YES||
+client_billing_methods|12|is_default|boolean|NO|false|
+client_billing_methods|13|is_active|boolean|NO|true|
+client_billing_methods|14|auto_billing_enabled|boolean|NO|false|
+client_billing_methods|15|auto_topup_threshold|numeric(18,2)|YES||
+client_billing_methods|16|auto_topup_amount|numeric(18,2)|YES||
+client_billing_methods|17|created_at|timestamp|NO|now()|
+client_billing_methods|18|updated_at|timestamp|NO|now()|
+client_billing_profiles|1|user_id|uuid|NO||
+client_billing_profiles|2|company_name|varchar(255)|YES||
+client_billing_profiles|3|company_address|text|YES||
+client_billing_profiles|4|tax_id|varchar(100)|YES||
+client_billing_profiles|5|billing_email|varchar(255)|YES||
+client_billing_profiles|6|contact_name|varchar(255)|YES||
+client_billing_profiles|7|created_at|timestamp|NO|now()|
+client_billing_profiles|8|updated_at|timestamp|NO|now()|
+client_favorite_freelancers|1|id|uuid|NO|gen_random_uuid()|
+client_favorite_freelancers|2|client_id|uuid|NO||
+client_favorite_freelancers|3|freelancer_id|uuid|NO||
+client_favorite_freelancers|4|saved_at|timestamp|NO|CURRENT_TIMESTAMP|
+contact_social_links|1|id|uuid|NO|gen_random_uuid()|
+contact_social_links|2|platform|text|NO||
+contact_social_links|3|label|text|NO||
+contact_social_links|4|url|text|NO|''::text|
+contact_social_links|5|sort_order|integer|NO|0|
+contact_social_links|6|is_visible|boolean|NO|true|
+contact_social_links|7|created_at|timestamptz|NO|CURRENT_TIMESTAMP|
+contact_social_links|8|updated_at|timestamptz|NO|CURRENT_TIMESTAMP|
+contract_cancel_requests|1|id|uuid|NO|gen_random_uuid()|
+contract_cancel_requests|2|contract_id|uuid|NO||
+contract_cancel_requests|3|requested_by|uuid|NO||
+contract_cancel_requests|4|reason|text|NO||
+contract_cancel_requests|5|status|varchar(32)|NO|'pending'::character varying|
+contract_cancel_requests|6|respond_by_at|timestamp|NO||
+contract_cancel_requests|7|freelancer_response|text|YES||
+contract_cancel_requests|8|resolved_at|timestamp|YES||
+contract_cancel_requests|9|created_at|timestamp|NO|CURRENT_TIMESTAMP|
+contract_cancel_requests|10|reason_code|varchar(64)|YES||
+contract_cancel_requests|11|detail|text|YES||
+contract_cancel_requests|12|refund_method|varchar(32)|YES|'wallet'::character varying|
+contract_cancel_requests|13|legitimacy|varchar(32)|YES||
+contract_cancel_requests|14|split_type|varchar(32)|YES||
+contract_cancel_requests|15|penalty_percent|numeric(5,4)|YES||
+contract_cancel_requests|16|work_done_percent|numeric(5,2)|YES||
+contract_cancel_requests|17|client_refund_amount|numeric(14,2)|YES||
+contract_cancel_requests|18|freelancer_amount|numeric(14,2)|YES||
+contract_cancel_requests|19|platform_fee_amount|numeric(14,2)|YES||
+contract_cancel_requests|20|workflow_stage_at_request|varchar(32)|YES||
+contract_cancel_requests|21|had_progress_at_request|boolean|NO|false|
+contract_cancel_requests|22|admin_note|text|YES||
+contract_dispute_messages|1|id|uuid|NO|gen_random_uuid()|
+contract_dispute_messages|2|dispute_id|uuid|NO||
+contract_dispute_messages|3|author_id|uuid|YES||
+contract_dispute_messages|4|author_role|varchar(16)|NO||
+contract_dispute_messages|5|body|text|NO||
+contract_dispute_messages|6|attachments|jsonb|NO|'[]'::jsonb|
+contract_dispute_messages|7|created_at|timestamp|NO|CURRENT_TIMESTAMP|
+contract_disputes|1|id|uuid|NO|gen_random_uuid()|
+contract_disputes|2|contract_id|uuid|NO||
+contract_disputes|3|opened_by|uuid|NO||
+contract_disputes|4|reason|text|NO||
+contract_disputes|5|evidence|jsonb|NO|'{}'::jsonb|
+contract_disputes|6|status|varchar(32)|NO|'open'::character varying|
+contract_disputes|7|resolution|varchar(32)|YES||
+contract_disputes|8|admin_notes|text|YES||
+contract_disputes|9|resolved_at|timestamp|YES||
+contract_disputes|10|created_at|timestamp|NO|CURRENT_TIMESTAMP|
+contract_disputes|11|issue_category|varchar(64)|YES||
+contract_disputes|12|desired_resolution|varchar(64)|YES||
+contract_disputes|13|desired_resolution_note|text|YES||
+contract_disputes|14|dispute_stage|varchar(32)|YES|'initiated'::character varying|
+contract_disputes|15|respond_by_at|timestamp|YES||
+contract_disputes|16|updated_at|timestamp|YES|CURRENT_TIMESTAMP|
+contract_milestones|1|id|uuid|NO|gen_random_uuid()|
+contract_milestones|2|contract_id|uuid|NO||
+contract_milestones|3|title|varchar(255)|NO||
+contract_milestones|4|amount|numeric(12,2)|NO||
+contract_milestones|5|sort_order|integer|NO|0|
+contract_milestones|6|status|varchar(32)|NO|'pending'::character varying|
+contract_milestones|7|note|text|YES||
+contract_milestones|8|created_at|timestamp|NO|CURRENT_TIMESTAMP|
+contract_milestones|9|updated_at|timestamp|NO|CURRENT_TIMESTAMP|
+contract_progress_entries|1|id|uuid|NO|gen_random_uuid()|
+contract_progress_entries|2|contract_id|uuid|NO||
+contract_progress_entries|3|entry_type|varchar(32)|NO||
+contract_progress_entries|4|note|text|NO||
+contract_progress_entries|5|demo_url|text|YES||
+contract_progress_entries|6|actor_id|uuid|YES||
+contract_progress_entries|7|created_at|timestamp|NO|CURRENT_TIMESTAMP|
+contract_reviews|1|id|uuid|NO|gen_random_uuid()|
+contract_reviews|2|contract_id|uuid|NO||
+contract_reviews|3|job_id|uuid|NO||
+contract_reviews|4|client_id|uuid|NO||
+contract_reviews|5|freelancer_id|uuid|NO||
+contract_reviews|6|rating|smallint|NO||
+contract_reviews|7|comment|text|YES||
+contract_reviews|8|created_at|timestamp|NO|CURRENT_TIMESTAMP|
+contract_reviews|9|updated_at|timestamp|NO|CURRENT_TIMESTAMP|
+contract_reviews|10|freelancer_reply|text|YES||
+contract_reviews|11|freelancer_reply_at|timestamp|YES||
+contract_workflow_events|1|id|uuid|NO|gen_random_uuid()|
+contract_workflow_events|2|contract_id|uuid|NO||
+contract_workflow_events|3|event_type|varchar(64)|NO||
+contract_workflow_events|4|payload|jsonb|NO|'{}'::jsonb|
+contract_workflow_events|5|actor_id|uuid|YES||
+contract_workflow_events|6|created_at|timestamp|NO|CURRENT_TIMESTAMP|
+contracts|1|id|uuid|NO|gen_random_uuid()|
+contracts|2|job_id|uuid|YES||
+contracts|3|service_id|uuid|YES||
+contracts|4|client_id|uuid|NO||
+contracts|5|freelancer_id|uuid|NO||
+contracts|6|agreed_price|numeric(12,2)|YES||
+contracts|7|start_date|timestamp|YES||
+contracts|8|end_date|timestamp|YES||
+contracts|9|status|contract_status|NO||
+contracts|10|created_at|timestamp|YES|CURRENT_TIMESTAMP|
+contracts|11|updated_at|timestamp|YES|CURRENT_TIMESTAMP|
+contracts|12|deleted_at|timestamp|YES||
+contracts|13|progress_note|text|YES||
+contracts|14|delivered_at|timestamp|YES||
+contracts|15|workflow_stage|varchar(32)|NO|'selection'::character varying|
+contracts|16|escrow_status|varchar(32)|NO|'none'::character varying|
+contracts|17|package_snapshot|jsonb|NO|'{}'::jsonb|
+contracts|18|client_brief|text|YES||
+contracts|19|proposal_text|text|YES||
+contracts|20|proposal_budget|numeric(12,2)|YES||
+contracts|21|proposal_submitted_at|timestamp|YES||
+contracts|22|demo_url|varchar(2000)|YES||
+contracts|23|revisions_limit|integer|NO|2|
+contracts|24|revisions_used|integer|NO|0|
+contracts|25|funded_at|timestamp|YES||
+contracts|26|released_at|timestamp|YES||
+contracts|27|accepted_at|timestamp|YES||
+contracts|28|stage_deadline_at|timestamp|YES||
+contracts|29|escrow_deadline_at|timestamp|YES||
+contracts|30|cancelled_at|timestamp|YES||
+contracts|31|cancelled_by|uuid|YES||
+contracts|32|cancel_reason|text|YES||
+contracts|33|cancel_type|varchar(32)|YES||
+contracts|34|delivery_review_deadline_at|timestamp|YES||
+contracts|35|auto_accepted_at|timestamp|YES||
+contracts|36|revision_requested_at|timestamp|YES||
+contracts|37|sla_reminder_48_sent|boolean|NO|false|
+contracts|38|sla_reminder_24_sent|boolean|NO|false|
+contracts|39|last_rejected_proposal_text|text|YES||
+contracts|40|last_rejected_proposal_at|timestamp|YES||
+contracts|41|proposal_rejection_note|text|YES||
+email_verification_tokens|1|user_id|uuid|YES||
+email_verification_tokens|2|token|text|YES||
+email_verification_tokens|3|expires_at|timestamp|YES||
+freelancer_exclusive_resources|1|id|uuid|NO|gen_random_uuid()|
+freelancer_exclusive_resources|2|freelancer_id|uuid|NO||
+freelancer_exclusive_resources|3|title|varchar(200)|NO||
+freelancer_exclusive_resources|4|description|text|YES||
+freelancer_exclusive_resources|5|resource_type|varchar(20)|NO|'link'::character varying|
+freelancer_exclusive_resources|6|link_url|varchar(500)|YES||
+freelancer_exclusive_resources|7|file_url|varchar(500)|YES||
+freelancer_exclusive_resources|8|file_name|varchar(255)|YES||
+freelancer_exclusive_resources|9|created_at|timestamptz|NO|CURRENT_TIMESTAMP|
+freelancer_exclusive_resources|10|deleted_at|timestamptz|YES||
+freelancer_payout_accounts|1|user_id|uuid|NO||
+freelancer_payout_accounts|2|bank_name|varchar(120)|NO||
+freelancer_payout_accounts|3|account_holder_name|varchar(255)|NO||
+freelancer_payout_accounts|4|account_number|varchar(32)|NO||
+freelancer_payout_accounts|5|linked_at|timestamp|NO|now()|
+freelancer_payout_accounts|6|updated_at|timestamp|NO|now()|
+freelancer_payout_accounts|7|bank_bin|varchar(6)|YES||
+freelancer_portfolios|1|id|uuid|NO|gen_random_uuid()|
+freelancer_portfolios|2|freelancer_id|uuid|NO||
+freelancer_portfolios|3|title|varchar(255)|NO||
+freelancer_portfolios|4|description|text|YES||
+freelancer_portfolios|5|project_url|text|YES||
+freelancer_portfolios|6|images|jsonb|YES|'[]'::jsonb|
+freelancer_portfolios|7|created_at|timestamp|YES|CURRENT_TIMESTAMP|
+freelancer_portfolios|8|updated_at|timestamp|YES|CURRENT_TIMESTAMP|
+freelancer_portfolios|9|deleted_at|timestamp|YES||
+freelancer_profile_files|1|id|uuid|NO|gen_random_uuid()|
+freelancer_profile_files|2|freelancer_id|uuid|NO||
+freelancer_profile_files|3|title|varchar(200)|NO||
+freelancer_profile_files|4|description|text|YES||
+freelancer_profile_files|5|file_url|varchar(500)|NO||
+freelancer_profile_files|6|file_name|varchar(255)|YES||
+freelancer_profile_files|7|file_size|integer|YES||
+freelancer_profile_files|8|mime_type|varchar(120)|YES||
+freelancer_profile_files|9|created_at|timestamptz|NO|CURRENT_TIMESTAMP|
+freelancer_profile_files|10|deleted_at|timestamptz|YES||
+freelancer_profiles|1|user_id|uuid|NO||
+freelancer_profiles|2|title|varchar(255)|YES||
+freelancer_profiles|3|hourly_rate|numeric(10,2)|YES||
+freelancer_profiles|4|experience_years|integer|YES||
+freelancer_profiles|5|availability_status|varchar(50)|YES||
+freelancer_profiles|6|total_earnings|numeric(12,2)|YES|0|
+freelancer_profiles|7|rating_avg|numeric(3,2)|YES|0|
+freelancer_profiles|8|total_reviews|integer|YES|0|
+freelancer_profiles|9|languages|jsonb|YES|'[]'::jsonb|
+freelancer_profiles|10|deleted_at|timestamp|YES||
+freelancer_profiles|13|created_at|timestamptz|YES|now()|
+freelancer_profiles|14|updated_at|timestamptz|YES|now()|
+freelancer_profiles|15|job_success_score|smallint|YES||Điểm thành công hợp đồng (0–100), nhập thủ công hoặc cập nhật từ batch sau.
+freelancer_profiles|16|avg_response_minutes|integer|YES||Thời gian phản hồi trung bình (phút), phục vụ hiển thị “trả lời trong X giờ”.
+freelancer_profiles|17|profile_badges|jsonb|NO|'[]'::jsonb|Mảng chuỗi huy hiệu/hạn ngữ hiển thị trên hồ sơ (vd: Top Rated, Đã xác thực địa phương).
+freelancer_withdrawal_orders|1|id|uuid|NO|gen_random_uuid()|
+freelancer_withdrawal_orders|2|user_id|uuid|NO||
+freelancer_withdrawal_orders|3|reference_id|varchar(64)|NO||
+freelancer_withdrawal_orders|4|amount|numeric(18,2)|NO||
+freelancer_withdrawal_orders|5|status|varchar(24)|NO|'PENDING_AUTH'::character varying|
+freelancer_withdrawal_orders|6|payos_payout_id|varchar(128)|YES||
+freelancer_withdrawal_orders|7|payos_tx_id|varchar(128)|YES||
+freelancer_withdrawal_orders|8|payos_tx_state|varchar(32)|YES||
+freelancer_withdrawal_orders|9|bank_name|varchar(120)|NO||
+freelancer_withdrawal_orders|10|account_holder_name|varchar(255)|NO||
+freelancer_withdrawal_orders|11|account_last4|varchar(4)|NO|''::character varying|
+freelancer_withdrawal_orders|12|to_bin|varchar(6)|NO||
+freelancer_withdrawal_orders|13|to_account_number|varchar(32)|NO||
+freelancer_withdrawal_orders|14|description|varchar(100)|YES||
+freelancer_withdrawal_orders|15|failure_reason|text|YES||
+freelancer_withdrawal_orders|16|transaction_id|uuid|YES||
+freelancer_withdrawal_orders|17|auth_verified_at|timestamp|YES||
+freelancer_withdrawal_orders|18|paid_at|timestamp|YES||
+freelancer_withdrawal_orders|19|created_at|timestamp|NO|now()|
+freelancer_withdrawal_orders|20|updated_at|timestamp|NO|now()|
+freelancer_withdrawal_pins|1|user_id|uuid|NO||
+freelancer_withdrawal_pins|2|pin_hash|varchar(255)|NO||
+freelancer_withdrawal_pins|3|failed_attempts|smallint|NO|0|
+freelancer_withdrawal_pins|4|locked_until|timestamp|YES||
+freelancer_withdrawal_pins|5|created_at|timestamp|NO|now()|
+freelancer_withdrawal_pins|6|updated_at|timestamp|NO|now()|
+geography_columns|1|f_table_catalog|name|YES||
+geography_columns|2|f_table_schema|name|YES||
+geography_columns|3|f_table_name|name|YES||
+geography_columns|4|f_geography_column|name|YES||
+geography_columns|5|coord_dimension|integer|YES||
+geography_columns|6|srid|integer|YES||
+geography_columns|7|type|text|YES||
+geometry_columns|1|f_table_catalog|varchar(256)|YES||
+geometry_columns|2|f_table_schema|name|YES||
+geometry_columns|3|f_table_name|name|YES||
+geometry_columns|4|f_geometry_column|name|YES||
+geometry_columns|5|coord_dimension|integer|YES||
+geometry_columns|6|srid|integer|YES||
+geometry_columns|7|type|varchar(30)|YES||
+identity_verifications|1|user_id|uuid|NO||
+identity_verifications|2|account_type|varchar(20)|NO|'personal'::character varying|
+identity_verifications|3|use_existing_account_info|boolean|NO|true|
+identity_verifications|4|legal_first_name|varchar(100)|YES||
+identity_verifications|5|legal_last_name|varchar(100)|YES||
+identity_verifications|6|address_search|varchar(255)|YES||
+identity_verifications|7|address_street|varchar(255)|YES||
+identity_verifications|8|address_country|varchar(100)|YES|'Việt Nam'::character varying|
+identity_verifications|9|address_state|varchar(100)|YES||
+identity_verifications|10|address_city|varchar(100)|YES||
+identity_verifications|11|address_postal|varchar(20)|YES||
+identity_verifications|12|contact_confirmed|boolean|NO|false|
+identity_verifications|13|contact_confirmed_at|timestamp|YES||
+identity_verifications|14|selfie_url|varchar(500)|YES||
+identity_verifications|15|id_doc_type|varchar(50)|YES||
+identity_verifications|16|id_front_url|varchar(500)|YES||
+identity_verifications|17|id_back_url|varchar(500)|YES||
+identity_verifications|18|address_proof_type|varchar(50)|YES||
+identity_verifications|19|address_proof_url|varchar(500)|YES||
+identity_verifications|20|phone_submitted_at|timestamp|YES||
+identity_verifications|21|photo_submitted_at|timestamp|YES||
+identity_verifications|22|id_submitted_at|timestamp|YES||
+identity_verifications|23|address_proof_submitted_at|timestamp|YES||
+identity_verifications|24|submitted_for_review_at|timestamp|YES||
+identity_verifications|25|created_at|timestamp|NO|CURRENT_TIMESTAMP|
+identity_verifications|26|updated_at|timestamp|NO|CURRENT_TIMESTAMP|
+identity_verifications|27|card_last4|varchar(4)|YES||
+identity_verifications|28|card_brand|varchar(20)|YES||
+identity_verifications|29|card_expiry|varchar(7)|YES||
+identity_verifications|30|cardholder_name|varchar(120)|YES||
+identity_verifications|31|is_business_card|boolean|NO|false|
+identity_verifications|32|billing_street|varchar(255)|YES||
+identity_verifications|33|billing_country|varchar(100)|YES||
+identity_verifications|34|billing_state|varchar(100)|YES||
+identity_verifications|35|billing_city|varchar(100)|YES||
+identity_verifications|36|billing_postal|varchar(20)|YES||
+identity_verifications|37|billing_phone|varchar(40)|YES||
+identity_verifications|38|billing_currency|varchar(40)|YES|'VND'::character varying|
+identity_verifications|39|card_charge_cents|integer|YES||Số tiền tạm trừ xác minh (cent USD), người dùng nhập lại để xác nhận.
+identity_verifications|40|card_added_at|timestamp|YES||
+identity_verifications|41|card_verified_at|timestamp|YES||
+identity_verifications|42|address_lat|double precision|YES||Vĩ độ từ GPS hoặc chọn trên bản đồ (Nominatim).
+identity_verifications|43|address_lng|double precision|YES||Kinh độ từ GPS hoặc chọn trên bản đồ (Nominatim).
+identity_verifications|44|admin_review_status|varchar(20)|YES||pending | approved | rejected — sau bước 3 gửi xem xét
+identity_verifications|45|admin_reviewed_at|timestamp|YES||
+identity_verifications|46|admin_reviewed_by|uuid|YES||
+identity_verifications|47|admin_review_note|text|YES||
+job_quotes|1|id|uuid|NO|gen_random_uuid()|
+job_quotes|2|job_id|uuid|NO||
+job_quotes|3|freelancer_id|uuid|NO||
+job_quotes|4|amount|numeric(12,2)|YES||
+job_quotes|5|currency|char(3)|NO|'USD'::bpchar|
+job_quotes|6|message|text|YES||
+job_quotes|7|status|varchar(20)|NO|'pending'::character varying|
+job_quotes|8|created_at|timestamp|NO|CURRENT_TIMESTAMP|
+job_quotes|9|updated_at|timestamp|NO|CURRENT_TIMESTAMP|
+job_quotes|10|pricing_type|varchar(20)|NO|'fixed'::character varying|fixed = trọn gói dự án, hourly = theo giờ.
+jobs|1|id|uuid|NO|gen_random_uuid()|
+jobs|2|client_id|uuid|NO||
+jobs|3|title|varchar(255)|NO||
+jobs|4|description|text|YES||
+jobs|5|budget|numeric(12,2)|YES||
+jobs|6|status|varchar(20)|YES|'open'::character varying|
+jobs|7|created_at|timestamp|YES|CURRENT_TIMESTAMP|
+jobs|8|updated_at|timestamp|YES|CURRENT_TIMESTAMP|
+jobs|9|images|jsonb|NO|'[]'::jsonb|Mảng URL ảnh đính kèm tin (tối đa 3)
+jobs|10|due_at|timestamp|YES||Thời điểm mong muốn hoàn thành (tùy chọn, gấp)
+jobs|11|location_label|text|YES||Mô tả địa điểm làm việc do client nhập (VD: TP. Vĩnh Long — phường 1)
+jobs|12|location_lat|double precision|YES||Vĩ độ khi client dùng GPS lúc đăng tin (tùy chọn)
+jobs|13|location_lng|double precision|YES||Kinh độ khi client dùng GPS lúc đăng tin (tùy chọn)
+jobs|14|category|varchar(255)|YES||Danh mục việc (hiển thị trên card Find Work)
+jobs|15|tags|jsonb|NO|'[]'::jsonb|Thẻ kỹ năng / từ khóa (mảng chuỗi JSON)
+jobs|16|budget_type|varchar(20)|NO|'fixed'::character varying|fixed = trọn gói, hourly = theo giờ (budget = mức giờ hoặc ngân sách chính).
+jobs|17|budget_max|numeric(12,2)|YES||Ngân sách tối đa / trần dự án (VND).
+jobs|18|deleted_at|timestamp|YES||Client xóa mềm tin — không hiển thị trong quản lý / danh sách của client
+ledger_entries|1|id|uuid|NO|gen_random_uuid()|
+ledger_entries|2|transaction_id|uuid|NO||
+ledger_entries|3|account_id|uuid|NO||
+ledger_entries|4|amount|numeric(18,2)|NO||
+ledger_entries|5|direction|varchar(10)|YES||
+ledger_entries|6|created_at|timestamp|YES|now()|
+login_attempts|1|id|uuid|NO|gen_random_uuid()|
+login_attempts|2|email|varchar(255)|NO||
+login_attempts|3|ip_address|varchar(45)|NO||
+login_attempts|4|success|boolean|NO||
+login_attempts|5|attempted_at|timestamp|YES|CURRENT_TIMESTAMP|
+notifications|1|id|uuid|NO|gen_random_uuid()|
+notifications|2|user_id|uuid|NO||
+notifications|3|category|varchar(32)|NO|'system'::character varying|
+notifications|4|action|varchar(64)|NO||
+notifications|5|title|varchar(255)|NO||
+notifications|6|body|text|NO|''::text|
+notifications|7|href|varchar(512)|YES||
+notifications|8|actor_id|uuid|YES||
+notifications|9|actor_name|varchar(255)|YES||
+notifications|10|entity_type|varchar(32)|YES||
+notifications|11|entity_id|uuid|YES||
+notifications|12|read_at|timestamptz|YES||
+notifications|13|deleted_at|timestamptz|YES||
+notifications|14|created_at|timestamptz|NO|now()|
+oauth_accounts|1|user_id|uuid|YES||
+oauth_accounts|2|provider|varchar(50)|NO||
+oauth_accounts|3|provider_user_id|varchar(255)|NO||
+password_reset_tokens|1|user_id|uuid|YES||
+password_reset_tokens|2|token|text|YES||
+password_reset_tokens|3|expires_at|timestamp|YES||
+profile_analytics_events|1|id|uuid|NO|gen_random_uuid()|
+profile_analytics_events|2|freelancer_id|uuid|NO||
+profile_analytics_events|3|event_type|varchar(40)|NO||
+profile_analytics_events|4|service_id|uuid|YES||
+profile_analytics_events|5|portfolio_id|uuid|YES||
+profile_analytics_events|6|metadata|jsonb|NO|'{}'::jsonb|
+profile_analytics_events|7|created_at|timestamp|NO|CURRENT_TIMESTAMP|
+refresh_tokens|1|id|uuid|NO|gen_random_uuid()|
+refresh_tokens|2|user_id|uuid|NO||
+refresh_tokens|3|token|text|NO||
+refresh_tokens|4|expires_at|timestamp|NO||
+refresh_tokens|5|ip_address|varchar(45)|YES||
+refresh_tokens|6|user_agent|text|YES||
+refresh_tokens|7|is_revoked|boolean|YES|false|
+refresh_tokens|8|created_at|timestamp|YES|CURRENT_TIMESTAMP|
+refresh_tokens|9|revoked_at|timestamp|YES||
+reviews|1|id|uuid|NO|gen_random_uuid()|
+reviews|2|contract_id|uuid|YES||
+reviews|3|reviewer_id|uuid|YES||
+reviews|4|reviewee_id|uuid|YES||
+reviews|5|rating|integer|YES||
+reviews|6|comment|text|YES||
+reviews|7|created_at|timestamp|YES|CURRENT_TIMESTAMP|
+reviews|8|deleted_at|timestamp|YES||
+saved_jobs|1|id|uuid|NO|gen_random_uuid()|
+saved_jobs|2|freelancer_id|uuid|NO||
+saved_jobs|3|job_id|uuid|NO||
+saved_jobs|4|saved_at|timestamp|NO|CURRENT_TIMESTAMP|
+schema_migrations|1|id|integer|NO|nextval('schema_migrations_id_seq'::regclass)|
+schema_migrations|2|filename|varchar(255)|NO||
+schema_migrations|3|applied_at|timestamptz|NO|now()|
+service_categories|1|id|integer|NO|nextval('service_categories_id_seq'::regclass)|
+service_categories|2|name|varchar(200)|NO||
+service_categories|3|sort_order|integer|NO|0|
+services|1|id|uuid|NO|gen_random_uuid()|
+services|2|freelancer_id|uuid|NO||
+services|3|title|varchar(255)|NO||
+services|4|description|text|YES||
+services|5|price|numeric(12,2)|NO||
+services|6|delivery_days|integer|YES||
+services|7|created_at|timestamp|YES|CURRENT_TIMESTAMP|
+services|8|updated_at|timestamp|YES|CURRENT_TIMESTAMP|
+services|9|category|varchar(255)|YES||
+services|10|media_urls|jsonb|NO|'[]'::jsonb|
+services|11|packages|jsonb|NO|'[]'::jsonb|
+services|12|tech_stack|jsonb|NO|'[]'::jsonb|
+services|13|requirements|text|YES||
+services|14|faqs|jsonb|NO|'[]'::jsonb|
+services|15|response_time_hours|integer|YES||
+services|16|support_upsell|varchar(255)|YES||
+services|17|demo_media|jsonb|YES||Một file giới thiệu/demo: {"url":"...","kind":"image"|"video"} hoặc null
+services|18|thumbnail_url|varchar(2000)|YES||Ảnh đại diện hiển thị trên card dịch vụ (URL https hoặc /uploads/services/...)
+services|19|listing_status|varchar(32)|NO|'active'::character varying|
+services|20|admin_note|text|YES||
+services|21|published_at|timestamp|YES||
+site_contact|1|id|smallint|NO|1|
+site_contact|2|email|text|NO|''::text|
+site_contact|3|phone|text|NO|''::text|
+site_contact|4|address|text|NO|''::text|
+site_contact|5|updated_at|timestamptz|NO|CURRENT_TIMESTAMP|
+skills|1|id|integer|NO|nextval('skills_id_seq'::regclass)|
+skills|2|name|varchar(100)|NO||
+spatial_ref_sys|1|srid|integer|NO||
+spatial_ref_sys|2|auth_name|varchar(256)|YES||
+spatial_ref_sys|3|auth_srid|integer|YES||
+spatial_ref_sys|4|srtext|varchar(2048)|YES||
+spatial_ref_sys|5|proj4text|varchar(2048)|YES||
+transactions|1|id|uuid|NO|gen_random_uuid()|
+transactions|2|contract_id|uuid|YES||
+transactions|3|type|varchar(50)|NO||
+transactions|4|status|varchar(30)|NO||
+transactions|5|idempotency_key|text|YES||
+transactions|6|created_at|timestamp|YES|now()|
+transactions|7|user_id|uuid|YES||
+transactions|8|amount|numeric(18,2)|YES||
+transactions|9|currency|char(3)|YES|'VND'::bpchar|
+transactions|10|direction|varchar(10)|YES||
+transactions|11|category|varchar(40)|YES||
+transactions|12|job_id|uuid|YES||
+transactions|13|freelancer_id|uuid|YES||
+transactions|14|description|text|YES||
+transactions|15|occurred_at|timestamp|YES|now()|
+user_login_logs|1|id|uuid|NO|gen_random_uuid()|
+user_login_logs|2|user_id|uuid|YES||
+user_login_logs|3|ip_address|inet|YES||
+user_login_logs|4|user_agent|text|YES||
+user_login_logs|5|logged_in_at|timestamp|YES|CURRENT_TIMESTAMP|
+user_payout_methods|1|id|uuid|NO|gen_random_uuid()|
+user_payout_methods|2|user_id|uuid|YES||
+user_payout_methods|3|provider|varchar(50)|YES||
+user_payout_methods|4|provider_account_id|text|YES||
+user_payout_methods|5|is_default|boolean|YES|false|
+user_profiles|1|user_id|uuid|NO||
+user_profiles|2|full_name|varchar(255)|YES||
+user_profiles|3|avatar_url|text|YES||
+user_profiles|4|phone|varchar(20)|YES||
+user_profiles|5|date_of_birth|date|YES||
+user_profiles|6|gender|varchar(20)|YES||
+user_profiles|10|bio|text|YES||
+user_profiles|11|website|text|YES||
+user_profiles|12|updated_at|timestamp|YES|CURRENT_TIMESTAMP|
+user_profiles|14|location|geography|YES||
+user_profiles|15|tagline|varchar(220)|YES||Dòng định vị ngắn hiển thị dưới tên (vd: Chuyên gia Full-Stack | Node & React).
+user_profiles|16|district_city|varchar(180)|YES||Địa danh hiển thị cấp quận/huyện/thị xã/thành phố (hyper-local).
+user_profiles|17|city|varchar(120)|YES||Thành phố / đô thị (hiển thị tìm kiếm freelancer).
+user_profiles|18|state_province|varchar(120)|YES||Bang / tỉnh / vùng.
+user_profiles|19|country|varchar(120)|YES||Quốc gia hiển thị trên card employer (job list).
+user_profiles|20|client_satisfaction_score|smallint|YES||Điểm hài lòng employer 0–100 (tùy chọn, hiển thị trên card).
+user_profiles|21|cover_url|varchar(500)|YES||URL ảnh bìa hồ sơ freelancer (tải qua upload dịch vụ / lưu đường dẫn tương đối).
+user_skills|1|user_id|uuid|NO||
+user_skills|2|skill_id|integer|NO||
+user_skills|3|level|varchar(20)|YES||
+user_skills|4|years_of_experience|integer|YES|0|
+users|1|id|uuid|NO|gen_random_uuid()|
+users|2|email|varchar(255)|NO||
+users|3|password_hash|text|NO||
+users|4|role|varchar(20)|NO||
+users|5|status|varchar(20)|YES|'active'::character varying|
+users|6|is_email_verified|boolean|YES|false|
+users|7|is_phone_verified|boolean|YES|false|
+users|8|created_at|timestamp|YES|CURRENT_TIMESTAMP|
+users|9|updated_at|timestamp|YES|CURRENT_TIMESTAMP|
+users|10|deleted_at|timestamp|YES||
+users|11|google_id|varchar(255)|YES||
+users|12|password_user_set_at|timestamp|YES||
+users|13|recovery_email|varchar(255)|YES||Email khôi phục (có thể khác email đăng nhập)
+users|14|recovery_phone|varchar(40)|YES||SĐT khôi phục (có thể khác SĐT hồ sơ)
+users|15|login_alerts_enabled|boolean|NO|true|Gửi cảnh báo khi đăng nhập từ IP/thiết bị mới
+users|16|deactivated_at|timestamp|YES||Tài khoản tạm khóa bởi người dùng
+users|17|notification_prefs|jsonb|NO|'{"orders": true, "quotes": true, "messages": true, "emailDigest": false}'::jsonb|Tùy chọn thông báo in-app: orders, messages, quotes
+wallet_deposit_orders|1|id|uuid|NO|gen_random_uuid()|
+wallet_deposit_orders|2|user_id|uuid|NO||
+wallet_deposit_orders|3|order_code|bigint|NO||
+wallet_deposit_orders|4|amount|numeric(18,2)|NO||
+wallet_deposit_orders|5|type|varchar(20)|NO|'DEPOSIT'::character varying|
+wallet_deposit_orders|6|status|varchar(20)|NO|'PENDING'::character varying|
+wallet_deposit_orders|7|payment_link_id|varchar(128)|YES||
+wallet_deposit_orders|8|checkout_url|text|YES||
+wallet_deposit_orders|9|payos_reference|varchar(128)|YES||
+wallet_deposit_orders|10|transaction_id|uuid|YES||
+wallet_deposit_orders|11|cancel_reason|text|YES||
+wallet_deposit_orders|12|paid_at|timestamp|YES||
+wallet_deposit_orders|13|created_at|timestamp|NO|now()|
+wallet_deposit_orders|14|updated_at|timestamp|NO|now()|

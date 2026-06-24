@@ -1,0 +1,88 @@
+@startmindmap vl-connected-sitemap-by-role
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontSize 12
+skinparam mindmapDiagram {
+  node {
+    BackgroundColor #FEFEFE
+    BorderColor #444444
+  }
+  rootNode {
+    BackgroundColor #2D3748
+    FontColor #FFFFFF
+  }
+}
+
+title Sơ đồ trang chính theo vai trò — Vĩnh Long Connect
+
+* Vĩnh Long Connect
+
+left side
+
+** Khách vãng lai #E8F4FD
+*** / \nTrang chủ
+*** /freelancers \nDanh sách freelancer
+*** /findwork \nDuyệt việc
+*** /dang-nhap \nĐăng nhập
+*** /dang-ky \nĐăng ký
+
+** Khách hàng (Client) #D6E8F7
+*** /dashboard \nTổng quan
+*** Thuê freelancer
+**** /hire/quotes \nBáo giá
+**** /hire/messages \nTin nhắn
+**** /hire/orders \nĐơn hàng
+**** /hire/favorites \nYêu thích
+**** /hire/search \nTìm freelancer
+**** /hire/joblist \nTin đăng của tôi
+**** /hire/post \nĐăng việc
+*** Quản lý
+**** /manage/phong-lam-viec \nPhòng làm việc
+**** /manage/hoan-tien \nHoàn tiền
+**** /manage/tranh-chap \nTranh chấp
+*** /payments \nVí & giao dịch
+*** /payments/phuong-thuc \nPhương thức thanh toán
+*** Tài khoản
+**** /ho-so \nHồ sơ
+**** /edit-account \nThông tin liên hệ
+**** /edit-account/xac-minh \nXác minh danh tính
+
+right side
+
+** Freelancer #EDE4F7
+*** /dashboard \nTổng quan
+*** Tìm việc
+**** /findwork \nDuyệt việc
+**** /findwork/saved \nViệc đã lưu
+**** /jobs \nHợp đồng việc
+**** /findwork/messages \nTin nhắn
+**** /findwork/leads \nLeads
+**** /findwork/quotes \nBáo giá đã gửi
+**** /work/detail \nChi tiết tin việc
+*** Dịch vụ
+**** /dich-vu/tao-moi \nTạo dịch vụ
+**** /dich-vu/quan-ly \nQuản lý dịch vụ
+**** /dich-vu/don-hang \nĐơn hàng dịch vụ
+**** /dich-vu/hoan-tien \nHoàn tiền
+**** /dich-vu/tranh-chap \nTranh chấp
+**** /dich-vu/danh-gia \nĐánh giá
+*** /payments \nThu nhập & rút tiền
+*** Tài khoản
+**** /ho-so \nHồ sơ
+**** /ho-so/thong-ke \nThống kê hồ sơ
+**** /edit-account \nThông tin liên hệ
+**** /edit-account/xac-minh \nXác minh danh tính
+
+** Admin #FADBD8
+*** /admin/bao-cao-thong-ke \nBáo cáo thống kê
+*** Người dùng
+**** /admin/quan-ly-tai-khoan \nQuản lý tài khoản
+**** /admin/duyet-tai-khoan \nDuyệt tài khoản
+*** Tài chính
+**** /admin/rut-tien \nRút tiền Freelancer
+**** /admin/rut-tien-client \nRút tiền Khách hàng
+**** /admin/hoan-tien \nQuản lý hoàn tiền
+*** /admin/tranh-chap \nQuản lý tranh chấp
+*** /admin/quan-ly-lien-he \nQuản lý liên hệ
+
+@endmindmap

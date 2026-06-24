@@ -1,0 +1,170 @@
+accounts|user_id|FOREIGN KEY|users(id)|NO ACTION
+accounts|id|PRIMARY KEY|accounts(id)|
+accounts|user_id|UNIQUE|accounts(currency)|
+accounts|user_id|UNIQUE|accounts(user_id)|
+accounts|currency|UNIQUE|accounts(user_id)|
+accounts|currency|UNIQUE|accounts(currency)|
+billing_invoices|user_id|FOREIGN KEY|users(id)|CASCADE
+billing_invoices|transaction_id|FOREIGN KEY|transactions(id)|CASCADE
+billing_invoices|id|PRIMARY KEY|billing_invoices(id)|
+billing_invoices|invoice_number|UNIQUE|billing_invoices(invoice_number)|
+billing_invoices|transaction_id|UNIQUE|billing_invoices(transaction_id)|
+chat_blocks|blocker_id|FOREIGN KEY|users(id)|CASCADE
+chat_blocks|blocked_id|FOREIGN KEY|users(id)|CASCADE
+chat_blocks|blocker_id|PRIMARY KEY|chat_blocks(blocked_id)|
+chat_blocks|blocker_id|PRIMARY KEY|chat_blocks(blocker_id)|
+chat_blocks|blocked_id|PRIMARY KEY|chat_blocks(blocker_id)|
+chat_blocks|blocked_id|PRIMARY KEY|chat_blocks(blocked_id)|
+chat_conversation_user_state|conversation_id|FOREIGN KEY|chat_conversations(id)|CASCADE
+chat_conversation_user_state|user_id|FOREIGN KEY|users(id)|CASCADE
+chat_conversation_user_state|conversation_id|PRIMARY KEY|chat_conversation_user_state(user_id)|
+chat_conversation_user_state|conversation_id|PRIMARY KEY|chat_conversation_user_state(conversation_id)|
+chat_conversation_user_state|user_id|PRIMARY KEY|chat_conversation_user_state(conversation_id)|
+chat_conversation_user_state|user_id|PRIMARY KEY|chat_conversation_user_state(user_id)|
+chat_conversations|service_id|FOREIGN KEY|services(id)|SET NULL
+chat_conversations|freelancer_id|FOREIGN KEY|users(id)|CASCADE
+chat_conversations|client_id|FOREIGN KEY|users(id)|CASCADE
+chat_conversations|job_quote_id|FOREIGN KEY|job_quotes(id)|SET NULL
+chat_conversations|id|PRIMARY KEY|chat_conversations(id)|
+chat_conversations|client_id|UNIQUE|chat_conversations(client_id)|
+chat_conversations|client_id|UNIQUE|chat_conversations(freelancer_id)|
+chat_conversations|freelancer_id|UNIQUE|chat_conversations(client_id)|
+chat_conversations|freelancer_id|UNIQUE|chat_conversations(freelancer_id)|
+chat_messages|sender_id|FOREIGN KEY|users(id)|CASCADE
+chat_messages|conversation_id|FOREIGN KEY|chat_conversations(id)|CASCADE
+chat_messages|id|PRIMARY KEY|chat_messages(id)|
+client_billing_methods|user_id|FOREIGN KEY|users(id)|CASCADE
+client_billing_methods|id|PRIMARY KEY|client_billing_methods(id)|
+client_billing_profiles|user_id|FOREIGN KEY|users(id)|CASCADE
+client_billing_profiles|user_id|PRIMARY KEY|client_billing_profiles(user_id)|
+client_favorite_freelancers|freelancer_id|FOREIGN KEY|users(id)|CASCADE
+client_favorite_freelancers|client_id|FOREIGN KEY|users(id)|CASCADE
+client_favorite_freelancers|id|PRIMARY KEY|client_favorite_freelancers(id)|
+client_favorite_freelancers|client_id|UNIQUE|client_favorite_freelancers(client_id)|
+client_favorite_freelancers|client_id|UNIQUE|client_favorite_freelancers(freelancer_id)|
+client_favorite_freelancers|freelancer_id|UNIQUE|client_favorite_freelancers(client_id)|
+client_favorite_freelancers|freelancer_id|UNIQUE|client_favorite_freelancers(freelancer_id)|
+contact_social_links|id|PRIMARY KEY|contact_social_links(id)|
+contract_cancel_requests|requested_by|FOREIGN KEY|users(id)|CASCADE
+contract_cancel_requests|contract_id|FOREIGN KEY|contracts(id)|CASCADE
+contract_cancel_requests|id|PRIMARY KEY|contract_cancel_requests(id)|
+contract_dispute_messages|author_id|FOREIGN KEY|users(id)|SET NULL
+contract_dispute_messages|dispute_id|FOREIGN KEY|contract_disputes(id)|CASCADE
+contract_dispute_messages|id|PRIMARY KEY|contract_dispute_messages(id)|
+contract_disputes|contract_id|FOREIGN KEY|contracts(id)|CASCADE
+contract_disputes|opened_by|FOREIGN KEY|users(id)|CASCADE
+contract_disputes|id|PRIMARY KEY|contract_disputes(id)|
+contract_milestones|contract_id|FOREIGN KEY|contracts(id)|CASCADE
+contract_milestones|id|PRIMARY KEY|contract_milestones(id)|
+contract_progress_entries|actor_id|FOREIGN KEY|users(id)|SET NULL
+contract_progress_entries|contract_id|FOREIGN KEY|contracts(id)|CASCADE
+contract_progress_entries|id|PRIMARY KEY|contract_progress_entries(id)|
+contract_reviews|contract_id|FOREIGN KEY|contracts(id)|CASCADE
+contract_reviews|job_id|FOREIGN KEY|jobs(id)|CASCADE
+contract_reviews|client_id|FOREIGN KEY|users(id)|CASCADE
+contract_reviews|freelancer_id|FOREIGN KEY|users(id)|CASCADE
+contract_reviews|id|PRIMARY KEY|contract_reviews(id)|
+contract_reviews|client_id|UNIQUE|contract_reviews(client_id)|
+contract_reviews|client_id|UNIQUE|contract_reviews(contract_id)|
+contract_reviews|contract_id|UNIQUE|contract_reviews(contract_id)|
+contract_reviews|contract_id|UNIQUE|contract_reviews(contract_id)|
+contract_reviews|contract_id|UNIQUE|contract_reviews(client_id)|
+contract_workflow_events|actor_id|FOREIGN KEY|users(id)|SET NULL
+contract_workflow_events|contract_id|FOREIGN KEY|contracts(id)|CASCADE
+contract_workflow_events|id|PRIMARY KEY|contract_workflow_events(id)|
+contracts|freelancer_id|FOREIGN KEY|users(id)|NO ACTION
+contracts|client_id|FOREIGN KEY|users(id)|NO ACTION
+contracts|cancelled_by|FOREIGN KEY|users(id)|SET NULL
+contracts|service_id|FOREIGN KEY|services(id)|SET NULL
+contracts|job_id|FOREIGN KEY|jobs(id)|SET NULL
+contracts|id|PRIMARY KEY|contracts(id)|
+email_verification_tokens|user_id|FOREIGN KEY|users(id)|NO ACTION
+freelancer_exclusive_resources|freelancer_id|FOREIGN KEY|users(id)|CASCADE
+freelancer_exclusive_resources|id|PRIMARY KEY|freelancer_exclusive_resources(id)|
+freelancer_payout_accounts|user_id|FOREIGN KEY|users(id)|CASCADE
+freelancer_payout_accounts|user_id|PRIMARY KEY|freelancer_payout_accounts(user_id)|
+freelancer_portfolios|freelancer_id|FOREIGN KEY|freelancer_profiles(user_id)|CASCADE
+freelancer_portfolios|id|PRIMARY KEY|freelancer_portfolios(id)|
+freelancer_profile_files|freelancer_id|FOREIGN KEY|users(id)|CASCADE
+freelancer_profile_files|id|PRIMARY KEY|freelancer_profile_files(id)|
+freelancer_profiles|user_id|FOREIGN KEY|users(id)|CASCADE
+freelancer_profiles|user_id|PRIMARY KEY|freelancer_profiles(user_id)|
+freelancer_withdrawal_orders|transaction_id|FOREIGN KEY|transactions(id)|SET NULL
+freelancer_withdrawal_orders|user_id|FOREIGN KEY|users(id)|CASCADE
+freelancer_withdrawal_orders|id|PRIMARY KEY|freelancer_withdrawal_orders(id)|
+freelancer_withdrawal_orders|reference_id|UNIQUE|freelancer_withdrawal_orders(reference_id)|
+freelancer_withdrawal_pins|user_id|FOREIGN KEY|users(id)|CASCADE
+freelancer_withdrawal_pins|user_id|PRIMARY KEY|freelancer_withdrawal_pins(user_id)|
+identity_verifications|admin_reviewed_by|FOREIGN KEY|users(id)|SET NULL
+identity_verifications|user_id|FOREIGN KEY|users(id)|CASCADE
+identity_verifications|user_id|PRIMARY KEY|identity_verifications(user_id)|
+job_quotes|job_id|FOREIGN KEY|jobs(id)|CASCADE
+job_quotes|freelancer_id|FOREIGN KEY|users(id)|CASCADE
+job_quotes|id|PRIMARY KEY|job_quotes(id)|
+jobs|client_id|FOREIGN KEY|users(id)|CASCADE
+jobs|id|PRIMARY KEY|jobs(id)|
+ledger_entries|transaction_id|FOREIGN KEY|transactions(id)|NO ACTION
+ledger_entries|account_id|FOREIGN KEY|accounts(id)|NO ACTION
+ledger_entries|id|PRIMARY KEY|ledger_entries(id)|
+login_attempts|id|PRIMARY KEY|login_attempts(id)|
+notifications|actor_id|FOREIGN KEY|users(id)|SET NULL
+notifications|user_id|FOREIGN KEY|users(id)|CASCADE
+notifications|id|PRIMARY KEY|notifications(id)|
+oauth_accounts|user_id|FOREIGN KEY|users(id)|NO ACTION
+oauth_accounts|provider|PRIMARY KEY|oauth_accounts(provider_user_id)|
+oauth_accounts|provider|PRIMARY KEY|oauth_accounts(provider)|
+oauth_accounts|provider_user_id|PRIMARY KEY|oauth_accounts(provider_user_id)|
+oauth_accounts|provider_user_id|PRIMARY KEY|oauth_accounts(provider)|
+password_reset_tokens|user_id|FOREIGN KEY|users(id)|NO ACTION
+profile_analytics_events|freelancer_id|FOREIGN KEY|users(id)|CASCADE
+profile_analytics_events|service_id|FOREIGN KEY|services(id)|SET NULL
+profile_analytics_events|portfolio_id|FOREIGN KEY|freelancer_portfolios(id)|SET NULL
+profile_analytics_events|id|PRIMARY KEY|profile_analytics_events(id)|
+refresh_tokens|user_id|FOREIGN KEY|users(id)|CASCADE
+refresh_tokens|id|PRIMARY KEY|refresh_tokens(id)|
+refresh_tokens|token|UNIQUE|refresh_tokens(token)|
+reviews|contract_id|FOREIGN KEY|contracts(id)|CASCADE
+reviews|reviewee_id|FOREIGN KEY|users(id)|NO ACTION
+reviews|reviewer_id|FOREIGN KEY|users(id)|NO ACTION
+reviews|id|PRIMARY KEY|reviews(id)|
+saved_jobs|job_id|FOREIGN KEY|jobs(id)|CASCADE
+saved_jobs|freelancer_id|FOREIGN KEY|users(id)|CASCADE
+saved_jobs|id|PRIMARY KEY|saved_jobs(id)|
+saved_jobs|freelancer_id|UNIQUE|saved_jobs(freelancer_id)|
+saved_jobs|freelancer_id|UNIQUE|saved_jobs(job_id)|
+saved_jobs|job_id|UNIQUE|saved_jobs(freelancer_id)|
+saved_jobs|job_id|UNIQUE|saved_jobs(job_id)|
+schema_migrations|id|PRIMARY KEY|schema_migrations(id)|
+schema_migrations|filename|UNIQUE|schema_migrations(filename)|
+service_categories|id|PRIMARY KEY|service_categories(id)|
+service_categories|name|UNIQUE|service_categories(name)|
+services|freelancer_id|FOREIGN KEY|users(id)|CASCADE
+services|id|PRIMARY KEY|services(id)|
+site_contact|id|PRIMARY KEY|site_contact(id)|
+skills|id|PRIMARY KEY|skills(id)|
+skills|name|UNIQUE|skills(name)|
+spatial_ref_sys|srid|PRIMARY KEY|spatial_ref_sys(srid)|
+transactions|contract_id|FOREIGN KEY|contracts(id)|NO ACTION
+transactions|user_id|FOREIGN KEY|users(id)|SET NULL
+transactions|job_id|FOREIGN KEY|jobs(id)|SET NULL
+transactions|freelancer_id|FOREIGN KEY|users(id)|SET NULL
+transactions|id|PRIMARY KEY|transactions(id)|
+transactions|idempotency_key|UNIQUE|transactions(idempotency_key)|
+user_login_logs|user_id|FOREIGN KEY|users(id)|NO ACTION
+user_login_logs|id|PRIMARY KEY|user_login_logs(id)|
+user_payout_methods|user_id|FOREIGN KEY|users(id)|NO ACTION
+user_payout_methods|id|PRIMARY KEY|user_payout_methods(id)|
+user_profiles|user_id|FOREIGN KEY|users(id)|CASCADE
+user_profiles|user_id|PRIMARY KEY|user_profiles(user_id)|
+user_skills|user_id|FOREIGN KEY|users(id)|CASCADE
+user_skills|skill_id|FOREIGN KEY|skills(id)|NO ACTION
+user_skills|user_id|PRIMARY KEY|user_skills(skill_id)|
+user_skills|user_id|PRIMARY KEY|user_skills(user_id)|
+user_skills|skill_id|PRIMARY KEY|user_skills(user_id)|
+user_skills|skill_id|PRIMARY KEY|user_skills(skill_id)|
+users|id|PRIMARY KEY|users(id)|
+users|email|UNIQUE|users(email)|
+wallet_deposit_orders|user_id|FOREIGN KEY|users(id)|CASCADE
+wallet_deposit_orders|transaction_id|FOREIGN KEY|transactions(id)|SET NULL
+wallet_deposit_orders|id|PRIMARY KEY|wallet_deposit_orders(id)|
+wallet_deposit_orders|order_code|UNIQUE|wallet_deposit_orders(order_code)|
