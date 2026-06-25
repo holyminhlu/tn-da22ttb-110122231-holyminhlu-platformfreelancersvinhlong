@@ -49,6 +49,12 @@ export default function WithdrawalPinSettings() {
     void load();
   }, [load]);
 
+  useEffect(() => {
+    if (loading || typeof window === "undefined") return;
+    if (window.location.hash !== "#withdrawal-pin") return;
+    document.getElementById("withdrawal-pin")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [loading]);
+
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
     setError("");
@@ -97,7 +103,7 @@ export default function WithdrawalPinSettings() {
   const googleSetup = Boolean(status?.requiresAppPasswordSetup);
 
   return (
-    <section className="ea-card as-card wdp-card">
+    <section id="withdrawal-pin" className="ea-card as-card wdp-card">
       <h2 className="as-section-title">
         <FaShieldAlt className="mr-2 inline text-[#2563eb]" aria-hidden />
         Mã PIN rút tiền

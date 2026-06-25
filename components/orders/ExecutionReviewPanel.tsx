@@ -16,7 +16,7 @@ import {
 } from "react-icons/fa";
 import type { ContractMilestone, WorkflowContract, CancelRequest, ProgressHistoryEntry } from "@/lib/api/contracts";
 import { formatPackagePrice } from "@/lib/hire/servicePackages";
-import { formatTimelineDisplay, parseProposalSections } from "@/lib/orders/proposalDisplay";
+import { parseProposalSections, resolveProposalTimelineLabel } from "@/lib/orders/proposalDisplay";
 import WorkflowDeadlineBanner from "./WorkflowDeadlineBanner";
 import ProgressHistoryTimeline from "./ProgressHistoryTimeline";
 import ClientVerifyNotice from "@/components/hire/ClientVerifyNotice";
@@ -96,7 +96,11 @@ export default function ExecutionReviewPanel({
     () => parseProposalSections(contract.proposal_text || ""),
     [contract.proposal_text],
   );
-  const timelineLabel = formatTimelineDisplay(proposal.timeline);
+  const timelineLabel = resolveProposalTimelineLabel(
+    contract.proposal_text || "",
+    proposal,
+    contract.proposal_delivery_days,
+  );
 
   const hasProgress = Boolean(displayProgressNote);
   const hasDemo = Boolean(displayDemoUrl);

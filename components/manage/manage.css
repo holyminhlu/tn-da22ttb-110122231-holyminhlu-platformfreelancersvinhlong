@@ -460,6 +460,23 @@
   color: #9ca3af;
 }
 
+.manage-workspace-card__proposal-cta {
+  display: inline-flex;
+  margin-top: 0.5rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 0.35rem;
+  background: #ecfdf5;
+  border: 1px solid #6ee7b7;
+  color: #047857;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.manage-workspace-card__proposal-cta:hover {
+  background: #d1fae5;
+}
+
 .manage-workspace-card__aside {
   display: flex;
   flex-shrink: 0;

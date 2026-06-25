@@ -16,7 +16,7 @@ import {
 } from "react-icons/fa";
 import type { CancelRequest, ContractMilestone, WorkflowContract } from "@/lib/api/contracts";
 import { formatPackagePrice } from "@/lib/hire/servicePackages";
-import { formatTimelineDisplay, parseProposalSections } from "@/lib/orders/proposalDisplay";
+import { parseProposalSections, resolveProposalTimelineLabel } from "@/lib/orders/proposalDisplay";
 import WorkflowDeadlineBanner from "./WorkflowDeadlineBanner";
 import ClientVerifyNotice from "@/components/hire/ClientVerifyNotice";
 import { CLIENT_VERIFY_PAYMENT_LEAD } from "@/lib/hire/clientVerification";
@@ -79,7 +79,11 @@ export default function DeliveryAcceptancePanel({
     () => parseProposalSections(contract.proposal_text || ""),
     [contract.proposal_text],
   );
-  const timelineLabel = formatTimelineDisplay(proposal.timeline);
+  const timelineLabel = resolveProposalTimelineLabel(
+    contract.proposal_text || "",
+    proposal,
+    contract.proposal_delivery_days,
+  );
 
   const workFrozen = Boolean(cancelRequest);
 

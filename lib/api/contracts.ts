@@ -113,6 +113,7 @@ export type WorkflowContract = ContractRow & {
   client_brief: string | null;
   proposal_text: string | null;
   proposal_budget: string | number | null;
+  proposal_delivery_days?: number | null;
   proposal_submitted_at: string | null;
   demo_url: string | null;
   revisions_limit: number;
@@ -192,6 +193,7 @@ export type ServiceOrderListItem = {
   package_snapshot: unknown;
   client_brief: string | null;
   proposal_text: string | null;
+  proposal_delivery_days?: number | null;
   proposal_submitted_at: string | null;
   progress_note: string | null;
   demo_url: string | null;

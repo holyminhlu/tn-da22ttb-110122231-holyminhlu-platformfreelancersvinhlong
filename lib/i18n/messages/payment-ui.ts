@@ -9,6 +9,8 @@ export const paymentUi = {
       createDepositLinkError: "Không thể tạo link nạp tiền.",
       noBankAccount: "Bạn chưa liên kết tài khoản ngân hàng nhận tiền.",
       noPin: "Bạn chưa thiết lập mã PIN rút tiền.",
+      setupPinInSettings: "Thiết lập tại Cài đặt",
+      googleAppPasswordPinHint: "(tài khoản Google cần đặt mật khẩu ứng dụng khi tạo PIN).",
       validateFields: "Vui lòng kiểm tra lại các trường bắt buộc.",
       profileUpdateSuccess: "Cập nhật thông tin thành công!",
       saveError: "Không thể lưu thông tin.",

@@ -452,7 +452,7 @@ export default function FreelancerWithdrawModal({
                 <button type="button" className="payments-btn payments-btn--secondary" onClick={onClose}>
                   {t("Đóng")}
                 </button>
-                <Link href="/edit-account/cai-dat" className="payments-btn payments-btn--primary">
+                <Link href="/edit-account/cai-dat#withdrawal-pin" className="payments-btn payments-btn--primary">
                   {t("Thiết lập PIN")}
                 </Link>
               </footer>

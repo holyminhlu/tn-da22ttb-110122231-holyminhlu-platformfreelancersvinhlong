@@ -4,6 +4,7 @@ import { useTranslation } from "@/hooks/useTranslation";
 import type { TranslationParams } from "@/lib/i18n/types";
 import { formatDateUi, formatVndUi } from "@/lib/i18n/runtime";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import ClientShell from "@/components/layout/ClientShell";
 import DashboardPagination from "@/components/dashboard/DashboardPagination";
@@ -131,6 +132,7 @@ function exportCsv(
 
 export default function ClientPaymentsPage() {
   const { t, formatVnd, formatDate } = useTranslation();
+  const router = useRouter();
 
   const { verified: identityVerified, loading: identityLoading } = useClientIdentityVerification({
     refreshOnVisible: false,
@@ -307,6 +309,7 @@ export default function ClientPaymentsPage() {
     }
     if (!data.withdrawalPin?.isConfigured) {
       setToast({ message: t("paymentPage.noPin"), variant: "error" });
+      router.push("/edit-account/cai-dat#withdrawal-pin");
       return;
     }
     if (withdrawNumeric < MIN_WITHDRAW_VND) {
@@ -556,6 +559,15 @@ export default function ClientPaymentsPage() {
                     {t("Rút tiền")}
                   </button>
                 </div>
+                {!data.withdrawalPin?.isConfigured ? (
+                  <p className="fl-payments__withdraw-pin-hint">
+                    {t("paymentPage.noPin")}{" "}
+                    <Link href="/edit-account/cai-dat#withdrawal-pin">{t("paymentPage.setupPinInSettings")}</Link>
+                    {data.withdrawalPin?.requiresAppPasswordSetup
+                      ? ` ${t("paymentPage.googleAppPasswordPinHint")}`
+                      : "."}
+                  </p>
+                ) : null}
               </div>
             </section>
 

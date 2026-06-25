@@ -4,6 +4,7 @@ const {
   getPayosClient,
   isPayosConfigured,
 } = require("../utils/payosClient");
+const { refreshIdentityReviewQueue } = require("../utils/identityResubmit");
 
 function isMissingSchemaError(err) {
   return err?.code === "42703" || err?.code === "42P01";
@@ -240,6 +241,7 @@ async function completeWalletDeposit(db, orderCode, payosMeta = {}) {
 
   if (orderType === ORDER_TYPE_IDENTITY_VERIFY) {
     await markIdentityCardVerified(db, order.user_id, amount);
+    await refreshIdentityReviewQueue(db, order.user_id);
   }
 
     await db.query("COMMIT");

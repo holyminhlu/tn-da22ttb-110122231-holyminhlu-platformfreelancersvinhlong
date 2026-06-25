@@ -17,10 +17,12 @@ import {
 import type { ContractMilestone, WorkflowContract } from "@/lib/api/contracts";
 import { formatPackagePrice } from "@/lib/hire/servicePackages";
 import WorkflowDeadlineBanner from "./WorkflowDeadlineBanner";
+import ProposalDocumentView from "./ProposalDocumentView";
+import ProposalSectionView from "./ProposalSectionView";
 import {
-  formatTimelineDisplay,
   parseProposalSections,
   parseTimelineDays,
+  resolveProposalTimelineLabel,
 } from "@/lib/orders/proposalDisplay";
 
 type SelectionAgreementPanelProps = {
@@ -31,7 +33,7 @@ type SelectionAgreementPanelProps = {
   busy: boolean;
   actionError?: string;
   counterpartyName: string;
-  onSubmitProposal: (payload: { proposalText: string }) => void;
+  onSubmitProposal: (payload: { proposalText: string; deliveryDays: number }) => void;
   onAcceptProposal: () => void;
   onWithdrawProposal?: () => void;
   onRejectProposal?: (reason: string) => void;
@@ -56,16 +58,6 @@ function buildProposalText(scope: string, deliveryDays: number) {
   if (s) blocks.push(`${SECTION_MARKERS.scope}\n${s}`);
   blocks.push(`${SECTION_MARKERS.timeline}\n${formatTimelineLabel(deliveryDays)}`);
   return blocks.join("\n\n");
-}
-
-function ProposalSectionView({ title, body }: { title: string; body: string }) {
-  if (!body.trim()) return null;
-  return (
-    <div className="hire-selection__proposal-block">
-      <h4 className="hire-selection__proposal-block-title">{title}</h4>
-      <p className="hire-selection__proposal-block-body">{body}</p>
-    </div>
-  );
 }
 
 export default function SelectionAgreementPanel({
@@ -104,6 +96,13 @@ export default function SelectionAgreementPanel({
   const [rejectReason, setRejectReason] = useState("");
 
   useEffect(() => {
+    if (hasProposal || isClient) return;
+    const next = parseProposalSections(contract.proposal_text || "");
+    setScope(next.scope);
+    setDeliveryDays(parseTimelineDays(next.timeline));
+  }, [contract.proposal_text, hasProposal, isClient]);
+
+  useEffect(() => {
     if (!hasProposal) {
       setRejectOpen(false);
       setRejectReason("");
@@ -114,11 +113,18 @@ export default function SelectionAgreementPanel({
     contract.agreed_price != null ? formatVndUi(contract.agreed_price) : "Thỏa thuận";
 
   const proposalSections = hasProposal ? parsed : null;
+  const timelineLabel = hasProposal
+    ? resolveProposalTimelineLabel(
+        contract.proposal_text || "",
+        parsed,
+        contract.proposal_delivery_days,
+      )
+    : "—";
   const canSubmit = scope.trim().length >= 20 && deliveryDays != null;
 
   function handleSubmit() {
     if (deliveryDays == null) return;
-    onSubmitProposal({ proposalText: buildProposalText(scope, deliveryDays) });
+    onSubmitProposal({ proposalText: buildProposalText(scope, deliveryDays), deliveryDays });
   }
 
   return (
@@ -237,7 +243,11 @@ export default function SelectionAgreementPanel({
                 <ProposalSectionView title={t("Phạm vi & giải pháp")} body={rejectedParsed.scope} />
                 <ProposalSectionView
                   title={t("Tiến độ dự kiến")}
-                  body={formatTimelineDisplay(rejectedParsed.timeline)}
+                  body={resolveProposalTimelineLabel(
+                    contract.last_rejected_proposal_text || "",
+                    rejectedParsed,
+                  )}
+                  collapsible={false}
                 />
                 {!rejectedParsed.scope && contract.last_rejected_proposal_text ? (
                   <p className="hire-selection__proposal-block-body">
@@ -355,10 +365,9 @@ export default function SelectionAgreementPanel({
                 </button>
               ) : null}
               <div className="hire-selection__proposal-preview">
-                <ProposalSectionView title={t("Phạm vi & giải pháp")} body={proposalSections?.scope ?? ""} />
-                <ProposalSectionView
-                  title={t("Tiến độ dự kiến")}
-                  body={formatTimelineDisplay(proposalSections?.timeline ?? "")}
+                <ProposalDocumentView
+                  proposalText={contract.proposal_text || ""}
+                  deliveryDays={contract.proposal_delivery_days}
                 />
               </div>
             </div>
@@ -379,7 +388,7 @@ export default function SelectionAgreementPanel({
           ) : null}
 
           {isClient && hasProposal ? (
-            <div className="hire-selection__review">
+            <div className="hire-selection__review" id="de-xuat">
               <header className="hire-selection__review-head">
                 <div>
                   <h3 className="hire-selection__form-title">{t("Đề xuất từ Freelancer")}</h3>
@@ -388,23 +397,19 @@ export default function SelectionAgreementPanel({
                     quỹ Escrow.
                   </p>
                 </div>
-                {proposalSections?.timeline ? (
+                {timelineLabel !== "—" ? (
                   <div className="hire-selection__days-chip">
-                    <span className="hire-selection__days-chip-label">{t("Thời gian")}</span>
-                    <strong>{formatTimelineDisplay(proposalSections.timeline)}</strong>
+                    <span className="hire-selection__days-chip-label">{t("Thời gian dự kiến")}</span>
+                    <strong>{timelineLabel}</strong>
                   </div>
                 ) : null}
               </header>
 
               <div className="hire-selection__proposal-doc">
-                <ProposalSectionView title={t("Phạm vi & giải pháp")} body={proposalSections?.scope ?? ""} />
-                <ProposalSectionView
-                  title={t("Tiến độ dự kiến")}
-                  body={formatTimelineDisplay(proposalSections?.timeline ?? "")}
+                <ProposalDocumentView
+                  proposalText={contract.proposal_text || ""}
+                  deliveryDays={contract.proposal_delivery_days}
                 />
-                {!proposalSections?.scope && contract.proposal_text ? (
-                  <p className="hire-selection__proposal-block-body">{contract.proposal_text}</p>
-                ) : null}
               </div>
 
               {contract.proposal_submitted_at ? (

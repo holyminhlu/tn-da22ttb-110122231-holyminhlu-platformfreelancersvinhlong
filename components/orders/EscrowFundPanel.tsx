@@ -6,7 +6,6 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import {
   FaCheckCircle,
-  FaClipboardList,
   FaHandHoldingUsd,
   FaInfoCircle,
   FaLock,
@@ -16,7 +15,8 @@ import {
 } from "react-icons/fa";
 import type { ContractMilestone, WorkflowContract } from "@/lib/api/contracts";
 import { formatPackagePrice } from "@/lib/hire/servicePackages";
-import { formatTimelineDisplay, parseProposalSections } from "@/lib/orders/proposalDisplay";
+import { parseProposalSections, resolveProposalTimelineLabel } from "@/lib/orders/proposalDisplay";
+import ProposalSectionView from "./ProposalSectionView";
 import WorkflowDeadlineBanner from "./WorkflowDeadlineBanner";
 import ClientVerifyNotice from "@/components/hire/ClientVerifyNotice";
 import { CLIENT_VERIFY_PAYMENT_LEAD } from "@/lib/hire/clientVerification";
@@ -73,7 +73,11 @@ export default function EscrowFundPanel({
     [contract.proposal_text],
   );
 
-  const timelineLabel = formatTimelineDisplay(proposal.timeline);
+  const timelineLabel = resolveProposalTimelineLabel(
+    contract.proposal_text || "",
+    proposal,
+    contract.proposal_delivery_days,
+  );
 
   return (
     <div className="hire-escrow">
@@ -153,12 +157,8 @@ export default function EscrowFundPanel({
           </div>
 
           {proposal.scope ? (
-            <div className="hire-escrow__context-card">
-              <h3 className="hire-escrow__context-title">
-                <FaClipboardList aria-hidden />
-                Phạm vi đã thỏa thuận
-              </h3>
-              <p className="hire-escrow__brief">{proposal.scope}</p>
+            <div className="hire-escrow__context-card hire-escrow__context-card--proposal">
+              <ProposalSectionView title="Phạm vi đã thỏa thuận" body={proposal.scope} />
             </div>
           ) : null}
 

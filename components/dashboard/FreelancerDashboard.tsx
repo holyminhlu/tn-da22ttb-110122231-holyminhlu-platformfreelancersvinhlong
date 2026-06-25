@@ -418,11 +418,7 @@ function ProfileQuickPanel({
             <FaUserEdit className="mr-1 inline" aria-hidden />
             {t("dashboardPage.completeProfileNow")}
           </Link>
-        ) : (
-          <Link href="/ho-so/thong-ke" className="client-widget__link fd-widget-action">
-            {t("dashboardPage.viewProfileStats")}
-          </Link>
-        )}
+        ) : null}
       </div>
     </DashboardWidget>
   );
@@ -553,8 +549,6 @@ export default function FreelancerDashboard() {
                   <span className="client-dashboard__meta">
                     {" "}
                     (
-                    <Link href="/ho-so/thong-ke">{t("dashboardPage.myStats")}</Link>
-                    <span className="client-widget__sep">|</span>
                     <Link href="/ho-so/phan-hoi">
                       {reviewCount > 0
                         ? t("dashboardPage.feedbackCount", { count: reviewCount })

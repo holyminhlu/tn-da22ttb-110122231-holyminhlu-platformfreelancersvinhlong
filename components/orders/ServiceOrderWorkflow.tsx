@@ -132,6 +132,15 @@ export default function ServiceOrderWorkflow({
     void load();
   }, [load]);
 
+  useEffect(() => {
+    if (!data || loading) return;
+    if (typeof window === "undefined" || window.location.hash !== "#de-xuat") return;
+    const timer = window.setTimeout(() => {
+      document.getElementById("de-xuat")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 120);
+    return () => window.clearTimeout(timer);
+  }, [data, loading]);
+
   const contract = data?.contract;
   const role = data?.role;
   const currentIdx = workflowDisplayStageIndex(
@@ -289,6 +298,7 @@ export default function ServiceOrderWorkflow({
               void runAction({
                 action: "submit_proposal",
                 proposalText: payload.proposalText,
+                deliveryDays: payload.deliveryDays,
               })
             }
             onAcceptProposal={() => void runAction({ action: "accept_proposal" })}

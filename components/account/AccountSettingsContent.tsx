@@ -13,7 +13,7 @@ import {
   FaTrophy,
 } from "react-icons/fa";
 import FreelancerAvatarFrame from "@/components/freelancer/FreelancerAvatarFrame";
-import { getMe, isFreelancerMeResponse } from "@/lib/api/users";
+import { getMe, isClientMeResponse, isFreelancerMeResponse } from "@/lib/api/users";
 import {
   AVATAR_TIER_THRESHOLDS,
   getAvatarTierId,
@@ -90,6 +90,7 @@ export default function AccountSettingsContent() {
   const [email, setEmail] = useState("");
   const [avatarSrc, setAvatarSrc] = useState<string | null>(null);
   const [isFreelancer, setIsFreelancer] = useState(false);
+  const [showWithdrawalPin, setShowWithdrawalPin] = useState(false);
   const [completedJobs, setCompletedJobs] = useState(0);
   const [theme, setTheme] = useState<ThemePreference>("light");
   const [notifPrefs, setNotifPrefs] = useState<NotificationPrefs>(() => getNotificationPrefs());
@@ -110,6 +111,7 @@ export default function AccountSettingsContent() {
       setAvatarSrc(data.user.avatarUrl || null);
       const freelancer = isFreelancerMeResponse(data);
       setIsFreelancer(freelancer);
+      setShowWithdrawalPin(freelancer || isClientMeResponse(data));
       setCompletedJobs(
         data.user.completedJobs ?? (freelancer ? data.freelancerProfile?.completed_jobs : undefined) ?? 0,
       );
@@ -195,7 +197,7 @@ export default function AccountSettingsContent() {
         </p>
       ) : (
         <div className="ea-content">
-          {isFreelancer ? <WithdrawalPinSettings /> : null}
+          {showWithdrawalPin ? <WithdrawalPinSettings /> : null}
 
           <section className="ea-card as-card">
             <h2 className="as-section-title">

@@ -4,6 +4,7 @@ import { formatDateUi, tUi } from "@/lib/i18n/runtime";
 import { useTranslation } from "@/hooks/useTranslation";
 import FreelancerAvatarFrame from "@/components/freelancer/FreelancerAvatarFrame";
 import Link from "next/link";
+import { useState } from "react";
 import { FreelancerChatInlineButton } from "@/components/chat/FreelancerChatWidget";
 import { CLIENT_VERIFY_PAGE } from "@/lib/hire/clientVerification";
 import {
@@ -47,6 +48,7 @@ export default function HireQuoteDetailView({
   clientIdentityLoading = false,
 }: HireQuoteDetailViewProps) {  const { t, formatDate } = useTranslation();
 
+  const [messageExpanded, setMessageExpanded] = useState(false);
   const needsVerify = !clientIdentityLoading && !clientIdentityVerified;
   const avatarSrc = resolveAvatarSrc(quote.freelancer_avatar_url);
   const name = quote.freelancer_name?.trim() || "Freelancer";
@@ -156,7 +158,33 @@ export default function HireQuoteDetailView({
           <dl className="hire-favorites__meta">
             <div className="hire-favorites__meta-wide">
               <dt>{t("Thư đề xuất")}</dt>
-              <dd>{message || t("Freelancer chưa gửi kèm thư đề xuất chi tiết.")}</dd>
+              <dd>
+                {message ? (
+                  <>
+                    <p
+                      className={`hire-quote-detail__message${
+                        !messageExpanded && message.length > 320
+                          ? " hire-quote-detail__message--clamp"
+                          : ""
+                      }`}
+                    >
+                      {message}
+                    </p>
+                    {message.length > 320 ? (
+                      <button
+                        type="button"
+                        className="hire-quote-card__read-more"
+                        onClick={() => setMessageExpanded((value) => !value)}
+                        aria-expanded={messageExpanded}
+                      >
+                        {messageExpanded ? "Thu gọn" : "Xem thêm"}
+                      </button>
+                    ) : null}
+                  </>
+                ) : (
+                  t("Freelancer chưa gửi kèm thư đề xuất chi tiết.")
+                )}
+              </dd>
             </div>
           </dl>
         </div>

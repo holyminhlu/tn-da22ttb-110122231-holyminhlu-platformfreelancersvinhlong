@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import {
-  FaChartBar,
   FaCheckCircle,
   FaCog,
   FaKey,
@@ -11,7 +10,6 @@ import {
   FaThumbsUp,
   FaUser,
 } from "react-icons/fa";
-import { useStoredUser } from "@/hooks/useStoredUser";
 import { useTranslation } from "@/hooks/useTranslation";
 
 type SidebarItemProps = {
@@ -64,9 +62,6 @@ export default function EditAccountSidebar({
   active = "contact" }: EditAccountSidebarProps) {
   const { t } = useTranslation();
 
-  const { ready, isClient } = useStoredUser({ refreshFromApi: false });
-  const hideClientMenus = ready && isClient;
-
   return (
     <aside className="ea-sidebar" aria-label={t("accountSidebar.ariaLabel")}>
       <SidebarGroup label={t("accountSidebar.profile")} />
@@ -82,14 +77,6 @@ export default function EditAccountSidebar({
         href="/ho-so/phan-hoi"
         active={active === "feedback"}
       />
-      {!hideClientMenus ? (
-        <SidebarItem
-          icon={<FaChartBar />}
-          label={t("accountSidebar.profileStats")}
-          href="/ho-so/thong-ke"
-          active={active === "stats"}
-        />
-      ) : null}
 
       <SidebarGroup label={t("accountSidebar.accountSettings")} />
       <SidebarItem

@@ -93,6 +93,9 @@ function dbSchemaMigrationHint(error) {
   if (msg.includes("last_rejected_proposal_text") || msg.includes("proposal_rejection_note")) {
     return "Chạy backend/sql/proposal_rejection_snapshot.sql trên PostgreSQL.";
   }
+  if (msg.includes("proposal_delivery_days")) {
+    return "Chạy backend/sql/proposal_delivery_days.sql trên PostgreSQL.";
+  }
   if (msg.includes("client_refund_amount") || msg.includes("split_type")) {
     return "Chạy backend/sql/refund_settlement.sql trên PostgreSQL.";
   }
@@ -318,6 +321,20 @@ async function countProgressEntries(db, contractId) {
   }
 }
 
+function resolveProposalDeliveryDays(body, proposalText) {
+  const raw = body?.deliveryDays ?? body?.delivery_days;
+  const n = Number(raw);
+  if (Number.isFinite(n) && n > 0 && n <= 365) return Math.round(n);
+
+  const idx = String(proposalText || "").lastIndexOf("## Tiến độ dự kiến");
+  if (idx === -1) return null;
+  const tail = String(proposalText).slice(idx);
+  const match = tail.match(/(\d+)\s*ngày\s*làm\s*việc/i);
+  if (!match) return null;
+  const parsed = Number(match[1]);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
+
 async function loadWorkflowContract(db, contractId, userId) {
   const res = await db.query(
     `SELECT c.*,
@@ -486,18 +503,36 @@ async function patchContractWorkflow(req, res) {
         await db.query("ROLLBACK");
         return res.status(400).json({ message: "Nội dung đề xuất là bắt buộc." });
       }
-      await db.query(
-        `UPDATE public.contracts
-         SET proposal_text = $1,
-             proposal_budget = $2,
-             proposal_submitted_at = CURRENT_TIMESTAMP,
-             last_rejected_proposal_text = NULL,
-             last_rejected_proposal_at = NULL,
-             proposal_rejection_note = NULL,
-             updated_at = CURRENT_TIMESTAMP
-         WHERE id = $3`,
-        [proposalText, proposalBudget, contractId],
-      );
+      const deliveryDays = resolveProposalDeliveryDays(req.body, proposalText);
+      try {
+        await db.query(
+          `UPDATE public.contracts
+           SET proposal_text = $1,
+               proposal_budget = $2,
+               proposal_delivery_days = $4,
+               proposal_submitted_at = CURRENT_TIMESTAMP,
+               last_rejected_proposal_text = NULL,
+               last_rejected_proposal_at = NULL,
+               proposal_rejection_note = NULL,
+               updated_at = CURRENT_TIMESTAMP
+           WHERE id = $3`,
+          [proposalText, proposalBudget, contractId, deliveryDays],
+        );
+      } catch (updateErr) {
+        if (updateErr.code !== "42703") throw updateErr;
+        await db.query(
+          `UPDATE public.contracts
+           SET proposal_text = $1,
+               proposal_budget = $2,
+               proposal_submitted_at = CURRENT_TIMESTAMP,
+               last_rejected_proposal_text = NULL,
+               last_rejected_proposal_at = NULL,
+               proposal_rejection_note = NULL,
+               updated_at = CURRENT_TIMESTAMP
+           WHERE id = $3`,
+          [proposalText, proposalBudget, contractId],
+        );
+      }
       await setStageDeadline(db, contractId, SLA_DAYS.AWAIT_ACCEPT);
       await logWorkflowEvent(db, contractId, "proposal_submitted", {}, payload.sub);
       await db.query("COMMIT");
@@ -516,7 +551,11 @@ async function patchContractWorkflow(req, res) {
       }
       await db.query(
         `UPDATE public.contracts
-         SET proposal_text = NULL, proposal_budget = NULL, proposal_submitted_at = NULL, updated_at = CURRENT_TIMESTAMP
+         SET proposal_text = NULL,
+             proposal_budget = NULL,
+             proposal_delivery_days = NULL,
+             proposal_submitted_at = NULL,
+             updated_at = CURRENT_TIMESTAMP
          WHERE id = $1`,
         [contractId],
       );
@@ -542,6 +581,7 @@ async function patchContractWorkflow(req, res) {
         `UPDATE public.contracts
          SET proposal_text = NULL,
              proposal_budget = NULL,
+             proposal_delivery_days = NULL,
              proposal_submitted_at = NULL,
              last_rejected_proposal_text = $2,
              last_rejected_proposal_at = CURRENT_TIMESTAMP,
@@ -1098,6 +1138,7 @@ async function listServiceOrders(req, res) {
          c.package_snapshot,
          c.client_brief,
          c.proposal_text,
+         c.proposal_delivery_days,
          c.proposal_submitted_at,
          c.progress_note,
          c.demo_url,

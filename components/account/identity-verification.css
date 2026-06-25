@@ -41,6 +41,16 @@
   color: var(--vlc-text-faint);
 }
 
+.edit-account-page .idv-step--done:not(.idv-step--active) {
+  border-color: #86efac;
+  background: #f0fdf4;
+}
+
+.edit-account-page .idv-step--done:not(.idv-step--active) .idv-step__num {
+  background: #22c55e;
+  color: #fff;
+}
+
 .edit-account-page .idv-step__num {
   display: flex;
   width: 2rem;
@@ -130,6 +140,14 @@
   margin: 0 0 2rem;
   font-size: 0.9375rem;
   color: var(--vlc-text-muted);
+}
+
+.edit-account-page .idv-intro--muted {
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  background: var(--vlc-surface-subtle);
+  border: 1px solid var(--vlc-border);
 }
 
 .edit-account-page .idv-grid {

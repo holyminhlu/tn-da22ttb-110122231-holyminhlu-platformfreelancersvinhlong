@@ -179,6 +179,11 @@ export default function ManageWorkspaceCard({ item, onChanged }: ManageWorkspace
           <p className="manage-workspace-card__activity">
             Hoạt động gần nhất: <time dateTime={item.activityAt}>{formatDateUi(item.activityAt)}</time>
           </p>
+          {hasNewProposal ? (
+            <Link href={`${detailHref}#de-xuat`} className="manage-workspace-card__proposal-cta">
+              Xem chi tiết đề xuất
+            </Link>
+          ) : null}
         </div>
 
         <div className="manage-workspace-card__aside">

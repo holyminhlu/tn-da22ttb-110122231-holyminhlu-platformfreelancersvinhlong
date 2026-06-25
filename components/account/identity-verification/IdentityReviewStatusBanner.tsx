@@ -74,7 +74,8 @@ export default function IdentityReviewStatusBanner({ data }: IdentityReviewStatu
         <p className="idv-status__title">Hồ sơ đang chờ admin duyệt</p>
         <p className="idv-status__text">
           Bạn đã gửi hồ sơ xem xét{submittedAt !== "—" ? ` vào ${submittedAt}` : ""}. Admin sẽ duyệt
-          trong 2–5 ngày làm việc. Sau khi được duyệt, bạn mới có thể báo giá và thao tác với job.
+          trong 2–5 ngày làm việc. Bạn có thể quay lại các bước 1 và 2 để xem hoặc chỉnh sửa; thay
+          đổi sẽ được cập nhật cho admin.
         </p>
       </div>
     </div>

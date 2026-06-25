@@ -158,6 +158,19 @@
   font-weight: 600;
 }
 
+.fw-orders__card-proposal-cta {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 0.5rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 0.35rem;
+  background: #ecfdf5;
+  border: 1px solid #6ee7b7;
+  color: #047857;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
 .fw-orders__card-badge {
   flex-shrink: 0;
   display: inline-flex;

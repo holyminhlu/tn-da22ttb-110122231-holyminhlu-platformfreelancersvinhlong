@@ -11,6 +11,10 @@ const {
   isMissingSchemaError: isWalletSchemaError,
 } = require("../services/walletDepositPayos.service");
 const { notifyIdentityReviewSubmitted } = require("../utils/notificationService");
+const {
+  assertIdentityEditable,
+  refreshIdentityReviewQueue,
+} = require("../utils/identityResubmit");
 
 function detectCardBrand(digits) {
   if (/^4/.test(digits)) return "visa";
@@ -184,6 +188,12 @@ async function patchIdentityVerification(req, res) {
     await ensureRow(db, userId);
     await db.query("BEGIN");
 
+    const editable = await assertIdentityEditable(db, userId);
+    if (!editable.ok) {
+      await db.query("ROLLBACK");
+      return res.status(403).json({ message: editable.message });
+    }
+
     const sets = [];
     const params = [userId];
     let idx = 2;
@@ -309,8 +319,11 @@ async function patchIdentityVerification(req, res) {
       }
     }
 
-    if (body.submitForReview === true) {
+    const explicitSubmit = body.submitForReview === true;
+    if (explicitSubmit) {
       await notifyIdentityReviewSubmitted(db, userId);
+    } else if (sets.length > 0) {
+      await refreshIdentityReviewQueue(db, userId);
     }
 
     await db.query("COMMIT");
@@ -358,12 +371,19 @@ function uploadField(column, timestampCol) {
       const db = await pool.connect();
       try {
         await ensureRow(db, payload.sub);
+        const editable = await assertIdentityEditable(db, payload.sub);
+        if (!editable.ok) {
+          return res.status(403).json({ message: editable.message });
+        }
+
         await db.query(
           `UPDATE public.identity_verifications
            SET ${column} = $2, ${timestampCol} = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
            WHERE user_id = $1`,
           [payload.sub, url],
         );
+
+        await refreshIdentityReviewQueue(db, payload.sub);
 
         if (column === "selfie_url") {
           await db.query(
@@ -431,6 +451,11 @@ async function addCreditCard(req, res) {
 
   try {
     await ensureRow(db, userId);
+    const editable = await assertIdentityEditable(db, userId);
+    if (!editable.ok) {
+      return res.status(403).json({ message: editable.message });
+    }
+
     await db.query(
       `UPDATE public.identity_verifications
        SET card_last4 = $2,
@@ -466,6 +491,8 @@ async function addCreditCard(req, res) {
         billing.currency,
       ],
     );
+
+    await refreshIdentityReviewQueue(db, userId);
 
     const result = await db.query(
       `SELECT * FROM public.identity_verifications WHERE user_id = $1`,
@@ -667,6 +694,8 @@ async function verifyCardCharge(req, res) {
        WHERE user_id = $1`,
       [userId],
     );
+
+    await refreshIdentityReviewQueue(db, userId);
 
     const updated = await db.query(
       `SELECT * FROM public.identity_verifications WHERE user_id = $1`,

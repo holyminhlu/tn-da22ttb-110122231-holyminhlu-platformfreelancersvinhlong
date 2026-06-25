@@ -22,6 +22,10 @@ import {
   workflowStageTone,
   type OrderListFilter,
 } from "@/lib/orders/serviceOrderDisplay";
+import {
+  orderCardProposalScopePreview,
+  resolveProposalTimelineLabel,
+} from "@/lib/orders/proposalDisplay";
 import { orderDeadlineSubtitle } from "@/lib/orders/workflowSlaDisplay";
 import HireShell from "./HireShell";
 import "./hire.css";
@@ -140,7 +144,12 @@ export default function ClientServiceOrdersPage() {
               const pkgName = parsePackageName(order.package_snapshot);
               const hint = orderStatusHint(order, false);
               const deadlineLine = orderDeadlineSubtitle(order);
-              const proposalPreview = orderCardPreviewText(order.proposal_text);
+              const proposalPreview = orderCardProposalScopePreview(order.proposal_text);
+              const proposalTimeline = resolveProposalTimelineLabel(
+                order.proposal_text || "",
+                undefined,
+                order.proposal_delivery_days,
+              );
               const briefPreview = orderCardPreviewText(order.client_brief);
               const statusTone = orderCardStatusTone(order, false);
               const stageTone = workflowStageTone(order.workflow_stage, order);
@@ -153,7 +162,7 @@ export default function ClientServiceOrdersPage() {
               return (
                 <li key={order.id}>
                   <Link
-                    href={`/hire/orders/${order.id}`}
+                    href={`/hire/orders/${order.id}${urgent ? "#de-xuat" : ""}`}
                     className={`fw-orders__card ${orderCardToneClass(statusTone)}${urgent ? " fw-orders__card--urgent" : ""}`}
                   >
                     <div className="fw-orders__card-top">
@@ -170,12 +179,18 @@ export default function ClientServiceOrdersPage() {
                       {order.agreed_price != null
                         ? ` · ${formatPackagePrice(Number(order.agreed_price))}`
                         : ""}
+                      {proposalTimeline !== "—" ? ` · ${proposalTimeline}` : ""}
                     </p>
                     {proposalPreview ? (
-                      <p className="fw-orders__card-preview fw-orders__card-preview--proposal">
-                        <span className="fw-orders__card-preview-label">{t("hirePage.proposalLabel")}</span>{" "}
-                        {proposalPreview}
-                      </p>
+                      <>
+                        <p className="fw-orders__card-preview fw-orders__card-preview--proposal">
+                          <span className="fw-orders__card-preview-label">{t("hirePage.proposalLabel")}</span>{" "}
+                          {proposalPreview}
+                        </p>
+                        {urgent ? (
+                          <span className="fw-orders__card-proposal-cta">Xem chi tiết đề xuất</span>
+                        ) : null}
+                      </>
                     ) : briefPreview ? (
                       <p className="fw-orders__card-preview">{briefPreview}</p>
                     ) : null}

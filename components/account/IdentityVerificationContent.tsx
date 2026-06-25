@@ -91,7 +91,7 @@ export default function IdentityVerificationContent() {
   const verifyPayment = searchParams.get("verifyPayment");
   const returnOrderCode = Number(searchParams.get("orderCode"));
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (opts?: { preserveStep?: boolean }) => {
     setLoading(true);
     setLoadError("");
     try {
@@ -100,7 +100,9 @@ export default function IdentityVerificationContent() {
       setIdvData(idv);
       const items = buildVerifyItems(me.user, idv);
       setSelectedId(defaultSelectedId(items));
-      setActiveStep(resolveVerifyStep(items, idv));
+      if (!opts?.preserveStep) {
+        setActiveStep(resolveVerifyStep(items, idv));
+      }
       prevCompletedCountRef.current = items.filter((i) => i.completed).length;
       prevCardVerifiedRef.current = Boolean(idv.verification?.card_verified_at);
     } catch (err) {
@@ -147,10 +149,7 @@ export default function IdentityVerificationContent() {
     router.replace("/edit-account/xac-minh");
   }, [router]);
 
-  useEffect(() => {
-    if (!idvData?.verification?.submitted_for_review_at) return;
-    setActiveStep(3);
-  }, [idvData]);
+  const reloadPreservingStep = useCallback(() => void load({ preserveStep: true }), [load]);
 
   const items = useMemo(() => buildVerifyItems(user, idvData), [user, idvData]);
   const completedCount = items.filter((i) => i.completed).length;
@@ -161,14 +160,6 @@ export default function IdentityVerificationContent() {
 
   useEffect(() => {
     if (loading || !idvData) return;
-
-    const submitted = Boolean(idvData.verification?.submitted_for_review_at);
-    if (submitted) {
-      setActiveStep(3);
-      prevCompletedCountRef.current = completedCount;
-      prevCardVerifiedRef.current = cardVerified;
-      return;
-    }
 
     const justFinishedItems =
       activeStep === 1 &&
@@ -207,7 +198,7 @@ export default function IdentityVerificationContent() {
     setSubmitting(true);
     try {
       await patchIdentityVerification({ submitForReview: true });
-      await load();
+      await load({ preserveStep: true });
       setActiveStep(3);
     } catch (err) {
       const msg =
@@ -260,12 +251,18 @@ export default function IdentityVerificationContent() {
       <div className="idv-steps" role="list" aria-label="Các bước xác minh">
         {STEPS.map((step) => {
           const isActive = step.id === activeStep;
+          const stepComplete =
+            step.id === 1
+              ? allItemsDone
+              : step.id === 2
+                ? cardVerified
+                : submittedForReview;
           return (
             <button
               key={step.id}
               type="button"
               role="listitem"
-              className={`idv-step${isActive ? " idv-step--active" : " idv-step--inactive"}`}
+              className={`idv-step${isActive ? " idv-step--active" : " idv-step--inactive"}${stepComplete ? " idv-step--done" : ""}`}
               onClick={() => setActiveStep(step.id)}
               aria-current={isActive ? "step" : undefined}
             >
@@ -297,7 +294,19 @@ export default function IdentityVerificationContent() {
               </span>
             </div>
           </div>
-          <p className="idv-intro">Vui lòng cung cấp các thông tin sau:</p>
+          {isApproved ? (
+            <p className="idv-intro idv-intro--muted">
+              Hồ sơ đã được duyệt — bạn có thể xem lại thông tin bên dưới.
+            </p>
+          ) : submittedForReview ? (
+            <p className="idv-intro idv-intro--muted">
+              Hồ sơ đã gửi xem xét. Bạn vẫn có thể chỉnh sửa tại đây; mọi thay đổi sẽ được cập nhật
+              cho admin nếu hồ sơ chưa được duyệt.
+            </p>
+          ) : null}
+          {!isApproved && !submittedForReview ? (
+            <p className="idv-intro">Vui lòng cung cấp các thông tin sau:</p>
+          ) : null}
 
           <div className="idv-grid">
             {items.map((item) => (
@@ -320,7 +329,7 @@ export default function IdentityVerificationContent() {
             <VerifyDetailPanel
               selectedId={selectedId}
               data={idvData}
-              onSaved={() => void load()}
+              onSaved={reloadPreservingStep}
             />
           </div>
 
@@ -350,9 +359,19 @@ export default function IdentityVerificationContent() {
       ) : activeStep === 2 ? (
         <div className="idv-panel">
           <h1 className="idv-panel__title">Xác minh thẻ tín dụng</h1>
+          {isApproved ? (
+            <p className="idv-intro idv-intro--muted">
+              Hồ sơ đã được duyệt — bạn có thể xem lại thông tin thẻ bên dưới.
+            </p>
+          ) : submittedForReview ? (
+            <p className="idv-intro idv-intro--muted">
+              Bạn có thể xem lại hoặc cập nhật thẻ. Thay đổi sẽ được gửi lại cho admin nếu hồ sơ
+              chưa được duyệt.
+            </p>
+          ) : null}
           <CreditCardVerifyPanel
             data={idvData}
-            onSaved={() => void load()}
+            onSaved={reloadPreservingStep}
             pendingOrderCode={pendingOrderCode}
             onPaymentPollComplete={clearPaymentQuery}
           />
@@ -377,10 +396,21 @@ export default function IdentityVerificationContent() {
               </Link>
             </>
           ) : isPendingReview ? (
-            <p className="idv-intro">
-              Hồ sơ của bạn đang trong hàng đợi duyệt. Bạn sẽ nhận thông báo khi admin xử lý xong.
-              Hoàn thành {completedCount}/{totalCount} mục xác minh.
-            </p>
+            <>
+              <p className="idv-intro">
+                Hồ sơ của bạn đang trong hàng đợi duyệt. Bạn có thể quay lại bước 1 hoặc 2 để xem
+                hoặc chỉnh sửa — mọi cập nhật sẽ được gửi lại cho admin. Hoàn thành{" "}
+                {completedCount}/{totalCount} mục xác minh.
+              </p>
+              <button
+                type="button"
+                className="idv-start idv-start--secondary"
+                disabled={submitting}
+                onClick={() => void handleSubmitReview()}
+              >
+                {submitting ? "Đang gửi..." : "Gửi lại để xem xét"}
+              </button>
+            </>
           ) : (
             <>
               <p className="idv-intro">
@@ -392,7 +422,7 @@ export default function IdentityVerificationContent() {
               <button
                 type="button"
                 className="idv-start"
-                disabled={completedCount < totalCount || submitting}
+                disabled={completedCount < totalCount || !cardVerified || submitting}
                 onClick={() => void handleSubmitReview()}
               >
                 {submitting

@@ -808,6 +808,61 @@
   white-space: pre-wrap;
 }
 
+.hire-selection__proposal-block-body--clamp {
+  display: -webkit-box;
+  -webkit-line-clamp: 8;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  white-space: pre-wrap;
+}
+
+.hire-selection__read-more {
+  margin-top: 0.35rem;
+  border: none;
+  background: none;
+  padding: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #0066cc;
+  cursor: pointer;
+}
+
+.hire-selection__read-more:hover {
+  text-decoration: underline;
+}
+
+.hire-selection__read-more--block {
+  display: inline-flex;
+  margin-top: 0.25rem;
+}
+
+.hire-selection__proposal-doc-actions {
+  margin-top: 0.5rem;
+}
+
+.hire-selection__proposal-block-body--muted {
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.hire-selection__proposal-full {
+  margin-top: 0.75rem;
+  padding: 1rem;
+  border-radius: 0.35rem;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+}
+
+.hire-selection__proposal-full-text {
+  margin: 0;
+  font-family: inherit;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  color: #334155;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 .hire-selection__review-head {
   display: flex;
   flex-wrap: wrap;
@@ -1128,15 +1183,12 @@
   color: #1f2937;
 }
 
-.hire-escrow__brief {
+.hire-escrow__context-card--proposal {
+  padding-bottom: 0.75rem;
+}
+
+.hire-escrow__context-card--proposal .hire-selection__proposal-block {
   margin: 0;
-  font-size: 0.8125rem;
-  line-height: 1.55;
-  color: #4b5563;
-  display: -webkit-box;
-  -webkit-line-clamp: 4;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 
 .hire-escrow__safepay {
