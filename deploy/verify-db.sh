@@ -9,6 +9,16 @@ DB_NAME="${POSTGRES_DB:-vl_connected}"
 
 echo "=== VLC — Kiểm tra cơ sở dữ liệu ==="
 
+TABLE_COUNT=$(docker compose exec -T db psql -U "$DB_USER" -d "$DB_NAME" -tAc "
+SELECT COUNT(*) FROM information_schema.tables
+WHERE table_schema = 'public' AND table_type = 'BASE TABLE';
+" | tr -d ' ')
+
+echo "Số bảng public: $TABLE_COUNT (kỳ vọng ~51)"
+if [ "$TABLE_COUNT" -lt 40 ] 2>/dev/null; then
+  echo "WARN: Thiếu bảng — cần Database.sql đầy đủ + bash deploy/reset-db.sh"
+fi
+
 docker compose exec -T db psql -U "$DB_USER" -d "$DB_NAME" -c "
 SELECT COUNT(*) AS table_count
 FROM information_schema.tables
