@@ -18,7 +18,8 @@ fi
 
 echo "WARN: Sẽ xóa volume postgres_data và import lại schema."
 read -r -p "Gõ YES để tiếp tục: " confirm
-if [ "$confirm" != "YES" ]; then
+confirm_upper=$(printf '%s' "$confirm" | tr '[:lower:]' '[:upper:]')
+if [ "$confirm_upper" != "YES" ]; then
   echo "Đã hủy."
   exit 1
 fi
