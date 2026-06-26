@@ -756,6 +756,7 @@ export const FREELANCER_FAQ_CATEGORIES: HelpCategory[] = [
   },
   {
     id: "escrow",
+    title: "SafePay & thực hiện đơn",
     desc: "Funded, tiến độ và bàn giao",
     items: [
       {
