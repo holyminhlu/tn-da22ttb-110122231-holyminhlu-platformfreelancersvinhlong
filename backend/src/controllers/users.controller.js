@@ -1105,8 +1105,9 @@ function toMoney(value) {
 }
 
 async function getPublicHomeStats(_req, res) {
-  const db = await pool.connect();
+  let db;
   try {
+    db = await pool.connect();
     // Ưu tiên dữ liệu có released_at để phản ánh giao dịch đã giải ngân thực.
     let statsQuery = `
       SELECT
@@ -1167,9 +1168,14 @@ async function getPublicHomeStats(_req, res) {
         message: "Thiếu bảng dữ liệu thống kê. Chạy backend/sql/client_billing_payments.sql và contracts_reviews.sql.",
       });
     }
+    if (error.code === "ENOTFOUND" || error.code === "ECONNREFUSED") {
+      return res.status(503).json({
+        message: "Không thể kết nối cơ sở dữ liệu. Kiểm tra DB_HOST và Postgres đang chạy.",
+      });
+    }
     return res.status(500).json({ message: "Không thể tải thống kê trang chủ." });
   } finally {
-    db.release();
+    db?.release();
   }
 }
 

@@ -1,4 +1,4 @@
-const DEFAULT_MODEL = "gemini-2.5-flash-lite";
+const { getGeminiConfig, DEFAULT_MODEL } = require("./geminiConfig.service");
 
 const COMPARE_RESPONSE_SCHEMA = {
   type: "object",
@@ -145,14 +145,13 @@ ${JSON.stringify(others, null, 2)}
 }
 
 async function callGeminiJson(prompt) {
-  const apiKey = process.env.GEMINI_API_KEY?.trim();
+  const { apiKey, model } = await getGeminiConfig();
   if (!apiKey) {
     const err = new Error("GEMINI_NOT_CONFIGURED");
     err.code = "GEMINI_NOT_CONFIGURED";
     throw err;
   }
 
-  const model = process.env.GEMINI_MODEL?.trim() || DEFAULT_MODEL;
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`;
 
   const response = await fetch(url, {
@@ -212,9 +211,10 @@ async function compareJobQuotesWithGemini({ job, focusedQuote, allQuotes }) {
 
   const prompt = buildComparePrompt({ job, focusedQuote, allQuotes });
   const analysis = await callGeminiJson(prompt);
+  const { model } = await getGeminiConfig();
 
   return {
-    model: process.env.GEMINI_MODEL?.trim() || DEFAULT_MODEL,
+    model: model || DEFAULT_MODEL,
     job: {
       id: job.id,
       title: job.title || null,

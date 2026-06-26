@@ -22,6 +22,7 @@ export const ROUTES = {
     clientWithdrawals: "/admin/rut-tien-client",
     disputes: "/admin/tranh-chap",
     contact: "/admin/quan-ly-lien-he",
+    apiKeys: "/admin/quan-ly-api-key",
     reports: "/admin/bao-cao-thong-ke",
   },
 

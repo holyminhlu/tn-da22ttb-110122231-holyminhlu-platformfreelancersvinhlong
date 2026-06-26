@@ -459,8 +459,9 @@ async function getFreelancer(req, res) {
 async function getTopSkills(req, res) {
   const limit = Math.min(Math.max(Number.parseInt(String(req.query.limit || ""), 10) || 9, 1), 52);
 
-  const dbClient = await pool.connect();
+  let dbClient;
   try {
+    dbClient = await pool.connect();
     const result = await dbClient.query(
       `SELECT s.name,
               COUNT(DISTINCT us.user_id)::int AS freelancer_count
@@ -488,17 +489,24 @@ async function getTopSkills(req, res) {
     });
   } catch (error) {
     console.error("Get top skills failed:", error.message);
-    return res.status(500).json({ message: "Không thể tải danh sách kỹ năng." });
+    const status = error.code === "ENOTFOUND" || error.code === "ECONNREFUSED" ? 503 : 500;
+    return res.status(status).json({
+      message:
+        status === 503
+          ? "Không thể kết nối cơ sở dữ liệu. Kiểm tra DB_HOST và Postgres đang chạy."
+          : "Không thể tải danh sách kỹ năng.",
+    });
   } finally {
-    dbClient.release();
+    dbClient?.release();
   }
 }
 
 async function getTopLocations(req, res) {
   const limit = Math.min(Math.max(Number.parseInt(String(req.query.limit || ""), 10) || 16, 1), 32);
 
-  const dbClient = await pool.connect();
+  let dbClient;
   try {
+    dbClient = await pool.connect();
     const result = await dbClient.query(
       `WITH freelancer_locations AS (
          SELECT
@@ -552,7 +560,7 @@ async function getTopLocations(req, res) {
     }
     return res.status(500).json({ message: "Không thể tải danh sách địa điểm." });
   } finally {
-    dbClient.release();
+    dbClient?.release();
   }
 }
 

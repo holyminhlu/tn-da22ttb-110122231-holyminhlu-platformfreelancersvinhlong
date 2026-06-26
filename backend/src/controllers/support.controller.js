@@ -15,7 +15,7 @@ async function postAiSupportChat(req, res) {
     if (error.code === "GEMINI_NOT_CONFIGURED") {
       return res.status(503).json({
         message:
-          "Chưa cấu hình GEMINI_API_KEY. Thêm key vào file .env và khởi động lại backend.",
+          "Chưa cấu hình GEMINI_API_KEY. Thêm key tại Admin → Quản lý API key hoặc file .env.",
         code: error.code,
       });
     }

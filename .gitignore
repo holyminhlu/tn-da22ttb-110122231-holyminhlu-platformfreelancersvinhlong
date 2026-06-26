@@ -47,3 +47,4 @@ backend/uploads/jobs/*
 !backend/uploads/jobs/.gitkeep
 backend/uploads/services/*
 !backend/uploads/services/.gitkeep
+backend/runtime/gemini-settings.json

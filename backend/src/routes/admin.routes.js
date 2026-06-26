@@ -6,6 +6,7 @@ const adminWithdrawals = require("../controllers/adminWithdrawals.controller");
 const adminUsers = require("../controllers/adminUsers.controller");
 const contact = require("../controllers/contact.controller");
 const adminStats = require("../controllers/adminStats.controller");
+const aiSettings = require("../controllers/aiSettings.controller");
 
 const router = express.Router();
 
@@ -40,5 +41,9 @@ router.patch("/contact", contact.updateAdminContact);
 router.post("/contact/social-links", contact.createSocialLink);
 router.patch("/contact/social-links/:linkId", contact.updateSocialLink);
 router.delete("/contact/social-links/:linkId", contact.deleteSocialLink);
+
+router.get("/ai-settings", aiSettings.getAdminAiSettings);
+router.patch("/ai-settings", aiSettings.patchAdminAiSettings);
+router.post("/ai-settings/test", aiSettings.postAdminAiSettingsTest);
 
 module.exports = router;

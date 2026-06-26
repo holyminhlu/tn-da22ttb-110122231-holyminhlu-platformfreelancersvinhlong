@@ -1,4 +1,4 @@
-const DEFAULT_MODEL = "gemini-2.5-flash-lite";
+const { getGeminiConfig, DEFAULT_MODEL } = require("./geminiConfig.service");
 
 const SYSTEM_PROMPT = `Bạn là trợ lý AI của nền tảng "Vĩnh Long Connect" (VLC) — marketplace kết nối khách hàng và freelancer tại Vĩnh Long, Việt Nam.
 
@@ -40,14 +40,13 @@ function sanitizeHistory(history) {
 }
 
 async function callGeminiSupportChat(message, history) {
-  const apiKey = process.env.GEMINI_API_KEY?.trim();
+  const { apiKey, model } = await getGeminiConfig();
   if (!apiKey) {
     const err = new Error("GEMINI_NOT_CONFIGURED");
     err.code = "GEMINI_NOT_CONFIGURED";
     throw err;
   }
 
-  const model = process.env.GEMINI_MODEL?.trim() || DEFAULT_MODEL;
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`;
 
   const contents = [
@@ -104,9 +103,10 @@ async function chatSupportWithGemini(message, history) {
   }
 
   const reply = await callGeminiSupportChat(trimmed, history);
+  const { model } = await getGeminiConfig();
   return {
     reply,
-    model: process.env.GEMINI_MODEL?.trim() || DEFAULT_MODEL,
+    model: model || DEFAULT_MODEL,
   };
 }
 

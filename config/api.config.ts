@@ -192,6 +192,8 @@ export const apiPaths = {
     contactSocialLink: (linkId: string) =>
       `/api/admin/contact/social-links/${encodeURIComponent(linkId)}`,
     statsOverview: "/api/admin/stats/overview",
+    aiSettings: "/api/admin/ai-settings",
+    aiSettingsTest: "/api/admin/ai-settings/test",
   },
   chat: {
     listConversations: "/api/chat/conversations",
