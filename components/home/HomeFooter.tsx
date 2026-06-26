@@ -3,12 +3,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useTranslation } from "@/hooks/useTranslation";
-import { FaFacebookF, FaLinkedinIn, FaTwitter } from "./icons";
+import { FaFacebookF } from "./icons";
 
 const FOOTER_LINKS = {
   navigate: [
     { labelKey: "footer.home", href: "/" },
-    { labelKey: "footer.postJob", href: "#" },
+    { labelKey: "footer.postJob", href: "/hire/post" },
     { labelKey: "nav.findFreelancer", href: "/freelancers" },
     { labelKey: "nav.findWork", href: "/findwork" },
   ],
@@ -72,20 +72,6 @@ export default function HomeFooter() {
                 aria-label="Facebook"
               >
                 <FaFacebookF />
-              </a>
-              <a
-                href="#"
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-700 transition hover:bg-blue-600"
-                aria-label="Twitter"
-              >
-                <FaTwitter />
-              </a>
-              <a
-                href="#"
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-700 transition hover:bg-blue-600"
-                aria-label="LinkedIn"
-              >
-                <FaLinkedinIn />
               </a>
             </div>
           </div>

@@ -223,16 +223,20 @@ function TeamSection() {
           {tUi("Những con người đam mê đang vận hành và phát triển Vĩnh Long Connect mỗi ngày.")}
         </p>
 
-        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mx-auto grid max-w-sm gap-8">
           {TEAM_MEMBERS.map((member) => (
             <div
               key={tUi(member.name)}
               className="rounded-2xl border border-gray-100 bg-white p-6 text-center shadow-sm transition hover:shadow-md"
             >
-              <div
-                className={`mx-auto mb-5 flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br ${member.accent} text-2xl font-bold text-white shadow-lg`}
-              >
-                {member.initials}
+              <div className="relative mx-auto mb-5 h-32 w-32 overflow-hidden rounded-full shadow-lg">
+                <Image
+                  src={member.image}
+                  alt={tUi(member.name)}
+                  fill
+                  className="object-cover"
+                  sizes="128px"
+                />
               </div>
               <h3 className="mb-1 text-lg font-bold text-[#1c2e4a]">{tUi(member.name)}</h3>
               <p className="mb-4 text-sm font-medium text-[#0066cc]">{member.role}</p>

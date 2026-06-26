@@ -45,17 +45,17 @@ export const STORY = {
     "Đội ngũ sáng lập — những người con quê Vĩnh Long, am hiểu cả thị trường lao động tự do lẫn nhu cầu số hóa của doanh nghiệp vùng — quyết định xây dựng một nền tảng vừa dễ dùng, vừa đảm bảo minh bạch trong mọi giao dịch. Từ ý tưởng ban đầu trên giấy, qua nhiều vòng phỏng vấn người dùng và thử nghiệm, VLC dần hình thành với sứ mệnh phục vụ cộng đồng địa phương trước, mở rộng sau.",
   milestones: [
     {
-      year: "2023",
+      year: "3/2026",
       title: "Khởi nguồn ý tưởng",
       description: "Khảo sát nhu cầu freelancer và doanh nghiệp tại Vĩnh Long, xác định khoảng trống thị trường.",
     },
     {
-      year: "2024",
+      year: "4/2026",
       title: "Phát triển & thử nghiệm",
       description: "Xây dựng MVP, thử nghiệm nội bộ với nhóm freelancer và chủ việc đầu tiên.",
     },
     {
-      year: "2025",
+      year: "6/2026",
       title: "Ra mắt chính thức",
       description: "Công bố nền tảng Vĩnh Long Connect, mở rộng dịch vụ và cộng đồng người dùng.",
     },
@@ -87,32 +87,10 @@ export const CORE_VALUES = [
 
 export const TEAM_MEMBERS = [
   {
-    name: "Nguyễn Văn Minh",
-    role: "Founder & CEO",
-    bio: "10 năm kinh nghiệm trong lĩnh vực công nghệ và khởi nghiệp. Tâm huyết xây dựng hệ sinh thái việc làm tự do cho quê hương Vĩnh Long.",
-    initials: "NM",
-    accent: "from-blue-500 to-blue-700",
-  },
-  {
-    name: "Trần Thị Lan",
-    role: "CTO",
-    bio: "Kỹ sư phần mềm với chuyên môn về nền tảng web và bảo mật. Dẫn dắt đội ngũ phát triển sản phẩm VLC từ giai đoạn MVP.",
-    initials: "TL",
-    accent: "from-indigo-500 to-purple-600",
-  },
-  {
-    name: "Lê Hoàng Phúc",
-    role: "Head of Operations",
-    bio: "Chuyên gia vận hành nền tảng marketplace. Đảm bảo trải nghiệm mượt mà cho cả chủ việc lẫn freelancer.",
-    initials: "LP",
-    accent: "from-teal-500 to-cyan-600",
-  },
-  {
-    name: "Phạm Thu Hà",
-    role: "Community Manager",
-    bio: "Kết nối và phát triển cộng đồng freelancer địa phương. Tổ chức sự kiện, hỗ trợ người dùng mới làm quen nền tảng.",
-    initials: "PH",
-    accent: "from-orange-400 to-rose-500",
+    name: "Hồ Lý Minh Lữ",
+    role: "Nhà sáng lập",
+    bio: "Sinh viên Đại học Trà Vinh, người sáng lập và phát triển Vĩnh Long Connect — nền tảng kết nối freelancer với doanh nghiệp địa phương tại quê hương Vĩnh Long.",
+    image: "/Logo/z6891119899306_be17912d506be2e8067f870ec57769d2.jpg",
   },
 ] as const;
 
