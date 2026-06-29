@@ -1,5 +1,12 @@
 const { pool } = require("../db/pool");
 const { parseUuidParam } = require("../utils/validators");
+const { verifyAccessToken, tryVerifyAccessToken } = require("../utils/authTokens");
+const {
+  canViewFreelancerProfileAssets,
+  loadFreelancerProfileAssets,
+  resolveUploadDiskPath,
+} = require("../utils/freelancerProfileAssetsAccess");
+const fs = require("fs");
 
 const FAVORITE_COUNT_JOIN = `
   LEFT JOIN (
@@ -430,12 +437,28 @@ async function getFreelancer(req, res) {
       [freelancerId],
     );
 
+    const viewer = tryVerifyAccessToken(req);
+    const canViewAssets = await canViewFreelancerProfileAssets(dbClient, viewer, freelancerId);
+    const profileAssets = canViewAssets
+      ? await loadFreelancerProfileAssets(dbClient, freelancerId)
+      : { exclusiveResources: [], profileFiles: [] };
+
+    let profileAssetsAccess = "none";
+    if (canViewAssets) {
+      profileAssetsAccess = "granted";
+    } else if (viewer && String(viewer.role || "").toLowerCase() === "client") {
+      profileAssetsAccess = "locked";
+    }
+
     return res.json({
       freelancer: profileResult.rows[0],
       featuredService: mapPublicServiceRow(featuredService),
       services: servicesResult.rows.map((row) => mapPublicServiceRow(row)),
       portfolio: portfolioResult.rows,
       reviews: reviewsResult.rows,
+      exclusiveResources: profileAssets.exclusiveResources,
+      profileFiles: profileAssets.profileFiles,
+      profileAssetsAccess,
     });
   } catch (error) {
     console.error("Get freelancer profile failed:", error.message);
@@ -451,6 +474,92 @@ async function getFreelancer(req, res) {
       });
     }
     return res.status(500).json({ message: "Không thể tải hồ sơ freelancer." });
+  } finally {
+    dbClient.release();
+  }
+}
+
+async function downloadProfileFile(req, res) {
+  const payload = verifyAccessToken(req, res);
+  if (!payload) return;
+
+  const freelancerId = parseUuidParam(req.params.freelancerId);
+  const fileId = parseUuidParam(req.params.fileId);
+  if (!freelancerId || !fileId) {
+    return res.status(400).json({ message: "Mã freelancer hoặc tệp không hợp lệ." });
+  }
+
+  const dbClient = await pool.connect();
+  try {
+    const allowed = await canViewFreelancerProfileAssets(dbClient, payload, freelancerId);
+    if (!allowed) {
+      return res.status(403).json({ message: "Chỉ khách đã thuê freelancer mới tải được tệp này." });
+    }
+
+    const fileResult = await dbClient.query(
+      `SELECT file_url, file_name, mime_type
+       FROM public.freelancer_profile_files
+       WHERE id = $1 AND freelancer_id = $2 AND deleted_at IS NULL
+       LIMIT 1`,
+      [fileId, freelancerId],
+    );
+    const row = fileResult.rows[0];
+    if (!row) return res.status(404).json({ message: "Không tìm thấy tệp." });
+
+    const diskPath = resolveUploadDiskPath(row.file_url);
+    if (!diskPath || !fs.existsSync(diskPath)) {
+      return res.status(404).json({ message: "Tệp không còn trên hệ thống." });
+    }
+
+    if (row.mime_type) res.setHeader("Content-Type", row.mime_type);
+    return res.download(diskPath, row.file_name || "file");
+  } catch (error) {
+    console.error("Download profile file failed:", error.message);
+    return res.status(500).json({ message: "Không thể tải tệp." });
+  } finally {
+    dbClient.release();
+  }
+}
+
+async function downloadExclusiveResourceFile(req, res) {
+  const payload = verifyAccessToken(req, res);
+  if (!payload) return;
+
+  const freelancerId = parseUuidParam(req.params.freelancerId);
+  const resourceId = parseUuidParam(req.params.resourceId);
+  if (!freelancerId || !resourceId) {
+    return res.status(400).json({ message: "Mã freelancer hoặc tài nguyên không hợp lệ." });
+  }
+
+  const dbClient = await pool.connect();
+  try {
+    const allowed = await canViewFreelancerProfileAssets(dbClient, payload, freelancerId);
+    if (!allowed) {
+      return res.status(403).json({ message: "Chỉ khách đã thuê freelancer mới tải được tài nguyên này." });
+    }
+
+    const resourceResult = await dbClient.query(
+      `SELECT resource_type, file_url, file_name
+       FROM public.freelancer_exclusive_resources
+       WHERE id = $1 AND freelancer_id = $2 AND deleted_at IS NULL
+       LIMIT 1`,
+      [resourceId, freelancerId],
+    );
+    const row = resourceResult.rows[0];
+    if (!row) return res.status(404).json({ message: "Không tìm thấy tài nguyên." });
+    if (String(row.resource_type || "").toLowerCase() !== "file") {
+      return res.status(400).json({ message: "Tài nguyên này không phải tệp đính kèm." });
+    }
+
+    const diskPath = resolveUploadDiskPath(row.file_url);
+    if (!diskPath || !fs.existsSync(diskPath)) {
+      return res.status(404).json({ message: "Tệp không còn trên hệ thống." });
+    }
+
+    return res.download(diskPath, row.file_name || "resource");
+  } catch (error) {
+    console.error("Download exclusive resource file failed:", error.message);
+    return res.status(500).json({ message: "Không thể tải tài nguyên." });
   } finally {
     dbClient.release();
   }
@@ -567,6 +676,8 @@ async function getTopLocations(req, res) {
 module.exports = {
   listFreelancers,
   getFreelancer,
+  downloadProfileFile,
+  downloadExclusiveResourceFile,
   getTopSkills,
   getTopLocations,
 };

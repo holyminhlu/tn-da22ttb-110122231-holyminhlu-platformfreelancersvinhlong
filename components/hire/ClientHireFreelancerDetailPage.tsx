@@ -11,6 +11,9 @@ import {
   FaBriefcase,
   FaClock,
   FaExternalLinkAlt,
+  FaFileAlt,
+  FaFolderOpen,
+  FaGlobe,
   FaImage,
   FaLaptopCode,
   FaMapMarkerAlt,
@@ -18,7 +21,11 @@ import {
   FaThumbsUp,
 } from "react-icons/fa";
 import FreelancerAvatarFrame from "@/components/freelancer/FreelancerAvatarFrame";
-import { getFreelancer, type FreelancerProfilePayload } from "@/lib/api/freelancers";
+import {
+  downloadFreelancerProtectedAsset,
+  getFreelancer,
+  type FreelancerProfilePayload,
+} from "@/lib/api/freelancers";
 import { getUserInitials, resolveAvatarSrc } from "@/lib/authSession";
 import { useClientFavoriteFreelancers } from "@/hooks/useClientFavoriteFreelancers";
 import {
@@ -101,6 +108,7 @@ export default function ClientHireFreelancerDetailPage({
   const [error, setError] = useState("");
   const [favoriteCount, setFavoriteCount] = useState(0);
   const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
+  const [assetDownloadBusy, setAssetDownloadBusy] = useState<string | null>(null);
   const { isFavorite, toggleFavorite } = useClientFavoriteFreelancers({ enabled: Boolean(canHire) });
 
   const load = useCallback(async () => {
@@ -128,7 +136,22 @@ export default function ClientHireFreelancerDetailPage({
     } finally {
       setLoading(false);
     }
-  }, [freelancerId, serviceQuery]);
+  }, [freelancerId, serviceQuery, user?.id]);
+
+  async function handleProtectedAssetDownload(apiPath: string, fileName: string, busyKey: string) {
+    setAssetDownloadBusy(busyKey);
+    try {
+      await downloadFreelancerProtectedAsset(apiPath, fileName);
+    } catch (err) {
+      const message =
+        err && typeof err === "object" && "message" in err
+          ? String((err as { message: string }).message)
+          : "Không thể tải tệp.";
+      window.alert(message);
+    } finally {
+      setAssetDownloadBusy(null);
+    }
+  }
 
   useEffect(() => {
     void load();
@@ -218,6 +241,9 @@ export default function ClientHireFreelancerDetailPage({
     : publicBrowse
       ? `/freelancers/${freelancerId}`
       : `/hire/search/${freelancerId}`;
+  const exclusiveResources = data.exclusiveResources ?? [];
+  const profileFiles = data.profileFiles ?? [];
+  const profileAssetsLocked = data.profileAssetsAccess === "locked";
 
   function handleSelectService(serviceId: string) {
     setSelectedServiceId(serviceId);
@@ -588,6 +614,109 @@ export default function ClientHireFreelancerDetailPage({
                 </ul>
               )}
             </section>
+
+            {profileAssetsLocked ? (
+              <p className="hire-fl-detail__assets-locked" role="status">
+                Tài nguyên dành riêng và tệp tin chỉ hiển thị sau khi bạn có hợp đồng đang chạy hoặc
+                đã hoàn thành với freelancer này.
+              </p>
+            ) : null}
+
+            {exclusiveResources.length > 0 ? (
+              <section className="hire-fl-detail__section" aria-labelledby="fl-resources-heading">
+                <h2 id="fl-resources-heading" className="hire-fl-detail__section-title">
+                  Tài nguyên dành riêng ({exclusiveResources.length})
+                </h2>
+                <ul className="hire-fl-detail__assets-list">
+                  {exclusiveResources.map((item) => {
+                    const busyKey = `resource-${item.id}`;
+                    const isFile = item.resource_type === "file";
+                    return (
+                      <li key={item.id} className="hire-fl-detail__asset-card">
+                        <div className="hire-fl-detail__asset-icon" aria-hidden>
+                          {isFile ? <FaFileAlt /> : <FaGlobe />}
+                        </div>
+                        <div className="hire-fl-detail__asset-body">
+                          <h3 className="hire-fl-detail__asset-title">{item.title}</h3>
+                          {item.description?.trim() ? (
+                            <p className="hire-fl-detail__asset-desc">{item.description.trim()}</p>
+                          ) : null}
+                          {isFile && item.file_url ? (
+                            <button
+                              type="button"
+                              className="hire-fl-detail__asset-link"
+                              disabled={assetDownloadBusy === busyKey}
+                              onClick={() =>
+                                void handleProtectedAssetDownload(
+                                  item.file_url!,
+                                  item.file_name || item.title,
+                                  busyKey,
+                                )
+                              }
+                            >
+                              {assetDownloadBusy === busyKey ? "Đang tải..." : "Tải tệp"}{" "}
+                              <FaExternalLinkAlt aria-hidden />
+                            </button>
+                          ) : item.link_url ? (
+                            <a
+                              href={item.link_url}
+                              className="hire-fl-detail__asset-link"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              Mở liên kết <FaExternalLinkAlt aria-hidden />
+                            </a>
+                          ) : null}
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </section>
+            ) : null}
+
+            {profileFiles.length > 0 ? (
+              <section className="hire-fl-detail__section" aria-labelledby="fl-files-heading">
+                <h2 id="fl-files-heading" className="hire-fl-detail__section-title">
+                  Tệp tin ({profileFiles.length})
+                </h2>
+                <ul className="hire-fl-detail__assets-list">
+                  {profileFiles.map((item) => {
+                    const busyKey = `file-${item.id}`;
+                    return (
+                      <li key={item.id} className="hire-fl-detail__asset-card">
+                        <div className="hire-fl-detail__asset-icon" aria-hidden>
+                          <FaFolderOpen />
+                        </div>
+                        <div className="hire-fl-detail__asset-body">
+                          <h3 className="hire-fl-detail__asset-title">{item.title}</h3>
+                          {item.description?.trim() ? (
+                            <p className="hire-fl-detail__asset-desc">{item.description.trim()}</p>
+                          ) : null}
+                          {item.file_url ? (
+                            <button
+                              type="button"
+                              className="hire-fl-detail__asset-link"
+                              disabled={assetDownloadBusy === busyKey}
+                              onClick={() =>
+                                void handleProtectedAssetDownload(
+                                  item.file_url,
+                                  item.file_name || item.title,
+                                  busyKey,
+                                )
+                              }
+                            >
+                              {assetDownloadBusy === busyKey ? "Đang tải..." : "Tải tệp"}{" "}
+                              <FaExternalLinkAlt aria-hidden />
+                            </button>
+                          ) : null}
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </section>
+            ) : null}
 
             <section className="hire-fl-detail__section" aria-labelledby="fl-reviews-heading">
               <h2 id="fl-reviews-heading" className="hire-fl-detail__section-title">

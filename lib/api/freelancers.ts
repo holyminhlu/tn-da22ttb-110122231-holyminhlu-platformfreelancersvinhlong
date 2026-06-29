@@ -1,5 +1,6 @@
-import { apiPaths } from "@/config/api.config";
+import { apiPaths, apiUrl, getApiBaseUrl } from "@/config/api.config";
 import { fetchApi } from "./client";
+import type { ExclusiveResourceItem, ProfileFileItem } from "./users";
 
 export type FreelancerSearchRow = {
   id: string;
@@ -67,6 +68,8 @@ export type FreelancerServiceItem = {
   response_time_hours?: number | null;
 };
 
+export type ProfileAssetsAccess = "none" | "locked" | "granted";
+
 export type FreelancerProfilePayload = {
   freelancer: FreelancerDetail;
   featuredService?: {
@@ -87,6 +90,9 @@ export type FreelancerProfilePayload = {
     created_at?: string;
   }[];
   reviews: { id: string; rating: number; comment: string | null; created_at: string; client_name: string | null }[];
+  exclusiveResources?: ExclusiveResourceItem[];
+  profileFiles?: ProfileFileItem[];
+  profileAssetsAccess?: ProfileAssetsAccess;
 };
 
 export type TopSkillRow = {
@@ -150,6 +156,36 @@ export async function getFreelancer(freelancerId: string, serviceId?: string) {
   const qs = serviceId ? `?service=${encodeURIComponent(serviceId)}` : "";
   const { data } = await fetchApi<FreelancerProfilePayload>(
     `${apiPaths.freelancers.detail(freelancerId)}${qs}`,
+    { auth: true },
   );
   return data;
+}
+
+function getStoredAccessToken(): string | null {
+  if (typeof window === "undefined") return null;
+  return window.localStorage.getItem("vlc_access_token")?.trim() || null;
+}
+
+export async function downloadFreelancerProtectedAsset(apiPath: string, fileName?: string) {
+  const token = getStoredAccessToken();
+  const response = await fetch(apiUrl(apiPath, getApiBaseUrl()), {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+  if (!response.ok) {
+    const payload = await response.json().catch(() => ({}));
+    const message =
+      payload && typeof payload === "object" && "message" in payload
+        ? String((payload as { message: string }).message)
+        : `HTTP ${response.status}`;
+    throw new Error(message);
+  }
+  const blob = await response.blob();
+  const objectUrl = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = objectUrl;
+  anchor.download = fileName || "download";
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(objectUrl);
 }
