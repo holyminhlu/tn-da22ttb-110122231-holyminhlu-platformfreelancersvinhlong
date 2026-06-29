@@ -205,6 +205,14 @@ async function resolveAdminWithdrawal(req, res) {
       return res.status(409).json({ message: "Yêu cầu không còn ở trạng thái chờ xử lý." });
     }
 
+    if (String(row.status) === "PENDING_AUTH") {
+      await db.query("ROLLBACK");
+      return res.status(409).json({
+        message:
+          "Yêu cầu chưa được user xác nhận bằng PIN nên chưa trừ số dư. User cần hoàn tất xác nhận trước khi admin duyệt hoặc từ chối.",
+      });
+    }
+
     if (resolution === "approve") {
       await markWithdrawalSucceeded(db, row, {
         payoutId: row.payos_payout_id || "manual-transfer",
@@ -248,7 +256,7 @@ async function resolveAdminWithdrawal(req, res) {
       category: "payment",
       action: "withdrawal_rejected",
       title: "Yêu cầu rút tiền bị từ chối",
-      body: `Yêu cầu rút ${Number(row.amount).toLocaleString("vi-VN")}đ về ${row.bank_name} bị từ chối. Lý do: ${rejectMessage}. Số dư đã hoàn lại ví.`,
+      body: `Yêu cầu rút ${Number(row.amount).toLocaleString("vi-VN")}đ về ${row.bank_name} bị từ chối. Lý do: ${rejectMessage}. Số dư đã hoàn lại ví nếu đã bị trừ khi xác nhận PIN.`,
       href: "/payments",
       entityType: "withdrawal",
       entityId: row.id,

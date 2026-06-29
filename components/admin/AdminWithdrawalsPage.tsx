@@ -27,7 +27,8 @@ const STATUS_TABS: { id: AdminWithdrawalStatusFilter; label: string }[] = [
 
 function statusLabel(status: string) {
   const s = String(status).toUpperCase();
-  if (s === "PENDING_AUTH" || s === "PROCESSING") return "Đang chờ";
+  if (s === "PENDING_AUTH") return "Chờ xác nhận PIN";
+  if (s === "PROCESSING") return "Chờ admin duyệt";
   if (s === "SUCCEEDED") return "Đã duyệt";
   if (s === "FAILED" || s === "CANCELLED") return "Đã từ chối";
   return s;
@@ -114,9 +115,9 @@ export default function AdminWithdrawalsPage({
   }, [selectedId, loadDetail]);
 
   const selected = rows.find((r) => r.id === selectedId) ?? rows[0];
-  const isPending =
-    String(selected?.status || "").toUpperCase() === "PENDING_AUTH" ||
-    String(selected?.status || "").toUpperCase() === "PROCESSING";
+  const selectedStatus = String(selected?.status || "").toUpperCase();
+  const isAwaitingPin = selectedStatus === "PENDING_AUTH";
+  const isResolvable = selectedStatus === "PROCESSING";
 
   async function handleResolve(resolution: "approve" | "reject") {
   if (!selected) return;
@@ -364,7 +365,13 @@ export default function AdminWithdrawalsPage({
                   </dl>
                 </section>
 
-                {isPending ? (
+                {isAwaitingPin ? (
+                  <p className="admin-toast admin-toast--err" role="status">
+                    User chưa xác nhận PIN nên số dư chưa bị trừ. Chờ user hoàn tất bước xác nhận trước khi duyệt hoặc từ chối.
+                  </p>
+                ) : null}
+
+                {isResolvable ? (
                   <section className="admin-withdrawal-resolve-card" aria-label={t("Quyết định của Admin")}>
                     <header className="admin-withdrawal-resolve-card__head">
                       <h4 className="admin-withdrawal-resolve-card__title">{t("Quyết định của Admin")}</h4>

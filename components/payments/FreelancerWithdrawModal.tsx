@@ -227,10 +227,8 @@ export default function FreelancerWithdrawModal({
     try {
       const result = await requestFreelancerWithdrawal(amount);
       setOrder(result.order);
-      setStep("done");
-      setResultMessage(
-        `Đã tạo yêu cầu rút ${formatVndUi(result.order.amount)}. Dự kiến nhận tiền trong 5-30 phút sau khi hệ thống xử lý.`,
-      );
+      setPin("");
+      setStep("verify");
     } catch (err) {
       const message =
         err && typeof err === "object" && "message" in err
@@ -268,6 +266,15 @@ export default function FreelancerWithdrawModal({
       if (result.order.status === "FAILED") {
         setStep("done");
         setResultMessage(result.order.failureReason || result.message);
+        setBusy(false);
+        return;
+      }
+
+      if (result.order.status === "PROCESSING") {
+        setStep("done");
+        setResultMessage(
+          `Đã xác nhận rút ${formatVndUi(result.order.amount)}. Số dư đã trừ. Dự kiến nhận tiền trong 5-30 phút sau khi hệ thống xử lý.`,
+        );
         setBusy(false);
         return;
       }

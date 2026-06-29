@@ -317,10 +317,14 @@ async function markWithdrawalSucceeded(db, order, payosMeta = {}) {
   return { ok: true };
 }
 
+function wasWithdrawalBalanceHeld(order) {
+  return Boolean(order?.auth_verified_at || order?.transaction_id);
+}
+
 async function markWithdrawalFailed(db, order, reason, refund = true) {
   if (order.status === "FAILED") return { ok: true, already: true };
 
-  if (refund && order.status !== "FAILED") {
+  if (refund && wasWithdrawalBalanceHeld(order) && order.status !== "FAILED") {
     await refundBalanceForWithdraw(db, order.user_id, Number(order.amount));
   }
 
