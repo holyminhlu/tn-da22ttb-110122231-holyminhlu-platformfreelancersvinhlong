@@ -6,6 +6,10 @@ function setNotificationIo(io) {
   ioInstance = io;
 }
 
+function getNotificationIo() {
+  return ioInstance;
+}
+
 function mapNotificationRow(row) {
   return {
     id: row.id,
@@ -502,6 +506,7 @@ async function notifyNewLogin(db, userId, { ipAddress, deviceLabel }) {
 
 module.exports = {
   setNotificationIo,
+  getNotificationIo,
   mapNotificationRow,
   createNotification,
   notifyUser,

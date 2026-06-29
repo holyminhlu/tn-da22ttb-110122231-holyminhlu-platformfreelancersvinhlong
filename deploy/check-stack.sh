@@ -36,6 +36,19 @@ else
 fi
 
 echo ""
+echo "=== 4c. Socket.IO qua Nginx (polling handshake) ==="
+socket_headers=$(curl -sI "https://minhlu.app/socket.io/?EIO=4&transport=polling" 2>/dev/null || true)
+socket_code=$(printf '%s' "$socket_headers" | head -n1 | awk '{print $2}')
+echo "GET /socket.io/?EIO=4&transport=polling → HTTP ${socket_code:-?}"
+if printf '%s' "$socket_headers" | grep -qi 'x-powered-by: Next.js'; then
+  echo "FAIL: /socket.io/ đang route tới Next.js — cập nhật nginx hoặc redeploy frontend (rewrite socket.io)."
+elif [ "$socket_code" = "400" ] || [ "$socket_code" = "200" ]; then
+  echo "OK: Socket.IO đến backend (400/200 là phản hồi handshake bình thường)"
+else
+  echo "FAIL: HTTP ${socket_code:-?} — kiểm tra location /socket.io/ trong nginx"
+fi
+
+echo ""
 echo "=== 5. Database ==="
 sh deploy/verify-db.sh
 

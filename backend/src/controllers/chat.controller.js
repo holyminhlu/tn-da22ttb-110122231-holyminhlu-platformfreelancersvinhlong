@@ -2,7 +2,7 @@ const path = require("path");
 const { pool } = require("../db/pool");
 const { verifyAccessToken } = require("../utils/authTokens");
 const { parseUuidParam } = require("../utils/validators");
-const { notifyChatMessage } = require("../utils/notificationService");
+const { notifyChatMessage, getNotificationIo } = require("../utils/notificationService");
 const { uploadChatAttachment, imageMime } = require("../middleware/chatAttachmentUpload");
 const {
   queryClientIdentityVerified,
@@ -624,6 +624,11 @@ async function sendMessage(req, res) {
     });
 
     const message = mapMessageRow(row, payload.sub);
+
+    const io = getNotificationIo();
+    if (io) {
+      io.to(`conv:${conversationId}`).emit("chat:message", message);
+    }
 
     notifyChatMessage(dbClient, conversation, payload.sub, displayBody).catch((err) =>
       console.error("notifyChatMessage failed:", err.message),

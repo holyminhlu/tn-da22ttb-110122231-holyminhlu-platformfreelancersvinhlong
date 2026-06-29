@@ -16,11 +16,26 @@ const {
 } = require("../utils/clientIdentityVerified");
 
 function initChatSocket(httpServer, frontendUrl) {
+  const allowedOrigins = new Set(
+    [frontendUrl, process.env.NEXT_PUBLIC_API_URL, "https://minhlu.app", "https://www.minhlu.app"]
+      .map((value) => String(value || "").trim())
+      .filter(Boolean),
+  );
+
   const io = new Server(httpServer, {
     cors: {
-      origin: frontendUrl,
+      origin(origin, callback) {
+        if (!origin || allowedOrigins.has(origin)) {
+          callback(null, true);
+          return;
+        }
+        callback(null, false);
+      },
       credentials: true,
     },
+    transports: ["polling", "websocket"],
+    pingTimeout: 60000,
+    pingInterval: 25000,
   });
 
   io.use((socket, next) => {

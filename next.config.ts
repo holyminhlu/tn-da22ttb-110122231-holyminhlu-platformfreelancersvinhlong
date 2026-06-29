@@ -60,6 +60,10 @@ const nextConfig: NextConfig = {
     const base = resolveInternalApiBase();
     return [
       {
+        source: "/socket.io/:path*",
+        destination: `${base}/socket.io/:path*`,
+      },
+      {
         source: "/uploads/:path*",
         destination: `${base}/uploads/:path*`,
       },

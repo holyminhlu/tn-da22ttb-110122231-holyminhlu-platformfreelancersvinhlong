@@ -23,20 +23,22 @@ export function getChatSocket(): Socket | null {
     disconnectChatSocket();
   }
 
-  if (sharedSocket?.connected) {
-    return sharedSocket;
-  }
-
   if (sharedSocket) {
-    sharedSocket.disconnect();
-    sharedSocket = null;
+    if (!sharedSocket.connected) {
+      sharedSocket.connect();
+    }
+    return sharedSocket;
   }
 
   sharedToken = token;
   sharedSocket = io(getApiBaseUrl(), {
     auth: { token },
-    transports: ["websocket", "polling"],
-    autoConnect: true,
+    path: "/socket.io",
+    transports: ["polling", "websocket"],
+    upgrade: true,
+    reconnection: true,
+    reconnectionAttempts: 10,
+    timeout: 20000,
   });
 
   return sharedSocket;
@@ -44,6 +46,7 @@ export function getChatSocket(): Socket | null {
 
 export function disconnectChatSocket() {
   if (sharedSocket) {
+    sharedSocket.removeAllListeners();
     sharedSocket.disconnect();
     sharedSocket = null;
   }
