@@ -271,7 +271,14 @@ Trên server Ubuntu (ví dụ DigitalOcean Droplet):
 bash deploy/deploy-droplet.sh
 ```
 
-Script sẽ `git pull`, copy cấu hình `.env`, build và chạy Docker Compose, kiểm tra health backend/DB và cập nhật Nginx nếu có.
+Script sẽ `git pull`, dùng file `.env` **đã tạo sẵn trên server** (không lấy secret từ git), build và chạy Docker Compose, kiểm tra health backend/DB và cập nhật Nginx nếu có.
+
+Lần đầu trên server:
+
+```bash
+cp .env.production.example .env
+nano .env   # điền secret thật — không commit file này
+```
 
 Các lệnh hỗ trợ khác:
 

@@ -8,16 +8,15 @@ PROJECT_DIR="${PROJECT_DIR:-/opt/vlc/tn-da22ttb-holyminhlu-freelancer-next-node-
 echo ">>> VLC deploy — $PROJECT_DIR"
 cd "$PROJECT_DIR"
 
-if [ ! -f .envexpamle ]; then
-  echo "ERROR: Không thấy .envexpamle — git pull trước."
-  exit 1
-fi
-
 echo ">>> git pull"
 git pull origin main
 
-echo ">>> copy .envexpamle -> .env"
-cp .envexpamle .env
+if [ ! -f .env ]; then
+  echo "ERROR: Không thấy .env trên server."
+  echo "       Tạo một lần: cp .env.production.example .env && nano .env"
+  echo "       Không lưu secret trong git — chỉ giữ .env trên máy chủ."
+  exit 1
+fi
 
 if [ ! -s Database.sql ] || ! grep -q "CREATE TABLE" Database.sql 2>/dev/null; then
   echo ""
