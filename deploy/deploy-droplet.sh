@@ -45,5 +45,18 @@ echo ""
 echo ">>> kiểm tra DB"
 sh deploy/verify-db.sh
 
+if command -v nginx >/dev/null 2>&1 && [ -d /etc/nginx/sites-available ]; then
+  echo ""
+  echo ">>> cập nhật Nginx (proxy /uploads/ → backend)"
+  sudo cp deploy/nginx-minhlu.app.conf /etc/nginx/sites-available/minhlu.app
+  sudo ln -sf /etc/nginx/sites-available/minhlu.app /etc/nginx/sites-enabled/minhlu.app 2>/dev/null || true
+  sudo nginx -t && sudo systemctl reload nginx
+else
+  echo ""
+  echo "SKIP: Nginx không có trên máy này — trên server chạy thủ công:"
+  echo "  sudo cp deploy/nginx-minhlu.app.conf /etc/nginx/sites-available/minhlu.app"
+  echo "  sudo nginx -t && sudo systemctl reload nginx"
+fi
+
 echo ""
-echo "Done. Tiếp theo: cấu hình Nginx + SSL (deploy/nginx-minhlu.app.conf)"
+echo "Done."

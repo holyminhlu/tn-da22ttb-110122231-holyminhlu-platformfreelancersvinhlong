@@ -20,6 +20,22 @@ echo "=== 4. API qua Nginx (public) ==="
 curl -sf https://minhlu.app/health && echo "" || curl -sf http://minhlu.app/health && echo "" || echo "FAIL: minhlu.app/health"
 
 echo ""
+echo "=== 4b. Uploads qua Nginx (phải do backend trả 404, không phải Next.js) ==="
+uploads_headers=$(curl -sI https://minhlu.app/uploads/avatars/__nginx_probe__.jpg 2>/dev/null || true)
+code_uploads=$(printf '%s' "$uploads_headers" | head -n1 | awk '{print $2}')
+echo "GET /uploads/avatars/__nginx_probe__.jpg → HTTP ${code_uploads:-?}"
+if printf '%s' "$uploads_headers" | grep -qi 'x-powered-by: Next.js'; then
+  echo "FAIL: /uploads/ đang route tới Next.js — chạy: sudo cp deploy/nginx-minhlu.app.conf /etc/nginx/sites-available/minhlu.app && sudo nginx -t && sudo systemctl reload nginx"
+  echo "     Hoặc redeploy frontend (next.config có rewrite /uploads → backend)."
+elif [ "$code_uploads" = "404" ]; then
+  echo "OK: Nginx proxy /uploads/ → backend (404 = file probe không tồn tại)"
+elif [ "$code_uploads" = "200" ]; then
+  echo "WARN: 200 bất thường cho file probe"
+else
+  echo "FAIL: HTTP ${code_uploads:-?} — kiểm tra nginx và backend"
+fi
+
+echo ""
 echo "=== 5. Database ==="
 sh deploy/verify-db.sh
 

@@ -20,6 +20,14 @@ function apiImageRemotePattern(): { protocol: "http" | "https"; hostname: string
   }
 }
 
+/** Backend URL nội bộ (Docker service / loopback) — dùng proxy /uploads, tránh loop qua domain public. */
+function resolveInternalApiBase(): string {
+  const explicit = process.env.INTERNAL_API_URL?.trim();
+  if (explicit) return explicit.replace(/\/+$/, "");
+  if (process.env.NODE_ENV === "production") return "http://backend:5000";
+  return "http://127.0.0.1:5000";
+}
+
 const apiRemote = apiImageRemotePattern();
 
 const nextConfig: NextConfig = {
@@ -45,6 +53,15 @@ const nextConfig: NextConfig = {
         source: "/findwork/orders/:contractId",
         destination: "/dich-vu/don-hang/:contractId",
         permanent: true,
+      },
+    ];
+  },
+  async rewrites() {
+    const base = resolveInternalApiBase();
+    return [
+      {
+        source: "/uploads/:path*",
+        destination: `${base}/uploads/:path*`,
       },
     ];
   },
