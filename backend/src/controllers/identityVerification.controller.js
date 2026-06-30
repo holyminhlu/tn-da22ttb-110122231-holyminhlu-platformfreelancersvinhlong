@@ -534,6 +534,11 @@ async function createCardVerifyPaymentLink(req, res) {
 
   try {
     await ensureRow(db, userId);
+    const editable = await assertIdentityEditable(db, userId);
+    if (!editable.ok) {
+      return res.status(403).json({ message: editable.message });
+    }
+
     const idv = await db.query(
       `SELECT card_added_at, card_verified_at FROM public.identity_verifications WHERE user_id = $1`,
       [userId],
@@ -665,6 +670,12 @@ async function verifyCardCharge(req, res) {
   const db = await pool.connect();
 
   try {
+    await ensureRow(db, userId);
+    const editable = await assertIdentityEditable(db, userId);
+    if (!editable.ok) {
+      return res.status(403).json({ message: editable.message });
+    }
+
     const result = await db.query(
       `SELECT card_charge_cents, card_added_at, card_verified_at
        FROM public.identity_verifications WHERE user_id = $1`,

@@ -15,6 +15,7 @@ import {
 } from "@/lib/api/identityVerification";
 
 import AddressSearchPicker, { type AddressFormSlice } from "./AddressSearchPicker";
+import IdentityReadOnlyBanner from "./IdentityReadOnlyBanner";
 
 
 
@@ -23,6 +24,8 @@ type ContactVerifyPanelProps = {
   data: IdentityVerificationResponse;
 
   onSaved: () => void;
+
+  readOnly?: boolean;
 
 };
 
@@ -64,7 +67,11 @@ function initialAddress(v: IdentityVerificationResponse["verification"]): Addres
 
 
 
-export default function ContactVerifyPanel({ data, onSaved }: ContactVerifyPanelProps) {
+export default function ContactVerifyPanel({
+  data,
+  onSaved,
+  readOnly = false,
+}: ContactVerifyPanelProps) {
   const { t } = useTranslation();
 
 
@@ -202,6 +209,8 @@ export default function ContactVerifyPanel({ data, onSaved }: ContactVerifyPanel
 
     <div className="idv-detail">
 
+      {readOnly ? <IdentityReadOnlyBanner /> : null}
+
       <h2 className="idv-detail__title">Thông tin liên hệ</h2>
 
       <p className="idv-detail__subtitle">Thông tin cá nhân</p>
@@ -210,7 +219,7 @@ export default function ContactVerifyPanel({ data, onSaved }: ContactVerifyPanel
 
 
 
-      <fieldset className="idv-fieldset">
+      <fieldset className="idv-fieldset" disabled={readOnly}>
 
         <legend className="idv-field__label">Loại tài khoản</legend>
 
@@ -254,7 +263,7 @@ export default function ContactVerifyPanel({ data, onSaved }: ContactVerifyPanel
 
 
 
-      <fieldset className="idv-fieldset">
+      <fieldset className="idv-fieldset" disabled={readOnly}>
 
         <legend className="idv-field__label">Thông tin tài khoản</legend>
 
@@ -297,6 +306,8 @@ export default function ContactVerifyPanel({ data, onSaved }: ContactVerifyPanel
       </fieldset>
 
 
+
+      <fieldset className="idv-fieldset" disabled={readOnly}>
 
       <div className="idv-form-grid">
 
@@ -342,6 +353,8 @@ export default function ContactVerifyPanel({ data, onSaved }: ContactVerifyPanel
 
         }}
 
+        readOnly={readOnly}
+
       />
 
 
@@ -360,6 +373,8 @@ export default function ContactVerifyPanel({ data, onSaved }: ContactVerifyPanel
 
       </label>
 
+      </fieldset>
+
       <p className="idv-note">
 
         Lưu ý: Thông tin được chia sẻ ở trên sẽ được sử dụng để cập nhật thông tin hồ sơ hiện tại của bạn.
@@ -368,6 +383,7 @@ export default function ContactVerifyPanel({ data, onSaved }: ContactVerifyPanel
 
 
 
+      {!readOnly ? (
       <div className="idv-detail__actions">
 
         {message ? <p className="idv-msg">{message}</p> : null}
@@ -389,6 +405,7 @@ export default function ContactVerifyPanel({ data, onSaved }: ContactVerifyPanel
         </button>
 
       </div>
+      ) : null}
 
     </div>
 

@@ -36,6 +36,7 @@ type AddressSearchPickerProps = {
   onCoordsChange?: (lat: number | null, lng: number | null) => void;
   /** Tự động lấy GPS và đối chiếu khi mount (ví dụ form đổi địa chỉ tài khoản). */
   requestGpsOnMount?: boolean;
+  readOnly?: boolean;
 };
 
 type Suggestion =
@@ -57,6 +58,7 @@ export default function AddressSearchPicker({
   lng,
   onCoordsChange,
   requestGpsOnMount = false,
+  readOnly = false,
 }: AddressSearchPickerProps) {
   const { t } = useTranslation();
 
@@ -181,6 +183,7 @@ export default function AddressSearchPicker({
   }
 
   function handleUseGps() {
+    if (readOnly) return;
     setGpsError("");
     if (!navigator.geolocation) {
       setGpsError("Trình duyệt không hỗ trợ GPS.");
@@ -238,14 +241,19 @@ export default function AddressSearchPicker({
               className="idv-field__input idv-address-picker__input"
               placeholder="Xã/phường Vĩnh Long 2025, đường, hoặc từ khóa..."
               value={query}
+              readOnly={readOnly}
+              disabled={readOnly}
               onChange={(e) => {
+                if (readOnly) return;
                 const next = e.target.value;
                 setQuery(next);
                 onChange({ ...value, addressSearch: next });
                 setOpen(true);
                 runOsmSearch(next);
               }}
-              onFocus={() => setOpen(true)}
+              onFocus={() => {
+                if (!readOnly) setOpen(true);
+              }}
               autoComplete="off"
               aria-autocomplete="list"
               aria-expanded={open}
@@ -256,7 +264,7 @@ export default function AddressSearchPicker({
           type="button"
           className="idv-start idv-start--secondary idv-address-picker__gps-btn"
           onClick={handleUseGps}
-          disabled={gpsLoading}
+          disabled={gpsLoading || readOnly}
         >
           <FaCrosshairs aria-hidden />
           {gpsLoading ? "Đang lấy GPS..." : "Dùng GPS"}
@@ -269,7 +277,7 @@ export default function AddressSearchPicker({
         </p>
       ) : null}
 
-      {open && suggestions.length > 0 ? (
+      {open && !readOnly && suggestions.length > 0 ? (
         <ul className="idv-address-picker__suggestions" role="listbox">
           <li className="idv-address-picker__suggestions-head">
             Xã / phường tỉnh Vĩnh Long (124 đơn vị sau sáp nhập 2025)

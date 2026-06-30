@@ -195,6 +195,7 @@ export default function IdentityVerificationContent() {
   const isRejected = reviewStatus === "rejected";
 
   async function handleSubmitReview() {
+    if (isApproved) return;
     setSubmitting(true);
     try {
       await patchIdentityVerification({ submitForReview: true });
@@ -300,8 +301,7 @@ export default function IdentityVerificationContent() {
             </p>
           ) : submittedForReview ? (
             <p className="idv-intro idv-intro--muted">
-              Hồ sơ đã gửi xem xét. Bạn vẫn có thể chỉnh sửa tại đây; mọi thay đổi sẽ được cập nhật
-              cho admin nếu hồ sơ chưa được duyệt.
+              Hồ sơ đã gửi xem xét. Bạn vẫn có thể chỉnh sửa tại đây cho đến khi admin duyệt.
             </p>
           ) : null}
           {!isApproved && !submittedForReview ? (
@@ -330,15 +330,17 @@ export default function IdentityVerificationContent() {
               selectedId={selectedId}
               data={idvData}
               onSaved={reloadPreservingStep}
+              readOnly={isApproved}
             />
           </div>
 
-          {allItemsDone ? (
+          {allItemsDone && !isApproved ? (
             <p className="idv-footer__hint idv-footer__hint--success" role="status">
               Đã hoàn thành tất cả mục nhận dạng. Chuyển sang bước xác minh thẻ tín dụng.
             </p>
           ) : null}
 
+          {!isApproved ? (
           <div className="idv-footer">
             <button
               type="button"
@@ -355,6 +357,7 @@ export default function IdentityVerificationContent() {
               <Link href={`mailto:${user?.email ?? ""}`}>Hãy gửi đường dẫn đến email của chính bạn.</Link>
             </p>
           </div>
+          ) : null}
         </div>
       ) : activeStep === 2 ? (
         <div className="idv-panel">
@@ -365,8 +368,7 @@ export default function IdentityVerificationContent() {
             </p>
           ) : submittedForReview ? (
             <p className="idv-intro idv-intro--muted">
-              Bạn có thể xem lại hoặc cập nhật thẻ. Thay đổi sẽ được gửi lại cho admin nếu hồ sơ
-              chưa được duyệt.
+              Hồ sơ đã gửi xem xét. Bạn có thể xem lại thẻ cho đến khi admin duyệt.
             </p>
           ) : null}
           <CreditCardVerifyPanel
@@ -374,8 +376,9 @@ export default function IdentityVerificationContent() {
             onSaved={reloadPreservingStep}
             pendingOrderCode={pendingOrderCode}
             onPaymentPollComplete={clearPaymentQuery}
+            readOnly={isApproved}
           />
-          {cardVerified ? (
+          {cardVerified && !isApproved ? (
             <p className="idv-footer__hint idv-footer__hint--success" role="status">
               Thẻ đã xác minh. Chuyển sang bước gửi hồ sơ để xem xét.
             </p>

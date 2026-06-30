@@ -64,3 +64,7 @@ export function defaultSelectedId(items: VerifyItem[]): VerifyItemId {
   const pending = items.find((i) => !i.completed);
   return pending?.id ?? "contact";
 }
+
+export function isIdentityApproved(idv: IdentityVerificationResponse | null): boolean {
+  return String(idv?.verification?.admin_review_status || "").toLowerCase() === "approved";
+}

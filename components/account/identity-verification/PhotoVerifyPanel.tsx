@@ -9,15 +9,17 @@ import {
   type IdentityVerificationResponse,
 } from "@/lib/api/identityVerification";
 import FileUploadZone from "./FileUploadZone";
+import IdentityReadOnlyBanner from "./IdentityReadOnlyBanner";
 
 type PhotoVerifyPanelProps = {
   data: IdentityVerificationResponse;
   onSaved: () => void;
+  readOnly?: boolean;
 };
 
 const BAD_EXAMPLES = ["Ảnh quét", "Ảnh chụp nhóm", "Với kính râm", "Đã thêm bộ lọc", "Ảnh mờ"];
 
-export default function PhotoVerifyPanel({ data, onSaved }: PhotoVerifyPanelProps) {
+export default function PhotoVerifyPanel({ data, onSaved, readOnly = false }: PhotoVerifyPanelProps) {
   const [uploading, setUploading] = useState(false);
   const [rotation, setRotation] = useState(0);
   const previewUrl =
@@ -36,6 +38,7 @@ export default function PhotoVerifyPanel({ data, onSaved }: PhotoVerifyPanelProp
 
   return (
     <div className="idv-detail">
+      {readOnly ? <IdentityReadOnlyBanner /> : null}
       <h2 className="idv-detail__title">Ảnh hiện tại</h2>
       <p className="idv-detail__lead">Hãy giúp chúng tôi nhận diện bạn rõ hơn.</p>
       <p className="idv-detail__lead">
@@ -54,6 +57,7 @@ export default function PhotoVerifyPanel({ data, onSaved }: PhotoVerifyPanelProp
           ) : (
             <div className="idv-photo-preview__empty">Chưa có ảnh</div>
           )}
+          {!readOnly ? (
           <div className="idv-photo-tools">
             <button type="button" title="Xoay trái" onClick={() => setRotation((r) => r - 90)}>
               <FaSync aria-hidden />
@@ -65,6 +69,7 @@ export default function PhotoVerifyPanel({ data, onSaved }: PhotoVerifyPanelProp
               <FaTimes aria-hidden />
             </button>
           </div>
+          ) : null}
         </div>
 
         <div className="idv-photo-guide">
@@ -93,6 +98,7 @@ export default function PhotoVerifyPanel({ data, onSaved }: PhotoVerifyPanelProp
               label="Tải ảnh selfie"
               currentUrl={data.verification?.selfie_url ?? data.profile.avatar_url}
               uploading={uploading}
+              readOnly={readOnly}
               onUpload={handleUpload}
             />
           </div>

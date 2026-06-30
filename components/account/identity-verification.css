@@ -150,6 +150,26 @@
   border: 1px solid var(--vlc-border);
 }
 
+.edit-account-page .idv-readonly-banner {
+  margin: 0 0 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  color: #1e40af;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+}
+
+.edit-account-page .idv-fieldset[disabled] {
+  opacity: 1;
+}
+
+.edit-account-page .idv-fieldset[disabled] .idv-field__input,
+.edit-account-page .idv-fieldset[disabled] .idv-address-picker__input {
+  background: var(--vlc-surface-subtle);
+  cursor: default;
+}
+
 .edit-account-page .idv-grid {
   display: grid;
   gap: 1rem;

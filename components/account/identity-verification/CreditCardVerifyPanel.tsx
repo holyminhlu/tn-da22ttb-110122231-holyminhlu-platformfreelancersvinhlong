@@ -12,6 +12,7 @@ import {
   type IdentityVerificationResponse,
 } from "@/lib/api/identityVerification";
 import { formatVnd } from "@/lib/format";
+import IdentityReadOnlyBanner from "./IdentityReadOnlyBanner";
 
 const VERIFY_AMOUNT = 10_000;
 
@@ -21,6 +22,7 @@ type CreditCardVerifyPanelProps = {
   /** Poll trạng thái payOS sau khi quay lại từ cổng thanh toán */
   pendingOrderCode?: number | null;
   onPaymentPollComplete?: () => void;
+  readOnly?: boolean;
 };
 
 type WizardStep = "add" | "verify";
@@ -66,6 +68,7 @@ export default function CreditCardVerifyPanel({
   onSaved,
   pendingOrderCode,
   onPaymentPollComplete,
+  readOnly = false,
 }: CreditCardVerifyPanelProps) {  const { t, formatVnd } = useTranslation();
 
   const v = data.verification;
@@ -226,6 +229,45 @@ export default function CreditCardVerifyPanel({
       stopped = true;
     };
   }, [pendingOrderCode, cardVerified, onSaved, onPaymentPollComplete]);
+
+  if (readOnly) {
+    return (
+      <div className="idv-cc idv-cc--readonly">
+        <IdentityReadOnlyBanner />
+        {maskedCard ? (
+          <p className="idv-msg idv-msg--ok">
+            Thẻ đã thêm: {maskedCard}
+            {cardVerified ? " — Đã xác minh." : " — Chưa xác minh số tiền."}
+          </p>
+        ) : (
+          <p className="idv-intro idv-intro--muted">Chưa có thông tin thẻ.</p>
+        )}
+        {v?.cardholder_name ? (
+          <label className="idv-field">
+            <span className="idv-field__label">Tên chủ thẻ</span>
+            <input className="idv-field__input idv-field__input--readonly" value={v.cardholder_name} readOnly />
+          </label>
+        ) : null}
+        {billingDefaults.street ? (
+          <label className="idv-field">
+            <span className="idv-field__label">Địa chỉ thanh toán</span>
+            <input
+              className="idv-field__input idv-field__input--readonly"
+              value={[
+                billingDefaults.street,
+                billingDefaults.city,
+                billingDefaults.state,
+                billingDefaults.country,
+              ]
+                .filter(Boolean)
+                .join(", ")}
+              readOnly
+            />
+          </label>
+        ) : null}
+      </div>
+    );
+  }
 
   if (view === "intro") {
     return (

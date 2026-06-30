@@ -8,6 +8,7 @@ import {
   type IdentityVerificationResponse,
 } from "@/lib/api/identityVerification";
 import FileUploadZone from "./FileUploadZone";
+import IdentityReadOnlyBanner from "./IdentityReadOnlyBanner";
 
 const PROOF_TYPES = [
   { value: "utility_bill", label: "Hóa đơn tiền điện" },
@@ -19,14 +20,20 @@ const PROOF_TYPES = [
 type AddressProofVerifyPanelProps = {
   data: IdentityVerificationResponse;
   onSaved: () => void;
+  readOnly?: boolean;
 };
 
-export default function AddressProofVerifyPanel({ data, onSaved }: AddressProofVerifyPanelProps) {
+export default function AddressProofVerifyPanel({
+  data,
+  onSaved,
+  readOnly = false,
+}: AddressProofVerifyPanelProps) {
   const [proofType, setProofType] = useState(data.verification?.address_proof_type ?? "utility_bill");
   const [uploading, setUploading] = useState(false);
 
   return (
     <div className="idv-detail">
+      {readOnly ? <IdentityReadOnlyBanner /> : null}
       <h2 className="idv-detail__title">Bằng chứng địa chỉ</h2>
       <p className="idv-detail__lead">
         Bạn sắp hoàn tất rồi! Hãy chia sẻ một tài liệu xác nhận địa chỉ trên tài khoản của bạn.
@@ -42,7 +49,9 @@ export default function AddressProofVerifyPanel({ data, onSaved }: AddressProofV
         <select
           className="idv-field__input"
           value={proofType}
+          disabled={readOnly}
           onChange={(e) => {
+            if (readOnly) return;
             const v = e.target.value;
             setProofType(v);
             void patchIdentityVerification({ addressProofType: v });
@@ -63,6 +72,7 @@ export default function AddressProofVerifyPanel({ data, onSaved }: AddressProofV
           label="Tải lên bằng chứng địa chỉ"
           currentUrl={data.verification?.address_proof_url}
           uploading={uploading}
+          readOnly={readOnly}
           onUpload={async (file) => {
             setUploading(true);
             try {

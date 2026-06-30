@@ -2,13 +2,15 @@
 
 import { useState } from "react";
 import { patchIdentityVerification, type IdentityVerificationResponse } from "@/lib/api/identityVerification";
+import IdentityReadOnlyBanner from "./IdentityReadOnlyBanner";
 
 type PhoneVerifyPanelProps = {
   data: IdentityVerificationResponse;
   onSaved: () => void;
+  readOnly?: boolean;
 };
 
-export default function PhoneVerifyPanel({ data, onSaved }: PhoneVerifyPanelProps) {
+export default function PhoneVerifyPanel({ data, onSaved, readOnly = false }: PhoneVerifyPanelProps) {
   const [phone, setPhone] = useState(data.profile.phone ?? "");
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
@@ -38,6 +40,7 @@ export default function PhoneVerifyPanel({ data, onSaved }: PhoneVerifyPanelProp
 
   return (
     <div className="idv-detail">
+      {readOnly ? <IdentityReadOnlyBanner /> : null}
       <h2 className="idv-detail__title">Thêm số điện thoại</h2>
       <p className="idv-detail__lead">Nhập số điện thoại hoặc thêm mới số điện thoại của bạn.</p>
 
@@ -49,6 +52,8 @@ export default function PhoneVerifyPanel({ data, onSaved }: PhoneVerifyPanelProp
           placeholder="VD: 0912345678"
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
+          readOnly={readOnly}
+          disabled={readOnly}
         />
       </label>
 
@@ -56,17 +61,19 @@ export default function PhoneVerifyPanel({ data, onSaved }: PhoneVerifyPanelProp
         <p className="idv-msg idv-msg--ok">Số điện thoại đã được xác minh trên hệ thống.</p>
       ) : null}
 
-      <div className="idv-detail__actions">
-        {message ? <p className="idv-msg">{message}</p> : null}
-        <button
-          type="button"
-          className="idv-btn idv-btn--primary"
-          disabled={saving}
-          onClick={() => void handleSave()}
-        >
-          {saving ? "Đang lưu..." : "Lưu số điện thoại"}
-        </button>
-      </div>
+      {!readOnly ? (
+        <div className="idv-detail__actions">
+          {message ? <p className="idv-msg">{message}</p> : null}
+          <button
+            type="button"
+            className="idv-btn idv-btn--primary"
+            disabled={saving}
+            onClick={() => void handleSave()}
+          >
+            {saving ? "Đang lưu..." : "Lưu số điện thoại"}
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 }

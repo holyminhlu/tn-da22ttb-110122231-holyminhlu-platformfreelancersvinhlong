@@ -10,6 +10,7 @@ import {
   type IdentityVerificationResponse,
 } from "@/lib/api/identityVerification";
 import FileUploadZone from "./FileUploadZone";
+import IdentityReadOnlyBanner from "./IdentityReadOnlyBanner";
 
 const ID_TYPES = [
   { value: "drivers_license", label: "Giấy phép lái xe" },
@@ -21,9 +22,14 @@ const ID_TYPES = [
 type IdDocumentVerifyPanelProps = {
   data: IdentityVerificationResponse;
   onSaved: () => void;
+  readOnly?: boolean;
 };
 
-export default function IdDocumentVerifyPanel({ data, onSaved }: IdDocumentVerifyPanelProps) {
+export default function IdDocumentVerifyPanel({
+  data,
+  onSaved,
+  readOnly = false,
+}: IdDocumentVerifyPanelProps) {
   const { t } = useTranslation();
 
   const [docType, setDocType] = useState(data.verification?.id_doc_type ?? "national_id");
@@ -32,12 +38,14 @@ export default function IdDocumentVerifyPanel({ data, onSaved }: IdDocumentVerif
   const [message, setMessage] = useState("");
 
   async function saveType(value: string) {
+    if (readOnly) return;
     setDocType(value);
     await patchIdentityVerification({ idDocType: value });
   }
 
   return (
     <div className="idv-detail">
+      {readOnly ? <IdentityReadOnlyBanner /> : null}
       <h2 className="idv-detail__title">Giấy tờ tùy thân do chính phủ cấp</h2>
       <p className="idv-detail__lead">
         Đặt giấy tờ tùy thân hợp lệ của bạn lên một mặt phẳng và chụp ảnh. Hãy đảm bảo rằng cả 4
@@ -52,6 +60,7 @@ export default function IdDocumentVerifyPanel({ data, onSaved }: IdDocumentVerif
             key={t.value}
             type="button"
             className={`idv-chip${docType === t.value ? " idv-chip--active" : ""}`}
+            disabled={readOnly}
             onClick={() => void saveType(t.value)}
           >
             {t.label}
@@ -65,6 +74,7 @@ export default function IdDocumentVerifyPanel({ data, onSaved }: IdDocumentVerif
             label="Tải lên mặt trước của giấy tờ tùy thân."
             currentUrl={data.verification?.id_front_url}
             uploading={uploadingFront}
+            readOnly={readOnly}
             onUpload={async (file) => {
               setUploadingFront(true);
               try {
@@ -79,6 +89,7 @@ export default function IdDocumentVerifyPanel({ data, onSaved }: IdDocumentVerif
             label="Tải lên mặt sau của giấy tờ tùy thân."
             currentUrl={data.verification?.id_back_url}
             uploading={uploadingBack}
+            readOnly={readOnly}
             onUpload={async (file) => {
               setUploadingBack(true);
               try {
