@@ -47,7 +47,7 @@ async function loadOverview(db) {
       (SELECT COUNT(*)::int FROM public.contract_disputes d
        WHERE d.status = 'open') AS open_disputes,
       (SELECT COUNT(*)::int FROM public.freelancer_withdrawal_orders w
-       WHERE w.status = 'PROCESSING')) AS pending_withdrawals,
+       WHERE w.status = 'PROCESSING') AS pending_withdrawals,
       (SELECT COUNT(*)::int FROM public.contracts c WHERE c.deleted_at IS NULL) AS total_contracts
     `,
   );
