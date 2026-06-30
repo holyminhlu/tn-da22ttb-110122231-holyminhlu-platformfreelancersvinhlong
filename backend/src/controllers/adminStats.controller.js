@@ -47,7 +47,7 @@ async function loadOverview(db) {
       (SELECT COUNT(*)::int FROM public.contract_disputes d
        WHERE d.status = 'open') AS open_disputes,
       (SELECT COUNT(*)::int FROM public.freelancer_withdrawal_orders w
-       WHERE w.status IN ('PENDING_AUTH', 'PROCESSING')) AS pending_withdrawals,
+       WHERE w.status = 'PROCESSING')) AS pending_withdrawals,
       (SELECT COUNT(*)::int FROM public.contracts c WHERE c.deleted_at IS NULL) AS total_contracts
     `,
   );
@@ -218,7 +218,7 @@ async function loadQueueStats(db) {
   const withdrawalRows = await safeQuery(
     db,
     `SELECT
-       COUNT(*) FILTER (WHERE w.status IN ('PENDING_AUTH', 'PROCESSING'))::int AS pending,
+       COUNT(*) FILTER (WHERE w.status = 'PROCESSING')::int AS pending,
        COUNT(*) FILTER (WHERE w.status = 'SUCCEEDED')::int AS paid,
        COUNT(*) FILTER (WHERE w.status IN ('FAILED', 'CANCELLED'))::int AS failed
      FROM public.freelancer_withdrawal_orders w`,

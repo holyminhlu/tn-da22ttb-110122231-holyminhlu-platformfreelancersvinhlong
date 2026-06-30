@@ -4,6 +4,7 @@ import { tUi } from "@/lib/i18n/runtime";
 import { useTranslation } from "@/hooks/useTranslation";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { FaRobot, FaTimes } from "react-icons/fa";
+import { useStoredUser } from "@/hooks/useStoredUser";
 import { usePathname } from "next/navigation";
 import AiSupportMessageContent from "@/components/support/AiSupportMessageContent";
 import { sendSupportAiChat, type SupportAiChatMessage } from "@/lib/api/supportAiChat";
@@ -33,6 +34,7 @@ function createWelcomeMessage(): SupportAiChatMessage {
 export default function VlcAiSupportWidget() {
   const { t } = useTranslation();
   const pathname = usePathname();
+  const { user, ready } = useStoredUser({ refreshFromApi: false });
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<SupportAiChatMessage[]>([createWelcomeMessage()]);
   const [draft, setDraft] = useState("");
@@ -92,6 +94,10 @@ export default function VlcAiSupportWidget() {
   }
 
   if (pathname && HIDDEN_PATHS.has(pathname)) {
+    return null;
+  }
+
+  if (pathname === "/" && (!ready || !user)) {
     return null;
   }
 

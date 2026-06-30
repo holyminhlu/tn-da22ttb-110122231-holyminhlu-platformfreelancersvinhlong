@@ -6,6 +6,7 @@ const {
 } = require("../utils/payosClient");
 const { createPayoutSignature, verifyPayoutWebhookSignature } = require("../utils/payosPayoutSignature");
 const { resolveBankBin } = require("../utils/vnBankBins");
+const { loadWithdrawalPinStatus } = require("./withdrawalPin.service");
 
 const PAYOS_PAYOUT_BASE = "https://api-merchant.payos.vn";
 const MIN_WITHDRAW = 10_000;
@@ -160,6 +161,17 @@ function serializeWithdrawalOrder(row) {
   };
 }
 
+async function cancelPendingAuthWithdrawals(db, userId, reason) {
+  await db.query(
+    `UPDATE public.freelancer_withdrawal_orders
+     SET status = 'CANCELLED',
+         failure_reason = $2,
+         updated_at = NOW()
+     WHERE user_id = $1 AND status = 'PENDING_AUTH'`,
+    [userId, reason || "Hủy do chưa xác nhận PIN."],
+  );
+}
+
 async function createWithdrawalRequest(db, userId, amount) {
   const numericAmount = Number(amount);
   if (!Number.isFinite(numericAmount) || numericAmount < MIN_WITHDRAW || numericAmount > MAX_WITHDRAW) {
@@ -167,6 +179,16 @@ async function createWithdrawalRequest(db, userId, amount) {
       ok: false,
       status: 400,
       message: `Số tiền rút phải từ ${MIN_WITHDRAW.toLocaleString("vi-VN")} đến ${MAX_WITHDRAW.toLocaleString("vi-VN")} VND.`,
+    };
+  }
+
+  const pinStatus = await loadWithdrawalPinStatus(db, userId);
+  if (!pinStatus.isConfigured) {
+    return {
+      ok: false,
+      status: 400,
+      message:
+        "Bạn chưa thiết lập mã PIN rút tiền. Vào Cài đặt tài khoản để tạo PIN trước khi rút tiền.",
     };
   }
 
@@ -201,7 +223,7 @@ async function createWithdrawalRequest(db, userId, amount) {
 
   const pending = await db.query(
     `SELECT id FROM public.freelancer_withdrawal_orders
-     WHERE user_id = $1 AND status IN ('PENDING_AUTH', 'PROCESSING')
+     WHERE user_id = $1 AND status = 'PROCESSING'
      LIMIT 1`,
     [userId],
   );
@@ -212,6 +234,8 @@ async function createWithdrawalRequest(db, userId, amount) {
       message: "Bạn đang có lệnh rút tiền chưa hoàn tất. Vui lòng đợi xử lý xong.",
     };
   }
+
+  await cancelPendingAuthWithdrawals(db, userId, "Hủy lệnh rút chưa xác nhận PIN để tạo lệnh mới.");
 
   const referenceId = generateReferenceId();
   const inserted = await db.query(

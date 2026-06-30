@@ -222,6 +222,11 @@ export default function FreelancerWithdrawModal({
       setError(t("Bạn chưa liên kết tài khoản ngân hàng."));
       return;
     }
+    if (!withdrawalPin.isConfigured) {
+      setError(t("Bạn chưa thiết lập mã PIN rút tiền. Vào Cài đặt tài khoản để tạo PIN."));
+      setStep("no_pin");
+      return;
+    }
 
     setBusy(true);
     try {

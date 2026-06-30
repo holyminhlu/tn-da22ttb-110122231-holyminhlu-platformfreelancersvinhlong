@@ -529,7 +529,11 @@ export default function ClientPaymentsPage() {
                     className="payments-money-input--deposit"
                     value={withdrawAmount}
                     onChange={setWithdrawAmount}
-                    disabled={data.account.balance < MIN_WITHDRAW_VND || paymentBlocked}
+                    disabled={
+                      data.account.balance < MIN_WITHDRAW_VND ||
+                      paymentBlocked ||
+                      !data.withdrawalPin?.isConfigured
+                    }
                     aria-label={t("Số tiền rút về ngân hàng")}
                   />
                   <div className="payments-deposit__presets">
@@ -553,7 +557,11 @@ export default function ClientPaymentsPage() {
                   <button
                     type="button"
                     className="payments-btn payments-btn--primary payments-deposit__submit"
-                    disabled={data.account.balance < MIN_WITHDRAW_VND || paymentBlocked}
+                    disabled={
+                      data.account.balance < MIN_WITHDRAW_VND ||
+                      paymentBlocked ||
+                      !data.withdrawalPin?.isConfigured
+                    }
                     onClick={openWithdrawFlow}
                   >
                     {t("Rút tiền")}

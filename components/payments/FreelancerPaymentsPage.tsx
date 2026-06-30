@@ -296,7 +296,9 @@ export default function FreelancerPaymentsPage() {
                     className="payments-money-input--deposit"
                     value={withdrawAmount}
                     onChange={setWithdrawAmount}
-                    disabled={data.account.balance < MIN_WITHDRAW_VND}
+                    disabled={
+                      data.account.balance < MIN_WITHDRAW_VND || !data.withdrawalPin?.isConfigured
+                    }
                     aria-label={t("Số tiền rút về ngân hàng")}
                   />
                   <div className="payments-deposit__presets">
@@ -320,7 +322,9 @@ export default function FreelancerPaymentsPage() {
                   <button
                     type="button"
                     className="payments-btn payments-btn--primary payments-deposit__submit"
-                    disabled={data.account.balance < MIN_WITHDRAW_VND}
+                    disabled={
+                      data.account.balance < MIN_WITHDRAW_VND || !data.withdrawalPin?.isConfigured
+                    }
                     onClick={openWithdrawFlow}
                   >
                     {t("Rút tiền")}

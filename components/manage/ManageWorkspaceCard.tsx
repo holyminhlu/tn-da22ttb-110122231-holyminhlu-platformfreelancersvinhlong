@@ -35,15 +35,6 @@ function hasActiveContract(contractStatus: string | null | undefined) {
   return s === "pending" || s === "active";
 }
 
-function counterpartyInitials(name: string | null) {
-  if (!name?.trim()) return "?";
-  const parts = name.trim().split(/\s+/);
-  if (parts.length >= 2) {
-    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-  }
-  return parts[0].slice(0, 2).toUpperCase();
-}
-
 export default function ManageWorkspaceCard({ item, onChanged }: ManageWorkspaceCardProps) {  const { t, formatVnd, formatDate } = useTranslation();
 
   const price =
@@ -128,14 +119,6 @@ export default function ManageWorkspaceCard({ item, onChanged }: ManageWorkspace
     <article className="manage-workspace-card">
       <div className="manage-workspace-card__accent" aria-hidden />
       <div className="manage-workspace-card__body">
-        <div
-          className="manage-workspace-card__avatar"
-          aria-hidden
-          title={item.counterparty ?? undefined}
-        >
-          {counterpartyInitials(item.counterparty)}
-        </div>
-
         <div className="manage-workspace-card__content">
           <div className="manage-workspace-card__top">
             <h2 className="manage-workspace-card__title">

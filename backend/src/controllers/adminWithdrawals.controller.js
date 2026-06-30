@@ -94,7 +94,7 @@ async function listAdminWithdrawals(req, res) {
     const params = [];
 
     if (status === "pending") {
-      where.push(`w.status IN ('PENDING_AUTH', 'PROCESSING')`);
+      where.push(`w.status = 'PROCESSING'`);
     } else if (status === "completed") {
       where.push(`w.status = 'SUCCEEDED'`);
     } else if (status === "failed") {
@@ -123,7 +123,7 @@ async function listAdminWithdrawals(req, res) {
        ${whereSql}
        ORDER BY
          CASE
-           WHEN w.status IN ('PENDING_AUTH', 'PROCESSING') THEN 0
+           WHEN w.status = 'PROCESSING' THEN 0
            WHEN w.status = 'SUCCEEDED' THEN 1
            ELSE 2
          END,
@@ -200,17 +200,9 @@ async function resolveAdminWithdrawal(req, res) {
       await db.query("ROLLBACK");
       return res.status(404).json({ message: "Không tìm thấy yêu cầu rút tiền." });
     }
-    if (!["PENDING_AUTH", "PROCESSING"].includes(String(row.status))) {
+    if (String(row.status) !== "PROCESSING") {
       await db.query("ROLLBACK");
-      return res.status(409).json({ message: "Yêu cầu không còn ở trạng thái chờ xử lý." });
-    }
-
-    if (String(row.status) === "PENDING_AUTH") {
-      await db.query("ROLLBACK");
-      return res.status(409).json({
-        message:
-          "Yêu cầu chưa được user xác nhận bằng PIN nên chưa trừ số dư. User cần hoàn tất xác nhận trước khi admin duyệt hoặc từ chối.",
-      });
+      return res.status(409).json({ message: "Yêu cầu không còn ở trạng thái chờ admin duyệt." });
     }
 
     if (resolution === "approve") {
