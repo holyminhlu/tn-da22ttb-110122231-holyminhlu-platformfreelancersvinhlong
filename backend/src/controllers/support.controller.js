@@ -28,6 +28,7 @@ async function postAiSupportChat(req, res) {
       return res.status(503).json({
         message: "Không thể kết nối AI. Kiểm tra GEMINI_API_KEY trên server và thử lại.",
         code: error.code,
+        detail: error.message,
       });
     }
     console.error("Support AI chat failed:", error.message);

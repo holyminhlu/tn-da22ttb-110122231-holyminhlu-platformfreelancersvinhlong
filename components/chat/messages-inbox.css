@@ -879,17 +879,17 @@ body.vlc-messages-scroll-lock {
   background: transparent;
 }
 
-.fw-inbox-chat__send-like {
+.fw-inbox-chat__send {
   border: none;
   background: transparent;
-  color: #eab308;
-  font-size: 1.35rem;
+  color: #0066cc;
+  font-size: 1.1rem;
   cursor: pointer;
   padding: 0.15rem;
   line-height: 0;
 }
 
-.fw-inbox-chat__send-like:disabled {
+.fw-inbox-chat__send:disabled {
   opacity: 0.35;
   cursor: not-allowed;
 }

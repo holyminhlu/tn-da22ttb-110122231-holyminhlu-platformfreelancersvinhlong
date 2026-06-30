@@ -12,8 +12,8 @@ import {
   FaPaperclip,
   FaRegSmile,
   FaSearch,
+  FaPaperPlane,
   FaStore,
-  FaThumbsUp,
   FaTimes,
 } from "react-icons/fa";
 import { useFreelancerChat } from "@/hooks/useFreelancerChat";
@@ -565,11 +565,11 @@ export default function InboxChatPanel({
           />
           <button
             type="submit"
-            className="fw-inbox-chat__send-like"
+            className="fw-inbox-chat__send"
             disabled={composerDisabled || !draft.trim()}
             aria-label={t("Gửi tin nhắn")}
           >
-            <FaThumbsUp />
+            <FaPaperPlane aria-hidden />
           </button>
         </form>
       </footer>

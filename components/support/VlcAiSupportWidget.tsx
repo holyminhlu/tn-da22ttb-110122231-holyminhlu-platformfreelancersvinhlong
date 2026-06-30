@@ -12,7 +12,12 @@ import "./vlc-ai-support.css";
 const WELCOME =
   "**Vĩnh Long Connect** có thể giúp gì cho bạn?\n\n💡 Gợi ý: Chọn câu hỏi nhanh bên dưới hoặc nhập câu hỏi của bạn.";
 
-const HIDDEN_PATHS = new Set(["/hire/messages", "/findwork/messages"]);
+const HIDDEN_PATHS = new Set([
+  "/hire/messages",
+  "/findwork/messages",
+  "/dang-nhap",
+  "/dang-ky",
+]);
 
 const QUICK_PROMPTS = [
   "Cách tìm freelancer?",
