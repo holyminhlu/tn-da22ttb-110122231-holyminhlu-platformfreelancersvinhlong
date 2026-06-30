@@ -53,5 +53,28 @@ echo "=== 5. Database ==="
 sh deploy/verify-db.sh
 
 echo ""
-echo "=== 6. NEXT_PUBLIC_API_URL trong .env ==="
+echo "=== 6. Gemini AI (support chat) ==="
+if grep -qE '^GEMINI_API_KEY=.+' .env 2>/dev/null; then
+  echo "OK: GEMINI_API_KEY có trong .env"
+else
+  echo "WARN: Thiếu GEMINI_API_KEY trong .env — chat AI sẽ lỗi trên production"
+fi
+ai_code=$(curl -s -o /tmp/vlc-ai-chat-probe.json -w "%{http_code}" \
+  -X POST http://127.0.0.1:5000/api/support/ai-chat \
+  -H "Content-Type: application/json" \
+  -d '{"message":"ping"}' || true)
+echo "POST /api/support/ai-chat (local backend) → HTTP ${ai_code:-?}"
+if [ "$ai_code" = "200" ]; then
+  echo "OK: Gemini chat hoạt động"
+elif [ "$ai_code" = "503" ]; then
+  echo "FAIL: Gemini chưa cấu hình hoặc API key/model sai — sửa .env hoặc Admin → Quản lý API key"
+  head -c 200 /tmp/vlc-ai-chat-probe.json 2>/dev/null; echo ""
+elif [ "$ai_code" = "502" ]; then
+  echo "FAIL: Backend trả 502 (có thể bị Cloudflare che) — cập nhật code mới và kiểm tra GEMINI_API_KEY"
+else
+  echo "FAIL: HTTP ${ai_code:-?}"
+fi
+
+echo ""
+echo "=== 7. NEXT_PUBLIC_API_URL trong .env ==="
 grep -E '^NEXT_PUBLIC_API_URL=' .env 2>/dev/null || echo "Không thấy .env"

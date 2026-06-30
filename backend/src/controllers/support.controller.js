@@ -24,8 +24,9 @@ async function postAiSupportChat(req, res) {
     }
     if (error.code === "GEMINI_API_ERROR") {
       console.error("Gemini support chat failed:", error.message);
-      return res.status(502).json({
-        message: "Không thể kết nối AI. Vui lòng thử lại sau.",
+      // 503 (not 502): Cloudflare/nginx treat 502 as proxy failure and hide JSON body.
+      return res.status(503).json({
+        message: "Không thể kết nối AI. Kiểm tra GEMINI_API_KEY trên server và thử lại.",
         code: error.code,
       });
     }

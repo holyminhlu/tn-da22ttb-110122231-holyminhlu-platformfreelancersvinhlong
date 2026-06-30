@@ -66,7 +66,7 @@ async function postAdminAiSettingsTest(req, res) {
       });
     }
     if (error.code === "GEMINI_API_ERROR") {
-      return res.status(502).json({
+      return res.status(503).json({
         message: error.message || "Gemini API từ chối kết nối.",
         code: error.code,
       });
