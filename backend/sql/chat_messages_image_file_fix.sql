@@ -1,8 +1,12 @@
--- Tính năng mở rộng chat: đính kèm, ẩn hội thoại, chặn người dùng
--- (Giữ tương thích — migration đầy đủ: chat_messages_image_file_fix.sql)
+-- Chat: đính kèm ảnh/tệp + trạng thái hội thoại (idempotent — chạy an toàn trên server cũ)
+--   docker compose exec -T db psql -U vl_user -d vl_connected -f /schema/migrations/chat_messages_image_file_fix.sql
+-- hoặc: bash deploy/apply-chat-migrations.sh
 
 ALTER TABLE public.chat_messages
   ADD COLUMN IF NOT EXISTS kind VARCHAR(20) NOT NULL DEFAULT 'text';
+
+ALTER TABLE public.chat_messages
+  ADD COLUMN IF NOT EXISTS context_type VARCHAR(20) NULL;
 
 ALTER TABLE public.chat_messages
   ADD COLUMN IF NOT EXISTS attachment_url TEXT NULL;
@@ -19,6 +23,13 @@ ALTER TABLE public.chat_messages
 ALTER TABLE public.chat_messages
   ADD CONSTRAINT chat_messages_kind_check
   CHECK (kind IN ('text', 'context', 'image', 'file'));
+
+ALTER TABLE public.chat_messages
+  DROP CONSTRAINT IF EXISTS chat_messages_context_type_check;
+
+ALTER TABLE public.chat_messages
+  ADD CONSTRAINT chat_messages_context_type_check
+  CHECK (context_type IS NULL OR context_type IN ('job', 'service'));
 
 CREATE TABLE IF NOT EXISTS public.chat_conversation_user_state (
   conversation_id UUID NOT NULL REFERENCES public.chat_conversations(id) ON DELETE CASCADE,

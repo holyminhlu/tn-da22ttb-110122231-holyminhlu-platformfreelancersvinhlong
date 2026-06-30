@@ -39,6 +39,7 @@ if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY === "your-gemini-a
 }
 
 const { pool, query } = require("./db/pool");
+const { ensureChatMigrations, queryChatSchemaStatus } = require("./db/ensureChatMigrations");
 const authRoutes = require("./routes/auth.routes");
 const usersRoutes = require("./routes/users.routes");
 const contractsRoutes = require("./routes/contracts.routes");
@@ -97,10 +98,20 @@ app.use("/api/auth/freelancers", freelancersRoutes);
 app.use("/api/auth", jobsLegacyRoutes);
 app.use("/api/auth", servicesLegacyRoutes);
 
-app.get("/health", async (_req, res) => {
+app.get("/health", async (req, res) => {
   try {
     await query("SELECT 1 AS ok");
-    res.json({ ok: true, service: "vl-connected-api", database: "connected" });
+    const payload = { ok: true, service: "vl-connected-api", database: "connected" };
+    if (String(req.query.chat || "") === "1") {
+      const db = await pool.connect();
+      try {
+        payload.chat = await queryChatSchemaStatus(db);
+        if (!payload.chat.ok) payload.ok = false;
+      } finally {
+        db.release();
+      }
+    }
+    res.status(payload.ok ? 200 : 503).json(payload);
   } catch (err) {
     console.error("Health DB check failed:", err.message);
     res.status(503).json({
@@ -121,6 +132,7 @@ const server = httpServer.listen(PORT, async () => {
   try {
     await query("SELECT current_database() AS db, version() AS version");
     console.log("PostgreSQL connection OK");
+    await ensureChatMigrations();
   } catch (err) {
     console.error("PostgreSQL connection failed:", err.message);
   }

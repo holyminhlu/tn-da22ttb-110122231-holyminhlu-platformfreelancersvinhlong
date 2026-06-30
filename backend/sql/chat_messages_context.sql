@@ -12,7 +12,8 @@ ALTER TABLE public.chat_messages
   DROP CONSTRAINT IF EXISTS chat_messages_kind_check;
 
 ALTER TABLE public.chat_messages
-  ADD CONSTRAINT chat_messages_kind_check CHECK (kind IN ('text', 'context'));
+  ADD CONSTRAINT chat_messages_kind_check
+  CHECK (kind IN ('text', 'context', 'image', 'file'));
 
 ALTER TABLE public.chat_messages
   ADD COLUMN IF NOT EXISTS context_type VARCHAR(20) NULL;

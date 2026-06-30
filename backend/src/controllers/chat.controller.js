@@ -9,6 +9,30 @@ const {
   IDENTITY_NOT_VERIFIED_CHAT_MESSAGE,
 } = require("../utils/clientIdentityVerified");
 
+function respondChatDbError(res, error) {
+  if (error.code === "42P01") {
+    res.status(503).json({
+      message: "Thiếu bảng chat. Chạy backend/sql/chat_messages.sql trên PostgreSQL.",
+    });
+    return true;
+  }
+  if (error.code === "42703") {
+    res.status(503).json({
+      message: "Thiếu cột chat (đính kèm ảnh). Chạy trên server: bash deploy/apply-chat-migrations.sh",
+      code: "CHAT_SCHEMA_OUTDATED",
+    });
+    return true;
+  }
+  if (error.code === "23514") {
+    res.status(503).json({
+      message: "Schema chat chưa hỗ trợ ảnh/tệp. Khởi động lại backend hoặc chạy: bash deploy/apply-chat-migrations.sh",
+      code: "CHAT_KIND_CONSTRAINT",
+    });
+    return true;
+  }
+  return false;
+}
+
 async function assertClientCanMessage(db, role, userId, res) {
   if (String(role || "").toLowerCase() !== "client") return true;
   const verified = await queryClientIdentityVerified(db, userId);
@@ -552,13 +576,18 @@ async function persistChatMessage(
     conversationId,
   ]);
 
-  await db.query(
-    `INSERT INTO public.chat_conversation_user_state (conversation_id, user_id, hidden_at)
-     VALUES ($1, $2, NULL)
-     ON CONFLICT (conversation_id, user_id)
-     DO UPDATE SET hidden_at = NULL`,
-    [conversationId, senderId],
-  );
+  try {
+    await db.query(
+      `INSERT INTO public.chat_conversation_user_state (conversation_id, user_id, hidden_at)
+       VALUES ($1, $2, NULL)
+       ON CONFLICT (conversation_id, user_id)
+       DO UPDATE SET hidden_at = NULL`,
+      [conversationId, senderId],
+    );
+  } catch (stateErr) {
+    if (stateErr.code !== "42P01") throw stateErr;
+    console.warn("persistChatMessage: chat_conversation_user_state missing — bỏ qua unhide.");
+  }
 
   return insert.rows[0];
 }
@@ -636,13 +665,12 @@ async function sendMessage(req, res) {
 
     return res.status(201).json({ message });
   } catch (error) {
-    console.error("sendMessage failed:", error.message);
-    if (error.code === "42P01") {
-      return res.status(503).json({
-        message: "Thiếu bảng chat. Chạy backend/sql/chat_messages.sql trên PostgreSQL.",
-      });
-    }
-    return res.status(500).json({ message: "Không thể gửi tin nhắn." });
+    console.error("sendMessage failed:", error.message, error.code || "", error.constraint || "");
+    if (respondChatDbError(res, error)) return;
+    return res.status(500).json({
+      message: "Không thể gửi tin nhắn.",
+      code: error.code || "SEND_MESSAGE_FAILED",
+    });
   } finally {
     dbClient.release();
   }

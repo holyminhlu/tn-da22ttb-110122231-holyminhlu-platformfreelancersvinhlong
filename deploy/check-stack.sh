@@ -53,6 +53,44 @@ echo "=== 5. Database ==="
 sh deploy/verify-db.sh
 
 echo ""
+echo "=== 5b. Chat ảnh/tệp (schema) ==="
+chat_health=$(curl -sf "http://127.0.0.1:5000/health?chat=1" 2>/dev/null || true)
+if [ -n "$chat_health" ]; then
+  echo "$chat_health" | head -c 400
+  echo ""
+  if printf '%s' "$chat_health" | grep -q '"kindSupportsMedia":true'; then
+    echo "OK: /health?chat=1 — schema hỗ trợ ảnh/tệp"
+  else
+    echo "FAIL: schema chat chưa đủ — chạy: bash deploy/apply-chat-migrations.sh && docker compose restart backend"
+  fi
+else
+  echo "WARN: Backend chưa có /health?chat=1 — cập nhật code và rebuild backend"
+  missing_cols=$(docker compose exec -T db psql -U "${POSTGRES_USER:-vl_user}" -d "${POSTGRES_DB:-vl_connected}" -tAc "
+SELECT COUNT(*)
+FROM unnest(ARRAY['kind', 'attachment_url', 'attachment_name', 'attachment_mime']) AS expected_column
+WHERE expected_column NOT IN (
+  SELECT column_name FROM information_schema.columns
+  WHERE table_schema = 'public' AND table_name = 'chat_messages'
+);
+" | tr -d ' ')
+if [ "${missing_cols:-0}" != "0" ]; then
+  echo "FAIL: Thiếu $missing_cols cột chat — chạy: bash deploy/apply-chat-migrations.sh"
+else
+  kind_def=$(docker compose exec -T db psql -U "${POSTGRES_USER:-vl_user}" -d "${POSTGRES_DB:-vl_connected}" -tAc "
+SELECT pg_get_constraintdef(oid)
+FROM pg_constraint
+WHERE conrelid = 'public.chat_messages'::regclass AND conname = 'chat_messages_kind_check';
+" 2>/dev/null | tr -d '\r' || true)
+  if printf '%s' "$kind_def" | grep -q 'image' && printf '%s' "$kind_def" | grep -q 'file'; then
+    echo "OK: chat_messages hỗ trợ kind image/file"
+  else
+    echo "FAIL: constraint kind chưa có image/file — chạy: bash deploy/apply-chat-migrations.sh"
+    echo "     Hiện tại: ${kind_def:-<không có>}"
+  fi
+fi
+fi
+
+echo ""
 echo "=== 6. Gemini AI (support chat) ==="
 if grep -qE '^GEMINI_API_KEY=.+' .env 2>/dev/null; then
   echo "OK: GEMINI_API_KEY có trong .env"

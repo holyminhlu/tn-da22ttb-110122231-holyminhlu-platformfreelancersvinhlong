@@ -45,5 +45,25 @@ echo "--- PostGIS ---"
 docker compose exec -T db psql -U "$DB_USER" -d "$DB_NAME" -c "SELECT PostGIS_Version();" || echo "WARN: PostGIS chưa sẵn sàng"
 
 echo ""
+echo "--- Cột chat đính kèm ảnh (thiếu dòng = cần migration) ---"
+docker compose exec -T db psql -U "$DB_USER" -d "$DB_NAME" -c "
+SELECT expected_column
+FROM unnest(ARRAY['kind', 'attachment_url', 'attachment_name', 'attachment_mime']) AS expected_column
+EXCEPT
+SELECT column_name
+FROM information_schema.columns
+WHERE table_schema = 'public' AND table_name = 'chat_messages';
+"
+
+echo ""
+echo "--- Constraint kind chat (phải gồm image, file) ---"
+docker compose exec -T db psql -U "$DB_USER" -d "$DB_NAME" -c "
+SELECT pg_get_constraintdef(oid) AS kind_check
+FROM pg_constraint
+WHERE conrelid = 'public.chat_messages'::regclass
+  AND conname = 'chat_messages_kind_check';
+" || echo "WARN: Không đọc được constraint chat_messages_kind_check"
+
+echo ""
 echo "--- API health ---"
 curl -sf http://127.0.0.1:5000/health && echo "" || echo "FAIL: backend /health"
