@@ -19,11 +19,17 @@
 }
 
 .contact-page .contact-hero__subtitle {
-  max-width: 36rem;
   margin: 0 auto;
   font-size: 1.0625rem;
   line-height: 1.75;
   color: #f1f5f9;
+  max-width: 100%;
+}
+
+@media (min-width: 1024px) {
+  .contact-page .contact-hero__subtitle {
+    white-space: nowrap;
+  }
 }
 
 .contact-page .contact-body {

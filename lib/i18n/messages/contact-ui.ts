@@ -3,7 +3,7 @@ export const contactUi = {
     contactPage: {
       badge: "Liên hệ",
       title: "Liên hệ Vĩnh Long Connect",
-      subtitle: "Chúng tôi sẵn sàng hỗ trợ Khách hàng, Freelancer và đối tác tại Vĩnh Long.",
+      subtitle: "Chúng tôi sẵn sàng hỗ trợ Khách hàng, Freelancer và đối tác tại Vĩnh\u00a0Long.",
       loading: "Đang tải thông tin liên hệ…",
       loadError: "Không thể tải thông tin liên hệ.",
       email: "Email",
