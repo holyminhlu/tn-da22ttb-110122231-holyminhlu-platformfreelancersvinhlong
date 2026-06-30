@@ -185,11 +185,21 @@ export default function FreelancerPaymentsPage() {
   const txPage = usePagedList(filteredTransactions, TX_PAGE_SIZE, txResetKey);
 
   const withdrawNumeric = Number(withdrawAmount.replace(/\D/g, "") || 0);
+  const hasPendingWithdrawal = (data?.activeWithdrawals?.length ?? 0) > 0;
   const activeWithdrawPreset = WITHDRAW_AMOUNT_PRESETS.includes(
     withdrawNumeric as (typeof WITHDRAW_AMOUNT_PRESETS)[number],
   )
     ? withdrawNumeric
     : null;
+
+  function hasActiveWithdrawal(
+    items?: Array<{ status?: string }>,
+  ) {
+    return (items ?? []).some((item) => {
+      const status = String(item.status || "").toUpperCase();
+      return status === "PROCESSING" || status === "PENDING_AUTH";
+    });
+  }
 
   function openWithdrawFlow() {  if (!data?.payoutProfile.isConfigured) {
       alert(t("Bạn chưa liên kết tài khoản ngân hàng. Vui lòng liên kết trước khi rút tiền."));
@@ -207,10 +217,15 @@ export default function FreelancerPaymentsPage() {
       alert(`${t("Số dư khả dụng không đủ (hiện có ")}${formatVndUi(data.account.balance)}).`);
       return;
     }
+    if (hasActiveWithdrawal(data?.activeWithdrawals)) {
+      alert(t("Bạn đang có yêu cầu rút tiền chờ xử lý. Vui lòng đợi admin duyệt trước khi tạo lệnh mới."));
+      return;
+    }
     setWithdrawOpen(true);
   }
 
   function handleWithdrawCompleted(account: FreelancerBillingOverview["account"]) {
+    setWithdrawOpen(false);
     setData((prev) => (prev ? { ...prev, account } : prev));
     void load();
   }
@@ -297,7 +312,9 @@ export default function FreelancerPaymentsPage() {
                     value={withdrawAmount}
                     onChange={setWithdrawAmount}
                     disabled={
-                      data.account.balance < MIN_WITHDRAW_VND || !data.withdrawalPin?.isConfigured
+                      data.account.balance < MIN_WITHDRAW_VND ||
+                      !data.withdrawalPin?.isConfigured ||
+                      hasPendingWithdrawal
                     }
                     aria-label={t("Số tiền rút về ngân hàng")}
                   />
@@ -323,7 +340,9 @@ export default function FreelancerPaymentsPage() {
                     type="button"
                     className="payments-btn payments-btn--primary payments-deposit__submit"
                     disabled={
-                      data.account.balance < MIN_WITHDRAW_VND || !data.withdrawalPin?.isConfigured
+                      data.account.balance < MIN_WITHDRAW_VND ||
+                      !data.withdrawalPin?.isConfigured ||
+                      hasPendingWithdrawal
                     }
                     onClick={openWithdrawFlow}
                   >

@@ -296,6 +296,7 @@ export default function ClientPaymentsPage() {
     (preset) => Number(depositAmount) === preset,
   );
   const withdrawNumeric = Number(withdrawAmount.replace(/\D/g, "") || 0);
+  const hasPendingWithdrawal = (data?.activeWithdrawals?.length ?? 0) > 0;
   const activeWithdrawPreset = WITHDRAW_AMOUNT_PRESETS.includes(
     withdrawNumeric as (typeof WITHDRAW_AMOUNT_PRESETS)[number],
   )
@@ -320,6 +321,13 @@ export default function ClientPaymentsPage() {
       setToast({ message: `Số dư khả dụng không đủ (${formatVndUi(data.account.balance)}).`, variant: "error" });
       return;
     }
+    if (hasPendingWithdrawal) {
+      setToast({
+        message: t("Bạn đang có yêu cầu rút tiền chờ xử lý. Vui lòng đợi admin duyệt trước khi tạo lệnh mới."),
+        variant: "error",
+      });
+      return;
+    }
     setWithdrawOpen(true);
   }
 
@@ -329,6 +337,7 @@ export default function ClientPaymentsPage() {
     pendingBalance?: number;
     totalEarned?: number;
   }) {
+    setWithdrawOpen(false);
     setData((prev) => {
       if (!prev) return prev;
       return {
@@ -532,7 +541,8 @@ export default function ClientPaymentsPage() {
                     disabled={
                       data.account.balance < MIN_WITHDRAW_VND ||
                       paymentBlocked ||
-                      !data.withdrawalPin?.isConfigured
+                      !data.withdrawalPin?.isConfigured ||
+                      hasPendingWithdrawal
                     }
                     aria-label={t("Số tiền rút về ngân hàng")}
                   />
@@ -560,7 +570,8 @@ export default function ClientPaymentsPage() {
                     disabled={
                       data.account.balance < MIN_WITHDRAW_VND ||
                       paymentBlocked ||
-                      !data.withdrawalPin?.isConfigured
+                      !data.withdrawalPin?.isConfigured ||
+                      hasPendingWithdrawal
                     }
                     onClick={openWithdrawFlow}
                   >

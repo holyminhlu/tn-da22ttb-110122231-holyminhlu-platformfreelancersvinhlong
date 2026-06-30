@@ -67,6 +67,7 @@ export default function FreelancerWithdrawModal({
   const autoCloseRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const closeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prefetchedAmountRef = useRef<string | null>(null);
+  const wasOpenRef = useRef(false);
 
   const amount = Number(amountDigits.replace(/\D/g, "") || 0);
   const bankVisual = useMemo(
@@ -77,8 +78,13 @@ export default function FreelancerWithdrawModal({
   useEffect(() => {
     if (!open) {
       prefetchedAmountRef.current = null;
+      wasOpenRef.current = false;
       return;
     }
+
+    const justOpened = !wasOpenRef.current;
+    wasOpenRef.current = true;
+    if (!justOpened) return;
 
     stopPolling();
     if (!withdrawalPin.isConfigured) {
