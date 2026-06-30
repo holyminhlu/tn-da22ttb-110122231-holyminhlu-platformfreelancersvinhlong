@@ -22,7 +22,6 @@ const CLIENT_MENU: UserMenuTemplate[] = [
   { type: "item", id: "edit-account", labelKey: "userMenu.editAccount", href: "/edit-account" },
   { type: "header", labelKey: "userMenu.cashAccountHeader" },
   { type: "item", id: "cash-account", labelKey: "userMenu.viewCashAccount", href: "/payments" },
-  { type: "item", id: "payment-methods", labelKey: "userMenu.paymentMethods", href: "/payments/phuong-thuc" },
   { type: "item", id: "help", labelKey: "userMenu.help", href: "/help" },
   { type: "logout", id: "logout", labelKey: "userMenu.logout" },
 ];
