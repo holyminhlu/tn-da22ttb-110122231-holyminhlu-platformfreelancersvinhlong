@@ -613,6 +613,62 @@
   margin: 0.2rem 0;
 }
 
+.fl-withdraw-modal__receipt {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  border: 1px solid #dbeafe;
+  border-radius: 0.5rem;
+  background: #f8fbff;
+  text-align: left;
+}
+
+.fl-withdraw-modal__receipt-grid {
+  display: grid;
+  gap: 0.65rem;
+  margin: 0;
+}
+
+.fl-withdraw-modal__receipt-grid > div {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.fl-withdraw-modal__receipt-grid dt {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #6b7280;
+}
+
+.fl-withdraw-modal__receipt-grid dd {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #111827;
+  word-break: break-word;
+}
+
+.fl-withdraw-modal__receipt-grid code {
+  font-size: 0.8125rem;
+  color: #1d4ed8;
+}
+
+.fl-withdraw-modal__done-lead {
+  margin: 0;
+  max-width: 28rem;
+}
+
+.fl-withdraw-modal__done-note {
+  margin: 0;
+  max-width: 28rem;
+  font-size: 0.8125rem;
+}
+
+.fl-withdraw-modal__done-footer {
+  width: 100%;
+}
+
 .fl-withdraw-modal__hint {
   margin: -0.25rem 0 0;
 }

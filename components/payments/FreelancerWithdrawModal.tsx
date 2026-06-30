@@ -1,6 +1,6 @@
 "use client";
 
-import { tUi, formatVndUi } from "@/lib/i18n/runtime";
+import { tUi, formatVndUi, formatDateUi } from "@/lib/i18n/runtime";
 import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
@@ -45,6 +45,29 @@ function isTerminalStatus(status: FreelancerWithdrawalOrder["status"]) {
   return status === "SUCCEEDED" || status === "FAILED" || status === "CANCELLED";
 }
 
+function orderStatusLabel(status: FreelancerWithdrawalOrder["status"]) {
+  switch (status) {
+    case "PENDING_AUTH":
+      return "Chờ xác nhận PIN";
+    case "PROCESSING":
+      return "Chờ admin duyệt chuyển khoản";
+    case "SUCCEEDED":
+      return "Đã chuyển khoản thành công";
+    case "FAILED":
+      return "Rút tiền thất bại";
+    case "CANCELLED":
+      return "Đã hủy";
+    default:
+      return status;
+  }
+}
+
+function doneTitle(status: FreelancerWithdrawalOrder["status"]) {
+  if (status === "SUCCEEDED") return "Rút tiền thành công";
+  if (status === "FAILED" || status === "CANCELLED") return "Rút tiền thất bại";
+  return "Yêu cầu rút tiền đã gửi";
+}
+
 export default function FreelancerWithdrawModal({
   open,
   balance,
@@ -53,7 +76,7 @@ export default function FreelancerWithdrawModal({
   withdrawalPin,
   onClose,
   onCompleted,
-}: FreelancerWithdrawModalProps) {  const { t, formatVnd } = useTranslation();
+}: FreelancerWithdrawModalProps) {  const { t, formatVnd, formatDate } = useTranslation();
 
   const [step, setStep] = useState<Step>("amount");
   const [amountDigits, setAmountDigits] = useState(String(WITHDRAW_AMOUNT_PRESETS[1]));
@@ -120,7 +143,7 @@ export default function FreelancerWithdrawModal({
   useEffect(() => {
     if (!open) return;
     function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape" && !busy && step !== "processing") onClose();
+      if (event.key === "Escape" && !busy && step !== "processing" && step !== "done") onClose();
     }
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
@@ -284,7 +307,7 @@ export default function FreelancerWithdrawModal({
       if (result.order.status === "PROCESSING") {
         setStep("done");
         setResultMessage(
-          `Đã xác nhận rút ${formatVndUi(result.order.amount)}. Số dư đã trừ. Dự kiến nhận tiền trong 5-30 phút sau khi hệ thống xử lý.`,
+          "Yêu cầu của bạn đã được ghi nhận. Số dư ví đã trừ. Admin sẽ duyệt và chuyển khoản vào tài khoản ngân hàng đã liên kết.",
         );
         setBusy(false);
         return;
@@ -304,7 +327,7 @@ export default function FreelancerWithdrawModal({
 
   if (!open) return null;
 
-  const canClose = !busy && step !== "processing";
+  const canClose = !busy && step !== "processing" && step !== "done";
 
   return (
     <div className="pay-method-modal__backdrop" role="presentation">
@@ -323,7 +346,7 @@ export default function FreelancerWithdrawModal({
               {step === "amount" && "Bước 1: Nhập số tiền và chọn tài khoản nhận"}
               {step === "verify" && "Bước 2: Nhập mã PIN 6 số"}
               {step === "processing" && "Bước 3: Đang xử lý lệnh rút"}
-              {step === "done" && "Kết quả lệnh rút tiền"}
+              {step === "done" && "Thông tin yêu cầu rút tiền"}
               {step === "no_pin" && "Cần thiết lập PIN rút tiền"}
             </p>
           </div>
@@ -499,27 +522,58 @@ export default function FreelancerWithdrawModal({
               ) : order.status === "FAILED" || order.status === "CANCELLED" ? (
                 <FaTimesCircle className="fl-withdraw-modal__icon fl-withdraw-modal__icon--fail" aria-hidden />
               ) : (
-                <FaSpinner className="fl-withdraw-modal__spinner" aria-hidden />
+                <FaCheckCircle className="fl-withdraw-modal__icon fl-withdraw-modal__icon--ok" aria-hidden />
               )}
-              <p className="fl-withdraw-modal__status-title">
-                {order.status === "SUCCEEDED"
-                  ? "Rút tiền thành công"
-                  : order.status === "FAILED" || order.status === "CANCELLED"
-                    ? "Rút tiền thất bại"
-                    : "Đã tạo yêu cầu rút tiền"}
-              </p>
-              <p className="payments-muted">{resultMessage}</p>
-              <p className="fl-withdraw-modal__summary">
-                {formatVndUi(order.amount)} → {order.bankName} ·{" "}
-                {maskAccountNumber("", order.accountLast4)}
-              </p>
-              {order.status !== "SUCCEEDED" &&
-              order.status !== "FAILED" &&
-              order.status !== "CANCELLED" ? (
-                <p className="payments-muted">{t("Thời gian dự kiến nhận: 5-30 phút.")}</p>
+              <p className="fl-withdraw-modal__status-title">{doneTitle(order.status)}</p>
+              <p className="payments-muted fl-withdraw-modal__done-lead">{resultMessage}</p>
+
+              <div className="fl-withdraw-modal__receipt" role="group" aria-label={t("Chi tiết yêu cầu rút tiền")}>
+                <dl className="fl-withdraw-modal__receipt-grid">
+                  <div>
+                    <dt>{t("Mã yêu cầu")}</dt>
+                    <dd>
+                      <code>{order.referenceId}</code>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>{t("Số tiền")}</dt>
+                    <dd>{formatVndUi(order.amount)}</dd>
+                  </div>
+                  <div>
+                    <dt>{t("Ngân hàng")}</dt>
+                    <dd>{order.bankName}</dd>
+                  </div>
+                  <div>
+                    <dt>{t("Chủ tài khoản")}</dt>
+                    <dd>{order.accountHolderName}</dd>
+                  </div>
+                  <div>
+                    <dt>{t("Số tài khoản")}</dt>
+                    <dd>{maskAccountNumber("", order.accountLast4)}</dd>
+                  </div>
+                  <div>
+                    <dt>{t("Trạng thái")}</dt>
+                    <dd>{orderStatusLabel(order.status)}</dd>
+                  </div>
+                  {order.createdAt ? (
+                    <div>
+                      <dt>{t("Thời gian gửi")}</dt>
+                      <dd>
+                        <time dateTime={order.createdAt}>{formatDateUi(order.createdAt)}</time>
+                      </dd>
+                    </div>
+                  ) : null}
+                </dl>
+              </div>
+
+              {order.status === "PROCESSING" ? (
+                <p className="payments-muted fl-withdraw-modal__done-note">
+                  {t("Bạn chỉ có thể tạo một yêu cầu rút tiền cho đến khi admin xử lý xong.")}
+                </p>
               ) : null}
-              <footer className="pay-method-modal__footer">
-                <p className="payments-muted">Tự động đóng sau {autoCloseIn}s.</p>
+
+              <footer className="pay-method-modal__footer fl-withdraw-modal__done-footer">
+                <p className="payments-muted">{t("Tự động đóng sau")} {autoCloseIn}s.</p>
                 <button type="button" className="payments-btn payments-btn--primary" onClick={onClose}>
                   {t("Đóng")}
                 </button>

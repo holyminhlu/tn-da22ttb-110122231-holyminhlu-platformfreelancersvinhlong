@@ -337,7 +337,6 @@ export default function ClientPaymentsPage() {
     pendingBalance?: number;
     totalEarned?: number;
   }) {
-    setWithdrawOpen(false);
     setData((prev) => {
       if (!prev) return prev;
       return {
@@ -349,6 +348,10 @@ export default function ClientPaymentsPage() {
         },
       };
     });
+  }
+
+  function handleWithdrawClose() {
+    setWithdrawOpen(false);
     void load();
   }
 
@@ -983,7 +986,7 @@ export default function ClientPaymentsPage() {
             initialAmount={withdrawAmount}
             payoutProfile={data.payoutProfile}
             withdrawalPin={data.withdrawalPin}
-            onClose={() => setWithdrawOpen(false)}
+            onClose={handleWithdrawClose}
             onCompleted={handleWithdrawCompleted}
           />
         ) : null}

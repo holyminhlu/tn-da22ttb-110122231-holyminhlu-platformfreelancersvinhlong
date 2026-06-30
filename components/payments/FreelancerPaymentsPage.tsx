@@ -225,8 +225,11 @@ export default function FreelancerPaymentsPage() {
   }
 
   function handleWithdrawCompleted(account: FreelancerBillingOverview["account"]) {
-    setWithdrawOpen(false);
     setData((prev) => (prev ? { ...prev, account } : prev));
+  }
+
+  function handleWithdrawClose() {
+    setWithdrawOpen(false);
     void load();
   }
 
@@ -396,7 +399,7 @@ export default function FreelancerPaymentsPage() {
               initialAmount={withdrawAmount}
               payoutProfile={data.payoutProfile}
               withdrawalPin={data.withdrawalPin}
-              onClose={() => setWithdrawOpen(false)}
+              onClose={handleWithdrawClose}
               onCompleted={handleWithdrawCompleted}
             />
 
