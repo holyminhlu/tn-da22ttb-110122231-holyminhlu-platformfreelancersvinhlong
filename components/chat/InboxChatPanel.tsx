@@ -29,6 +29,7 @@ import {
 } from "@/lib/api/chat";
 import ChatActionMenu from "./ChatActionMenu";
 import ChatEmojiPicker from "./ChatEmojiPicker";
+import ChatImageAttachment from "./ChatImageAttachment";
 import ChatPeerAvatar from "./ChatPeerAvatar";
 
 export type InboxViewerRole = "client" | "freelancer";
@@ -131,10 +132,12 @@ function InboxMessage({ msg, searchQuery }: { msg: ChatMessage; searchQuery: str
     <div className={`fw-inbox-msg ${msg.mine ? "fw-inbox-msg--mine" : "fw-inbox-msg--theirs"}`}>
       <div className={`fw-inbox-bubble ${msg.mine ? "fw-inbox-bubble--sent" : "fw-inbox-bubble--received"}`}>
         {msg.kind === "image" && assetUrl ? (
-          <a href={assetUrl} target="_blank" rel="noopener noreferrer" className="fw-inbox-bubble__image-link">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={assetUrl} alt={msg.attachmentName || "Ảnh"} className="fw-inbox-bubble__image" />
-          </a>
+          <ChatImageAttachment
+            src={assetUrl}
+            alt={msg.attachmentName || "Ảnh"}
+            buttonClassName="fw-inbox-bubble__image-link"
+            imageClassName="fw-inbox-bubble__image"
+          />
         ) : null}
         {msg.kind === "file" && assetUrl ? (
           <a href={assetUrl} target="_blank" rel="noopener noreferrer" className="fw-inbox-bubble__file">

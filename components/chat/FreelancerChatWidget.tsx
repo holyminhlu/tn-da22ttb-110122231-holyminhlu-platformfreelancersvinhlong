@@ -10,6 +10,7 @@ import { useFreelancerChat } from "@/hooks/useFreelancerChat";
 import { useStoredUser } from "@/hooks/useStoredUser";
 import { resolveChatAssetUrl, type ChatMessage } from "@/lib/api/chat";
 import { CLIENT_VERIFY_PAGE } from "@/lib/hire/clientVerification";
+import ChatImageAttachment from "./ChatImageAttachment";
 import "./chat.css";
 
 type FreelancerChatWidgetProps = {
@@ -73,10 +74,12 @@ function ChatMessageItem({ msg }: { msg: ChatMessage }) {
         className={`vlc-chat-bubble ${msg.mine ? "vlc-chat-bubble--mine" : "vlc-chat-bubble--theirs"}`}
       >
         {msg.kind === "image" && assetUrl ? (
-          <a href={assetUrl} target="_blank" rel="noopener noreferrer">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={assetUrl} alt={msg.attachmentName || "Ảnh"} className="vlc-chat-bubble__image" />
-          </a>
+          <ChatImageAttachment
+            src={assetUrl}
+            alt={msg.attachmentName || "Ảnh"}
+            buttonClassName="vlc-chat-bubble__image-btn"
+            imageClassName="vlc-chat-bubble__image"
+          />
         ) : null}
         {msg.kind === "file" && assetUrl ? (
           <a href={assetUrl} target="_blank" rel="noopener noreferrer" className="vlc-chat-bubble__file">

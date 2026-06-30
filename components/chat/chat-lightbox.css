@@ -1,0 +1,89 @@
+.vlc-chat-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: rgb(0 0 0 / 0.88);
+  animation: vlc-chat-lightbox-in 0.2s ease;
+}
+
+@keyframes vlc-chat-lightbox-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.vlc-chat-lightbox__close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 2;
+  display: flex;
+  width: 2.75rem;
+  height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: none;
+  background: rgb(255 255 255 / 0.15);
+  color: #fff;
+  font-size: 1.25rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.vlc-chat-lightbox__close:hover {
+  background: rgb(255 255 255 / 0.28);
+}
+
+.vlc-chat-lightbox__content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: min(94vw, 1080px);
+  max-height: 90vh;
+  animation: vlc-chat-lightbox-zoom 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+@keyframes vlc-chat-lightbox-zoom {
+  from {
+    transform: scale(0.94);
+    opacity: 0.65;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.vlc-chat-lightbox__img {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: min(94vw, 1080px);
+  max-height: 90vh;
+  border-radius: 0.5rem;
+  object-fit: contain;
+  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.5);
+}
+
+.fw-inbox-bubble__image-link,
+.vlc-chat-bubble__image-btn {
+  display: block;
+  margin-bottom: 0.35rem;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: zoom-in;
+  text-align: inherit;
+}
+
+.vlc-chat-bubble__image-btn {
+  margin-bottom: 0;
+}
