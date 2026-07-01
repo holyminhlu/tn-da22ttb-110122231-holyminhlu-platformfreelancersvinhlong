@@ -66,20 +66,20 @@ export type FreelancerServiceItem = {
   category: string | null;
   thumbnail_url?: string | null;
   response_time_hours?: number | null;
+  media_urls?: unknown;
+  demo_media?: unknown;
+  packages?: unknown;
+  faqs?: unknown;
+  tech_stack?: unknown;
+  requirements?: string | null;
+  support_upsell?: string | null;
 };
 
 export type ProfileAssetsAccess = "none" | "locked" | "granted";
 
 export type FreelancerProfilePayload = {
   freelancer: FreelancerDetail;
-  featuredService?: {
-    id: string;
-    title: string;
-    description: string | null;
-    price: string | number;
-    category: string | null;
-    thumbnail_url: string | null;
-  } | null;
+  featuredService?: FreelancerServiceItem | null;
   services: FreelancerServiceItem[];
   portfolio: {
     id: string;

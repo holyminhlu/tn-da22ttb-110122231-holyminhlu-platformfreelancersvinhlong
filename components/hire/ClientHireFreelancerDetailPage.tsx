@@ -28,6 +28,7 @@ import {
   getFreelancer,
   type FreelancerProfilePayload,
 } from "@/lib/api/freelancers";
+import ServicePublicDetailBlocks from "@/components/services/ServicePublicDetailBlocks";
 import { getUserInitials, resolveAvatarSrc } from "@/lib/authSession";
 import { useClientFavoriteFreelancers } from "@/hooks/useClientFavoriteFreelancers";
 import {
@@ -495,7 +496,7 @@ export default function ClientHireFreelancerDetailPage({
             {activeService ? (
               <section className="hire-fl-detail__section" aria-labelledby="fl-featured-heading">
                 <h2 id="fl-featured-heading" className="hire-fl-detail__section-title">
-                  Dịch vụ nổi bật
+                  {selectedServiceId ? t("Chi tiết dịch vụ") : t("Dịch vụ nổi bật")}
                 </h2>
                 <div className="hire-fl-detail__featured">
                   <div className="hire-fl-detail__featured-media">
@@ -512,7 +513,7 @@ export default function ClientHireFreelancerDetailPage({
                       <FaLaptopCode aria-hidden />
                     )}
                   </div>
-                  <div>
+                  <div className="hire-fl-detail__featured-main">
                     <h3 className="hire-fl-detail__featured-title">{activeService.title}</h3>
                     <ServiceDescriptionBlock
                       key={activeService.id}
@@ -530,9 +531,15 @@ export default function ClientHireFreelancerDetailPage({
                           <FaClock aria-hidden /> {activeService.delivery_days} ngày
                         </span>
                       ) : null}
+                      {activeService.response_time_hours != null ? (
+                        <span>
+                          <FaClock aria-hidden /> {t("Phản hồi trong")} {activeService.response_time_hours}h
+                        </span>
+                      ) : null}
                     </div>
                   </div>
                 </div>
+                <ServicePublicDetailBlocks service={activeService} />
               </section>
             ) : null}
 

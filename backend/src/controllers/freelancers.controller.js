@@ -90,6 +90,7 @@ async function listFreelancers(req, res) {
       whereParts.push(`EXISTS (
         SELECT 1 FROM public.services s_cat
         WHERE s_cat.freelancer_id = fp.user_id
+          AND COALESCE(s_cat.listing_status, 'active') = 'active'
           AND COALESCE(s_cat.category, '') ILIKE $${slot}
       )`);
     }
@@ -164,6 +165,7 @@ async function listFreelancers(req, res) {
        LEFT JOIN (
          SELECT freelancer_id, COUNT(*)::int AS services_count
          FROM public.services
+         WHERE COALESCE(listing_status, 'active') = 'active'
          GROUP BY freelancer_id
        ) svc ON svc.freelancer_id = fp.user_id
        LEFT JOIN (
@@ -193,6 +195,7 @@ async function listFreelancers(req, res) {
            COALESCE(s.demo_media->>'kind', '') = 'video' AS has_demo_video
          FROM public.services s
          WHERE s.freelancer_id = fp.user_id
+           AND COALESCE(s.listing_status, 'active') = 'active'
          ORDER BY s.created_at DESC
          LIMIT 1
        ) feat ON true
@@ -295,6 +298,13 @@ function mapPublicServiceRow(row) {
     category: row.category,
     thumbnail_url: row.thumbnail_url,
     response_time_hours: row.response_time_hours,
+    media_urls: row.media_urls,
+    demo_media: row.demo_media,
+    packages: row.packages,
+    faqs: row.faqs,
+    tech_stack: row.tech_stack,
+    requirements: row.requirements,
+    support_upsell: row.support_upsell,
   };
 }
 
@@ -384,9 +394,14 @@ async function getFreelancer(req, res) {
          s.demo_media,
          s.thumbnail_url,
          s.response_time_hours,
+         s.faqs,
+         s.tech_stack,
+         s.requirements,
+         s.support_upsell,
          s.created_at
        FROM public.services s
        WHERE s.freelancer_id = $1
+         AND COALESCE(s.listing_status, 'active') = 'active'
        ORDER BY s.created_at DESC`,
       [freelancerId],
     );

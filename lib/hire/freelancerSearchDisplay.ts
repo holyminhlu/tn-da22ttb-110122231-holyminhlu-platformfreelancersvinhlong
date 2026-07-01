@@ -1,4 +1,4 @@
-import type { FreelancerProfilePayload, FreelancerSearchRow } from "@/lib/api/freelancers";
+import type { FreelancerProfilePayload, FreelancerSearchRow, FreelancerServiceItem } from "@/lib/api/freelancers";
 import { formatVndUi } from "@/lib/format";
 import { resolveJobImageSrc } from "@/lib/jobsDisplay";
 
@@ -62,19 +62,28 @@ export function featuredDescription(row: FreelancerSearchRow): string {
   return text || "Chưa có mô tả dịch vụ.";
 }
 
-/** Gộp featuredService API với mục tương ứng trong danh sách dịch vụ (đủ description). */
-export function resolveFeaturedService(data: FreelancerProfilePayload) {
+/** Gộp featuredService API với mục tương ứng trong danh sách dịch vụ (đủ field public). */
+export function resolveFeaturedService(data: FreelancerProfilePayload): FreelancerServiceItem | null {
   const raw = data.featuredService;
   if (!raw) return null;
   const fromList = data.services.find((svc) => svc.id === raw.id);
+  if (fromList) return fromList;
   return {
-    ...raw,
-    title: raw.title?.trim() || fromList?.title || "",
-    description: raw.description?.trim() || fromList?.description?.trim() || null,
-    price: raw.price ?? fromList?.price ?? 0,
-    category: raw.category?.trim() || fromList?.category?.trim() || null,
-    thumbnail_url: raw.thumbnail_url ?? fromList?.thumbnail_url ?? null,
-    delivery_days: fromList?.delivery_days ?? null,
+    id: raw.id,
+    title: raw.title?.trim() || "",
+    description: raw.description?.trim() || null,
+    price: raw.price ?? 0,
+    category: raw.category?.trim() || null,
+    thumbnail_url: raw.thumbnail_url ?? null,
+    delivery_days: raw.delivery_days ?? null,
+    response_time_hours: raw.response_time_hours ?? null,
+    media_urls: raw.media_urls,
+    demo_media: raw.demo_media,
+    packages: raw.packages,
+    faqs: raw.faqs,
+    tech_stack: raw.tech_stack,
+    requirements: raw.requirements ?? null,
+    support_upsell: raw.support_upsell ?? null,
   };
 }
 
@@ -86,46 +95,17 @@ export function featuredServiceDescriptionText(
   return text || "Chưa có mô tả dịch vụ.";
 }
 
-export type ActiveFeaturedService = {
-  id: string;
-  title: string;
-  description: string | null;
-  price: string | number;
-  category: string | null;
-  thumbnail_url: string | null;
-  delivery_days: number | null;
-};
+/** @deprecated — dùng FreelancerServiceItem trực tiếp */
+export type ActiveFeaturedService = FreelancerServiceItem;
 
 export function resolveActiveService(
   data: FreelancerProfilePayload,
   selectedId: string | null | undefined,
-): ActiveFeaturedService | null {
+): FreelancerServiceItem | null {
   if (selectedId) {
-    const svc = data.services.find((item) => item.id === selectedId);
-    if (svc) {
-      return {
-        id: svc.id,
-        title: svc.title,
-        description: svc.description ?? null,
-        price: svc.price,
-        category: svc.category,
-        thumbnail_url: svc.thumbnail_url ?? null,
-        delivery_days: svc.delivery_days,
-      };
-    }
+    return data.services.find((item) => item.id === selectedId) ?? null;
   }
-  const featured = resolveFeaturedService(data);
-  if (!featured) return null;
-  const fromList = data.services.find((item) => item.id === featured.id);
-  return {
-    id: featured.id,
-    title: featured.title,
-    description: featured.description,
-    price: featured.price,
-    category: featured.category,
-    thumbnail_url: featured.thumbnail_url,
-    delivery_days: fromList?.delivery_days ?? null,
-  };
+  return resolveFeaturedService(data);
 }
 
 const DESC_PREVIEW_PARAS = 2;

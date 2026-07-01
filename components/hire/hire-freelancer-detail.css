@@ -495,6 +495,124 @@
   color: #047857;
 }
 
+.hire-fl-detail__featured-main {
+  min-width: 0;
+  flex: 1;
+}
+
+.hire-fl-detail__svc-blocks {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.hire-fl-detail__svc-block-title {
+  margin: 0 0 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.hire-fl-detail__svc-block {
+  margin: 0;
+}
+
+.hire-fl-detail__svc-gallery {
+  margin: 0;
+}
+
+.hire-fl-detail__svc-demo-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: 1px solid #bfdbfe;
+  border-radius: 0.35rem;
+  background: #eff6ff;
+  color: #1d4ed8;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.hire-fl-detail__svc-demo-btn:hover {
+  background: #dbeafe;
+}
+
+.hire-fl-detail__svc-table-wrap {
+  overflow-x: auto;
+}
+
+.hire-fl-detail__svc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+}
+
+.hire-fl-detail__svc-table th,
+.hire-fl-detail__svc-table td {
+  border: 1px solid #e5e7eb;
+  padding: 0.45rem 0.55rem;
+  text-align: left;
+}
+
+.hire-fl-detail__svc-table th {
+  background: #f9fafb;
+  font-weight: 600;
+  color: #374151;
+}
+
+.hire-fl-detail__svc-req-list {
+  margin: 0;
+  padding-left: 1.15rem;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: #374151;
+}
+
+.hire-fl-detail__svc-prose {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  color: #374151;
+  white-space: pre-wrap;
+}
+
+.hire-fl-detail__svc-note {
+  margin: 0.5rem 0 0;
+  font-size: 0.8125rem;
+  color: #6b7280;
+}
+
+.hire-fl-detail__svc-faq {
+  margin: 0;
+}
+
+.hire-fl-detail__svc-faq-item {
+  padding: 0.55rem 0;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.hire-fl-detail__svc-faq-item:last-child {
+  border-bottom: none;
+}
+
+.hire-fl-detail__svc-faq-item dt {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.hire-fl-detail__svc-faq-item dd {
+  margin: 0.25rem 0 0;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: #4b5563;
+}
+
 .hire-fl-detail__services-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));

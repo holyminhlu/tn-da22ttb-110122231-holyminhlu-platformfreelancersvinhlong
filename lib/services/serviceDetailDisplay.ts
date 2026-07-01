@@ -79,6 +79,14 @@ export function servicePackagesForRow(service: MyServiceRow): ServicePackage[] {
   return parseServicePackages(service.packages, service.price, service.delivery_days);
 }
 
+export function servicePackagesForPublic(service: {
+  packages?: unknown;
+  price: string | number;
+  delivery_days?: number | null;
+}): ServicePackage[] {
+  return parseServicePackages(service.packages, service.price, service.delivery_days ?? null);
+}
+
 export function packagePriceLabel(packs: ServicePackage[]): string {
   if (packs.length === 0) return "—";
   if (packs.length === 1) return formatPackagePrice(packs[0].price);
