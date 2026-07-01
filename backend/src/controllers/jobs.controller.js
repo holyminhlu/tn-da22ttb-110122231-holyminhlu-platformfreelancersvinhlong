@@ -10,6 +10,7 @@ const {
 const { notifyQuoteAction } = require("../utils/notificationService");
 const { ensureFreelancerCanWork } = require("../utils/freelancerIdentityVerified");
 const { setStageDeadline, logWorkflowEvent, SLA_DAYS } = require("../utils/workflowSla");
+const { freelancerStatsJoins } = require("../utils/freelancerStatsSql");
 
 async function isClientIdentityVerified(db, userId) {
   const result = await db.query(
@@ -676,12 +677,7 @@ const JOB_QUOTE_FREELANCER_JOINS = `
     FROM public.contract_reviews
     GROUP BY freelancer_id
   ) rv ON rv.freelancer_id = jq.freelancer_id
-  LEFT JOIN (
-    SELECT freelancer_id, COUNT(*)::int AS completed_jobs
-    FROM public.contracts
-    WHERE status = 'completed' AND deleted_at IS NULL
-    GROUP BY freelancer_id
-  ) ct ON ct.freelancer_id = jq.freelancer_id
+  ${freelancerStatsJoins("jq.freelancer_id")}
 `;
 
 function mapJobQuoteRow(row) {
@@ -868,7 +864,7 @@ async function listMyJobQuotes(req, res) {
          fup.tagline AS freelancer_title,
          fup.bio AS freelancer_bio,
          COALESCE(fup.district_city, fup.city) AS freelancer_location,
-         fp.job_success_score,
+         jss.job_success_score,
          COALESCE(rv.rating_avg, 0)::float8 AS rating_avg,
          COALESCE(rv.total_reviews, 0)::int AS total_reviews,
          COALESCE(ct.completed_jobs, 0)::int AS completed_jobs
@@ -1893,7 +1889,7 @@ async function compareJobQuoteWithAi(req, res) {
          fup.tagline AS freelancer_title,
          fup.bio AS freelancer_bio,
          COALESCE(fup.district_city, fup.city) AS freelancer_location,
-         fp.job_success_score,
+         jss.job_success_score,
          COALESCE(rv.rating_avg, 0)::float8 AS rating_avg,
          COALESCE(rv.total_reviews, 0)::int AS total_reviews,
          COALESCE(ct.completed_jobs, 0)::int AS completed_jobs

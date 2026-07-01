@@ -1,6 +1,7 @@
 const bcrypt = require("bcryptjs");
 const { pool } = require("../db/pool");
 const { verifyAccessToken } = require("../utils/authTokens");
+const { freelancerStatsJoins, EXPERIENCE_YEARS_SELECT } = require("../utils/freelancerStatsSql");
 
 function normalizeEmail(raw) {
   return String(raw || "")
@@ -159,24 +160,6 @@ async function updateProfile(req, res) {
     return res.status(400).json({ message: "Số năm kinh nghiệm không hợp lệ." });
   }
 
-  const jobSuccessScoreRaw = req.body?.jobSuccessScore;
-  const avgResponseMinutesRaw = req.body?.avgResponseMinutes;
-  let jobSuccessScore = null;
-  if (jobSuccessScoreRaw !== undefined && jobSuccessScoreRaw !== null && jobSuccessScoreRaw !== "") {
-    const j = Number(jobSuccessScoreRaw);
-    if (!Number.isFinite(j) || j < 0 || j > 100) {
-      return res.status(400).json({ message: "Điểm thành công việc phải từ 0 đến 100." });
-    }
-    jobSuccessScore = Math.round(j);
-  }
-  let avgResponseMinutes = null;
-  if (avgResponseMinutesRaw !== undefined && avgResponseMinutesRaw !== null && avgResponseMinutesRaw !== "") {
-    const m = Number(avgResponseMinutesRaw);
-    if (!Number.isFinite(m) || m < 0 || m > 10080) {
-      return res.status(400).json({ message: "Thời gian phản hồi trung bình không hợp lệ (tối đa 10080 phút)." });
-    }
-    avgResponseMinutes = Math.round(m);
-  }
   const profileBadges = Array.isArray(req.body?.profileBadges)
     ? req.body.profileBadges
         .map((v) => String(v || "").trim().slice(0, 80))
@@ -227,8 +210,8 @@ async function updateProfile(req, res) {
     if (role === "freelancer") {
       await dbClient.query(
         `INSERT INTO public.freelancer_profiles
-          (user_id, title, hourly_rate, experience_years, availability_status, languages, job_success_score, avg_response_minutes, profile_badges)
-         VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7, $8, $9::jsonb)
+          (user_id, title, hourly_rate, experience_years, availability_status, languages, profile_badges)
+         VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7::jsonb)
          ON CONFLICT (user_id)
          DO UPDATE SET
            title = EXCLUDED.title,
@@ -236,8 +219,6 @@ async function updateProfile(req, res) {
            experience_years = EXCLUDED.experience_years,
            availability_status = EXCLUDED.availability_status,
            languages = EXCLUDED.languages,
-           job_success_score = EXCLUDED.job_success_score,
-           avg_response_minutes = EXCLUDED.avg_response_minutes,
            profile_badges = EXCLUDED.profile_badges,
            updated_at = NOW()`,
         [
@@ -247,8 +228,6 @@ async function updateProfile(req, res) {
           experienceYears,
           availabilityStatus || "available",
           JSON.stringify(languages || []),
-          jobSuccessScore,
-          avgResponseMinutes,
           JSON.stringify(profileBadges),
         ],
       );
@@ -561,11 +540,11 @@ async function getMe(req, res) {
         `SELECT
            fp.title,
            fp.hourly_rate,
-           fp.experience_years,
+           ${EXPERIENCE_YEARS_SELECT},
            COALESCE(fp.availability_status, 'available') AS availability_status,
            fp.total_earnings,
-           fp.job_success_score,
-           fp.avg_response_minutes,
+           jss.job_success_score,
+           arpm.avg_response_minutes,
            COALESCE(fp.profile_badges, '[]'::jsonb) AS profile_badges,
            COALESCE(rv.rating_avg, 0) AS rating_avg,
            COALESCE(rv.total_reviews, 0) AS total_reviews,
@@ -579,12 +558,7 @@ async function getMe(req, res) {
            FROM public.contract_reviews
            GROUP BY freelancer_id
          ) rv ON rv.freelancer_id = u.id
-         LEFT JOIN (
-           SELECT freelancer_id, COUNT(*)::int AS completed_jobs
-           FROM public.contracts
-           WHERE status = 'completed' AND deleted_at IS NULL
-           GROUP BY freelancer_id
-         ) ct ON ct.freelancer_id = u.id
+         ${freelancerStatsJoins("u.id")}
          WHERE u.id = $1 AND u.deleted_at IS NULL
          LIMIT 1`,
         [userId],

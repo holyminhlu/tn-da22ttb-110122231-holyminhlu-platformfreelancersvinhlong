@@ -14,12 +14,14 @@ import {
   FaFileAlt,
   FaFolderOpen,
   FaGlobe,
+  FaGraduationCap,
   FaImage,
   FaLaptopCode,
   FaMapMarkerAlt,
   FaStar,
   FaThumbsUp,
 } from "react-icons/fa";
+import type { IconType } from "react-icons";
 import FreelancerAvatarFrame from "@/components/freelancer/FreelancerAvatarFrame";
 import {
   downloadFreelancerProtectedAsset,
@@ -245,6 +247,57 @@ export default function ClientHireFreelancerDetailPage({
   const profileFiles = data.profileFiles ?? [];
   const profileAssetsLocked = data.profileAssetsAccess === "locked";
 
+  const detailStats = [
+    {
+      key: "contracts",
+      variant: "contracts",
+      icon: FaBriefcase,
+      value: String(fl.completed_jobs),
+      label: t("Hợp đồng hoàn thành"),
+    },
+    {
+      key: "success",
+      variant: "success",
+      icon: FaThumbsUp,
+      value: fl.job_success_score != null ? `${fl.job_success_score}%` : "—",
+      label: t("Tỷ lệ thành công"),
+    },
+    {
+      key: "experience",
+      variant: "experience",
+      icon: FaGraduationCap,
+      value: fl.experience_years != null ? String(fl.experience_years) : "—",
+      label: t("Năm kinh nghiệm"),
+    },
+    {
+      key: "response",
+      variant: "response",
+      icon: FaClock,
+      value: fl.avg_response_minutes ? `~${fl.avg_response_minutes}p` : "—",
+      label: t("Phản hồi TB"),
+    },
+    {
+      key: "services",
+      variant: "services",
+      icon: FaLaptopCode,
+      value: String(data.services.length),
+      label: t("Dịch vụ"),
+    },
+    {
+      key: "portfolio",
+      variant: "portfolio",
+      icon: FaFolderOpen,
+      value: String(data.portfolio.length),
+      label: t("Hồ sơ dự án"),
+    },
+  ] satisfies Array<{
+    key: string;
+    variant: string;
+    icon: IconType;
+    value: string;
+    label: string;
+  }>;
+
   function handleSelectService(serviceId: string) {
     setSelectedServiceId(serviceId);
     document.getElementById("fl-featured-heading")?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -393,36 +446,21 @@ export default function ClientHireFreelancerDetailPage({
         </header>
 
         <div className="hire-fl-detail__stats" aria-label={t("Thống kê freelancer")}>
-          <div className="hire-fl-detail__stat">
-            <span className="hire-fl-detail__stat-value">{fl.completed_jobs}</span>
-            <span className="hire-fl-detail__stat-label">{t("Hợp đồng hoàn thành")}</span>
-          </div>
-          <div className="hire-fl-detail__stat">
-            <span className="hire-fl-detail__stat-value">
-              {fl.job_success_score != null ? `${fl.job_success_score}%` : "—"}
-            </span>
-            <span className="hire-fl-detail__stat-label">{t("Tỷ lệ thành công")}</span>
-          </div>
-          <div className="hire-fl-detail__stat">
-            <span className="hire-fl-detail__stat-value">
-              {fl.experience_years != null ? fl.experience_years : "—"}
-            </span>
-            <span className="hire-fl-detail__stat-label">{t("Năm kinh nghiệm")}</span>
-          </div>
-          <div className="hire-fl-detail__stat">
-            <span className="hire-fl-detail__stat-value">
-              {fl.avg_response_minutes ? `~${fl.avg_response_minutes}p` : "—"}
-            </span>
-            <span className="hire-fl-detail__stat-label">{t("Phản hồi TB")}</span>
-          </div>
-          <div className="hire-fl-detail__stat">
-            <span className="hire-fl-detail__stat-value">{data.services.length}</span>
-            <span className="hire-fl-detail__stat-label">{t("Dịch vụ")}</span>
-          </div>
-          <div className="hire-fl-detail__stat">
-            <span className="hire-fl-detail__stat-value">{data.portfolio.length}</span>
-            <span className="hire-fl-detail__stat-label">{t("Hồ sơ dự án")}</span>
-          </div>
+          {detailStats.map((stat) => {
+            const Icon = stat.icon;
+            return (
+              <div
+                key={stat.key}
+                className={`hire-fl-detail__stat hire-fl-detail__stat--${stat.variant}`}
+              >
+                <span className="hire-fl-detail__stat-icon" aria-hidden>
+                  <Icon />
+                </span>
+                <span className="hire-fl-detail__stat-value">{stat.value}</span>
+                <span className="hire-fl-detail__stat-label">{stat.label}</span>
+              </div>
+            );
+          })}
         </div>
 
         <div className="hire-fl-detail__layout">

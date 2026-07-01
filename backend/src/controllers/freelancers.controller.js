@@ -7,6 +7,7 @@ const {
   resolveUploadDiskPath,
 } = require("../utils/freelancerProfileAssetsAccess");
 const fs = require("fs");
+const { freelancerStatsJoins, EXPERIENCE_YEARS_SELECT } = require("../utils/freelancerStatsSql");
 
 const FAVORITE_COUNT_JOIN = `
   LEFT JOIN (
@@ -125,9 +126,9 @@ async function listFreelancers(req, res) {
          )) AS location_label,
          fp.hourly_rate,
          fp.total_earnings,
-         fp.experience_years,
-         fp.avg_response_minutes,
-         fp.job_success_score,
+         ${EXPERIENCE_YEARS_SELECT},
+         arpm.avg_response_minutes,
+         jss.job_success_score,
          COALESCE(fp.profile_badges, '[]'::jsonb) AS profile_badges,
          COALESCE(rv.rating_avg, 0)::float8 AS rating_avg,
          COALESCE(rv.total_reviews, 0)::int AS total_reviews,
@@ -153,12 +154,7 @@ async function listFreelancers(req, res) {
          FROM public.contract_reviews
          GROUP BY freelancer_id
        ) rv ON rv.freelancer_id = fp.user_id
-       LEFT JOIN (
-         SELECT freelancer_id, COUNT(*)::int AS completed_jobs
-         FROM public.contracts
-         WHERE status = 'completed' AND deleted_at IS NULL
-         GROUP BY freelancer_id
-       ) ct ON ct.freelancer_id = fp.user_id
+       ${freelancerStatsJoins("fp.user_id")}
        LEFT JOIN (
          SELECT us.user_id, array_agg(s.name ORDER BY s.name) AS skill_names
          FROM public.user_skills us
@@ -340,9 +336,9 @@ async function getFreelancer(req, res) {
          )) AS location_label,
          fp.hourly_rate,
          fp.total_earnings,
-         fp.experience_years,
-         fp.avg_response_minutes,
-         fp.job_success_score,
+         ${EXPERIENCE_YEARS_SELECT},
+         arpm.avg_response_minutes,
+         jss.job_success_score,
          COALESCE(fp.profile_badges, '[]'::jsonb) AS profile_badges,
          COALESCE(rv.rating_avg, 0)::float8 AS rating_avg,
          COALESCE(rv.total_reviews, 0)::int AS total_reviews,
@@ -359,12 +355,7 @@ async function getFreelancer(req, res) {
          FROM public.contract_reviews
          GROUP BY freelancer_id
        ) rv ON rv.freelancer_id = u.id
-       LEFT JOIN (
-         SELECT freelancer_id, COUNT(*)::int AS completed_jobs
-         FROM public.contracts
-         WHERE status = 'completed' AND deleted_at IS NULL
-         GROUP BY freelancer_id
-       ) ct ON ct.freelancer_id = u.id
+       ${freelancerStatsJoins("u.id")}
        LEFT JOIN (
          SELECT us.user_id, array_agg(s.name ORDER BY s.name) AS skill_names
          FROM public.user_skills us

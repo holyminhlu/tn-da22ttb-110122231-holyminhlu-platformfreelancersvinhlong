@@ -1,6 +1,7 @@
 const { pool } = require("../db/pool");
 const { requireAdmin } = require("../utils/requireAdmin");
 const { parseUuidParam } = require("../utils/validators");
+const { freelancerStatsJoins, EXPERIENCE_YEARS_SELECT } = require("../utils/freelancerStatsSql");
 
 function mapUserRow(row) {
   return {
@@ -257,14 +258,14 @@ const FULL_USER_SELECT = `
   iv.updated_at AS iv_updated_at,
   fp.title AS freelancer_title,
   fp.hourly_rate,
-  fp.experience_years,
+  ${EXPERIENCE_YEARS_SELECT},
   fp.availability_status,
   fp.total_earnings,
   fp.rating_avg,
   fp.total_reviews,
   fp.languages,
-  fp.job_success_score,
-  fp.avg_response_minutes,
+  jss.job_success_score,
+  arpm.avg_response_minutes,
   fp.profile_badges,
   fp.created_at AS fp_created_at,
   fp.updated_at AS fp_updated_at`;
@@ -273,7 +274,8 @@ const FULL_USER_FROM = `
   FROM public.users u
   LEFT JOIN public.user_profiles up ON up.user_id = u.id
   LEFT JOIN public.identity_verifications iv ON iv.user_id = u.id
-  LEFT JOIN public.freelancer_profiles fp ON fp.user_id = u.id AND fp.deleted_at IS NULL`;
+  LEFT JOIN public.freelancer_profiles fp ON fp.user_id = u.id AND fp.deleted_at IS NULL
+  ${freelancerStatsJoins("u.id")}`;
 
 function mapFullUserRow(row) {
   const hasFreelancerProfile =
