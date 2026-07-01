@@ -86,7 +86,7 @@ export const keyedMessages: Record<string, unknown> = {
     },
     userMenu: {
       editAccount: "Chỉnh sửa tài khoản của tôi",
-      editProfile: "Chỉnh sửa hồ sơ",
+      editProfile: "Chỉnh sửa hồ sơ của tôi",
       help: "Giúp đỡ",
       logout: "Đăng xuất",
       cashAccountHeader: "TÀI KHOẢN TIỀN MẶT",
@@ -138,7 +138,7 @@ export const keyedMessages: Record<string, unknown> = {
       feedback: "Phản hồi",
       profileStats: "Thống kê hồ sơ",
       accountSettings: "Cài đặt tài khoản",
-      contactInfo: "Thông tin liên hệ",
+      contactInfo: "Thông tin tài khoản",
       identityVerification: "Xác minh danh tính",
       credentials: "Tên đăng nhập & Mật khẩu",
       security: "Bảo mật tài khoản",
