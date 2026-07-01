@@ -1105,15 +1105,13 @@
 }
 
 .svc-media-upload__file-input {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
+  display: none;
+}
+
+.svc-media-upload__error {
+  margin: 0.35rem 0 0;
+  font-size: 0.8125rem;
+  color: #b91c1c;
 }
 
 .svc-media-upload__row {

@@ -13,21 +13,30 @@ const storage = multer.diskStorage({
   },
   filename: (_req, file, cb) => {
     const ext = path.extname(file.originalname || "").toLowerCase();
-    const safeExt = [".jpg", ".jpeg", ".png", ".webp", ".gif"].includes(ext) ? ext : ".jpg";
+    const safeExt = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".heic", ".heif"].includes(ext) ? ext : ".jpg";
     cb(null, `${crypto.randomUUID()}${safeExt}`);
   },
 });
+
+const ALLOWED_IMAGE_EXTS = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".heic", ".heif"];
+const ALLOWED_IMAGE_MIMES = /^image\/(jpeg|jpg|pjpeg|png|webp|gif|heic|heif)$/i;
+
+function isAllowedServiceImage(file) {
+  if (ALLOWED_IMAGE_MIMES.test(String(file.mimetype || ""))) return true;
+  const ext = path.extname(file.originalname || "").toLowerCase();
+  return ALLOWED_IMAGE_EXTS.includes(ext);
+}
 
 /** Tối đa 12 ảnh, mỗi ảnh 5MB — ảnh minh hoạ dịch vụ */
 const uploadServiceImages = multer({
   storage,
   limits: { fileSize: 5 * 1024 * 1024, files: 12 },
   fileFilter: (_req, file, cb) => {
-    if (/^image\/(jpeg|png|webp|gif)$/i.test(file.mimetype)) {
+    if (isAllowedServiceImage(file)) {
       cb(null, true);
       return;
     }
-    cb(new Error("Chỉ chấp nhận ảnh JPEG, PNG, WebP hoặc GIF."));
+    cb(new Error("Chỉ chấp nhận ảnh JPEG, PNG, WebP, GIF hoặc HEIC."));
   },
 });
 

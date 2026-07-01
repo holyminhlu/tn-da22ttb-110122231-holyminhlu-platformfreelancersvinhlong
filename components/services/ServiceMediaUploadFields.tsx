@@ -6,12 +6,22 @@ import { useRef, useState } from "react";
 import { FaFilePdf, FaImage, FaImages, FaTimes, FaVideo } from "react-icons/fa";
 import { resolveFreelancerMedia } from "@/lib/hire/freelancerSearchDisplay";
 
+const IMAGE_ACCEPT = "image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif";
+
+function uploadErrorMessage(err: unknown, fallback: string): string {
+  if (err && typeof err === "object" && "message" in err) {
+    const message = String((err as { message: string }).message).trim();
+    if (message) return message;
+  }
+  return fallback;
+}
+
 type ServiceMediaUploadFieldsProps = {
   thumbnailUrl: string | null;
   mediaUrls: string[];
   demoUrl: string | null;
   onThumbnail: (file: File | null) => Promise<void>;
-  onGallery: (files: FileList | null) => Promise<void>;
+  onGallery: (files: File[]) => Promise<void>;
   onDemo: (file: File | null) => Promise<void>;
   onRemoveThumbnail: () => void;
   onRemoveGalleryImage: (url: string) => void;
@@ -36,6 +46,9 @@ export default function ServiceMediaUploadFields({
   const [uploadingCover, setUploadingCover] = useState(false);
   const [uploadingGallery, setUploadingGallery] = useState(false);
   const [uploadingDemo, setUploadingDemo] = useState(false);
+  const [coverError, setCoverError] = useState<string | null>(null);
+  const [galleryError, setGalleryError] = useState<string | null>(null);
+  const [demoError, setDemoError] = useState<string | null>(null);
 
   const coverSrc = resolveFreelancerMedia(thumbnailUrl);
   const demoIsPdf = demoUrl ? /\.pdf(\?|$)/i.test(demoUrl) : false;
@@ -44,21 +57,27 @@ export default function ServiceMediaUploadFields({
     const file = event.target.files?.[0] ?? null;
     event.target.value = "";
     if (!file) return;
+    setCoverError(null);
     setUploadingCover(true);
     try {
       await onThumbnail(file);
+    } catch (err) {
+      setCoverError(uploadErrorMessage(err, t("Không tải được ảnh bìa.")));
     } finally {
       setUploadingCover(false);
     }
   }
 
   async function pickGallery(event: React.ChangeEvent<HTMLInputElement>) {
-    const files = event.target.files;
+    const batch = Array.from(event.target.files ?? []);
     event.target.value = "";
-    if (!files?.length) return;
+    if (!batch.length) return;
+    setGalleryError(null);
     setUploadingGallery(true);
     try {
-      await onGallery(files);
+      await onGallery(batch);
+    } catch (err) {
+      setGalleryError(uploadErrorMessage(err, t("Không tải được ảnh thư viện.")));
     } finally {
       setUploadingGallery(false);
     }
@@ -68,9 +87,12 @@ export default function ServiceMediaUploadFields({
     const file = event.target.files?.[0] ?? null;
     event.target.value = "";
     if (!file) return;
+    setDemoError(null);
     setUploadingDemo(true);
     try {
       await onDemo(file);
+    } catch (err) {
+      setDemoError(uploadErrorMessage(err, t("Không tải được file demo.")));
     } finally {
       setUploadingDemo(false);
     }
@@ -93,8 +115,10 @@ export default function ServiceMediaUploadFields({
         <input
           ref={coverInputRef}
           type="file"
-          accept="image/*"
+          accept={IMAGE_ACCEPT}
           className="svc-media-upload__file-input"
+          tabIndex={-1}
+          aria-hidden
           onChange={(e) => void pickCover(e)}
         />
         <div className="svc-media-upload__row">
@@ -113,6 +137,11 @@ export default function ServiceMediaUploadFields({
             </button>
           ) : null}
         </div>
+        {coverError ? (
+          <p className="svc-media-upload__error" role="alert">
+            {coverError}
+          </p>
+        ) : null}
         {coverSrc ? (
           <div className="svc-media-upload__preview svc-media-upload__preview--cover">
             <Image src={coverSrc} alt="" width={320} height={180} unoptimized />
@@ -128,9 +157,11 @@ export default function ServiceMediaUploadFields({
         <input
           ref={galleryInputRef}
           type="file"
-          accept="image/*"
+          accept={IMAGE_ACCEPT}
           multiple
           className="svc-media-upload__file-input"
+          tabIndex={-1}
+          aria-hidden
           onChange={(e) => void pickGallery(e)}
         />
         <div className="svc-media-upload__row">
@@ -153,6 +184,11 @@ export default function ServiceMediaUploadFields({
             </span>
           ) : null}
         </div>
+        {galleryError ? (
+          <p className="svc-media-upload__error" role="alert">
+            {galleryError}
+          </p>
+        ) : null}
         {mediaUrls.length > 0 ? (
           <ul className="svc-media-upload__gallery">
             {mediaUrls.map((url) => {
@@ -186,6 +222,8 @@ export default function ServiceMediaUploadFields({
           type="file"
           accept="video/*,application/pdf"
           className="svc-media-upload__file-input"
+          tabIndex={-1}
+          aria-hidden
           onChange={(e) => void pickDemo(e)}
         />
         <div className="svc-media-upload__row">
@@ -204,6 +242,11 @@ export default function ServiceMediaUploadFields({
             </button>
           ) : null}
         </div>
+        {demoError ? (
+          <p className="svc-media-upload__error" role="alert">
+            {demoError}
+          </p>
+        ) : null}
         {demoUrl ? (
           <p className="svc-upload-ok svc-media-upload__file-name">
             {demoIsPdf ? t("Đã tải file PDF demo") : t("Đã tải video demo")}

@@ -4,6 +4,7 @@ import { tUi } from "@/lib/i18n/runtime";
 import { useTranslation } from "@/hooks/useTranslation";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useHydrated } from "@/hooks/useHydrated";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { FaCheck, FaTrashAlt } from "react-icons/fa";
 import {
@@ -116,6 +117,7 @@ type SubmitMode = "draft" | "pending" | "save";
 export default function ServiceCreateWizard({
   editServiceId }: ServiceCreateWizardProps = {}) {
   const { t } = useTranslation();
+  const hydrated = useHydrated();
 
   const router = useRouter();
   const isEdit = Boolean(editServiceId);
@@ -350,33 +352,29 @@ export default function ServiceCreateWizard({
   }
 
   async function handleThumbnail(file: File | null) {
-  if (!file) return;
-    try {
-      const url = await uploadServiceThumbnail(file);
-      setThumbnailUrl(url);
-    } catch {
-      alert(t("Không tải được ảnh cover."));
-    }
+    if (!file) return;
+    const url = await uploadServiceThumbnail(file);
+    setThumbnailUrl(url);
   }
 
-  async function handleGallery(files: FileList | null) {
-  if (!files?.length) return;
-    try {
-      const urls = await uploadServiceImages(Array.from(files));
-      setMediaUrls((prev) => [...prev, ...urls].slice(0, 12));
-    } catch {
-      alert(t("Không tải được ảnh gallery."));
+  async function handleGallery(files: File[]) {
+    if (!files.length) return;
+    const remaining = Math.max(0, 12 - mediaUrls.length);
+    const batch = files.slice(0, remaining);
+    if (!batch.length) {
+      throw { message: "Đã đủ 12 ảnh trong thư viện." };
     }
+    const urls = await uploadServiceImages(batch);
+    if (!urls.length) {
+      throw { message: "Máy chủ không trả về URL ảnh — thử lại hoặc đổi định dạng file." };
+    }
+    setMediaUrls((prev) => [...prev, ...urls].slice(0, 12));
   }
 
   async function handleDemo(file: File | null) {
-  if (!file) return;
-    try {
-      const data = await uploadServiceDemo(file);
-      setDemoUrl(data.url);
-    } catch {
-      alert(t("Không tải được video demo."));
-    }
+    if (!file) return;
+    const data = await uploadServiceDemo(file);
+    setDemoUrl(data.url);
   }
 
   const pricePreview = formatPackagePrice(Number(basePrice.replace(/\D/g, "")) || 0);
@@ -385,6 +383,26 @@ export default function ServiceCreateWizard({
     !isEdit || listingStatus === "draft" || listingStatus === "denied";
   const showSaveOnly =
     isEdit && (listingStatus === "active" || listingStatus === "paused" || listingStatus === "pending");
+
+  if (!hydrated) {
+    return (
+      <ServicesShell>
+        <header className="svc-hub__head">
+          <div>
+            <h1 className="svc-hub__title">{isEdit ? "Chỉnh sửa dịch vụ" : "Đăng dịch vụ mới"}</h1>
+            <p className="svc-hub__lead">
+              {isEdit
+                ? "Cập nhật từng bước — lưu thay đổi hoặc gửi lại chờ duyệt nếu cần."
+                : "Hoàn thành từng bước bên dưới — lưu nháp bất cứ lúc nào hoặc gửi chờ duyệt ở bước cuối."}
+            </p>
+          </div>
+        </header>
+        <div className="post-job-wizard svc-create-wizard" aria-busy="true">
+          <p className="svc-wizard__progress">{t("Đang tải biểu mẫu…")}</p>
+        </div>
+      </ServicesShell>
+    );
+  }
 
   if (loadingEdit) {
     return (
