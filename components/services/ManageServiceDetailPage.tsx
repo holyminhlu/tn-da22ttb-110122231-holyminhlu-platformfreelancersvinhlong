@@ -36,6 +36,7 @@ import {
   servicePackagesForRow,
 } from "@/lib/services/serviceDetailDisplay";
 import ServicesShell from "./ServicesShell";
+import ServiceDemoModal from "./ServiceDemoModal";
 
 function badgeClass(status: string): string {
   return `svc-manage__badge svc-manage__badge--${status.toLowerCase()}`;
@@ -51,6 +52,7 @@ export default function ManageServiceDetailPage() {  const { t, formatDate } = u
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [demoOpen, setDemoOpen] = useState(false);
 
   const load = useCallback(async () => {
     if (!serviceId) {
@@ -96,6 +98,7 @@ export default function ManageServiceDetailPage() {  const { t, formatDate } = u
     [service],
   );
   const demo = useMemo(() => (service ? parseDemoMedia(service.demo_media) : null), [service]);
+  const demoMediaUrl = demo?.url ? resolveFreelancerMedia(demo.url) || demo.url : null;
   const coverSrc = resolveFreelancerMedia(service?.thumbnail_url);
   const singlePrice = isSinglePackagePricing(packages);
 
@@ -198,8 +201,9 @@ export default function ManageServiceDetailPage() {  const { t, formatDate } = u
                   </button>
                 ) : null}
                 {clientPreviewHref ? (
-                  <Link href={clientPreviewHref} className="svc-btn svc-btn--secondary" target="_blank">
-                    <FaExternalLinkAlt aria-hidden /> {t("Xem như Khách hàng")}
+                  <Link href={clientPreviewHref} className="svc-btn svc-btn--secondary" target="_blank" rel="noreferrer">
+                    <FaExternalLinkAlt aria-hidden />
+                    <span>{t("Xem như Khách hàng")}</span>
                   </Link>
                 ) : null}
                 <Link href={`/dich-vu/quan-ly/${service.id}/chinh-sua`} className="svc-btn svc-btn--primary">
@@ -381,7 +385,7 @@ export default function ManageServiceDetailPage() {  const { t, formatDate } = u
                 </section>
 
                 <section className="svc-detail__section">
-                  <h2 className="svc-detail__section-title">Gallery & Demo</h2>
+                  <h2 className="svc-detail__section-title">{t("Thư viện ảnh & Demo")}</h2>
                   {gallery.length > 0 ? (
                     <ul className="svc-detail__gallery">
                       {gallery.map((url) => {
@@ -395,17 +399,28 @@ export default function ManageServiceDetailPage() {  const { t, formatDate } = u
                       })}
                     </ul>
                   ) : (
-                    <p className="svc-detail__empty-inline">{t("Chưa có ảnh gallery.")}</p>
+                    <p className="svc-detail__empty-inline">{t("Chưa có ảnh thư viện.")}</p>
                   )}
-                  {demo?.url ? (
-                    <p className="svc-detail__demo">
+                  {demo?.url && demoMediaUrl ? (
+                    <div className="svc-detail__demo">
                       <FaVideo aria-hidden />
-                      <a href={resolveFreelancerMedia(demo.url) || demo.url} target="_blank" rel="noreferrer">
-                        {t("Mở video / file demo")}
-                      </a>
-                    </p>
+                      <button
+                        type="button"
+                        className="svc-detail__demo-btn"
+                        onClick={() => setDemoOpen(true)}
+                      >
+                        {t("Xem video / file demo")}
+                      </button>
+                    </div>
                   ) : null}
                 </section>
+
+                <ServiceDemoModal
+                  open={demoOpen}
+                  onClose={() => setDemoOpen(false)}
+                  url={demo?.url || ""}
+                  kind={demo?.kind}
+                />
 
                 {service.support_upsell?.trim() ? (
                   <section className="svc-detail__section">

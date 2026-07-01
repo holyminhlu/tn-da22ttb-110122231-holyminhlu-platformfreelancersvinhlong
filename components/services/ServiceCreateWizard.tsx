@@ -28,6 +28,7 @@ import {
   type ServiceRevisionOption,
 } from "@/lib/hire/servicePackages";
 import ServicesShell from "./ServicesShell";
+import ServiceMediaUploadFields from "./ServiceMediaUploadFields";
 import "../hire/post-job.css";
 
 const STEPS = [
@@ -35,7 +36,7 @@ const STEPS = [
   { id: 2, title: "Giá & Gói" },
   { id: 3, title: "Mô tả & FAQ" },
   { id: 4, title: "Yêu cầu" },
-  { id: 5, title: "Gallery" },
+  { id: 5, title: "Hình ảnh & Demo" },
 ] as const;
 
 const DEFAULT_CATEGORIES = [
@@ -848,29 +849,17 @@ export default function ServiceCreateWizard({
           ) : null}
 
           {step === 5 ? (
-            <div className="post-job-wizard__fields">
-              <h2 className="post-job-wizard__heading">{t("Hình ảnh & Sản phẩm mẫu")}</h2>
-              <p className="post-job-wizard__hint">
-                {t("Ảnh cover và gallery giúp tăng tỷ lệ chuyển đổi — video/PDF demo thể hiện chất lượng thực tế.")}
-              </p>
-              <label className="post-job-field">
-                <span>Ảnh cover</span>
-                <input type="file" accept="image/*" onChange={(e) => void handleThumbnail(e.target.files?.[0] ?? null)} />
-                {thumbnailUrl ? <span className="svc-upload-ok">{t("Đã tải ảnh cover")}</span> : null}
-              </label>
-              <label className="post-job-field">
-                <span>{t("Gallery (tối đa 12 ảnh)")}</span>
-                <input type="file" accept="image/*" multiple onChange={(e) => void handleGallery(e.target.files)} />
-                {mediaUrls.length > 0 ? (
-                  <span className="svc-upload-ok">{mediaUrls.length} ảnh đã tải</span>
-                ) : null}
-              </label>
-              <label className="post-job-field">
-                <span>Video demo (MP4 / WebM / MOV)</span>
-                <input type="file" accept="video/*" onChange={(e) => void handleDemo(e.target.files?.[0] ?? null)} />
-                {demoUrl ? <span className="svc-upload-ok">{t("Đã tải video demo")}</span> : null}
-              </label>
-            </div>
+            <ServiceMediaUploadFields
+              thumbnailUrl={thumbnailUrl}
+              mediaUrls={mediaUrls}
+              demoUrl={demoUrl}
+              onThumbnail={handleThumbnail}
+              onGallery={handleGallery}
+              onDemo={handleDemo}
+              onRemoveThumbnail={() => setThumbnailUrl(null)}
+              onRemoveGalleryImage={(url) => setMediaUrls((prev) => prev.filter((item) => item !== url))}
+              onRemoveDemo={() => setDemoUrl(null)}
+            />
           ) : null}
 
           {stepError ? (

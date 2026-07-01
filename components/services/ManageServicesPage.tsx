@@ -2,8 +2,10 @@
 
 import { formatDateUi, tUi, formatVndUi } from "@/lib/i18n/runtime";
 import { useTranslation } from "@/hooks/useTranslation";
+import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { FaImage } from "react-icons/fa";
 import {
   listMyServices,
   patchMyServiceStatus,
@@ -14,6 +16,7 @@ import {
   countServicesByStatus,
   listingStatusLabel,
 } from "@/lib/services/servicesDisplay";
+import { resolveFreelancerMedia } from "@/lib/hire/freelancerSearchDisplay";
 import ServicesShell from "./ServicesShell";
 
 const TABS: { value: ServiceListingStatus | "all"; label: string }[] = [
@@ -130,28 +133,50 @@ export default function ManageServicesPage() {  const { t, formatVnd, formatDate
         <ul className="svc-manage__list">
           {visible.map((svc) => {
             const status = String(svc.listing_status).toLowerCase();
+            const thumbSrc = resolveFreelancerMedia(svc.thumbnail_url);
             return (
               <li key={svc.id} className="svc-manage__card">
-                <span className={badgeClass(status)}>{listingStatusLabel(status)}</span>
-                <h2 className="svc-manage__card-title">
-                  <Link href={`/dich-vu/quan-ly/${svc.id}`} className="svc-manage__card-title-link">
-                    {t(svc.title)}
-                  </Link>
-                </h2>
-                <p className="text-sm text-gray-600">{svc.category || "—"}</p>
-                <p className="text-sm font-semibold text-gray-800">{formatVndUi(svc.price)}</p>
-                {svc.admin_note ? (
-                  <p className="text-xs text-red-700">Góp ý Admin: {svc.admin_note}</p>
-                ) : null}
-                <p className="text-xs text-gray-400">Cập nhật {formatDateUi(svc.updated_at || svc.created_at)}</p>
+                <div className="svc-manage__card-media">
+                  {thumbSrc ? (
+                    <Image src={thumbSrc} alt="" width={360} height={200} className="svc-manage__card-img" unoptimized />
+                  ) : (
+                    <div className="svc-manage__card-media-placeholder">
+                      <FaImage aria-hidden />
+                      <span>{t("Chưa có ảnh bìa")}</span>
+                    </div>
+                  )}
+                  <span className={`${badgeClass(status)} svc-manage__card-badge`}>{listingStatusLabel(status)}</span>
+                </div>
+
+                <div className="svc-manage__card-body">
+                  <h2 className="svc-manage__card-title">
+                    <Link href={`/dich-vu/quan-ly/${svc.id}`} className="svc-manage__card-title-link">
+                      {t(svc.title)}
+                    </Link>
+                  </h2>
+                  <div className="svc-manage__card-meta">
+                    <span className="svc-manage__card-category">{svc.category || "—"}</span>
+                    <span className="svc-manage__card-price">{formatVndUi(svc.price)}</span>
+                  </div>
+                  {svc.admin_note ? (
+                    <p className="svc-manage__card-note">{t("Góp ý Admin:")} {svc.admin_note}</p>
+                  ) : null}
+                  <p className="svc-manage__card-date">
+                    {t("Cập nhật")} {formatDateUi(svc.updated_at || svc.created_at)}
+                  </p>
+                </div>
+
                 <div className="svc-manage__card-actions">
-                  <Link href={`/dich-vu/quan-ly/${svc.id}`} className="svc-btn svc-btn--primary">
-                    {t("Xem chi tiết")}
+                  <Link href={`/dich-vu/quan-ly/${svc.id}`} className="svc-manage__card-btn svc-manage__card-btn--primary">
+                    {t("Chi tiết")}
+                  </Link>
+                  <Link href={`/dich-vu/quan-ly/${svc.id}/chinh-sua`} className="svc-manage__card-btn svc-manage__card-btn--secondary">
+                    {t("Chỉnh sửa")}
                   </Link>
                   {status === "draft" || status === "denied" ? (
                     <button
                       type="button"
-                      className="svc-btn svc-btn--primary"
+                      className="svc-manage__card-btn svc-manage__card-btn--accent"
                       disabled={busyId === svc.id}
                       onClick={() => void changeStatus(svc.id, "pending")}
                     >
@@ -161,17 +186,17 @@ export default function ManageServicesPage() {  const { t, formatVnd, formatDate
                   {status === "pending" ? (
                     <button
                       type="button"
-                      className="svc-btn svc-btn--primary"
+                      className="svc-manage__card-btn svc-manage__card-btn--accent"
                       disabled={busyId === svc.id}
                       onClick={() => void changeStatus(svc.id, "active")}
                     >
-                      {t("Hiển thị (sau duyệt)")}
+                      {t("Hiển thị")}
                     </button>
                   ) : null}
                   {status === "active" ? (
                     <button
                       type="button"
-                      className="svc-btn svc-btn--secondary"
+                      className="svc-manage__card-btn svc-manage__card-btn--muted"
                       disabled={busyId === svc.id}
                       onClick={() => void changeStatus(svc.id, "paused")}
                     >
@@ -181,16 +206,13 @@ export default function ManageServicesPage() {  const { t, formatVnd, formatDate
                   {status === "paused" ? (
                     <button
                       type="button"
-                      className="svc-btn svc-btn--primary"
+                      className="svc-manage__card-btn svc-manage__card-btn--accent"
                       disabled={busyId === svc.id}
                       onClick={() => void changeStatus(svc.id, "active")}
                     >
-                      {t("Kích hoạt lại")}
+                      {t("Kích hoạt")}
                     </button>
                   ) : null}
-                  <Link href={`/dich-vu/quan-ly/${svc.id}/chinh-sua`} className="svc-btn svc-btn--secondary">
-                    {t("Chỉnh sửa")}
-                  </Link>
                 </div>
               </li>
             );
