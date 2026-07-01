@@ -633,6 +633,25 @@
   border: 1px solid #e5e7eb;
 }
 
+.svc-detail__gallery-btn {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: zoom-in;
+  line-height: 0;
+}
+
+.svc-detail__gallery-btn:hover {
+  opacity: 0.92;
+}
+
+.svc-detail__gallery-btn:focus-visible {
+  outline: 2px solid #0073b1;
+  outline-offset: 2px;
+}
+
 .svc-detail__gallery img {
   display: block;
   object-fit: cover;
@@ -1278,6 +1297,115 @@
   max-height: calc(100vh - 3rem);
   border-radius: 0.5rem;
   object-fit: contain;
+}
+
+/* Lightbox thư viện ảnh dịch vụ */
+.svc-gallery-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: rgba(15, 23, 42, 0.88);
+  animation: svc-demo-modal-in 0.2s ease;
+}
+
+.svc-gallery-lightbox__close {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1202;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.svc-gallery-lightbox__close:hover {
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.svc-gallery-lightbox__content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  width: min(1100px, 100%);
+  max-height: calc(100vh - 4rem);
+}
+
+.svc-gallery-lightbox__img-wrap {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.svc-gallery-lightbox__img {
+  max-width: 100%;
+  max-height: calc(100vh - 5rem);
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 0.35rem;
+}
+
+.svc-gallery-lightbox__nav {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.svc-gallery-lightbox__nav:hover {
+  background: rgba(255, 255, 255, 0.26);
+}
+
+.svc-gallery-lightbox__counter {
+  position: fixed;
+  bottom: 1.25rem;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.55);
+  color: #f9fafb;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  .svc-gallery-lightbox__content {
+    gap: 0.35rem;
+  }
+
+  .svc-gallery-lightbox__nav {
+    width: 2.1rem;
+    height: 2.1rem;
+    font-size: 0.85rem;
+  }
 }
 
 .svc-category-chips {

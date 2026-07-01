@@ -37,6 +37,7 @@ import {
 } from "@/lib/services/serviceDetailDisplay";
 import ServicesShell from "./ServicesShell";
 import ServiceDemoModal from "./ServiceDemoModal";
+import ServiceGalleryLightbox from "./ServiceGalleryLightbox";
 
 function badgeClass(status: string): string {
   return `svc-manage__badge svc-manage__badge--${status.toLowerCase()}`;
@@ -53,6 +54,8 @@ export default function ManageServiceDetailPage() {  const { t, formatDate } = u
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [demoOpen, setDemoOpen] = useState(false);
+  const [galleryOpen, setGalleryOpen] = useState(false);
+  const [galleryIndex, setGalleryIndex] = useState(0);
 
   const load = useCallback(async () => {
     if (!serviceId) {
@@ -89,6 +92,13 @@ export default function ManageServiceDetailPage() {  const { t, formatDate } = u
   const tags = useMemo(() => (service ? parseServiceTags(service.tech_stack) : []), [service]);
   const faqs = useMemo(() => (service ? parseServiceFaqs(service.faqs) : []), [service]);
   const gallery = useMemo(() => (service ? parseServiceGallery(service.media_urls) : []), [service]);
+  const gallerySources = useMemo(
+    () =>
+      gallery
+        .map((url) => resolveFreelancerMedia(url))
+        .filter((src): src is string => Boolean(src)),
+    [gallery],
+  );
   const reqLines = useMemo(
     () => (service ? parseRequirementsLines(service.requirements) : []),
     [service],
@@ -386,17 +396,23 @@ export default function ManageServiceDetailPage() {  const { t, formatDate } = u
 
                 <section className="svc-detail__section">
                   <h2 className="svc-detail__section-title">{t("Thư viện ảnh & Demo")}</h2>
-                  {gallery.length > 0 ? (
+                  {gallerySources.length > 0 ? (
                     <ul className="svc-detail__gallery">
-                      {gallery.map((url) => {
-                        const src = resolveFreelancerMedia(url);
-                        if (!src) return null;
-                        return (
-                          <li key={url}>
+                      {gallerySources.map((src, idx) => (
+                        <li key={`${src}-${idx}`}>
+                          <button
+                            type="button"
+                            className="svc-detail__gallery-btn"
+                            onClick={() => {
+                              setGalleryIndex(idx);
+                              setGalleryOpen(true);
+                            }}
+                            aria-label={`${t("Xem ảnh")} ${idx + 1}`}
+                          >
                             <Image src={src} alt="" width={160} height={120} unoptimized />
-                          </li>
-                        );
-                      })}
+                          </button>
+                        </li>
+                      ))}
                     </ul>
                   ) : (
                     <p className="svc-detail__empty-inline">{t("Chưa có ảnh thư viện.")}</p>
@@ -414,6 +430,14 @@ export default function ManageServiceDetailPage() {  const { t, formatDate } = u
                     </div>
                   ) : null}
                 </section>
+
+                <ServiceGalleryLightbox
+                  open={galleryOpen}
+                  images={gallerySources}
+                  index={galleryIndex}
+                  onIndexChange={setGalleryIndex}
+                  onClose={() => setGalleryOpen(false)}
+                />
 
                 <ServiceDemoModal
                   open={demoOpen}
