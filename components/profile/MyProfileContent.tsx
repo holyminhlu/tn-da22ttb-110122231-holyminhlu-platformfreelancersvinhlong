@@ -415,9 +415,10 @@ export default function MyProfileContent() {  const { t, formatVnd } = useTransl
           <ProfileSection
             title={t("Dịch vụ")}
             count={services.length}
+            onAdd={() => router.push("/dich-vu/tao-moi")}
             emptyDescription={t("Cho nhà tuyển dụng biết bạn cung cấp dịch vụ gì.")}
             emptyButtonLabel={t("Thêm dịch vụ")}
-            onEmptyAction={() => router.push("/dashboard")}
+            onEmptyAction={() => router.push("/dich-vu/tao-moi")}
             isEmpty={services.length === 0}
             emptyIcon={<FaBriefcase aria-hidden />}
           >
