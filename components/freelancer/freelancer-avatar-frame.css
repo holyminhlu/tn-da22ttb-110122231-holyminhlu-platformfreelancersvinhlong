@@ -75,13 +75,17 @@
   position: absolute;
   left: 50%;
   top: 50%;
-  transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%) scale(0.92);
+  transform-origin: center center;
   overflow: visible;
   border: none;
   background: transparent;
   pointer-events: none;
+  z-index: 2;
 }
 
 .my-profile-page .mp-avatar-frame .fl-avatar-frame__inner {
   pointer-events: auto;
+  transform: scale(1.13);
+  transform-origin: center center;
 }

@@ -180,7 +180,7 @@ export default function ClientProfileContent() {  const { t, formatVnd, formatDa
             <div className="cp-profile-card__main">
               <div className="cp-profile-card__identity">
                 <div className={`cp-avatar-wrap${avatarUploading ? " cp-avatar-wrap--loading" : ""}`}>
-                  <Avatar className="cp-avatar size-32 rounded-sm">
+                  <Avatar className="cp-avatar rounded-sm">
                     {avatarSrc ? (
                       <AvatarImage src={avatarSrc} alt={user.fullName || ""} className="object-cover" />
                     ) : null}

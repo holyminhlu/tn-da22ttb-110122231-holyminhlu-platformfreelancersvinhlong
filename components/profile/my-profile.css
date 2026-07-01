@@ -103,6 +103,7 @@
   border-radius: var(--card-radius);
   background: var(--vlc-layer-surface);
   padding: 1.25rem 1.5rem;
+  overflow-x: clip;
 }
 
 .my-profile-page .mp-profile-card__main {
@@ -124,9 +125,10 @@
 .my-profile-page .mp-profile-card__identity {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 1.25rem;
   min-width: 0;
   flex: 1;
+  overflow: visible;
 }
 
 .my-profile-page .mp-profile-card__info {
@@ -135,17 +137,25 @@
   align-items: flex-start;
   min-width: 0;
   flex: 1;
+  position: relative;
+  z-index: 1;
+  margin-left: 1rem;
 }
 
 .my-profile-page .mp-avatar-wrap {
-  --mp-avatar-inner: 3rem;
+  --mp-avatar-inner: 5.35rem;
+  --mp-avatar-slot: 3.25rem;
+  --mp-avatar-canvas: 7.5rem;
+  --mp-avatar-shift-x: 2.5rem;
   position: relative;
   display: flex;
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  width: var(--mp-avatar-inner);
-  height: var(--mp-avatar-inner);
+  width: var(--mp-avatar-slot);
+  height: var(--mp-avatar-slot);
+  margin-right: calc(var(--mp-avatar-canvas) - var(--mp-avatar-slot));
+  transform: translateX(var(--mp-avatar-shift-x));
   overflow: visible;
 }
 
@@ -170,9 +180,9 @@
   position: absolute;
   left: 50%;
   top: 50%;
-  width: var(--mp-avatar-inner, 3rem);
-  height: var(--mp-avatar-inner, 3rem);
-  transform: translate(-50%, -50%);
+  width: var(--mp-avatar-inner, 5.35rem);
+  height: var(--mp-avatar-inner, 5.35rem);
+  transform: translate(-50%, -50%) scale(0.99);
   display: flex;
   align-items: center;
   justify-content: center;

@@ -271,7 +271,7 @@ export default function MyProfileContent() {  const { t, formatVnd } = useTransl
                 <div className={`mp-avatar-wrap${avatarUploading ? " mp-avatar-wrap--loading" : ""}`}>
                   <FreelancerAvatarFrame
                     completedJobs={completedJobs}
-                    size={48}
+                    size={92}
                     shape="circle"
                     src={avatarSrc}
                     alt={user.fullName || ""}
