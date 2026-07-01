@@ -15,6 +15,11 @@ import {
   updateProfile,
   type MeUser,
 } from "@/lib/api/users";
+import {
+  getIdentityVerification,
+  patchIdentityVerification,
+  type IdentityVerificationRecord,
+} from "@/lib/api/identityVerification";
 import { persistStoredUser, toStoredUser } from "@/lib/authSession";
 import { VINH_LONG_PROVINCE } from "@/lib/geo/vinhLongCommunes2025";
 import AddressSearchPicker, {
@@ -43,13 +48,32 @@ type EditDialogState =
     }
   | null;
 
-function profileToAddress(user: MeUser): AddressFormSlice {
-  const street = user.bio?.trim() || "";
+function verificationToAddress(
+  verification: IdentityVerificationRecord | null | undefined,
+  user: MeUser,
+): AddressFormSlice {
+  if (verification) {
+    const city = verification.address_city?.trim() || user.districtCity?.trim() || "";
+    const street = verification.address_street?.trim() || "";
+    const addressSearch =
+      verification.address_search?.trim() ||
+      [street, city, verification.address_state?.trim() || VINH_LONG_PROVINCE]
+        .filter(Boolean)
+        .join(", ");
+    return {
+      addressSearch,
+      street,
+      country: verification.address_country?.trim() || DEFAULT_COUNTRY,
+      state: verification.address_state?.trim() || VINH_LONG_PROVINCE,
+      city,
+      postal: verification.address_postal?.trim() || "",
+    };
+  }
+
   const city = user.districtCity?.trim() || "";
-  const addressSearch = [street, city].filter(Boolean).join(", ");
   return {
-    addressSearch,
-    street,
+    addressSearch: city ? `${city}, ${VINH_LONG_PROVINCE}` : "",
+    street: "",
     country: DEFAULT_COUNTRY,
     state: VINH_LONG_PROVINCE,
     city,
@@ -113,6 +137,7 @@ export default function EditAccountContent() {
 
   const router = useRouter();
   const [user, setUser] = useState<MeUser | null>(null);
+  const [verification, setVerification] = useState<IdentityVerificationRecord | null>(null);
   const [freelancerTitle, setFreelancerTitle] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -130,6 +155,12 @@ export default function EditAccountContent() {
         return;
       }
       setUser(data.user);
+      try {
+        const identity = await getIdentityVerification();
+        setVerification(identity.verification);
+      } catch {
+        setVerification(null);
+      }
       if (isFreelancerMeResponse(data)) {
         setFreelancerTitle(data.freelancerProfile?.title ?? null);
       }
@@ -220,9 +251,15 @@ export default function EditAccountContent() {
       setDialog({
         field: "address",
         title: "Địa chỉ",
-        address: profileToAddress(user),
-        lat: null,
-        lng: null,
+        address: verificationToAddress(verification, user),
+        lat:
+          verification?.address_lat != null && Number.isFinite(Number(verification.address_lat))
+            ? Number(verification.address_lat)
+            : null,
+        lng:
+          verification?.address_lng != null && Number.isFinite(Number(verification.address_lng))
+            ? Number(verification.address_lng)
+            : null,
       });
     }
   }
@@ -261,23 +298,49 @@ export default function EditAccountContent() {
         alert("Vui lòng dùng GPS hoặc chọn địa chỉ trong phạm vi Vĩnh Long.");
         return;
       }
-      const districtCity =
-        address.city.trim() ||
-        address.state.trim() ||
-        address.addressSearch.trim() ||
-        null;
-      const bio =
-        address.street.trim() ||
-        address.addressSearch.trim() ||
-        null;
-      await saveProfile({ fullName, districtCity, bio });
+      setSaving(true);
+      try {
+        const result = await patchIdentityVerification({
+          addressSearch: address.addressSearch.trim(),
+          addressStreet: address.street.trim(),
+          addressCountry: address.country.trim() || DEFAULT_COUNTRY,
+          addressState: address.state.trim() || VINH_LONG_PROVINCE,
+          addressCity: address.city.trim(),
+          addressPostal: address.postal.trim(),
+          addressLat: dialog.lat,
+          addressLng: dialog.lng,
+          syncProfile: true,
+        });
+        setVerification(result.verification);
+        const districtCity =
+          address.city.trim() ||
+          address.state.trim() ||
+          address.addressSearch.trim() ||
+          null;
+        const nextUser: MeUser = {
+          ...user,
+          districtCity,
+        };
+        setUser(nextUser);
+        persistStoredUser(toStoredUser(nextUser));
+        setDialog(null);
+      } catch (err) {
+        const message =
+          err && typeof err === "object" && "message" in err
+            ? String((err as { message: string }).message)
+            : "Không thể lưu địa chỉ.";
+        alert(message);
+      } finally {
+        setSaving(false);
+      }
+      return;
     }
   }
 
   const addressPreview = user
-    ? profileToAddress(user)
+    ? verificationToAddress(verification, user)
     : { addressSearch: "", street: "", city: "", state: "", country: "", postal: "" };
-  const streetLine = addressPreview.street || addressPreview.addressSearch || "—";
+  const streetLine = displayValue(addressPreview.street);
   const cityLine = displayValue(
     addressPreview.city || user?.districtCity,
   );
