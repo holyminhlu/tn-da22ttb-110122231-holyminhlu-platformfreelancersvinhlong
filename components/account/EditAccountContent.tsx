@@ -27,7 +27,6 @@ import AddressSearchPicker, {
 } from "@/components/account/identity-verification/AddressSearchPicker";
 import "@/components/account/identity-verification.css";
 
-const WHATSAPP_PREF_KEY = "vlc_whatsapp_quotes";
 const DEFAULT_TIMEZONE = "Giờ Đông Nam Á (GMT+07:00)";
 const DEFAULT_COUNTRY = "Việt Nam";
 
@@ -143,7 +142,6 @@ export default function EditAccountContent() {
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   const [dialog, setDialog] = useState<EditDialogState>(null);
-  const [whatsappOn, setWhatsappOn] = useState(false);
 
   const loadProfile = useCallback(async () => {
     setLoading(true);
@@ -184,18 +182,6 @@ export default function EditAccountContent() {
     }
     void loadProfile();
   }, [loadProfile, router]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    setWhatsappOn(window.localStorage.getItem(WHATSAPP_PREF_KEY) === "1");
-  }, []);
-
-  function onWhatsappToggle(checked: boolean) {
-    setWhatsappOn(checked);
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem(WHATSAPP_PREF_KEY, checked ? "1" : "0");
-    }
-  }
 
   async function saveProfile(patch: {
     fullName: string;
@@ -388,22 +374,6 @@ export default function EditAccountContent() {
                   onEdit={() => openEdit("phone")}
                 />
               </div>
-              <div className="ea-toggle-row">
-                <p className="ea-toggle-label">
-                  Cho phép nhà tuyển dụng liên hệ qua WhatsApp
-                  <br />
-                  qua báo giá và hồ sơ của tôi
-                </p>
-                <label className="ea-toggle">
-                  <input
-                    type="checkbox"
-                    checked={whatsappOn}
-                    onChange={(e) => onWhatsappToggle(e.target.checked)}
-                    aria-label="Bật liên hệ WhatsApp"
-                  />
-                  <span className="ea-toggle-slider" />
-                </label>
-              </div>
             </section>
 
             <section className="ea-card">
@@ -414,10 +384,6 @@ export default function EditAccountContent() {
                   Đổi địa chỉ
                 </button>
               </div>
-              <p className="ea-address-hint">
-                Địa chỉ được lấy từ GPS hiện tại và đối chiếu bản đồ (trong phạm vi Vĩnh Long). Khi
-                sửa địa chỉ, bản đồ thử nghiệm hiển thị tuyến A → B trên Google Maps.
-              </p>
               <div className="ea-address-grid">
                 <div className="ea-address-span-full">
                   <AddressBlock label="Địa chỉ đầy đủ" value={streetLine} />
