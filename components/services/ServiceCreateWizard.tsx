@@ -40,6 +40,30 @@ const STEPS = [
   { id: 5, title: "Hình ảnh & Demo" },
 ] as const;
 
+const MIN_SERVICE_DELIVERY_DAYS = 1;
+const MAX_SERVICE_DELIVERY_DAYS = 365;
+
+function isValidServiceDeliveryDays(value: number): boolean {
+  return (
+    Number.isFinite(value) &&
+    Number.isInteger(value) &&
+    value >= MIN_SERVICE_DELIVERY_DAYS &&
+    value <= MAX_SERVICE_DELIVERY_DAYS
+  );
+}
+
+function resolvePayloadDeliveryDays(
+  resolved: ServicePackage[],
+  pricingMode: "single" | "packages",
+  fallbackDays: number,
+): number {
+  if (pricingMode === "single") {
+    return resolved[0]?.deliveryDays ?? fallbackDays;
+  }
+  const standard = resolved.find((p) => p.id === "standard") ?? resolved[0];
+  return standard?.deliveryDays ?? fallbackDays;
+}
+
 const DEFAULT_CATEGORIES = [
   "Lập trình & Phần mềm",
   "Thiết kế đồ họa & UI/UX",
@@ -236,12 +260,12 @@ export default function ServiceCreateWizard({
 
   function buildPayload(listingStatus: "draft" | "pending"): CreateServicePayload {
     const resolved = resolvePackages();
-    const primary = resolved[0];
+    const fallbackDays = Number(deliveryDays) || 5;
     return {
       title: title.trim(),
       description: description.trim(),
-      price: primary?.price ?? (Number(basePrice.replace(/\D/g, "")) || 1000000),
-      deliveryDays: primary?.deliveryDays ?? (Number(deliveryDays) || 5),
+      price: resolved[0]?.price ?? (Number(basePrice.replace(/\D/g, "")) || 1000000),
+      deliveryDays: resolvePayloadDeliveryDays(resolved, pricingMode, fallbackDays),
       category: category.trim(),
       requirements: buildRequirementsBody(requirementItems, requirementNotes),
       techStack: tags,
@@ -273,10 +297,26 @@ export default function ServiceCreateWizard({
         setStepError("Giá tối thiểu 100.000 VND.");
         return false;
       }
+      if (pricingMode === "single") {
+        const days = Number(deliveryDays);
+        if (!isValidServiceDeliveryDays(days)) {
+          setStepError(
+            `Thời gian hoàn thành phải từ ${MIN_SERVICE_DELIVERY_DAYS} đến ${MAX_SERVICE_DELIVERY_DAYS} ngày.`,
+          );
+          return false;
+        }
+      }
       if (pricingMode === "packages") {
-        const invalid = packages.some((p) => !p.price || p.price < 100000);
-        if (invalid) {
+        const invalidPrice = packages.some((p) => !p.price || p.price < 100000);
+        if (invalidPrice) {
           setStepError("Mỗi gói cần giá hợp lệ (≥ 100.000 VND).");
+          return false;
+        }
+        const invalidDays = packages.some((p) => !isValidServiceDeliveryDays(p.deliveryDays));
+        if (invalidDays) {
+          setStepError(
+            `Mỗi gói cần số ngày bàn giao từ ${MIN_SERVICE_DELIVERY_DAYS} đến ${MAX_SERVICE_DELIVERY_DAYS}.`,
+          );
           return false;
         }
       }
@@ -594,13 +634,13 @@ export default function ServiceCreateWizard({
                     </label>
                     <label className="post-job-field">
                       <span>{t("Thời gian hoàn thành *")}</span>
-                      <select value={deliveryDays} onChange={(e) => setDeliveryDays(e.target.value)}>
-                        {[1, 3, 5, 7, 10, 15, 30].map((d) => (
-                          <option key={d} value={String(d)}>
-                            {d} ngày làm việc
-                          </option>
-                        ))}
-                      </select>
+                      <input
+                        type="number"
+                        min={MIN_SERVICE_DELIVERY_DAYS}
+                        max={MAX_SERVICE_DELIVERY_DAYS}
+                        value={deliveryDays}
+                        onChange={(e) => setDeliveryDays(e.target.value)}
+                      />
                     </label>
                   </div>
                   <RevisionSelect
@@ -628,19 +668,16 @@ export default function ServiceCreateWizard({
                     </label>
                     <label className="post-job-field">
                       <span>{t("Ngày gói Standard")}</span>
-                      <select
+                      <input
+                        type="number"
+                        min={MIN_SERVICE_DELIVERY_DAYS}
+                        max={MAX_SERVICE_DELIVERY_DAYS}
                         value={deliveryDays}
                         onChange={(e) => {
                           setDeliveryDays(e.target.value);
                         }}
                         onBlur={() => syncPackagesFromBase()}
-                      >
-                        {[1, 3, 5, 7, 15, 30].map((d) => (
-                          <option key={d} value={String(d)}>
-                            {d} ngày
-                          </option>
-                        ))}
-                      </select>
+                      />
                     </label>
                   </div>
                   <button
@@ -670,7 +707,8 @@ export default function ServiceCreateWizard({
                           <span>{t("Số ngày")}</span>
                           <input
                             type="number"
-                            min={1}
+                            min={MIN_SERVICE_DELIVERY_DAYS}
+                            max={MAX_SERVICE_DELIVERY_DAYS}
                             value={pkg.deliveryDays}
                             onChange={(e) =>
                               patchPackage(idx, { deliveryDays: Number(e.target.value) || 1 })
