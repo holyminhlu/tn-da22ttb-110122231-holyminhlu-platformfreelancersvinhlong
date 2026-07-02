@@ -159,7 +159,8 @@
 }
 
 .admin-main:has(.admin-disputes-page),
-.admin-main:has(.admin-refunds-page) {
+.admin-main:has(.admin-refunds-page),
+.admin-main:has(.admin-posts-page) {
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -755,7 +756,8 @@
 }
 
 .admin-disputes-page,
-.admin-refunds-page {
+.admin-refunds-page,
+.admin-posts-page {
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -764,13 +766,15 @@
 }
 
 .admin-disputes-page__head,
-.admin-refunds-page__head {
+.admin-refunds-page__head,
+.admin-posts-page__head {
   margin-bottom: 0.75rem;
   flex-shrink: 0;
 }
 
 .admin-disputes-toolbar,
-.admin-refunds-toolbar {
+.admin-refunds-toolbar,
+.admin-posts-toolbar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -784,12 +788,14 @@
 }
 
 .admin-disputes-toolbar__refresh,
-.admin-refunds-toolbar__refresh {
+.admin-refunds-toolbar__refresh,
+.admin-posts-toolbar__refresh {
   flex-shrink: 0;
 }
 
 .admin-disputes-toolbar__field,
-.admin-refunds-toolbar__field {
+.admin-refunds-toolbar__field,
+.admin-posts-toolbar__field {
   display: inline-flex;
   align-items: center;
   gap: 0.45rem;
@@ -798,33 +804,38 @@
 }
 
 .admin-disputes-toolbar__field .admin-filters__label,
-.admin-refunds-toolbar__field .admin-filters__label {
+.admin-refunds-toolbar__field .admin-filters__label,
+.admin-posts-toolbar__field .admin-filters__label {
   margin: 0;
   white-space: nowrap;
   font-size: 0.75rem;
 }
 
 .admin-disputes-toolbar__field--search,
-.admin-refunds-toolbar__field--search {
+.admin-refunds-toolbar__field--search,
+.admin-posts-toolbar__field--search {
   flex: 1 1 11rem;
   min-width: 11rem;
   max-width: 18rem;
 }
 
 .admin-disputes-toolbar__field--search .admin-filters__search-wrap,
-.admin-refunds-toolbar__field--search .admin-filters__search-wrap {
+.admin-refunds-toolbar__field--search .admin-filters__search-wrap,
+.admin-posts-toolbar__field--search .admin-filters__search-wrap {
   flex: 1;
   min-width: 0;
 }
 
 .admin-disputes-toolbar__field--search .admin-filters__input,
-.admin-refunds-toolbar__field--search .admin-filters__input {
+.admin-refunds-toolbar__field--search .admin-filters__input,
+.admin-posts-toolbar__field--search .admin-filters__input {
   width: 100%;
   min-width: 0;
 }
 
 .admin-disputes-toolbar__count,
-.admin-refunds-toolbar__count {
+.admin-refunds-toolbar__count,
+.admin-posts-toolbar__count {
   margin: 0 0 0 auto;
   flex-shrink: 0;
   font-size: 0.8125rem;
@@ -834,7 +845,8 @@
 }
 
 .admin-disputes-split,
-.admin-refunds-split {
+.admin-refunds-split,
+.admin-posts-split {
   flex: 1;
   min-height: 0;
   display: grid;
@@ -845,7 +857,8 @@
 }
 
 .admin-disputes-list,
-.admin-refunds-list {
+.admin-refunds-list,
+.admin-posts-list {
   min-height: 0;
   max-height: 100%;
   overflow: hidden;
@@ -857,7 +870,8 @@
 }
 
 .admin-disputes-page__state,
-.admin-refunds-page__state {
+.admin-refunds-page__state,
+.admin-posts-page__state {
   flex: 1;
   display: flex;
   align-items: center;
@@ -927,7 +941,8 @@
 }
 
 .admin-disputes-list__inner,
-.admin-refunds-list__inner {
+.admin-refunds-list__inner,
+.admin-posts-list__inner {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
@@ -939,7 +954,8 @@
 }
 
 .admin-disputes-detail,
-.admin-refunds-detail {
+.admin-refunds-detail,
+.admin-posts-detail {
   min-height: 0;
   max-height: 100%;
   overflow-y: auto;
@@ -2027,30 +2043,35 @@
   }
 
   .admin-disputes-split,
-  .admin-refunds-split {
+  .admin-refunds-split,
+  .admin-posts-split {
     grid-template-columns: 1fr;
     grid-template-rows: auto minmax(0, 1fr);
   }
 
   .admin-disputes-list,
-  .admin-refunds-list {
+  .admin-refunds-list,
+  .admin-posts-list {
     max-height: 35vh;
   }
 
   .admin-main:has(.admin-disputes-page),
-  .admin-main:has(.admin-refunds-page) {
+  .admin-main:has(.admin-refunds-page),
+  .admin-main:has(.admin-posts-page) {
     overflow: auto;
   }
 
   .admin-disputes-page,
-  .admin-refunds-page {
+  .admin-refunds-page,
+  .admin-posts-page {
     height: auto;
     min-height: calc(100vh - 3rem);
     overflow: visible;
   }
 
   .admin-disputes-detail,
-  .admin-refunds-detail {
+  .admin-refunds-detail,
+  .admin-posts-detail {
     max-height: none;
   }
 
@@ -2914,4 +2935,215 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
+}
+
+/* —— Quản lý bài đăng (admin) —— */
+.admin-posts-toolbar__select {
+  min-width: 9.5rem;
+  width: auto;
+}
+
+.admin-posts-badge {
+  display: inline-block;
+  margin-top: 0.35rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.admin-posts-badge--open {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.admin-posts-badge--in_progress,
+.admin-posts-badge--progress {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.admin-posts-badge--closed {
+  background: #f1f5f9;
+  color: #64748b;
+}
+
+.admin-posts-badge--hidden {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.admin-posts-badge--deleted {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.admin-posts-detail__card {
+  padding: 1rem 1.1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--card-radius);
+  background: #fff;
+}
+
+.admin-posts-detail__title {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.admin-posts-detail__meta {
+  margin: 0.35rem 0 0;
+  font-size: 0.8125rem;
+  color: #64748b;
+}
+
+.admin-posts-client {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1rem 0;
+  padding: 0.75rem;
+  border: 1px solid #e5e7eb;
+  border-radius: var(--card-radius);
+  background: #f9fafb;
+}
+
+.admin-posts-client__avatar {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 999px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.admin-posts-client__avatar--placeholder {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #e2e8f0;
+  color: #475569;
+  font-weight: 700;
+}
+
+.admin-posts-client__name {
+  margin: 0;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.admin-posts-client__contact {
+  margin: 0.15rem 0 0;
+  font-size: 0.8125rem;
+  color: #64748b;
+}
+
+.admin-posts-detail__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.admin-posts-field {
+  display: grid;
+  gap: 0.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.admin-posts-field__label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.admin-posts-field__value {
+  font-size: 0.875rem;
+  color: #1e293b;
+}
+
+.admin-posts-detail__description {
+  margin: 0;
+  white-space: pre-wrap;
+  line-height: 1.55;
+}
+
+.admin-posts-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-posts-tags li {
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 0.75rem;
+}
+
+.admin-posts-gallery {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-posts-gallery__img {
+  width: 6.5rem;
+  height: 6.5rem;
+  object-fit: cover;
+  border-radius: 0.5rem;
+  border: 1px solid #e2e8f0;
+}
+
+.admin-posts-moderate {
+  margin-top: 1rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid #fecaca;
+  border-radius: var(--card-radius);
+  background: #fff7f7;
+}
+
+.admin-posts-moderate__title {
+  margin: 0 0 0.35rem;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #991b1b;
+}
+
+.admin-posts-moderate__hint {
+  margin: 0 0 0.75rem;
+  font-size: 0.8125rem;
+  color: #7f1d1d;
+}
+
+.admin-posts-moderate__field {
+  margin-bottom: 0.75rem;
+}
+
+.admin-posts-moderate__textarea {
+  width: 100%;
+  min-height: 5.5rem;
+}
+
+.admin-posts-moderate__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+@media (max-width: 720px) {
+  .admin-posts-detail__grid {
+    grid-template-columns: 1fr;
+  }
 }

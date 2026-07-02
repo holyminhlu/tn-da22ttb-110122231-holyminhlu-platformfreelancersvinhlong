@@ -150,6 +150,7 @@ export const keyedMessages: Record<string, unknown> = {
     adminSidebar: {
       reports: "Báo cáo",
       users: "Tài khoản",
+      work: "Công việc",
       finance: "Thanh toán",
       support: "Hỗ trợ",
       system: "Hệ thống",

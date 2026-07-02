@@ -194,6 +194,9 @@ export const apiPaths = {
     statsOverview: "/api/admin/stats/overview",
     aiSettings: "/api/admin/ai-settings",
     aiSettingsTest: "/api/admin/ai-settings/test",
+    jobs: "/api/admin/jobs",
+    job: (jobId: string) => `/api/admin/jobs/${encodeURIComponent(jobId)}`,
+    moderateJob: (jobId: string) => `/api/admin/jobs/${encodeURIComponent(jobId)}/moderate`,
   },
   chat: {
     listConversations: "/api/chat/conversations",

@@ -504,6 +504,62 @@ async function notifyNewLogin(db, userId, { ipAddress, deviceLabel }) {
   });
 }
 
+async function notifyJobModeration(db, { clientId, adminId, jobId, jobTitle, action, reason }) {
+  const title = String(jobTitle || "Bài đăng").trim() || "Bài đăng";
+  const href = `/hire/joblist/${jobId}`;
+  const trimmedReason = String(reason || "").trim();
+
+  if (action === "hide") {
+    return notifyUser(db, {
+      recipientId: clientId,
+      actorId: adminId,
+      category: "system",
+      action: "job_hidden_by_admin",
+      title: "Bài đăng bị ẩn do vi phạm",
+      body: trimmedReason
+        ? `Bài đăng "${title}" đã bị ẩn khỏi hệ thống. Lý do: ${trimmedReason}`
+        : `Bài đăng "${title}" đã bị ẩn khỏi hệ thống do vi phạm quy định.`,
+      href,
+      entityType: "job",
+      entityId: jobId,
+    });
+  }
+
+  if (action === "unhide") {
+    return notifyUser(db, {
+      recipientId: clientId,
+      actorId: adminId,
+      category: "system",
+      action: "job_unhidden_by_admin",
+      title: "Bài đăng đã được hiển thị lại",
+      body: trimmedReason
+        ? `Bài đăng "${title}" đã được admin hiển thị lại. Ghi chú: ${trimmedReason}`
+        : `Bài đăng "${title}" đã được admin hiển thị lại và có thể tiếp tục nhận báo giá.`,
+      href,
+      entityType: "job",
+      entityId: jobId,
+    });
+  }
+
+  if (action === "delete") {
+    return notifyUser(db, {
+      recipientId: clientId,
+      actorId: adminId,
+      category: "system",
+      action: "job_deleted_by_admin",
+      title: "Bài đăng đã bị xóa",
+      body: trimmedReason
+        ? `Bài đăng "${title}" đã bị xóa khỏi hệ thống. Lý do: ${trimmedReason}`
+        : `Bài đăng "${title}" đã bị xóa khỏi hệ thống do vi phạm quy định.`,
+      href,
+      entityType: "job",
+      entityId: jobId,
+    });
+  }
+
+  return null;
+}
+
 module.exports = {
   setNotificationIo,
   getNotificationIo,
@@ -519,4 +575,5 @@ module.exports = {
   notifyIdentityReviewRejected,
   notifyIdentityReviewSubmitted,
   notifyNewLogin,
+  notifyJobModeration,
 };

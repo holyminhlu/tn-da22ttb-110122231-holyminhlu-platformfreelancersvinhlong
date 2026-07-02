@@ -730,6 +730,35 @@
   color: var(--vlc-link-hover) !important;
 }
 
+.dark .hire-fl-desc-modal {
+  background: var(--vlc-surface) !important;
+  border: 1px solid var(--vlc-border);
+}
+
+.dark .hire-fl-desc-modal__head {
+  background: var(--vlc-surface) !important;
+  border-bottom-color: var(--vlc-border) !important;
+}
+
+.dark .hire-fl-desc-modal__title {
+  color: var(--vlc-text) !important;
+}
+
+.dark .hire-fl-desc-modal__close {
+  background: var(--vlc-surface-muted) !important;
+  border-color: var(--vlc-border) !important;
+  color: var(--vlc-text-secondary) !important;
+}
+
+.dark .hire-fl-desc-modal__close:hover {
+  background: var(--vlc-surface-elevated) !important;
+  color: var(--vlc-text) !important;
+}
+
+.dark .hire-fl-desc-modal__text {
+  color: var(--vlc-text-secondary) !important;
+}
+
 .dark .hire-fl-detail__featured-meta {
   color: var(--vlc-text-muted) !important;
 }

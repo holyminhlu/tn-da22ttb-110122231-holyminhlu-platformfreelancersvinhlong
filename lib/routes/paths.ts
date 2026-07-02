@@ -24,6 +24,8 @@ export const ROUTES = {
     contact: "/admin/quan-ly-lien-he",
     apiKeys: "/admin/quan-ly-api-key",
     reports: "/admin/bao-cao-thong-ke",
+    posts: "/admin/quan-ly-bai-dang",
+    services: "/admin/quan-ly-dich-vu",
   },
 
   profile: {

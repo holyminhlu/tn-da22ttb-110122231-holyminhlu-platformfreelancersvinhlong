@@ -53,6 +53,7 @@ import FreelancerLikeButton from "./FreelancerLikeButton";
 import HireShell from "./HireShell";
 import FindFreelancersPage from "@/components/freelancers/FindFreelancersPage";
 import { useStoredUser } from "@/hooks/useStoredUser";
+import ServiceDescriptionModal from "./ServiceDescriptionModal";
 import "./hire.css";
 import "./hire-freelancer-detail.css";
 
@@ -61,27 +62,35 @@ function formatPriceVndStyle(amount: string | number | null | undefined): string
 }
 
 function ServiceDescriptionBlock({ description }: { description: string }) {
-  const [expanded, setExpanded] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
   const { preview, needsExpand } = useMemo(
     () => serviceDescriptionPreview(description),
     [description],
   );
 
   return (
-    <div className="hire-fl-detail__featured-desc-block">
-      <p className="hire-fl-detail__featured-desc-label">{tUi("Mô tả dịch vụ")}</p>
-      <p className="hire-fl-detail__featured-desc">{expanded ? description : preview}</p>
-      {needsExpand ? (
-        <button
-          type="button"
-          className="hire-fl-detail__desc-toggle"
-          onClick={() => setExpanded((value) => !value)}
-          aria-expanded={expanded}
-        >
-          {expanded ? "Thu gọn" : "Xem thêm"}
-        </button>
+    <>
+      <div className="hire-fl-detail__featured-desc-block">
+        <p className="hire-fl-detail__featured-desc-label">{tUi("Mô tả dịch vụ")}</p>
+        <p className="hire-fl-detail__featured-desc">{preview}</p>
+        {needsExpand ? (
+          <button
+            type="button"
+            className="hire-fl-detail__desc-toggle"
+            onClick={() => setModalOpen(true)}
+            aria-haspopup="dialog"
+          >
+            {tUi("Xem thêm")}
+          </button>
+        ) : null}
+      </div>
+      {modalOpen ? (
+        <ServiceDescriptionModal
+          description={description}
+          onClose={() => setModalOpen(false)}
+        />
       ) : null}
-    </div>
+    </>
   );
 }
 

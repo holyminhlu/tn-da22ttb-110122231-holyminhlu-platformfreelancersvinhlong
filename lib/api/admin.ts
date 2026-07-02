@@ -588,3 +588,76 @@ export async function resolveAdminWithdrawal(
   );
   return data;
 }
+
+export type AdminJobVisibilityFilter = "all" | "visible" | "hidden" | "deleted";
+export type AdminJobStatusFilter = "all" | "open" | "in_progress" | "closed" | "cancelled";
+export type AdminJobModerateAction = "hide" | "unhide" | "delete";
+
+export type AdminJobRow = {
+  id: string;
+  client_id: string;
+  title: string;
+  description: string | null;
+  budget: string | number | null;
+  budget_type: string | null;
+  budget_max: string | number | null;
+  status: string;
+  category: string | null;
+  tags: unknown;
+  images: unknown;
+  due_at: string | null;
+  location_label: string | null;
+  location_lat: number | null;
+  location_lng: number | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+  admin_hidden_at: string | null;
+  admin_hidden_reason: string | null;
+  admin_hidden_by: string | null;
+  client_name: string | null;
+  client_email: string | null;
+  client_phone: string | null;
+  client_avatar_url: string | null;
+  client_district_city: string | null;
+  quote_count: number;
+  contract_count: number;
+};
+
+export async function listAdminJobs(params?: {
+  visibility?: AdminJobVisibilityFilter;
+  status?: AdminJobStatusFilter;
+  q?: string;
+  page?: number;
+  limit?: number;
+}) {
+  const search = new URLSearchParams();
+  search.set("visibility", params?.visibility ?? "all");
+  search.set("status", params?.status ?? "all");
+  if (params?.q?.trim()) search.set("q", params.q.trim());
+  if (params?.page != null) search.set("page", String(params.page));
+  if (params?.limit != null) search.set("limit", String(params.limit));
+  const { data } = await fetchApi<{
+    jobs: AdminJobRow[];
+    total: number;
+    page: number;
+    limit: number;
+  }>(`${apiPaths.admin.jobs}?${search.toString()}`, { auth: true });
+  return data;
+}
+
+export async function getAdminJobDetail(jobId: string) {
+  const { data } = await fetchApi<{ job: AdminJobRow }>(apiPaths.admin.job(jobId), { auth: true });
+  return data;
+}
+
+export async function moderateAdminJob(
+  jobId: string,
+  body: { action: AdminJobModerateAction; reason?: string },
+) {
+  const { data } = await fetchApi<{ message: string; job: AdminJobRow | null }>(
+    apiPaths.admin.moderateJob(jobId),
+    { method: "POST", auth: true, body },
+  );
+  return data;
+}
