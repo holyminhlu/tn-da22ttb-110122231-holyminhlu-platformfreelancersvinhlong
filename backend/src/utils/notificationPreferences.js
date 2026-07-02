@@ -13,9 +13,6 @@ const ALWAYS_ALLOW_ACTIONS = new Set([
   "withdrawal_completed",
   "withdrawal_rejected",
   "withdrawal_failed",
-  "job_hidden_by_admin",
-  "job_unhidden_by_admin",
-  "job_deleted_by_admin",
 ]);
 
 function normalizeNotificationPrefs(raw) {

@@ -6,16 +6,11 @@ const adminWithdrawals = require("../controllers/adminWithdrawals.controller");
 const adminUsers = require("../controllers/adminUsers.controller");
 const contact = require("../controllers/contact.controller");
 const adminStats = require("../controllers/adminStats.controller");
-const adminJobs = require("../controllers/adminJobs.controller");
 const aiSettings = require("../controllers/aiSettings.controller");
 
 const router = express.Router();
 
 router.get("/stats/overview", adminStats.getAdminStatsOverview);
-
-router.get("/jobs", adminJobs.listAdminJobs);
-router.get("/jobs/:jobId", adminJobs.getAdminJobDetail);
-router.post("/jobs/:jobId/moderate", adminJobs.moderateAdminJob);
 
 router.get("/users", adminUsers.listAdminUsers);
 router.get("/users/:userId/full", adminUsers.getAdminUserFull);

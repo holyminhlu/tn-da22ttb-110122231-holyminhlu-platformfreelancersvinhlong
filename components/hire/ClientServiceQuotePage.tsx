@@ -37,7 +37,10 @@ export default function ClientServiceQuotePage() {
   const searchParams = useSearchParams();
   const serviceId = searchParams.get("serviceId") || "";
   const freelancerId = searchParams.get("freelancerId") || "";
+  const previewMode = searchParams.get("preview") === "1";
   const { loading: verifyLoading, verified, user, idv } = useClientIdentityVerification();
+  const isFreelancerPreview = previewMode && String(user?.role || "").toLowerCase() === "freelancer";
+  const shouldRequireClientVerification = !isFreelancerPreview;
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -55,7 +58,7 @@ export default function ClientServiceQuotePage() {
       setLoading(false);
       return;
     }
-    if (!verified) {
+    if (shouldRequireClientVerification && !verified) {
       setLoading(false);
       return;
     }
@@ -85,7 +88,7 @@ export default function ClientServiceQuotePage() {
     } finally {
       setLoading(false);
     }
-  }, [serviceId, freelancerId, verified]);
+  }, [serviceId, freelancerId, shouldRequireClientVerification, verified, t]);
 
   useEffect(() => {
     void load();
@@ -103,6 +106,7 @@ export default function ClientServiceQuotePage() {
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
+    if (isFreelancerPreview) return;
     if (!selected || !clientBrief.trim()) return;
     setSubmitting(true);
     setSubmitError("");
@@ -129,142 +133,156 @@ export default function ClientServiceQuotePage() {
     }
   }
 
-  return (
-    <HireShell>
-      <div className="hire-page hire-quote hire-quote--full-width">
-        <Link href="/hire/search" className="hire-fl-detail__back">
-          <FaArrowLeft aria-hidden /> Quay lại tìm kiếm
-        </Link>
+  const backHref = isFreelancerPreview ? `/dich-vu/quan-ly/${encodeURIComponent(serviceId)}` : "/hire/search";
+  const pageContent = (
+    <div className="hire-page hire-quote hire-quote--full-width">
+      <Link href={backHref} className="hire-fl-detail__back">
+        <FaArrowLeft aria-hidden /> {isFreelancerPreview ? t("Quay lại dịch vụ của bạn") : "Quay lại tìm kiếm"}
+      </Link>
 
-        <header className="hire-page__head">
-          <div>
-            <h1 className="hire-page__title">{t("Yêu cầu báo giá")}</h1>
-            <p className="hire-page__lead">
-              Chọn gói dịch vụ, mô tả yêu cầu và gửi đề xuất — freelancer sẽ phản hồi trước khi
-              ký quỹ.
-            </p>
-          </div>
-        </header>
-
-        {verifyLoading ? (
-          <p className="hire-page__state">{t("Đang kiểm tra tài khoản...")}</p>
-        ) : !verified ? (
-          <ClientIdentityVerifyGate
-            user={user}
-            idv={idv}
-            title={t("Xác minh danh tính trước khi gửi yêu cầu báo giá")}
-            lead={t("Hoàn thành 5 mục thông tin nhận dạng và xác minh thẻ tín dụng (bước 2) tại trang xác minh, sau đó bạn có thể gửi yêu cầu báo giá.")}
-            backHref="/hire/search"
-            backLabel={t("Quay lại tìm kiếm freelancer")}
-          />
-        ) : loading ? (
-          <p className="hire-page__state">{t("Đang tải dịch vụ...")}</p>
-        ) : error ? (
-          <p className="hire-page__state hire-page__state--error" role="alert">
-            {error}
+      <header className="hire-page__head">
+        <div>
+          <h1 className="hire-page__title">{t("Yêu cầu báo giá")}</h1>
+          <p className="hire-page__lead">
+            Chọn gói dịch vụ, mô tả yêu cầu và gửi đề xuất — freelancer sẽ phản hồi trước khi ký
+            quỹ.
           </p>
-        ) : (
-          <form className="hire-quote__layout" onSubmit={(e) => void handleSubmit(e)}>
-            <div>
-              <div className="hire-quote__service-head">
-                <h2 className="hire-quote__service-title">{serviceTitle}</h2>
-                <p className="hire-quote__freelancer">Freelancer: {freelancerName}</p>
-              </div>
+        </div>
+      </header>
 
-              <h3 className="hire-quote__section-title">{t("Chọn gói dịch vụ")}</h3>
-              <ul className="hire-quote__packages" role="listbox" aria-label={t("Gói dịch vụ")}>
-                {packages.map((pack) => (
-                  <li key={pack.id}>
-                    <button
-                      type="button"
-                      role="option"
-                      aria-selected={selectedId === pack.id}
-                      className={`hire-quote__package${selectedId === pack.id ? " hire-quote__package--selected" : ""}`}
-                      onClick={() => setSelectedId(pack.id)}
-                    >
-                      <p className="hire-quote__package-name">{pack.name}</p>
-                      <p className="hire-quote__package-price">{formatPackagePrice(pack.price)}</p>
-                      <p className="hire-quote__package-meta">
-                        {pack.deliveryDays} ngày · {pack.revisions || t("2 lần chỉnh sửa")}
-                      </p>
-                      {pack.features.length > 0 ? (
-                        <ul className="hire-quote__package-features">
-                          {pack.features.map((f) => (
-                            <li key={f}>{f}</li>
-                          ))}
-                        </ul>
-                      ) : null}
-                    </button>
-                  </li>
-                ))}
-              </ul>
+      {isFreelancerPreview ? (
+        <p className="hire-page__state">
+          {t("Bạn đang ở chế độ xem trước như Khách hàng. Các thao tác gửi yêu cầu được tắt.")}
+        </p>
+      ) : null}
 
-              <h3 className="hire-quote__section-title" style={{ marginTop: "1.5rem" }}>
-                Mô tả yêu cầu của bạn
-              </h3>
-              <textarea
-                className="hire-quote__brief"
-                placeholder={t("Mô tả mục tiêu, phạm vi, deadline, công nghệ mong muốn, tài liệu đính kèm...")}
-                value={clientBrief}
-                onChange={(e) => setClientBrief(e.target.value)}
-                required
-                aria-label={t("Mô tả yêu cầu")}
-              />
+      {shouldRequireClientVerification && verifyLoading ? (
+        <p className="hire-page__state">{t("Đang kiểm tra tài khoản...")}</p>
+      ) : shouldRequireClientVerification && !verified ? (
+        <ClientIdentityVerifyGate
+          user={user}
+          idv={idv}
+          title={t("Xác minh danh tính trước khi gửi yêu cầu báo giá")}
+          lead={t("Hoàn thành 5 mục thông tin nhận dạng và xác minh thẻ tín dụng (bước 2) tại trang xác minh, sau đó bạn có thể gửi yêu cầu báo giá.")}
+          backHref="/hire/search"
+          backLabel={t("Quay lại tìm kiếm freelancer")}
+        />
+      ) : loading ? (
+        <p className="hire-page__state">{t("Đang tải dịch vụ...")}</p>
+      ) : error ? (
+        <p className="hire-page__state hire-page__state--error" role="alert">
+          {error}
+        </p>
+      ) : (
+        <form className="hire-quote__layout" onSubmit={(e) => void handleSubmit(e)}>
+          <div>
+            <div className="hire-quote__service-head">
+              <h2 className="hire-quote__service-title">{serviceTitle}</h2>
+              <p className="hire-quote__freelancer">Freelancer: {freelancerName}</p>
             </div>
 
-            <aside className="hire-quote__sidebar">
-              <h3 className="hire-quote__section-title">{t("Tóm tắt đơn hàng")}</h3>
-              {selected ? (
-                <>
-                  <div className="hire-quote__summary-row">
-                    <span>{t("Gói")}</span>
-                    <strong>{selected.name}</strong>
-                  </div>
-                  <div className="hire-quote__summary-row">
-                    <span>{t("Tổng dự kiến")}</span>
-                    <strong>{formatPackagePrice(selected.price)}</strong>
-                  </div>
-                  <div className="hire-quote__summary-row">
-                    <span>{t("Thời gian")}</span>
-                    <strong>{selected.deliveryDays} ngày</strong>
-                  </div>
-                  <h4 className="hire-quote__section-title" style={{ marginTop: "1rem" }}>
-                    Cột mốc (Milestone) đề xuất
-                  </h4>
-                  <ul className="hire-quote__milestones">
-                    {milestones.map((m) => (
-                      <li key={m.title}>
-                        <span>{m.title}</span>
-                        <strong>{formatPackagePrice(m.amount)}</strong>
-                      </li>
-                    ))}
-                  </ul>
-                </>
-              ) : (
-                <p className="hire-quote__hint">{t("Chọn một gói dịch vụ.")}</p>
-              )}
+            <h3 className="hire-quote__section-title">{t("Chọn gói dịch vụ")}</h3>
+            <ul className="hire-quote__packages" role="listbox" aria-label={t("Gói dịch vụ")}>
+              {packages.map((pack) => (
+                <li key={pack.id}>
+                  <button
+                    type="button"
+                    role="option"
+                    aria-selected={selectedId === pack.id}
+                    className={`hire-quote__package${selectedId === pack.id ? " hire-quote__package--selected" : ""}`}
+                    onClick={() => setSelectedId(pack.id)}
+                  >
+                    <p className="hire-quote__package-name">{pack.name}</p>
+                    <p className="hire-quote__package-price">{formatPackagePrice(pack.price)}</p>
+                    <p className="hire-quote__package-meta">
+                      {pack.deliveryDays} ngày · {pack.revisions || t("2 lần chỉnh sửa")}
+                    </p>
+                    {pack.features.length > 0 ? (
+                      <ul className="hire-quote__package-features">
+                        {pack.features.map((f) => (
+                          <li key={f}>{f}</li>
+                        ))}
+                      </ul>
+                    ) : null}
+                  </button>
+                </li>
+              ))}
+            </ul>
 
-              {submitError ? (
-                <p className="hire-page__state hire-page__state--error" role="alert">
-                  {submitError}
-                </p>
-              ) : null}
+            <h3 className="hire-quote__section-title" style={{ marginTop: "1.5rem" }}>
+              Mô tả yêu cầu của bạn
+            </h3>
+            <textarea
+              className="hire-quote__brief"
+              placeholder={t("Mô tả mục tiêu, phạm vi, deadline, công nghệ mong muốn, tài liệu đính kèm...")}
+              value={clientBrief}
+              onChange={(e) => setClientBrief(e.target.value)}
+              required
+              aria-label={t("Mô tả yêu cầu")}
+              disabled={isFreelancerPreview}
+            />
+          </div>
 
-              <button
-                type="submit"
-                className="hire-quote__submit"
-                disabled={submitting || !selected || !clientBrief.trim()}
-              >
-                {submitting ? "Đang gửi..." : "Gửi yêu cầu báo giá"}
-              </button>
-              <p className="hire-quote__hint">
-                Sau khi gửi, bạn theo dõi đề xuất của freelancer, phỏng vấn/trao đổi, nạp ký
-                quỹ (Escrow) rồi nghiệm thu từng giai đoạn.
+          <aside className="hire-quote__sidebar">
+            <h3 className="hire-quote__section-title">{t("Tóm tắt đơn hàng")}</h3>
+            {selected ? (
+              <>
+                <div className="hire-quote__summary-row">
+                  <span>{t("Gói")}</span>
+                  <strong>{selected.name}</strong>
+                </div>
+                <div className="hire-quote__summary-row">
+                  <span>{t("Tổng dự kiến")}</span>
+                  <strong>{formatPackagePrice(selected.price)}</strong>
+                </div>
+                <div className="hire-quote__summary-row">
+                  <span>{t("Thời gian")}</span>
+                  <strong>{selected.deliveryDays} ngày</strong>
+                </div>
+                <h4 className="hire-quote__section-title" style={{ marginTop: "1rem" }}>
+                  Cột mốc (Milestone) đề xuất
+                </h4>
+                <ul className="hire-quote__milestones">
+                  {milestones.map((m) => (
+                    <li key={m.title}>
+                      <span>{m.title}</span>
+                      <strong>{formatPackagePrice(m.amount)}</strong>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            ) : (
+              <p className="hire-quote__hint">{t("Chọn một gói dịch vụ.")}</p>
+            )}
+
+            {submitError ? (
+              <p className="hire-page__state hire-page__state--error" role="alert">
+                {submitError}
               </p>
-            </aside>
-          </form>
-        )}
-      </div>
-    </HireShell>
+            ) : null}
+
+            <button
+              type="submit"
+              className="hire-quote__submit"
+              disabled={isFreelancerPreview || submitting || !selected || !clientBrief.trim()}
+            >
+              {isFreelancerPreview
+                ? t("Chế độ xem trước")
+                : submitting
+                  ? "Đang gửi..."
+                  : "Gửi yêu cầu báo giá"}
+            </button>
+            <p className="hire-quote__hint">
+              Sau khi gửi, bạn theo dõi đề xuất của freelancer, phỏng vấn/trao đổi, nạp ký quỹ
+              (Escrow) rồi nghiệm thu từng giai đoạn.
+            </p>
+          </aside>
+        </form>
+      )}
+    </div>
+  );
+
+  return (
+    isFreelancerPreview ? pageContent : <HireShell>{pageContent}</HireShell>
   );
 }

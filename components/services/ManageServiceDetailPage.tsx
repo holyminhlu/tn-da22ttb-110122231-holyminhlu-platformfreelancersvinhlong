@@ -9,7 +9,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   FaArrowLeft,
   FaClock,
-  FaExternalLinkAlt,
   FaImage,
   FaStar,
   FaVideo,
@@ -20,7 +19,6 @@ import {
   type MyServiceRow,
   type ServiceListingStatus,
 } from "@/lib/api/services";
-import { getMe } from "@/lib/api/users";
 import { resolveFreelancerMedia } from "@/lib/hire/freelancerSearchDisplay";
 import { formatPackagePrice } from "@/lib/hire/servicePackages";
 import { listingStatusLabel } from "@/lib/services/servicesDisplay";
@@ -49,7 +47,6 @@ export default function ManageServiceDetailPage() {  const { t, formatDate } = u
   const serviceId = typeof params.serviceId === "string" ? params.serviceId : "";
 
   const [service, setService] = useState<MyServiceRow | null>(null);
-  const [freelancerId, setFreelancerId] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -66,9 +63,8 @@ export default function ManageServiceDetailPage() {  const { t, formatDate } = u
     setLoading(true);
     setError("");
     try {
-      const [row, me] = await Promise.all([getMyService(serviceId), getMe()]);
+      const row = await getMyService(serviceId);
       setService(row);
-      setFreelancerId(me.user?.id || "");
     } catch (err) {
       const message =
         err && typeof err === "object" && "message" in err
@@ -131,10 +127,6 @@ export default function ManageServiceDetailPage() {  const { t, formatDate } = u
   }
 
   const status = String(service?.listing_status || "draft").toLowerCase();
-  const clientPreviewHref =
-    service && status === "active" && freelancerId
-      ? `/hire/quote?serviceId=${encodeURIComponent(service.id)}&freelancerId=${encodeURIComponent(freelancerId)}`
-      : null;
 
   return (
     <ServicesShell>
@@ -209,12 +201,6 @@ export default function ManageServiceDetailPage() {  const { t, formatDate } = u
                   >
                     {t("Kích hoạt lại")}
                   </button>
-                ) : null}
-                {clientPreviewHref ? (
-                  <Link href={clientPreviewHref} className="svc-btn svc-btn--secondary" target="_blank" rel="noreferrer">
-                    <FaExternalLinkAlt aria-hidden />
-                    <span>{t("Xem như Khách hàng")}</span>
-                  </Link>
                 ) : null}
                 <Link href={`/dich-vu/quan-ly/${service.id}/chinh-sua`} className="svc-btn svc-btn--primary">
                   {t("Chỉnh sửa")}

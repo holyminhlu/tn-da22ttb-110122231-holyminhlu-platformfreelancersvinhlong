@@ -1158,7 +1158,7 @@ function buildJobListFilters(req) {
   const sortRaw = String(req.query.sort || "newest").trim();
   const sort = JOB_SORT_VALUES.has(sortRaw) ? sortRaw : "newest";
 
-  const conditions = ["j.status = 'open'", "u.deleted_at IS NULL", "j.deleted_at IS NULL", "j.admin_hidden_at IS NULL"];
+  const conditions = ["j.status = 'open'", "u.deleted_at IS NULL", "j.deleted_at IS NULL"];
   const params = [];
   let idx = 1;
 
@@ -1297,7 +1297,7 @@ async function listJobCategories(_req, res) {
       `SELECT TRIM(j.category) AS name, COUNT(*)::int AS job_count
        FROM public.jobs j
        INNER JOIN public.users u ON u.id = j.client_id AND u.deleted_at IS NULL
-       WHERE j.status = 'open' AND j.deleted_at IS NULL AND j.admin_hidden_at IS NULL AND TRIM(COALESCE(j.category, '')) <> ''
+       WHERE j.status = 'open' AND j.deleted_at IS NULL AND TRIM(COALESCE(j.category, '')) <> ''
        GROUP BY TRIM(j.category)
        ORDER BY job_count DESC, name ASC`,
     );
@@ -1420,7 +1420,6 @@ async function getJob(req, res) {
     const viewerFreelancerId = payload?.role === "freelancer" ? payload.sub : null;
     const jobResult = await db.query(
       `SELECT${JOB_LISTING_SELECT},
-         j.admin_hidden_at,
          CASE
            WHEN $2::uuid IS NULL THEN FALSE
            ELSE EXISTS (
@@ -1491,7 +1490,7 @@ async function getJob(req, res) {
     }
 
     const job = mapJobListingRow(jobResult.rows[0]);
-    let allowed = job.status === "open" && !jobResult.rows[0].admin_hidden_at;
+    let allowed = job.status === "open";
 
     if (!allowed && payload) {
       if (String(payload.sub) === String(job.client_id)) {
