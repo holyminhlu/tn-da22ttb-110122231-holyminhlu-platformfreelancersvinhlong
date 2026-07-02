@@ -11,6 +11,7 @@ import {
   getCardVerifyPaymentStatus,
   type IdentityVerificationResponse,
 } from "@/lib/api/identityVerification";
+import type { ApiError } from "@/lib/api/client";
 import { formatVnd } from "@/lib/format";
 import IdentityReadOnlyBanner from "./IdentityReadOnlyBanner";
 
@@ -211,8 +212,17 @@ export default function CreditCardVerifyPanel({
             setPolling(false);
             return;
           }
-        } catch {
-          /* retry */
+        } catch (err) {
+          const apiErr = err as ApiError;
+          if (apiErr?.status === 404) {
+            setMessage(
+              "Không tìm thấy đơn xác minh thẻ. Có thể bạn chưa bấm Thanh toán 10.000 VND hoặc đơn đã hết hạn.",
+            );
+            onPaymentPollComplete?.();
+            setPolling(false);
+            return;
+          }
+          /* retry for transient failures */
         }
         await new Promise((r) => window.setTimeout(r, 2000));
       }
