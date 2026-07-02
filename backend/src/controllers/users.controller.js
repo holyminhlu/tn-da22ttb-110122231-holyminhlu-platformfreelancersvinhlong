@@ -123,48 +123,90 @@ async function updateProfile(req, res) {
 
   const userId = payload.sub;
   const role = String(payload.role || "").toLowerCase();
-  const fullName = String(req.body?.fullName ?? "").trim().slice(0, 180);
-  const phone = String(req.body?.phone ?? "").trim().slice(0, 40);
-  const bio = String(req.body?.bio ?? "").trim().slice(0, 8000);
-  const website = String(req.body?.website ?? "").trim().slice(0, 255);
-  const dateOfBirth = req.body?.dateOfBirth ? String(req.body.dateOfBirth).slice(0, 10) : null;
-  const gender = req.body?.gender ? String(req.body.gender).trim().slice(0, 30) : null;
-  const tagline = String(req.body?.tagline ?? "").trim().slice(0, 220);
-  const districtCity = String(req.body?.districtCity ?? "").trim().slice(0, 180);
+  const hasField = (key) => Object.prototype.hasOwnProperty.call(req.body || {}, key);
+
+  const fullNameProvided = hasField("fullName");
+  const fullName = fullNameProvided ? String(req.body?.fullName ?? "").trim().slice(0, 180) : "";
+  const phoneProvided = hasField("phone");
+  const phone = phoneProvided ? String(req.body?.phone ?? "").trim().slice(0, 40) : "";
+  const bioProvided = hasField("bio");
+  const bio = bioProvided ? String(req.body?.bio ?? "").trim().slice(0, 8000) : "";
+  const websiteProvided = hasField("website");
+  const website = websiteProvided ? String(req.body?.website ?? "").trim().slice(0, 255) : "";
+  const dateOfBirthProvided = hasField("dateOfBirth");
+  const dateOfBirth = dateOfBirthProvided
+    ? req.body?.dateOfBirth
+      ? String(req.body.dateOfBirth).slice(0, 10)
+      : null
+    : null;
+  const genderProvided = hasField("gender");
+  const gender = genderProvided
+    ? req.body?.gender
+      ? String(req.body.gender).trim().slice(0, 30)
+      : null
+    : null;
+  const taglineProvided = hasField("tagline");
+  const tagline = taglineProvided ? String(req.body?.tagline ?? "").trim().slice(0, 220) : "";
+  const districtCityProvided = hasField("districtCity");
+  const districtCity = districtCityProvided
+    ? String(req.body?.districtCity ?? "").trim().slice(0, 180)
+    : "";
   const coverUrlProvided = Object.prototype.hasOwnProperty.call(req.body, "coverUrl");
   const coverUrl = coverUrlProvided ? String(req.body?.coverUrl ?? "").trim().slice(0, 500) : null;
 
-  const title = String(req.body?.title ?? "").trim().slice(0, 180);
+  const titleProvided = hasField("title");
+  const title = titleProvided ? String(req.body?.title ?? "").trim().slice(0, 180) : "";
+  const hourlyRateProvided = hasField("hourlyRate");
   const hourlyRateRaw = req.body?.hourlyRate;
+  const experienceYearsProvided = hasField("experienceYears");
   const experienceYearsRaw = req.body?.experienceYears;
-  const availabilityStatus = req.body?.availabilityStatus ? String(req.body.availabilityStatus).trim().slice(0, 30) : null;
-  const languages = Array.isArray(req.body?.languages)
-    ? req.body.languages.map((v) => String(v || "").trim()).filter(Boolean).slice(0, 20)
+  const availabilityStatusProvided = hasField("availabilityStatus");
+  const availabilityStatus = availabilityStatusProvided
+    ? req.body?.availabilityStatus
+      ? String(req.body.availabilityStatus).trim().slice(0, 30)
+      : null
+    : null;
+  const languagesProvided = hasField("languages");
+  const languages = languagesProvided
+    ? Array.isArray(req.body?.languages)
+      ? req.body.languages.map((v) => String(v || "").trim()).filter(Boolean).slice(0, 20)
+      : []
     : null;
 
-  if (!fullName) {
+  if (fullNameProvided && !fullName) {
     return res.status(400).json({ message: "Họ tên là bắt buộc." });
   }
 
-  const hourlyRate =
-    hourlyRateRaw !== undefined && hourlyRateRaw !== null && hourlyRateRaw !== "" ? Number(hourlyRateRaw) : null;
-  const experienceYears =
-    experienceYearsRaw !== undefined && experienceYearsRaw !== null && experienceYearsRaw !== ""
+  const hourlyRate = hourlyRateProvided
+    ? hourlyRateRaw !== undefined && hourlyRateRaw !== null && hourlyRateRaw !== ""
+      ? Number(hourlyRateRaw)
+      : null
+    : null;
+  const experienceYears = experienceYearsProvided
+    ? experienceYearsRaw !== undefined && experienceYearsRaw !== null && experienceYearsRaw !== ""
       ? Number(experienceYearsRaw)
-      : null;
+      : null
+    : null;
 
-  if (hourlyRate !== null && (!Number.isFinite(hourlyRate) || hourlyRate < 0)) {
+  if (hourlyRateProvided && hourlyRate !== null && (!Number.isFinite(hourlyRate) || hourlyRate < 0)) {
     return res.status(400).json({ message: "Đơn giá/giờ không hợp lệ." });
   }
-  if (experienceYears !== null && (!Number.isFinite(experienceYears) || experienceYears < 0)) {
+  if (
+    experienceYearsProvided &&
+    experienceYears !== null &&
+    (!Number.isFinite(experienceYears) || experienceYears < 0)
+  ) {
     return res.status(400).json({ message: "Số năm kinh nghiệm không hợp lệ." });
   }
 
-  const profileBadges = Array.isArray(req.body?.profileBadges)
-    ? req.body.profileBadges
-        .map((v) => String(v || "").trim().slice(0, 80))
-        .filter(Boolean)
-        .slice(0, 12)
+  const profileBadgesProvided = hasField("profileBadges");
+  const profileBadges = profileBadgesProvided
+    ? Array.isArray(req.body?.profileBadges)
+      ? req.body.profileBadges
+          .map((v) => String(v || "").trim().slice(0, 80))
+          .filter(Boolean)
+          .slice(0, 12)
+      : []
     : [];
 
   const dbClient = await pool.connect();
@@ -172,65 +214,125 @@ async function updateProfile(req, res) {
     await dbClient.query("BEGIN");
 
     await dbClient.query(
-      `INSERT INTO public.user_profiles (user_id, full_name, phone, bio, website, date_of_birth, gender, tagline, district_city, updated_at)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW())
-       ON CONFLICT (user_id)
-       DO UPDATE SET
-         full_name = EXCLUDED.full_name,
-         phone = EXCLUDED.phone,
-         bio = EXCLUDED.bio,
-         website = EXCLUDED.website,
-         date_of_birth = EXCLUDED.date_of_birth,
-         gender = EXCLUDED.gender,
-         tagline = EXCLUDED.tagline,
-         district_city = EXCLUDED.district_city,
-         updated_at = NOW()`,
-      [
-        userId,
-        fullName,
-        phone || null,
-        bio || null,
-        website || null,
-        dateOfBirth,
-        gender,
-        tagline || null,
-        districtCity || null,
-      ],
+      `INSERT INTO public.user_profiles (user_id, updated_at)
+       VALUES ($1, NOW())
+       ON CONFLICT (user_id) DO NOTHING`,
+      [userId],
     );
 
+    const profileSets = [];
+    const profileParams = [userId];
+    let pIdx = 2;
+
+    if (fullNameProvided) {
+      profileSets.push(`full_name = $${pIdx}`);
+      profileParams.push(fullName || null);
+      pIdx += 1;
+    }
+    if (phoneProvided) {
+      profileSets.push(`phone = $${pIdx}`);
+      profileParams.push(phone || null);
+      pIdx += 1;
+    }
+    if (bioProvided) {
+      profileSets.push(`bio = $${pIdx}`);
+      profileParams.push(bio || null);
+      pIdx += 1;
+    }
+    if (websiteProvided) {
+      profileSets.push(`website = $${pIdx}`);
+      profileParams.push(website || null);
+      pIdx += 1;
+    }
+    if (dateOfBirthProvided) {
+      profileSets.push(`date_of_birth = $${pIdx}`);
+      profileParams.push(dateOfBirth);
+      pIdx += 1;
+    }
+    if (genderProvided) {
+      profileSets.push(`gender = $${pIdx}`);
+      profileParams.push(gender);
+      pIdx += 1;
+    }
+    if (taglineProvided) {
+      profileSets.push(`tagline = $${pIdx}`);
+      profileParams.push(tagline || null);
+      pIdx += 1;
+    }
+    if (districtCityProvided) {
+      profileSets.push(`district_city = $${pIdx}`);
+      profileParams.push(districtCity || null);
+      pIdx += 1;
+    }
+
     if (coverUrlProvided) {
+      profileSets.push(`cover_url = $${pIdx}`);
+      profileParams.push(coverUrl || null);
+      pIdx += 1;
+    }
+
+    if (profileSets.length > 0) {
+      profileSets.push(`updated_at = NOW()`);
       await dbClient.query(
         `UPDATE public.user_profiles
-         SET cover_url = $2, updated_at = NOW()
+         SET ${profileSets.join(", ")}
          WHERE user_id = $1`,
-        [userId, coverUrl || null],
+        profileParams,
       );
     }
 
     if (role === "freelancer") {
       await dbClient.query(
-        `INSERT INTO public.freelancer_profiles
-          (user_id, title, hourly_rate, experience_years, availability_status, languages, profile_badges)
-         VALUES ($1, $2, $3, $4, $5, $6::jsonb, $7::jsonb)
-         ON CONFLICT (user_id)
-         DO UPDATE SET
-           title = EXCLUDED.title,
-           hourly_rate = EXCLUDED.hourly_rate,
-           experience_years = EXCLUDED.experience_years,
-           availability_status = EXCLUDED.availability_status,
-           languages = EXCLUDED.languages,
-           profile_badges = EXCLUDED.profile_badges,
-           updated_at = NOW()`,
-        [
-          userId,
-          title || null,
-          hourlyRate,
-          experienceYears,
-          availabilityStatus || "available",
-          JSON.stringify(languages || []),
-          JSON.stringify(profileBadges),
-        ],
+        `INSERT INTO public.freelancer_profiles (user_id, updated_at)
+         VALUES ($1, NOW())
+         ON CONFLICT (user_id) DO NOTHING`,
+        [userId],
       );
+
+      const freelancerSets = [];
+      const freelancerParams = [userId];
+      let fIdx = 2;
+
+      if (titleProvided) {
+        freelancerSets.push(`title = $${fIdx}`);
+        freelancerParams.push(title || null);
+        fIdx += 1;
+      }
+      if (hourlyRateProvided) {
+        freelancerSets.push(`hourly_rate = $${fIdx}`);
+        freelancerParams.push(hourlyRate);
+        fIdx += 1;
+      }
+      if (experienceYearsProvided) {
+        freelancerSets.push(`experience_years = $${fIdx}`);
+        freelancerParams.push(experienceYears);
+        fIdx += 1;
+      }
+      if (availabilityStatusProvided) {
+        freelancerSets.push(`availability_status = $${fIdx}`);
+        freelancerParams.push(availabilityStatus || "available");
+        fIdx += 1;
+      }
+      if (languagesProvided) {
+        freelancerSets.push(`languages = $${fIdx}::jsonb`);
+        freelancerParams.push(JSON.stringify(languages || []));
+        fIdx += 1;
+      }
+      if (profileBadgesProvided) {
+        freelancerSets.push(`profile_badges = $${fIdx}::jsonb`);
+        freelancerParams.push(JSON.stringify(profileBadges));
+        fIdx += 1;
+      }
+
+      if (freelancerSets.length > 0) {
+        freelancerSets.push(`updated_at = NOW()`);
+        await dbClient.query(
+          `UPDATE public.freelancer_profiles
+           SET ${freelancerSets.join(", ")}
+           WHERE user_id = $1`,
+          freelancerParams,
+        );
+      }
     }
 
     await dbClient.query("COMMIT");
