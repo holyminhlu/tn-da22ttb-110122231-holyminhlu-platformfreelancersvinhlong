@@ -1933,8 +1933,11 @@ async function compareJobQuoteWithAi(req, res) {
     if (error.code === "GEMINI_API_ERROR") {
       console.error("Gemini quote compare failed:", error.message);
       return res.status(502).json({
-        message: "Không thể kết nối Gemini API. Kiểm tra GEMINI_API_KEY và thử lại.",
+        message:
+          error.message ||
+          "Không thể kết nối Gemini API. Kiểm tra GEMINI_API_KEY và thử lại.",
         code: error.code,
+        geminiStatus: error.status ?? null,
       });
     }
     console.error("Compare job quote with AI failed:", error.message);

@@ -52,7 +52,7 @@ const COMPARE_RESPONSE_SCHEMA = {
     recommendation: {
       type: "object",
       properties: {
-        suggestedQuoteId: { type: "string", nullable: true },
+        suggestedQuoteId: { type: "string" },
         suggestedFreelancerName: { type: "string" },
         confidence: { type: "string", enum: ["high", "medium", "low"] },
         reasoning: { type: "string" },
@@ -140,11 +140,11 @@ ${JSON.stringify(others, null, 2)}
 3. Phân tích chất lượng đề xuất trong message và mức độ phù hợp với mô tả công việc.
 4. Đưa ra 4-6 tiêu chí trong criteria (Giá, Kinh nghiệm, Uy tín, Nội dung đề xuất, v.v.).
 5. verdict: "leading" nếu freelancer focus dẫn đầu tiêu chí đó, "competitive" nếu ngang cơ, "trailing" nếu yếu hơn.
-6. Gợi ý cuối cùng có thể chọn freelancer focus HOẶC một freelancer khác nếu hợp lý hơn — luôn ghi rõ suggestedQuoteId.
+6. Gợi ý cuối cùng có thể chọn freelancer focus HOẶC một freelancer khác nếu hợp lý hơn — luôn ghi rõ suggestedQuoteId (chuỗi UUID; dùng "" nếu không đủ dữ liệu để gợi ý).
 7. actionTips: 2-4 gợi ý hành động cụ thể cho khách hàng (ví dụ nhắn tin hỏi thêm, đặt lịch phỏng vấn).`;
 }
 
-async function callGeminiJson(prompt) {
+async function callGeminiJson(prompt, { useSchema = true } = {}) {
   const { apiKey, model } = await getGeminiConfig();
   if (!apiKey) {
     const err = new Error("GEMINI_NOT_CONFIGURED");
@@ -154,16 +154,20 @@ async function callGeminiJson(prompt) {
 
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`;
 
+  const generationConfig = {
+    temperature: 0.35,
+    responseMimeType: "application/json",
+  };
+  if (useSchema) {
+    generationConfig.responseSchema = COMPARE_RESPONSE_SCHEMA;
+  }
+
   const response = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       contents: [{ role: "user", parts: [{ text: prompt }] }],
-      generationConfig: {
-        temperature: 0.35,
-        responseMimeType: "application/json",
-        responseSchema: COMPARE_RESPONSE_SCHEMA,
-      },
+      generationConfig,
     }),
   });
 
@@ -177,6 +181,11 @@ async function callGeminiJson(prompt) {
     const err = new Error(apiMessage);
     err.code = "GEMINI_API_ERROR";
     err.status = response.status;
+
+    if (useSchema && (response.status === 400 || response.status === 422)) {
+      return callGeminiJson(prompt, { useSchema: false });
+    }
+
     throw err;
   }
 
@@ -188,7 +197,11 @@ async function callGeminiJson(prompt) {
   }
 
   try {
-    return JSON.parse(text);
+    const parsed = JSON.parse(text);
+    if (parsed?.recommendation && parsed.recommendation.suggestedQuoteId === "") {
+      parsed.recommendation.suggestedQuoteId = null;
+    }
+    return parsed;
   } catch {
     const err = new Error("Không thể đọc kết quả phân tích từ AI.");
     err.code = "GEMINI_PARSE";
