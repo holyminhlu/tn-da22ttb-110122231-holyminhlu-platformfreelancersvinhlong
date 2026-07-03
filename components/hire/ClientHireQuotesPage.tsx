@@ -406,7 +406,11 @@ export default function ClientHireQuotesPage() {
               </div>
             ) : null}
 
-            <div className="hire-quotes__layout">
+            <div
+              className={`hire-quotes__layout${
+                activeJobs.length > 1 ? " hire-quotes__layout--split" : ""
+              }`}
+            >
               {activeJobs.length > 1 ? (
                 <nav className="hire-quotes__jobs hire-quotes__jobs--responsive" aria-label={t("hireQuotes.activeJobs")}>
                   <p className="hire-quotes__jobs-heading">{t("hireQuotes.activeJobs")}</p>
