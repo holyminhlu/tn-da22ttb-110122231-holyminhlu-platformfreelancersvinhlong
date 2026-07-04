@@ -19,6 +19,14 @@ function sourceLabel(source: string) {
   return "Chưa cấu hình";
 }
 
+const MODEL_LABELS: Record<string, string> = {
+  "gemini-3.1-flash-lite": "Gemini 3.1 Flash Lite",
+};
+
+function modelLabel(id: string) {
+  return MODEL_LABELS[id] ? `${MODEL_LABELS[id]} (${id})` : id;
+}
+
 export default function AdminApiKeysPage() {
   const { t } = useTranslation();
   const [settings, setSettings] = useState<GeminiAdminSettings | null>(null);
@@ -208,7 +216,7 @@ export default function AdminApiKeysPage() {
           >
             {(settings?.suggestedModels ?? []).map((item) => (
               <option key={item} value={item}>
-                {item}
+                {modelLabel(item)}
               </option>
             ))}
           </select>
