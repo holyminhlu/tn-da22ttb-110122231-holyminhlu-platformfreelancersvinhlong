@@ -48,3 +48,5 @@ backend/uploads/jobs/*
 backend/uploads/services/*
 !backend/uploads/services/.gitkeep
 backend/runtime/gemini-settings.json
+
+Video Project VinhLongConnect.mp4
