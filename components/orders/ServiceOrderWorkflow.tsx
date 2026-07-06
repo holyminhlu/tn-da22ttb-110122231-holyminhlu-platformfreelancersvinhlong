@@ -89,6 +89,27 @@ function workflowDisplayStageIndex(
   return stageIndex(workflowStage);
 }
 
+type StageId = (typeof STAGES)[number]["id"];
+
+function resolvePanelStage(
+  viewingIdx: number,
+  currentIdx: number,
+  workflowStage: string,
+  awaitingClientAcceptance: boolean,
+): StageId {
+  if (viewingIdx < currentIdx) {
+    return STAGES[viewingIdx].id;
+  }
+  const ws = workflowStage;
+  if (ws === "selection") return "selection";
+  if (ws === "escrow") return "escrow";
+  if (ws === "completion") return "completion";
+  if (awaitingClientAcceptance) return "delivery";
+  if (ws === "execution") return "execution";
+  if (ws === "delivery") return "delivery";
+  return STAGES[viewingIdx]?.id ?? "selection";
+}
+
 export default function ServiceOrderWorkflow({
   backHref, backLabel }: ServiceOrderWorkflowProps) {  const { t, formatDate } = useTranslation();
 
@@ -104,6 +125,7 @@ export default function ServiceOrderWorkflow({
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [actionError, setActionError] = useState("");
+  const [viewingIdx, setViewingIdx] = useState(0);
 
   const load = useCallback(async () => {
     if (!contractId) {
@@ -148,6 +170,11 @@ export default function ServiceOrderWorkflow({
     contract ?? {},
     role === "client",
   );
+
+  useEffect(() => {
+    setViewingIdx(currentIdx);
+  }, [currentIdx, contractId]);
+
   const runAction = useCallback(
     async (body: Record<string, unknown>) => {
       setBusy(true);
@@ -207,6 +234,15 @@ export default function ServiceOrderWorkflow({
     disputeId: data.dispute?.id,
     contractId,
   });
+
+  const panelStage = resolvePanelStage(
+    viewingIdx,
+    currentIdx,
+    workflowStage,
+    awaitingClientAcceptance,
+  );
+  const isReadOnlyView = viewingIdx < currentIdx;
+  const viewingStageMeta = STAGES[viewingIdx] ?? stageMeta;
 
   function confirmCancelOrder() {
     const reason = window.prompt("Lý do hủy đơn (tùy chọn):", "") ?? "";
@@ -270,24 +306,51 @@ export default function ServiceOrderWorkflow({
         </div>
 
         <nav className="hire-order__stepper" aria-label={t("Tiến trình đặt dịch vụ")}>
-          {STAGES.map((stage, idx) => (
-            <div
-              key={stage.id}
-              className={`hire-order__step${idx < currentIdx ? " hire-order__step--done" : ""}${idx === currentIdx ? " hire-order__step--current" : ""}`}
-            >
-              <span className="hire-order__step-num">{stage.label}</span>
-              {stage.title}
-            </div>
-          ))}
+          {STAGES.map((stage, idx) => {
+            const canView = idx <= currentIdx;
+            const isViewing = idx === viewingIdx;
+            const isWorkflowCurrent = idx === currentIdx;
+            return (
+              <button
+                key={stage.id}
+                type="button"
+                className={`hire-order__step${idx < currentIdx ? " hire-order__step--done" : ""}${isViewing ? " hire-order__step--viewing" : ""}${isWorkflowCurrent ? " hire-order__step--workflow-current" : ""}${canView ? " hire-order__step--clickable" : ""}`}
+                disabled={!canView}
+                aria-current={isViewing ? "step" : undefined}
+                aria-label={`${stage.label}: ${stage.title}${idx < currentIdx ? " (đã hoàn thành)" : isWorkflowCurrent ? " (giai đoạn hiện tại)" : ""}`}
+                onClick={() => canView && setViewingIdx(idx)}
+              >
+                <span className="hire-order__step-num">{stage.label}</span>
+                {stage.title}
+              </button>
+            );
+          })}
         </nav>
 
-        {workflowStage === "selection" ? (
+        {isReadOnlyView ? (
+          <div className="hire-order__readonly-banner" role="status">
+            <strong>{t("Đang xem lại giai đoạn đã hoàn thành")}</strong>
+            <span>
+              {viewingStageMeta.title} — chỉ xem, không thể thao tác.{" "}
+              <button
+                type="button"
+                className="hire-order__readonly-back"
+                onClick={() => setViewingIdx(currentIdx)}
+              >
+                Quay lại giai đoạn hiện tại
+              </button>
+            </span>
+          </div>
+        ) : null}
+
+        {panelStage === "selection" ? (
           <SelectionAgreementPanel
             contract={contract}
             milestones={data.milestones}
             isClient={isClient}
             hasProposal={hasProposal}
             busy={busy}
+            readOnly={isReadOnlyView}
             actionError={actionError}
             counterpartyName={
               isClient
@@ -306,12 +369,13 @@ export default function ServiceOrderWorkflow({
             onRejectProposal={(reason) => void runAction({ action: "reject_proposal", reason })}
             onCancelOrder={confirmCancelOrder}
           />
-        ) : workflowStage === "escrow" ? (
+        ) : panelStage === "escrow" ? (
           <EscrowFundPanel
             contract={contract}
             milestones={data.milestones}
             isClient={isClient}
             busy={busy}
+            readOnly={isReadOnlyView}
             actionError={actionError}
             paymentBlocked={isClient && paymentBlocked}
             counterpartyName={
@@ -322,12 +386,13 @@ export default function ServiceOrderWorkflow({
             onFundEscrow={() => void runAction({ action: "fund_escrow" })}
             onCancelOrder={confirmCancelOrder}
           />
-        ) : workflowStage === "execution" && !awaitingClientAcceptance ? (
+        ) : panelStage === "execution" ? (
           <ExecutionReviewPanel
             contract={contract}
             milestones={data.milestones}
             isClient={isClient}
             busy={busy}
+            readOnly={isReadOnlyView}
             actionError={actionError}
             paymentBlocked={isClient && paymentBlocked}
             progressHistory={data.progressHistory ?? []}
@@ -374,12 +439,13 @@ export default function ServiceOrderWorkflow({
               })
             }
           />
-        ) : workflowStage === "delivery" || awaitingClientAcceptance ? (
+        ) : panelStage === "delivery" ? (
           <DeliveryAcceptancePanel
             contract={contract}
             milestones={data.milestones}
             isClient={isClient}
             busy={busy}
+            readOnly={isReadOnlyView}
             actionError={actionError}
             paymentBlocked={isClient && paymentBlocked}
             counterpartyName={
@@ -387,7 +453,7 @@ export default function ServiceOrderWorkflow({
                 ? contract.freelancer_name || "—"
                 : contract.client_name || "—"
             }
-            clientPendingInStage3={isClient && awaitingClientAcceptance}
+            clientPendingInStage3={!isReadOnlyView && isClient && awaitingClientAcceptance}
             cancelRequest={data.cancelRequest}
             onMarkDelivered={() => void runAction({ action: "mark_delivered" })}
             onAcceptDelivery={() => void runAction({ action: "accept_delivery" })}
@@ -409,12 +475,13 @@ export default function ServiceOrderWorkflow({
               })
             }
           />
-        ) : workflowStage === "completion" ? (
+        ) : panelStage === "completion" ? (
           <CompletionReviewPanel
             contract={contract}
             milestones={data.milestones}
             isClient={isClient}
             busy={busy}
+            readOnly={isReadOnlyView}
             actionError={actionError}
             paymentBlocked={isClient && paymentBlocked}
             counterpartyName={

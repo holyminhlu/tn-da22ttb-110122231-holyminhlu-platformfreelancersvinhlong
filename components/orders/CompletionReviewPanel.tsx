@@ -28,6 +28,7 @@ type CompletionReviewPanelProps = {
   milestones: ContractMilestone[];
   isClient: boolean;
   busy: boolean;
+  readOnly?: boolean;
   actionError?: string;
   paymentBlocked?: boolean;
   counterpartyName: string;
@@ -43,6 +44,7 @@ export default function CompletionReviewPanel({
   milestones,
   isClient,
   busy,
+  readOnly = false,
   actionError,
   paymentBlocked = false,
   counterpartyName,
@@ -72,7 +74,7 @@ export default function CompletionReviewPanel({
 
   return (
     <div className="hire-completion">
-      {paymentBlocked && isClient ? (
+      {paymentBlocked && isClient && !readOnly ? (
         <ClientVerifyNotice message={CLIENT_VERIFY_PAYMENT_LEAD} />
       ) : null}
       <div className="hire-completion__hero">
@@ -167,7 +169,7 @@ export default function CompletionReviewPanel({
         </aside>
 
         <div className="hire-completion__main">
-          {isClient && !isReleased ? (
+          {isClient && !isReleased && !readOnly ? (
             <div className="hire-completion__release-card">
               <header className="hire-completion__card-head">
                 <FaHandHoldingUsd className="hire-completion__card-icon" aria-hidden />
@@ -219,7 +221,7 @@ export default function CompletionReviewPanel({
             </div>
           ) : null}
 
-          {isClient && isReleased && !hasReview ? (
+          {isClient && isReleased && !hasReview && !readOnly ? (
             <div className="hire-completion__review-card">
               <header className="hire-completion__card-head">
                 <FaStar className="hire-completion__card-icon hire-completion__card-icon--star" aria-hidden />
@@ -303,7 +305,7 @@ export default function CompletionReviewPanel({
             </div>
           ) : null}
 
-          {!isClient && !isReleased ? (
+          {!isClient && !isReleased && !readOnly ? (
             <div className="hire-completion__state-card hire-completion__state-card--wait">
               <FaUserClock className="hire-completion__state-icon" aria-hidden />
               <h3 className="hire-completion__state-title">{t("Chờ Khách hàng giải ngân")}</h3>

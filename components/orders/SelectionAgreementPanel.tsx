@@ -31,6 +31,7 @@ type SelectionAgreementPanelProps = {
   isClient: boolean;
   hasProposal: boolean;
   busy: boolean;
+  readOnly?: boolean;
   actionError?: string;
   counterpartyName: string;
   onSubmitProposal: (payload: { proposalText: string; deliveryDays: number }) => void;
@@ -66,6 +67,7 @@ export default function SelectionAgreementPanel({
   isClient,
   hasProposal,
   busy,
+  readOnly = false,
   actionError,
   counterpartyName,
   onSubmitProposal,
@@ -129,14 +131,16 @@ export default function SelectionAgreementPanel({
 
   return (
     <div className="hire-selection">
-      <WorkflowDeadlineBanner
-        deadlineAt={contract.stage_deadline_at}
-        label={
-          hasProposal
-            ? "Hạn Khách hàng chấp nhận đề xuất"
-            : "Hạn Freelancer gửi đề xuất"
-        }
-      />
+      {!readOnly ? (
+        <WorkflowDeadlineBanner
+          deadlineAt={contract.stage_deadline_at}
+          label={
+            hasProposal
+              ? "Hạn Khách hàng chấp nhận đề xuất"
+              : "Hạn Freelancer gửi đề xuất"
+          }
+        />
+      ) : null}
       <div className="hire-selection__hero">
         <div className="hire-selection__hero-text">
           <span className="hire-selection__eyebrow">{t("Giai đoạn 1")}</span>
@@ -221,7 +225,7 @@ export default function SelectionAgreementPanel({
         </aside>
 
         <div className="hire-selection__main">
-          {!isClient && !hasProposal && hasRejection ? (
+          {!isClient && !hasProposal && hasRejection && !readOnly ? (
             <div className="hire-selection__state-card hire-selection__state-card--rejected">
               <FaTimesCircle className="hire-selection__state-icon" aria-hidden />
               <h3 className="hire-selection__state-title">{t("Đề xuất trước bị Khách hàng từ chối")}</h3>
@@ -258,7 +262,7 @@ export default function SelectionAgreementPanel({
             </div>
           ) : null}
 
-          {!isClient && !hasProposal ? (
+          {!isClient && !hasProposal && !readOnly ? (
             <form
               className="hire-selection__form"
               onSubmit={(e) => {
@@ -343,18 +347,22 @@ export default function SelectionAgreementPanel({
           ) : null}
 
           {!isClient && hasProposal ? (
-            <div className="hire-selection__state-card hire-selection__state-card--sent">
+            <div className={`hire-selection__state-card hire-selection__state-card--sent${readOnly ? " hire-selection__state-card--readonly" : ""}`}>
               <FaUserClock className="hire-selection__state-icon" aria-hidden />
-              <h3 className="hire-selection__state-title">{t("Đề xuất đã gửi")}</h3>
+              <h3 className="hire-selection__state-title">
+                {readOnly ? t("Đề xuất đã chốt") : t("Đề xuất đã gửi")}
+              </h3>
               <p className="hire-selection__state-desc">
-                Khách hàng đang xem xét. Bạn có thể trao đổi thêm qua tin nhắn hoặc cuộc gọi trong lúc chờ phản hồi.
+                {readOnly
+                  ? "Giai đoạn này đã hoàn thành — đề xuất đã được Khách hàng chấp nhận."
+                  : "Khách hàng đang xem xét. Bạn có thể trao đổi thêm qua tin nhắn hoặc cuộc gọi trong lúc chờ phản hồi."}
               </p>
               {contract.proposal_submitted_at ? (
                 <p className="hire-selection__state-meta">
                   Gửi lúc {formatDateUi(contract.proposal_submitted_at)}
                 </p>
               ) : null}
-              {onWithdrawProposal ? (
+              {!readOnly && onWithdrawProposal ? (
                 <button
                   type="button"
                   className="hire-selection__btn hire-selection__btn--outline"
@@ -373,7 +381,7 @@ export default function SelectionAgreementPanel({
             </div>
           ) : null}
 
-          {isClient && !hasProposal ? (
+          {isClient && !hasProposal && !readOnly ? (
             <div className="hire-selection__state-card hire-selection__state-card--wait">
               <FaUserClock className="hire-selection__state-icon" aria-hidden />
               <h3 className="hire-selection__state-title">{t("Đang chờ đề xuất")}</h3>
@@ -388,13 +396,14 @@ export default function SelectionAgreementPanel({
           ) : null}
 
           {isClient && hasProposal ? (
-            <div className="hire-selection__review" id="de-xuat">
+            <div className="hire-selection__review" id={readOnly ? undefined : "de-xuat"}>
               <header className="hire-selection__review-head">
                 <div>
                   <h3 className="hire-selection__form-title">{t("Đề xuất từ Freelancer")}</h3>
                   <p className="hire-selection__form-sub">
-                    Kiểm tra phạm vi và thời gian dự kiến trước khi chấp nhận — bước tiếp theo là nạp ký
-                    quỹ Escrow.
+                    {readOnly
+                      ? "Đề xuất đã được chấp nhận — xem lại nội dung đã thỏa thuận."
+                      : "Kiểm tra phạm vi và thời gian dự kiến trước khi chấp nhận — bước tiếp theo là nạp ký quỹ Escrow."}
                   </p>
                 </div>
                 {timelineLabel !== "—" ? (
@@ -418,7 +427,7 @@ export default function SelectionAgreementPanel({
                 </p>
               ) : null}
 
-              {rejectOpen && onRejectProposal ? (
+              {!readOnly && rejectOpen && onRejectProposal ? (
                 <form
                   className="hire-selection__reject-form"
                   onSubmit={(e) => {
@@ -478,7 +487,7 @@ export default function SelectionAgreementPanel({
                     </button>
                   </div>
                 </form>
-              ) : (
+              ) : !readOnly ? (
                 <div className="hire-selection__review-actions">
                   <button
                     type="button"
@@ -512,7 +521,7 @@ export default function SelectionAgreementPanel({
                     Cần trao đổi thêm?
                   </Link>
                 </div>
-              )}
+              ) : null}
             </div>
           ) : null}
 

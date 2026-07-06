@@ -29,6 +29,7 @@ type DeliveryAcceptancePanelProps = {
   milestones: ContractMilestone[];
   isClient: boolean;
   busy: boolean;
+  readOnly?: boolean;
   actionError?: string;
   paymentBlocked?: boolean;
   counterpartyName: string;
@@ -55,6 +56,7 @@ export default function DeliveryAcceptancePanel({
   milestones,
   isClient,
   busy,
+  readOnly = false,
   actionError,
   paymentBlocked = false,
   counterpartyName,
@@ -70,6 +72,7 @@ export default function DeliveryAcceptancePanel({
   const [deliverConfirmed, setDeliverConfirmed] = useState(false);
 
   const isDelivered = Boolean(contract.delivered_at);
+  const isAccepted = Boolean(contract.accepted_at);
   const progressNote = contract.progress_note?.trim() || "";
   const demoUrl = contract.demo_url?.trim() || "";
   const agreedDisplay =
@@ -101,10 +104,10 @@ export default function DeliveryAcceptancePanel({
 
   return (
     <div className="hire-delivery">
-      {paymentBlocked && isClient ? (
+      {paymentBlocked && isClient && !readOnly ? (
         <ClientVerifyNotice message={CLIENT_VERIFY_PAYMENT_LEAD} />
       ) : null}
-      {cancelRequest ? (
+      {cancelRequest && !readOnly ? (
         <div className="hire-sla-banner hire-sla-banner--warn" role="alert">
           <strong>
             {isClient
@@ -137,7 +140,7 @@ export default function DeliveryAcceptancePanel({
           ) : null}
         </div>
       ) : null}
-      {contract.delivered_at && !contract.accepted_at && !workFrozen ? (
+      {contract.delivered_at && !contract.accepted_at && !workFrozen && !readOnly ? (
         <WorkflowDeadlineBanner
           deadlineAt={contract.delivery_review_deadline_at}
           label={
@@ -265,7 +268,7 @@ export default function DeliveryAcceptancePanel({
         </aside>
 
         <div className="hire-delivery__main">
-          {!isClient && isDelivered ? (
+          {!isClient && isDelivered && !readOnly ? (
             <div className="hire-delivery__state-card hire-delivery__state-card--sent">
               <FaUserClock className="hire-delivery__state-icon" aria-hidden />
               <h3 className="hire-delivery__state-title">{t("Đã gửi bàn giao")}</h3>
@@ -281,7 +284,7 @@ export default function DeliveryAcceptancePanel({
             </div>
           ) : null}
 
-          {!isClient && workFrozen && !isDelivered ? (
+          {!isClient && workFrozen && !isDelivered && !readOnly ? (
             <div className="hire-execution__frozen-card">
               <FaPauseCircle className="hire-execution__frozen-icon" aria-hidden />
               <h3 className="hire-execution__frozen-title">{t("Công việc tạm dừng")}</h3>
@@ -292,7 +295,7 @@ export default function DeliveryAcceptancePanel({
             </div>
           ) : null}
 
-          {!isClient && !isDelivered && !workFrozen ? (
+          {!isClient && !isDelivered && !workFrozen && !readOnly ? (
             <div className="hire-delivery__work-card">
               <header className="hire-delivery__work-head">
                 <FaBoxOpen className="hire-delivery__work-head-icon" aria-hidden />
@@ -323,7 +326,7 @@ export default function DeliveryAcceptancePanel({
             </div>
           ) : null}
 
-          {isClient && !isDelivered ? (
+          {isClient && !isDelivered && !readOnly ? (
             <div className="hire-delivery__state-card hire-delivery__state-card--wait">
               <FaUserClock className="hire-delivery__state-icon" aria-hidden />
               <h3 className="hire-delivery__state-title">{t("Chờ freelancer bàn giao")}</h3>
@@ -334,7 +337,7 @@ export default function DeliveryAcceptancePanel({
             </div>
           ) : null}
 
-          {isClient && isDelivered ? (
+          {isClient && isDelivered && !readOnly ? (
             <div className="hire-delivery__accept-card">
               <header className="hire-delivery__accept-head">
                 <FaThumbsUp className="hire-delivery__accept-head-icon" aria-hidden />
@@ -418,7 +421,50 @@ export default function DeliveryAcceptancePanel({
             </div>
           ) : null}
 
-          {isClient && onOpenDispute && !workFrozen ? (
+          {readOnly && isAccepted ? (
+            <div className="hire-delivery__state-card hire-delivery__state-card--success">
+              <FaCheckCircle className="hire-delivery__state-icon" aria-hidden />
+              <h3 className="hire-delivery__state-title">{t("Đã nghiệm thu")}</h3>
+              <p className="hire-delivery__state-desc">
+                Giai đoạn bàn giao & nghiệm thu đã hoàn thành.
+              </p>
+              {contract.accepted_at ? (
+                <p className="hire-delivery__state-meta">
+                  Nghiệm thu lúc {formatDateUi(contract.accepted_at)}
+                </p>
+              ) : null}
+            </div>
+          ) : null}
+
+          {readOnly && isDelivered && !isAccepted ? (
+            <div className="hire-delivery__state-card hire-delivery__state-card--sent">
+              <FaBoxOpen className="hire-delivery__state-icon" aria-hidden />
+              <h3 className="hire-delivery__state-title">{t("Đã bàn giao")}</h3>
+              <p className="hire-delivery__state-desc">
+                Freelancer đã gửi bàn giao
+                {contract.delivered_at ? ` lúc ${formatDateUi(contract.delivered_at)}` : ""}.
+              </p>
+              {progressNote ? (
+                <div className="hire-delivery__note-box">
+                  <span className="hire-delivery__note-label">{t("Ghi chú từ freelancer")}</span>
+                  <p>{progressNote}</p>
+                </div>
+              ) : null}
+              {demoUrl ? (
+                <a
+                  href={demoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hire-delivery__demo-link hire-delivery__demo-link--large"
+                >
+                  Mở bản demo
+                  <FaExternalLinkAlt aria-hidden />
+                </a>
+              ) : null}
+            </div>
+          ) : null}
+
+          {isClient && onOpenDispute && !workFrozen && !readOnly ? (
             <div className="hire-execution__cancel-box">
               <ResolutionActionChooser
                 busy={busy || paymentBlocked}

@@ -1060,6 +1060,7 @@
 }
 
 .dark .hire-order__step--current .hire-order__step-num,
+.dark .hire-order__step--viewing .hire-order__step-num,
 .dark .hire-order__step--done .hire-order__step-num {
   opacity: 0.92;
 }
@@ -1074,9 +1075,24 @@
   background: rgb(52 211 153 / 12%) !important;
 }
 
-.dark .hire-order__step--current {
+.dark .hire-order__step--current,
+.dark .hire-order__step--viewing {
   color: var(--vlc-link) !important;
   background: var(--vlc-accent-soft) !important;
+}
+
+.dark .hire-order__step--workflow-current:not(.hire-order__step--viewing) {
+  outline-color: var(--vlc-link) !important;
+}
+
+.dark .hire-order__readonly-banner {
+  border-color: rgb(96 165 250 / 35%) !important;
+  background: var(--vlc-accent-soft) !important;
+  color: var(--vlc-link) !important;
+}
+
+.dark .hire-order__readonly-back {
+  color: var(--vlc-link) !important;
 }
 
 .dark .hire-order__info-box {

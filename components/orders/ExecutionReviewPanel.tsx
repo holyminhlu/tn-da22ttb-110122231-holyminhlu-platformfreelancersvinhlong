@@ -32,6 +32,7 @@ type ExecutionReviewPanelProps = {
   milestones: ContractMilestone[];
   isClient: boolean;
   busy: boolean;
+  readOnly?: boolean;
   actionError?: string;
   paymentBlocked?: boolean;
   counterpartyName: string;
@@ -60,6 +61,7 @@ export default function ExecutionReviewPanel({
   milestones,
   isClient,
   busy,
+  readOnly = false,
   actionError,
   paymentBlocked = false,
   counterpartyName,
@@ -127,10 +129,10 @@ export default function ExecutionReviewPanel({
 
   return (
     <div className="hire-execution">
-      {paymentBlocked && isClient ? (
+      {paymentBlocked && isClient && !readOnly ? (
         <ClientVerifyNotice message={CLIENT_VERIFY_PAYMENT_LEAD} />
       ) : null}
-      {cancelRequest ? (
+      {cancelRequest && !readOnly ? (
         <div className="hire-sla-banner hire-sla-banner--warn" role="alert">
           <strong>
             {isClient
@@ -298,7 +300,7 @@ export default function ExecutionReviewPanel({
             <ProgressHistoryTimeline entries={progressHistory} highlightLatest />
           ) : null}
 
-          {!isClient && workFrozen ? (
+          {!isClient && workFrozen && !readOnly ? (
             <div className="hire-execution__frozen-card">
               <FaPauseCircle className="hire-execution__frozen-icon" aria-hidden />
               <h3 className="hire-execution__frozen-title">{t("Công việc tạm dừng")}</h3>
@@ -311,7 +313,7 @@ export default function ExecutionReviewPanel({
             </div>
           ) : null}
 
-          {!isClient && !workFrozen ? (
+          {!isClient && !workFrozen && !readOnly ? (
             <div className="hire-execution__work-card">
               <header className="hire-execution__work-head">
                 <FaPaperPlane className="hire-execution__work-head-icon" aria-hidden />
@@ -445,6 +447,7 @@ export default function ExecutionReviewPanel({
                 </div>
               ) : null}
 
+              {!readOnly ? (
               <div className="hire-execution__revision-form">
                 <header className="hire-execution__revision-head">
                   <FaRedo aria-hidden />
@@ -478,10 +481,11 @@ export default function ExecutionReviewPanel({
                   {busy ? "Đang gửi..." : "Gửi yêu cầu chỉnh sửa"}
                 </button>
               </div>
+              ) : null}
             </div>
           ) : null}
 
-          {isClient && !cancelRequest && (onRequestCancelRefund || onOpenDispute) ? (
+          {isClient && !cancelRequest && !readOnly && (onRequestCancelRefund || onOpenDispute) ? (
             <div className="hire-execution__cancel-box">
               <ResolutionActionChooser
                 busy={busy || paymentBlocked}

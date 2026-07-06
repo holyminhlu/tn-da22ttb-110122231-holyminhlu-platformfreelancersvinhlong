@@ -26,6 +26,7 @@ type EscrowFundPanelProps = {
   milestones: ContractMilestone[];
   isClient: boolean;
   busy: boolean;
+  readOnly?: boolean;
   actionError?: string;
   paymentBlocked?: boolean;
   counterpartyName: string;
@@ -48,6 +49,7 @@ export default function EscrowFundPanel({
   milestones,
   isClient,
   busy,
+  readOnly = false,
   actionError,
   paymentBlocked = false,
   counterpartyName,
@@ -58,7 +60,7 @@ export default function EscrowFundPanel({
   const [confirmed, setConfirmed] = useState(false);
 
   const escrowStatus = String(contract.escrow_status || "none").toLowerCase();
-  const isFunded = escrowStatus === "funded" || escrowStatus === "released";
+  const isFunded = readOnly || escrowStatus === "funded" || escrowStatus === "released";
 
   const agreedAmount = Number(contract.agreed_price) || 0;
   const agreedDisplay = agreedAmount > 0 ? formatVndUi(agreedAmount) : "Thỏa thuận";
@@ -81,12 +83,14 @@ export default function EscrowFundPanel({
 
   return (
     <div className="hire-escrow">
-      {paymentBlocked ? <ClientVerifyNotice message={CLIENT_VERIFY_PAYMENT_LEAD} /> : null}
-      <WorkflowDeadlineBanner
-        deadlineAt={contract.stage_deadline_at || contract.escrow_deadline_at}
-        label={t("Hạn nạp ký quỹ Escrow")}
-        variant="warn"
-      />
+      {paymentBlocked && isClient && !readOnly ? <ClientVerifyNotice message={CLIENT_VERIFY_PAYMENT_LEAD} /> : null}
+      {!readOnly ? (
+        <WorkflowDeadlineBanner
+          deadlineAt={contract.stage_deadline_at || contract.escrow_deadline_at}
+          label={t("Hạn nạp ký quỹ Escrow")}
+          variant="warn"
+        />
+      ) : null}
       <div className="hire-escrow__hero">
         <div className="hire-escrow__hero-text">
           <span className="hire-escrow__eyebrow">{t("Giai đoạn 2")}</span>
@@ -175,7 +179,7 @@ export default function EscrowFundPanel({
         </aside>
 
         <div className="hire-escrow__main">
-          {isClient && !isFunded ? (
+          {isClient && !isFunded && !readOnly ? (
             <div className="hire-escrow__fund-card">
               <header className="hire-escrow__fund-head">
                 <FaWallet className="hire-escrow__fund-head-icon" aria-hidden />
@@ -274,8 +278,9 @@ export default function EscrowFundPanel({
               <FaCheckCircle className="hire-escrow__state-icon" aria-hidden />
               <h3 className="hire-escrow__state-title">{t("Đã nạp ký quỹ thành công")}</h3>
               <p className="hire-escrow__state-desc">
-                Freelancer có thể bắt đầu thực hiện. Bạn theo dõi tiến độ ở giai đoạn Thực hiện &
-                Kiểm tra.
+                {readOnly
+                  ? "Giai đoạn ký quỹ đã hoàn thành — tiền đã được khóa trong Escrow."
+                  : "Freelancer có thể bắt đầu thực hiện. Bạn theo dõi tiến độ ở giai đoạn Thực hiện & Kiểm tra."}
               </p>
               {contract.funded_at ? (
                 <p className="hire-escrow__state-meta">Nạp lúc {formatDateUi(contract.funded_at)}</p>
@@ -307,8 +312,9 @@ export default function EscrowFundPanel({
               <FaCheckCircle className="hire-escrow__state-icon" aria-hidden />
               <h3 className="hire-escrow__state-title">{t("Escrow đã được nạp")}</h3>
               <p className="hire-escrow__state-desc">
-                Khách hàng đã nạp ký quỹ. Bạn có thể bắt đầu làm việc — chuyển sang tab tiến trình
-                Thực hiện để cập nhật tiến độ.
+                {readOnly
+                  ? "Giai đoạn ký quỹ đã hoàn thành — tiền đã được khóa trong Escrow."
+                  : "Khách hàng đã nạp ký quỹ. Bạn có thể bắt đầu làm việc — chuyển sang tab tiến trình Thực hiện để cập nhật tiến độ."}
               </p>
             </div>
           ) : null}
