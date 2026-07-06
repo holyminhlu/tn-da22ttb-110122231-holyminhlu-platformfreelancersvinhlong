@@ -158,7 +158,7 @@ export const hireUi = {
       title: "Tìm và thuê freelancer",
       summary: "Có {{freelancers}} freelancer cung cấp {{services}} dịch vụ trực tuyến.",
       lead: "Thuê, nhắn tin hoặc yêu cầu báo giá từ freelancer bạn đã từng hợp tác hoặc đã lưu vào danh sách yêu thích.",
-      searchPlaceholder: "Tìm freelancer",
+      searchPlaceholder: "Tìm freelancer, dịch vụ, kỹ năng...",
       loadingFreelancers: "Đang tải freelancer...",
       noMatch: "Không tìm thấy freelancer phù hợp.",
     },

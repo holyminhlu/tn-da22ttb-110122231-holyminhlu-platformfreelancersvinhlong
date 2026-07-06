@@ -44,20 +44,33 @@ async function listFreelancers(req, res) {
       "fp.deleted_at IS NULL",
     ];
     const filterParams = [];
+    let qParamSlot = null;
+    let categoryParamSlot = null;
 
     if (qPattern) {
       filterParams.push(qPattern);
-      const slot = filterParams.length;
+      qParamSlot = filterParams.length;
       whereParts.push(`(
-        COALESCE(up.full_name, '') ILIKE $${slot}
-        OR COALESCE(u.email, '') ILIKE $${slot}
-        OR COALESCE(fp.title, '') ILIKE $${slot}
-        OR COALESCE(up.bio, '') ILIKE $${slot}
+        COALESCE(up.full_name, '') ILIKE $${qParamSlot}
+        OR COALESCE(u.email, '') ILIKE $${qParamSlot}
+        OR COALESCE(fp.title, '') ILIKE $${qParamSlot}
+        OR COALESCE(up.bio, '') ILIKE $${qParamSlot}
         OR EXISTS (
           SELECT 1
           FROM public.user_skills us_q
           JOIN public.skills s_q ON s_q.id = us_q.skill_id
-          WHERE us_q.user_id = fp.user_id AND s_q.name ILIKE $${slot}
+          WHERE us_q.user_id = fp.user_id AND s_q.name ILIKE $${qParamSlot}
+        )
+        OR EXISTS (
+          SELECT 1
+          FROM public.services s_qsvc
+          WHERE s_qsvc.freelancer_id = fp.user_id
+            AND COALESCE(s_qsvc.listing_status, 'active') = 'active'
+            AND (
+              COALESCE(s_qsvc.title, '') ILIKE $${qParamSlot}
+              OR COALESCE(s_qsvc.description, '') ILIKE $${qParamSlot}
+              OR COALESCE(s_qsvc.category, '') ILIKE $${qParamSlot}
+            )
         )
       )`);
     }
@@ -86,16 +99,32 @@ async function listFreelancers(req, res) {
 
     if (category && category !== "Tất cả") {
       filterParams.push(category);
-      const slot = filterParams.length;
+      categoryParamSlot = filterParams.length;
       whereParts.push(`EXISTS (
         SELECT 1 FROM public.services s_cat
         WHERE s_cat.freelancer_id = fp.user_id
           AND COALESCE(s_cat.listing_status, 'active') = 'active'
-          AND COALESCE(s_cat.category, '') ILIKE $${slot}
+          AND COALESCE(s_cat.category, '') ILIKE $${categoryParamSlot}
       )`);
     }
 
     const whereSql = whereParts.length ? `WHERE ${whereParts.join(" AND ")}` : "";
+
+    const featuredOrderParts = [];
+    if (qParamSlot) {
+      featuredOrderParts.push(`CASE WHEN (
+        COALESCE(s.title, '') ILIKE $${qParamSlot}
+        OR COALESCE(s.description, '') ILIKE $${qParamSlot}
+        OR COALESCE(s.category, '') ILIKE $${qParamSlot}
+      ) THEN 0 ELSE 1 END`);
+    }
+    if (categoryParamSlot) {
+      featuredOrderParts.push(
+        `CASE WHEN COALESCE(s.category, '') ILIKE $${categoryParamSlot} THEN 0 ELSE 1 END`,
+      );
+    }
+    featuredOrderParts.push("s.created_at DESC");
+    const featuredOrderSql = featuredOrderParts.join(", ");
 
     const listParams = [...filterParams, limit, offset];
     const limitSlot = filterParams.length + 1;
@@ -196,7 +225,7 @@ async function listFreelancers(req, res) {
          FROM public.services s
          WHERE s.freelancer_id = fp.user_id
            AND COALESCE(s.listing_status, 'active') = 'active'
-         ORDER BY s.created_at DESC
+         ORDER BY ${featuredOrderSql}
          LIMIT 1
        ) feat ON true
        ${whereSql}
